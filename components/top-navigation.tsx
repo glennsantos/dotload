@@ -12,7 +12,7 @@ export default function TopNavigation() {
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center">
           <Link href="/dashboard" className="text-2xl font-bold mr-8">
-            gumroad
+            alaCarte
           </Link>
           <nav className="hidden md:flex space-x-6">
             <Link href="/dashboard" className="hover:text-gray-300">
