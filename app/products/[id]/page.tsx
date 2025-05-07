@@ -153,7 +153,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                     <div className="text-sm text-gray-500">0 ratings</div>
                   </div>
                   <Link
-                    href={`https://gumroad.com/l/${params.id}`}
+                    href={`https://alacarte.com/l/${params.id}`}
                     target="_blank"
                     className="flex items-center justify-center gap-1 w-full p-2 border rounded-md text-sm hover:bg-gray-50"
                   >
@@ -207,7 +207,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   <div className="flex">
                     <input
                       type="text"
-                      value={`https://gumroad.com/l/${params.id}`}
+                      value={`https://alacarte.com/l/${params.id}`}
                       readOnly
                       className="flex-1 p-3 border rounded-l-md bg-gray-100"
                     />

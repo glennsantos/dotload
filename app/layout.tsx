@@ -7,8 +7,8 @@ import TopNavigation from "@/components/top-navigation"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Gumroad Clone",
-  description: "A clone of the Gumroad platform",
+  title: "alaCarte",
+  description: "A digital product marketplace platform",
     generator: 'v0.dev'
 }
 

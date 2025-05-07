@@ -159,7 +159,7 @@ export default function ProductCustomization({
                     <div className="flex-1 relative">
                       <input
                         type="text"
-                        value="9637988267579.gumroad.com//"
+                        value="9637988267579.alacarte.com//"
                         readOnly
                         className="w-full p-3 border rounded-l-md bg-gray-100"
                       />
@@ -335,7 +335,7 @@ export default function ProductCustomization({
                     <div className="flex mb-4">
                       <input
                         type="text"
-                        value="https://9637988267579.gumroad.com/l/japan-travel-guide"
+                        value="https://9637988267579.alacarte.com/l/japan-travel-guide"
                         readOnly
                         className="flex-1 p-3 border rounded-l-md bg-gray-100"
                       />
@@ -358,7 +358,7 @@ export default function ProductCustomization({
                     <p className="text-sm text-gray-600 mb-4">Add this product to your website</p>
                     <div className="bg-gray-100 p-3 rounded-md">
                       <code className="text-sm">
-                        &lt;iframe src="https://9637988267579.gumroad.com/l/japan-travel-guide/embed" frameborder="0"
+                        &lt;iframe src="https://9637988267579.alacarte.com/l/japan-travel-guide/embed" frameborder="0"
                         width="100%" height="auto" style="min-height: 400px;"&gt;&lt;/iframe&gt;
                       </code>
                     </div>
