@@ -1,0 +1,119 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getAuthUserId } from '@/lib/auth-utils';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { mkdir } from 'fs/promises';
+import { cwd } from 'process';
+import { uploadToCloudinary } from '@/lib/cloudinary';
+
+// Ensure uploads directory exists
+async function ensureUploadsDir() {
+  const uploadsDir = join(cwd(), 'uploads');
+  try {
+    await mkdir(uploadsDir, { recursive: true });
+    return uploadsDir;
+  } catch (error) {
+    console.error('Error creating uploads directory:', error);
+    throw error;
+  }
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Get the current authenticated user's ID
+    const userId = await getAuthUserId();
+    
+    // If no authenticated user, return error
+    if (!userId) {
+      return NextResponse.json({ 
+        error: 'Authentication required',
+        details: 'You must be logged in to update a product'
+      }, { status: 401 });
+    }
+    
+    // Find the product by ID
+    const existingProduct = await prisma.product.findUnique({
+      where: {
+        id: params.id,
+      }
+    });
+    
+    // Check if product exists and belongs to the user
+    if (!existingProduct) {
+      return NextResponse.json({ 
+        error: 'Product not found',
+        details: 'The requested product does not exist'
+      }, { status: 404 });
+    }
+    
+    if (existingProduct.userId !== userId) {
+      return NextResponse.json({ 
+        error: 'Unauthorized',
+        details: 'You do not have permission to update this product'
+      }, { status: 403 });
+    }
+    
+    // Process the form data
+    const formData = await request.formData();
+    const coverImage = formData.get('coverImage') as File | null;
+    
+    if (!coverImage) {
+      return NextResponse.json({ 
+        error: 'Missing cover image',
+        details: 'No cover image file was provided'
+      }, { status: 400 });
+    }
+    
+    // Process the cover image
+    let coverImagePath = null;
+    const uploadsDir = await ensureUploadsDir();
+    
+    try {
+      // Upload to Cloudinary
+      const arrayBuffer = await coverImage.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const folder = `users/${userId}/products/${params.id}/cover`;
+      
+      const result = await uploadToCloudinary(buffer, {
+        folder,
+        public_id: `cover-${Date.now()}`,
+      }) as any;
+      
+      coverImagePath = result.secure_url;
+    } catch (error) {
+      console.error('Cover image upload error:', error);
+      // Fallback to local storage if Cloudinary fails
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const filename = `coverImage-${uniqueSuffix}-${coverImage.name}`;
+      const path = join(uploadsDir, filename);
+      
+      await writeFile(path, new Uint8Array(await coverImage.arrayBuffer()));
+      coverImagePath = `uploads/${filename}`;
+    }
+    
+    // Update the product with the new cover image path
+    const updatedProduct = await prisma.product.update({
+      where: {
+        id: params.id
+      },
+      data: {
+        coverImagePath
+      }
+    });
+    
+    return NextResponse.json({
+      message: 'Cover image updated successfully',
+      coverImagePath
+    });
+  } catch (error) {
+    console.error('Cover image update error:', error);
+    return NextResponse.json({ 
+      error: 'Failed to update cover image', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
+}

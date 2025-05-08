@@ -3,6 +3,9 @@ const nextConfig = {
   logging: {
     level: 'verbose'
   },
+  images: {
+    domains: ['res.cloudinary.com'],
+  },
   webpack: (config, { isServer }) => {
     // Enable console logging on the server
     if (isServer) {

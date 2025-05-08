@@ -150,7 +150,7 @@ export default function ProductsList() {
                     <div className="w-12 h-12 relative overflow-hidden rounded">
                       {product.coverImagePath ? (
                         <Image 
-                          src={`/${product.coverImagePath}`} 
+                          src={product.coverImagePath.startsWith('http') ? product.coverImagePath : `/${product.coverImagePath}`} 
                           alt={product.name} 
                           fill 
                           className="object-cover"

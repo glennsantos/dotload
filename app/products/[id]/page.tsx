@@ -220,7 +220,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <div className="border rounded-md overflow-hidden">
                   {product.coverImagePath ? (
                     <Image
-                      src={`/${product.coverImagePath}`}
+                      src={product.coverImagePath.startsWith('http') ? product.coverImagePath : `/${product.coverImagePath}`}
                       alt={product.name}
                       width={400}
                       height={300}
@@ -383,8 +383,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <div className="border rounded p-4">
                   <div className="flex items-center gap-4 p-4 border rounded">
                     {product.coverImagePath ? (
-                      <Image
-                        src={`/${product.coverImagePath}`}
+                      <Image 
+                        src={product.coverImagePath.startsWith('http') ? product.coverImagePath : `/${product.coverImagePath}`} 
                         alt={product.name}
                         width={80}
                         height={80}
