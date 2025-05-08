@@ -15,6 +15,11 @@ model User {
   name                   String?
   products               Product[]
   
+  // Email verification fields
+  emailVerified          Boolean  @default(false)
+  verificationToken      String?  @unique
+  verificationTokenExpiry DateTime?
+  
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
@@ -27,6 +32,7 @@ model Product {
   currency               String   @default("PHP")
   description            String?
   coverImagePath         String?
+  digitalItemPath        String?  // Path to the digital item for sale
   
   // Relation to User
   user                   User     @relation(fields: [userId], references: [id])
