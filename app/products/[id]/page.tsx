@@ -3,13 +3,16 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Edit, BarChart2, Share2, ExternalLink, ChevronRight, Download, File } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { ArrowLeft, Edit, BarChart2, Share2, ExternalLink, ChevronRight, Download, File, Check } from "lucide-react"
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState("product")
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
     async function fetchProduct() {
@@ -362,11 +365,20 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                     <div className="flex">
                       <input
                         type="text"
-                        value={`https://alacarte.com/p/${product.slug || params.id}`}
+                        value={`${window.location.origin}/p/${product.slug || params.id}`}
                         readOnly
                         className="flex-1 p-3 border rounded-l-md bg-gray-100"
                       />
-                      <button className="px-4 py-2 bg-black text-white rounded-r-md">Copy</button>
+                      <button 
+                        className="px-4 py-2 bg-black text-white rounded-r-md flex items-center justify-center min-w-[80px]"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/p/${product.slug || params.id}`)
+                          setCopied(true)
+                          setTimeout(() => setCopied(false), 2000)
+                        }}
+                      >
+                        {copied ? <Check size={18} /> : 'Copy'}
+                      </button>
                     </div>
                   </div>
                   <div className="mb-4">

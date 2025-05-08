@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, ShoppingCart } from "lucide-react"
+import { ArrowLeft, ShoppingCart, Info, Star } from "lucide-react"
 
 interface ProductPageProps {
   params: {
@@ -72,81 +72,225 @@ export default function PublicProductPage({ params }: ProductPageProps) {
     )
   }
 
+  // Mock ratings data (replace with actual data when available)
+  const ratings = {
+    average: 4.9,
+    count: 11,
+    displayStars: 5
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">alaCarte</h1>
+    <div className="min-h-screen bg-white pb-20 md:pb-0">  {/* Added padding bottom for mobile fixed button */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold text-gray-900">alaCarte</Link>
+          <nav className="hidden md:flex space-x-8">
+            <Link href="#" className="text-gray-600 hover:text-gray-900">Products</Link>
+            <Link href="#" className="text-gray-600 hover:text-gray-900">Pricing</Link>
+            <Link href="#" className="text-gray-600 hover:text-gray-900">About</Link>
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="md:flex">
-            <div className="md:flex-shrink-0 md:w-1/2">
-              {product.coverImagePath ? (
-                <div className="relative h-96 w-full">
-                  <Image
-                    src={product.coverImagePath}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="bg-gray-200 h-96 flex items-center justify-center">
-                  <span className="text-gray-400 text-lg">No image available</span>
-                </div>
-              )}
+      {/* Hero Image Section */}
+      <div className="w-full bg-black">
+        {product.coverImagePath ? (
+          <div className="relative h-[300px] md:h-[500px] w-full">
+            <Image
+              src={product.coverImagePath}
+              alt={product.name}
+              fill
+              className="object-cover opacity-90"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          </div>
+        ) : (
+          <div className="bg-gray-800 h-[300px] md:h-[500px] w-full flex items-center justify-center">
+            <span className="text-gray-400 text-lg">No image available</span>
+          </div>
+        )}
+      </div>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Left panel - Title and Description */}
+          <div>
+            {/* Product type badge */}
+            <div className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm text-gray-700 mb-4">
+              {product.type}
             </div>
-            <div className="p-8 md:w-1/2">
-              <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
-                {product.type}
+            
+            {/* Product name */}
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
+            
+            {/* Product description */}
+            <div className="prose max-w-none text-gray-600 mb-8">
+              {product.description || 'No description available'}
+            </div>
+            
+            {/* Ratings - Desktop only */}
+            <div className="hidden md:block mb-8">
+              <h3 className="text-xl font-semibold mb-4">Ratings</h3>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      size={20} 
+                      className={i < Math.floor(ratings.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
+                    />
+                  ))}
+                </div>
+                <span className="font-medium">{ratings.average}</span>
+                <span className="text-gray-500">({ratings.count} ratings)</span>
               </div>
-              <h2 className="mt-2 text-3xl font-bold text-gray-900">{product.name}</h2>
-              <p className="mt-4 text-2xl font-bold text-gray-900">
-                {product.currency} {product.price.toFixed(2)}
-              </p>
-              <div className="mt-4 text-gray-600">
-                {product.description || 'No description available'}
+            </div>
+          </div>
+          
+          {/* Right panel - Checkout options */}
+          <div>
+            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+              {/* Product price */}
+              <div className="flex items-baseline mb-6">
+                <span className="text-3xl font-bold text-gray-900">{product.currency} {product.price.toFixed(2)}</span>
+                {product.comparePrice && (
+                  <span className="ml-2 text-lg text-gray-500 line-through">{product.currency} {product.comparePrice.toFixed(2)}</span>
+                )}
               </div>
               
+              {/* Product variations/options */}
               {product.variations && product.variations.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-medium text-gray-900">Options</h3>
-                  <div className="mt-2 space-y-4">
-                    {product.variations.map((variation: any) => (
-                      <div key={variation.id}>
-                        <h4 className="text-sm font-medium text-gray-900">{variation.name}</h4>
-                        <div className="mt-1 grid grid-cols-2 gap-2">
-                          {JSON.parse(variation.options).map((option: string, index: number) => (
-                            <div 
-                              key={index}
-                              className="border rounded-md px-3 py-2 text-sm cursor-pointer hover:bg-gray-50"
-                            >
-                              {option}
-                            </div>
-                          ))}
-                        </div>
+                <div className="space-y-6 mb-8">
+                  {product.variations.map((variation: any) => (
+                    <div key={variation.id}>
+                      <h3 className="text-sm font-medium text-gray-900 mb-3">{variation.name}</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        {JSON.parse(variation.options).map((option: string, index: number) => (
+                          <div 
+                            key={index}
+                            className="border border-gray-300 bg-white rounded-md px-4 py-3 text-sm cursor-pointer hover:border-gray-900 transition-colors"
+                          >
+                            {option}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               )}
               
-              <div className="mt-8">
+              {/* Add to cart button - Desktop */}
+              <div className="hidden md:block space-y-4 mb-6">
                 <button
                   onClick={handlePurchase}
-                  className="w-full bg-black text-white px-6 py-3 rounded-md font-medium flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
+                  className="w-full bg-black text-white px-6 py-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
                 >
                   <ShoppingCart size={20} />
-                  Purchase Now
+                  Add to Cart
                 </button>
+              </div>
+              
+              {/* Content description */}
+              <div className="border-t border-gray-200 pt-6 mt-6">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <Info size={18} />
+                  What you'll get
+                </h3>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>80+ long form videos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>Well over 15 hours of content!</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>Life time access!</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>Stream from your browser or alaCarte app</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>12 project files (6 of finished patterns / songs and more to follow!)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>Sample pack</span>
+                  </li>
+                </ul>
+              </div>
+              
+              {/* Ratings - Mobile only */}
+              <div className="md:hidden mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-medium mb-3">Ratings</h3>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        size={18} 
+                        className={i < Math.floor(ratings.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
+                      />
+                    ))}
+                  </div>
+                  <span className="font-medium">{ratings.average}</span>
+                  <span className="text-gray-500">({ratings.count} ratings)</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
+      
+      {/* Mobile fixed Add to Cart button */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 flex items-center justify-between">
+        <div>
+          <p className="font-bold text-xl">{product.currency} {product.price.toFixed(2)}</p>
+        </div>
+        <button
+          onClick={handlePurchase}
+          className="bg-black text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
+        >
+          <ShoppingCart size={18} />
+          Add to Cart
+        </button>
+      </div>
+
+      <footer className="bg-gray-50 border-t border-gray-200 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">alaCarte</h3>
+              <p className="text-gray-600">The easiest way to sell your digital products online.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Links</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li><Link href="#" className="hover:text-gray-900">Home</Link></li>
+                <li><Link href="#" className="hover:text-gray-900">Products</Link></li>
+                <li><Link href="#" className="hover:text-gray-900">Pricing</Link></li>
+                <li><Link href="#" className="hover:text-gray-900">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Legal</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li><Link href="#" className="hover:text-gray-900">Terms of Service</Link></li>
+                <li><Link href="#" className="hover:text-gray-900">Privacy Policy</Link></li>
+                <li><Link href="#" className="hover:text-gray-900">Refund Policy</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-200 text-center text-gray-500">
+            <p>© {new Date().getFullYear()} alaCarte. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, ChevronRight, CreditCard, Smartphone, QrCode } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { ArrowLeft, ChevronRight, CreditCard, Smartphone, QrCode, Wallet } from "lucide-react"
 
 interface CheckoutPageProps {
   params: {
@@ -14,6 +14,9 @@ interface CheckoutPageProps {
 
 export default function CheckoutPage({ params }: CheckoutPageProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const errorParam = searchParams.get('error')
+  
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -25,7 +28,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [cardCvc, setCardCvc] = useState("")
   const [cardName, setCardName] = useState("")
   const [processingPayment, setProcessingPayment] = useState(false)
-  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [paymentError, setPaymentError] = useState<string | null>(errorParam || null)
 
   useEffect(() => {
     async function fetchProduct() {
@@ -59,8 +62,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       return
     }
     
-    if (!mobileNumber) {
-      setPaymentError("Mobile number is required")
+    // Mobile number validation for e-wallet payments
+    if (paymentMethod.startsWith('ewallet') && !mobileNumber) {
+      setPaymentError("Mobile number is required for e-wallet payments")
       return
     }
     
@@ -75,8 +79,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setProcessingPayment(true)
       setPaymentError(null)
       
-      // Create payment intent based on payment method
-      const response = await fetch("/api/payments/create", {
+      // Create a purchase first
+      const purchaseResponse = await fetch("/api/purchases", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -85,39 +89,54 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           productId: product.id,
           email,
           mobileNumber,
-          paymentMethod,
           amount: product.price,
-          currency: product.currency,
-          cardDetails: paymentMethod === "card" ? {
-            number: cardNumber,
-            expiry: cardExpiry,
-            cvc: cardCvc,
-            name: cardName,
-          } : undefined,
+          currency: product.currency || 'PHP',
         }),
       })
       
-      const data = await response.json()
+      const purchaseData = await purchaseResponse.json()
       
-      if (!response.ok) {
-        throw new Error(data.error || "Payment failed")
+      if (!purchaseResponse.ok) {
+        throw new Error(purchaseData.error || "Failed to create purchase")
       }
       
-      // Use the product's slug if available, otherwise fall back to the URL parameter
-      const slugToUse = product.slug || params.slug
-      
-      // Handle different payment methods
-      if (paymentMethod === "card") {
-        // Card payments are processed directly
-        router.push(`/p/${slugToUse}/success?code=${data.accessCode}`)
-      } else {
-        // E-wallet payments require redirect
-        if (data.redirectUrl) {
-          window.location.href = data.redirectUrl
-        } else {
-          router.push(`/p/${slugToUse}/success?code=${data.accessCode}`)
+      // Process payment based on method
+      if (paymentMethod.startsWith('ewallet')) {
+        // Handle e-wallet payment with Xendit
+        const paymentResponse = await fetch("/api/payments/xendit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            purchaseId: purchaseData.id,
+            paymentMethod,
+            mobileNumber,
+            amount: product.price,
+            currency: product.currency || 'PHP',
+          }),
+        })
+        
+        const paymentData = await paymentResponse.json()
+        
+        if (!paymentResponse.ok) {
+          throw new Error(paymentData.error || "Payment processing failed")
         }
+        
+        // Redirect to e-wallet payment page
+        if (paymentData.redirectUrl) {
+          window.location.href = paymentData.redirectUrl
+          return
+        }
+      } else if (paymentMethod === "card") {
+        // Handle card payment (to be implemented)
+        // For now, just redirect to success page
+        router.push(`/p/${product.slug || params.slug}/success?code=${purchaseData.accessCode}`)
+        return
       }
+      
+      // Fallback - redirect to success page
+      router.push(`/p/${product.slug || params.slug}/success?code=${purchaseData.accessCode}`)
     } catch (err: any) {
       console.error("Payment error:", err)
       setPaymentError(err.message || "Payment failed. Please try again.")
@@ -193,80 +212,84 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 />
               </div>
               
-              {/* Mobile number field */}
-              <div className="mb-6">
-                <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                  Mobile number
-                </label>
-                <input
-                  type="tel"
-                  id="mobileNumber"
-                  name="mobileNumber"
-                  value={mobileNumber}
-                  onChange={(e) => setMobileNumber(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
-                  placeholder="+63 XXX XXX XXXX"
-                  required
-                />
-              </div>
+              {/* Mobile number field - show for e-wallet payments */}
+              {paymentMethod.startsWith('ewallet') && (
+                <div className="mb-6">
+                  <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      id="mobileNumber"
+                      className="w-full px-4 py-2 pl-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="9XX XXX XXXX"
+                      value={mobileNumber}
+                      onChange={(e) => setMobileNumber(e.target.value)}
+                    />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <span className="text-gray-500">+63</span>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-sm text-gray-500">Enter your mobile number registered with {paymentMethod.includes('gcash') ? 'GCash' : 
+                    paymentMethod.includes('grabpay') ? 'GrabPay' : 
+                    paymentMethod.includes('shopeepay') ? 'ShopeePay' : 
+                    paymentMethod.includes('paymaya') ? 'Maya' : 'your e-wallet'}</p>
+                </div>
+              )}
               
               <h2 className="text-lg font-medium text-gray-900 mb-4">Payment Method</h2>
               
               {/* Payment method selection */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div
-                  className={`border rounded-md p-4 cursor-pointer flex items-center gap-3 ${
-                    paymentMethod === "card" ? "border-black bg-gray-50" : ""
-                  }`}
-                  onClick={() => setPaymentMethod("card")}
-                >
-                  <CreditCard size={20} />
-                  <span>Card</span>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <button
+                    type="button"
+                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "card" ? "border-black bg-gray-50" : "border-gray-300"}`}
+                    onClick={() => setPaymentMethod("card")}
+                  >
+                    <CreditCard className="h-6 w-6 mb-2" />
+                    <span className="text-sm">Card</span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "ewallet-gcash" ? "border-black bg-gray-50" : "border-gray-300"}`}
+                    onClick={() => setPaymentMethod("ewallet-gcash")}
+                  >
+                    <Smartphone className="h-6 w-6 mb-2" />
+                    <span className="text-sm">GCash</span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "ewallet-grabpay" ? "border-black bg-gray-50" : "border-gray-300"}`}
+                    onClick={() => setPaymentMethod("ewallet-grabpay")}
+                  >
+                    <Wallet className="h-6 w-6 mb-2" />
+                    <span className="text-sm">GrabPay</span>
+                  </button>
                 </div>
-                <div
-                  className={`border rounded-md p-4 cursor-pointer flex items-center gap-3 ${
-                    paymentMethod === "gcash" ? "border-black bg-gray-50" : ""
-                  }`}
-                  onClick={() => setPaymentMethod("gcash")}
-                >
-                  <Smartphone size={20} />
-                  <span>GCash</span>
-                </div>
-                <div
-                  className={`border rounded-md p-4 cursor-pointer flex items-center gap-3 ${
-                    paymentMethod === "grabpay" ? "border-black bg-gray-50" : ""
-                  }`}
-                  onClick={() => setPaymentMethod("grabpay")}
-                >
-                  <Smartphone size={20} />
-                  <span>GrabPay</span>
-                </div>
-                <div
-                  className={`border rounded-md p-4 cursor-pointer flex items-center gap-3 ${
-                    paymentMethod === "shopeepay" ? "border-black bg-gray-50" : ""
-                  }`}
-                  onClick={() => setPaymentMethod("shopeepay")}
-                >
-                  <Smartphone size={20} />
-                  <span>ShopeePay</span>
-                </div>
-                <div
-                  className={`border rounded-md p-4 cursor-pointer flex items-center gap-3 ${
-                    paymentMethod === "maya" ? "border-black bg-gray-50" : ""
-                  }`}
-                  onClick={() => setPaymentMethod("maya")}
-                >
-                  <Smartphone size={20} />
-                  <span>Maya</span>
-                </div>
-                <div
-                  className={`border rounded-md p-4 cursor-pointer flex items-center gap-3 ${
-                    paymentMethod === "qrph" ? "border-black bg-gray-50" : ""
-                  }`}
-                  onClick={() => setPaymentMethod("qrph")}
-                >
-                  <QrCode size={20} />
-                  <span>QR Ph</span>
+                
+                <div className="grid grid-cols-3 gap-4">
+                  <button
+                    type="button"
+                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "ewallet-shopeepay" ? "border-black bg-gray-50" : "border-gray-300"}`}
+                    onClick={() => setPaymentMethod("ewallet-shopeepay")}
+                  >
+                    <Wallet className="h-6 w-6 mb-2" />
+                    <span className="text-sm">ShopeePay</span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "ewallet-paymaya" ? "border-black bg-gray-50" : "border-gray-300"}`}
+                    onClick={() => setPaymentMethod("ewallet-paymaya")}
+                  >
+                    <Wallet className="h-6 w-6 mb-2" />
+                    <span className="text-sm">Maya</span>
+                  </button>
+                  
+
                 </div>
               </div>
               
@@ -338,15 +361,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 </div>
               )}
               
-              {/* E-wallet payment message */}
+              {/* Payment method specific instructions */}
               {paymentMethod !== "card" && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-md">
                   <p className="text-sm text-gray-600">
-                    You will be redirected to complete your payment with {paymentMethod === "gcash" ? "GCash" : 
-                    paymentMethod === "grabpay" ? "GrabPay" : 
-                    paymentMethod === "shopeepay" ? "ShopeePay" : 
-                    paymentMethod === "maya" ? "Maya" : 
-                    paymentMethod === "qrph" ? "QR Ph" : paymentMethod}.
+                    You will be redirected to complete your payment with {paymentMethod.includes('gcash') ? "GCash" : 
+                    paymentMethod.includes('grabpay') ? "GrabPay" : 
+                    paymentMethod.includes('shopeepay') ? "ShopeePay" : 
+                    paymentMethod.includes('paymaya') ? "Maya" : 
+                    paymentMethod}.
                   </p>
                 </div>
               )}
