@@ -1,17 +1,19 @@
 "use client"
 
-import { X, ChevronRight } from "lucide-react"
+import { X, ChevronRight, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 
 export default function PaymentOptions({
   productData,
   setProductData,
   onNext,
+  onBack,
   onCancel,
 }: {
   productData: any
   setProductData: (data: any) => void
   onNext: () => void
+  onBack: () => void
   onCancel: () => void
 }) {
   const handleToggleOption = (option: string) => {
@@ -26,21 +28,15 @@ export default function PaymentOptions({
 
   return (
     <div>
-      <div className="bg-gray-50 py-2 px-6 border-b">
-        <div className="flex items-center text-sm">
-          <Link href="/products" className="text-gray-600 hover:text-black">
-            Products
-          </Link>
-          <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <span className="font-medium">Payment Options</span>
-        </div>
-      </div>
 
       <header className="p-6 border-b flex justify-between items-center">
         <h1 className="text-3xl font-normal truncate">
-          {productData.name || "Solo Travel to Japan in Your 20s: A Comprehensive Guide"}
+          {productData.name || "New Product"}
         </h1>
         <div className="flex gap-2">
+          <button onClick={onBack} className="px-4 py-2 border rounded-md flex items-center gap-2">
+            <ChevronLeft size={18} /> Back
+          </button>
           <button onClick={onCancel} className="px-4 py-2 border rounded-md flex items-center gap-2">
             <X size={18} /> Cancel
           </button>

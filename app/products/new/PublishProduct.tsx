@@ -6,14 +6,16 @@ import Link from "next/link"
 
 export default function PublishProduct({
   productData,
-  setProductData,
-  onNext,
+  onPublish,
+  onBack,
   onCancel,
+  isSubmitting = false,
 }: {
   productData: any
-  setProductData: (data: any) => void
-  onNext: () => void
+  onPublish: () => void
+  onBack: () => void
   onCancel: () => void
+  isSubmitting?: boolean
 }) {
   const [publishOption, setPublishOption] = useState("now")
   const [visibility, setVisibility] = useState("public")
@@ -22,26 +24,23 @@ export default function PublishProduct({
 
   return (
     <div>
-      <div className="bg-gray-50 py-2 px-6 border-b">
-        <div className="flex items-center text-sm">
-          <Link href="/products" className="text-gray-600 hover:text-black">
-            Products
-          </Link>
-          <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <span className="font-medium">Publish Product</span>
-        </div>
-      </div>
-
       <header className="p-6 border-b flex justify-between items-center">
         <h1 className="text-3xl font-normal truncate">
           {productData.name || "Solo Travel to Japan in Your 20s: A Comprehensive Guide"}
         </h1>
         <div className="flex gap-2">
+          <button onClick={onBack} className="px-4 py-2 border rounded-md flex items-center gap-2">
+            Back
+          </button>
           <button onClick={onCancel} className="px-4 py-2 border rounded-md flex items-center gap-2">
             <X size={18} /> Cancel
           </button>
-          <button onClick={onNext} className="px-4 py-2 bg-black text-white rounded-md">
-            Publish Product
+          <button 
+            onClick={onPublish} 
+            disabled={isSubmitting}
+            className={`px-4 py-2 bg-black text-white rounded-md ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}
           </button>
         </div>
       </header>
@@ -236,8 +235,12 @@ export default function PublishProduct({
         </div>
 
         <div className="flex justify-end">
-          <button onClick={onNext} className="px-6 py-3 bg-black text-white rounded-md">
-            Publish Product
+          <button 
+            onClick={onPublish} 
+            disabled={isSubmitting}
+            className={`px-6 py-3 bg-black text-white rounded-md ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}
           </button>
         </div>
       </div>
