@@ -8,21 +8,10 @@ import { cwd } from 'process';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { generateUniqueSlug } from '@/lib/slug-utils';
 
-// Ensure uploads directory exists
-async function ensureUploadsDir() {
-  const uploadsDir = join(cwd(), 'uploads');
-  try {
-    await mkdir(uploadsDir, { recursive: true });
-    return uploadsDir;
-  } catch (error) {
-    console.error('Error creating uploads directory:', error);
-    throw error;
-  }
-}
+// Function removed - using Cloudinary exclusively
 
-// Process uploaded files
+// Process uploaded files - using Cloudinary exclusively
 async function processFiles(formData: FormData, userId: string, productId: string) {
-  const uploadsDir = await ensureUploadsDir();
   const coverImage = formData.get('coverImage') as File | null;
   const contentFiles = formData.getAll('contentFiles') as File[];
   
@@ -31,63 +20,36 @@ async function processFiles(formData: FormData, userId: string, productId: strin
   
   // Process cover image if exists
   if (coverImage) {
-    try {
-      // Upload to Cloudinary
-      const arrayBuffer = await coverImage.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const folder = `users/${userId}/products/${productId}/cover`;
-      
-      const result = await uploadToCloudinary(buffer, {
-        folder,
-        public_id: `cover-${Date.now()}`,
-      }) as any;
-      
-      coverImagePath = result.secure_url;
-    } catch (error) {
-      console.error('Cover image upload error:', error);
-      // Fallback to local storage if Cloudinary fails
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const filename = `coverImage-${uniqueSuffix}-${coverImage.name}`;
-      const path = join(uploadsDir, filename);
-      
-      await writeFile(path, new Uint8Array(await coverImage.arrayBuffer()));
-      coverImagePath = `uploads/${filename}`;
-    }
+    // Upload to Cloudinary
+    const arrayBuffer = await coverImage.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const folder = `users/${userId}/products/${productId}/cover`;
+    
+    const result = await uploadToCloudinary(buffer, {
+      folder,
+      public_id: `cover-${Date.now()}`,
+    }) as any;
+    
+    coverImagePath = result.secure_url;
   }
   
   // Process content files
   for (const file of contentFiles) {
-    try {
-      // Upload to Cloudinary
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const folder = `users/${userId}/products/${productId}/content`;
-      
-      const result = await uploadToCloudinary(buffer, {
-        folder,
-        public_id: `${file.name.split('.')[0]}-${Date.now()}`,
-      }) as any;
-      
-      processedFiles.push({
-        filename: file.name,
-        path: result.secure_url,
-        mimetype: file.type
-      });
-    } catch (error) {
-      console.error('Content file upload error:', error);
-      // Fallback to local storage if Cloudinary fails
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const filename = `file-${uniqueSuffix}-${file.name}`;
-      const path = join(uploadsDir, filename);
-      
-      await writeFile(path, new Uint8Array(await file.arrayBuffer()));
-      
-      processedFiles.push({
-        filename: file.name,
-        path: `uploads/${filename}`,
-        mimetype: file.type
-      });
-    }
+    // Upload to Cloudinary
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const folder = `users/${userId}/products/${productId}/content`;
+    
+    const result = await uploadToCloudinary(buffer, {
+      folder,
+      public_id: `${file.name.split('.')[0]}-${Date.now()}`,
+    }) as any;
+    
+    processedFiles.push({
+      filename: file.name,
+      path: result.secure_url,
+      mimetype: file.type
+    });
   }
   
   return { coverImagePath, processedFiles };

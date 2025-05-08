@@ -1,22 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { mkdir } from 'fs/promises';
-import { cwd } from 'process';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
-// Ensure digital items directory exists
-async function ensureDigitalItemsDir() {
-  const digitalItemsDir = join(cwd(), 'digital-items');
-  try {
-    await mkdir(digitalItemsDir, { recursive: true });
-    return digitalItemsDir;
-  } catch (error) {
-    console.error('Error creating digital items directory:', error);
-    throw error;
-  }
-}
+// Function removed - using Cloudinary exclusively
 
 export async function POST(
   request: NextRequest,
@@ -26,7 +13,7 @@ export async function POST(
     const productId = params.id;
     
     // Get the current authenticated user's ID
-    const userId = getAuthUserId();
+    const userId = await getAuthUserId();
     
     // If no authenticated user, return error
     if (!userId) {
@@ -64,14 +51,18 @@ export async function POST(
       }, { status: 400 });
     }
     
-    // Process digital item
-    const digitalItemsDir = await ensureDigitalItemsDir();
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const filename = `digital-item-${uniqueSuffix}-${digitalItem.name}`;
-    const path = join(digitalItemsDir, filename);
+    // Process digital item - using Cloudinary exclusively
+    const arrayBuffer = await digitalItem.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const folder = `users/${userId}/products/${productId}/digital-items`;
     
-    await writeFile(path, new Uint8Array(await digitalItem.arrayBuffer()));
-    const digitalItemPath = `digital-items/${filename}`;
+    const result = await uploadToCloudinary(buffer, {
+      folder,
+      public_id: `${digitalItem.name.split('.')[0]}-${Date.now()}`,
+      resource_type: 'raw'
+    }) as any;
+    
+    const digitalItemPath = result.secure_url;
     
     // Update product with digital item path
     const updatedProduct = await prisma.product.update({
