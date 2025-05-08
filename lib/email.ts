@@ -98,7 +98,7 @@ export async function sendPasswordResetEmail(
   return transporter.sendMail(mailOptions);
 }
 
-// Send purchase confirmation email with product content link
+// Send purchase confirmation email with link to buyer dashboard
 export async function sendPurchaseConfirmationEmail(
   to: string,
   productName: string,
@@ -109,7 +109,7 @@ export async function sendPurchaseConfirmationEmail(
   name?: string | null
 ) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const contentUrl = `${baseUrl}/p/${productSlug}/content?code=${accessCode}`;
+  const buyerDashboardUrl = `${baseUrl}/buyer-dashboard?code=${accessCode}`;
 
   const mailOptions = {
     from: fromEmail,
@@ -123,13 +123,13 @@ export async function sendPurchaseConfirmationEmail(
         
         <div style="margin: 30px 0;">
           <p><strong>Access Your Content</strong></p>
-          <a href="${contentUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+          <a href="${buyerDashboardUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
             Access Your Purchase
           </a>
         </div>
         
         <p>Or copy and paste this link in your browser:</p>
-        <p style="word-break: break-all; color: #666;">${contentUrl}</p>
+        <p style="word-break: break-all; color: #666;">${buyerDashboardUrl}</p>
         
         <p style="margin-top: 30px; color: #666; font-size: 14px;">Keep this email for your records. The link above provides permanent access to your purchased content.</p>
       </div>
@@ -141,7 +141,7 @@ export async function sendPurchaseConfirmationEmail(
       
       Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} has been successfully processed.
       
-      Access Your Content: ${contentUrl}
+      Access Your Content: ${buyerDashboardUrl}
       
       Keep this email for your records. The link above provides permanent access to your purchased content.
     `,

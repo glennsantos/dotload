@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useRef } from "react"
 import { X, Upload, ChevronLeft } from "lucide-react"
 import NextImage from "next/image"
+import { Editor } from "@tinymce/tinymce-react"
 
 export default function ProductCustomization({
   productData,
@@ -47,10 +48,10 @@ export default function ProductCustomization({
     }
   }
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleDescriptionChange = (content: string) => {
     setProductData({
       ...productData,
-      description: e.target.value,
+      description: content,
     })
   }
 
@@ -106,13 +107,26 @@ export default function ProductCustomization({
 
               <div className="mb-6">
                 <label className="block mb-2 font-medium">Description</label>
-                <textarea
-                  rows={5}
-                  value={productData.description || ""}
-                  onChange={handleDescriptionChange}
-                  className="w-full p-3 border rounded-md resize-none"
-                  placeholder="Describe your product in detail..."
-                ></textarea>
+                <Editor
+                  apiKey="no-api-key"
+                  initialValue={productData.description || ""}
+                  init={{
+                    height: 300,
+                    menubar: false,
+                    plugins: [
+                      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                      'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                    ],
+                    toolbar: 'undo redo | blocks | ' +
+                      'bold italic forecolor | alignleft aligncenter ' +
+                      'alignright alignjustify | bullist numlist outdent indent | ' +
+                      'removeformat | help',
+                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                  }}
+                  onEditorChange={handleDescriptionChange}
+                />
+                <p className="text-xs text-gray-500 mt-1">Use the rich text editor to format your product description</p>
               </div>
 
               <div className="mb-6">

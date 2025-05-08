@@ -165,7 +165,7 @@ export default function ProductsList() {
                     <div>
                       <div className="font-medium">{product.name}</div>
                       <div className="text-sm text-gray-500">
-                        jensmithgoastravel.alacarte.com/p/{product.slug || product.id}
+                        {window.location.host}/p/{product.slug || product.id}
                       </div>
                     </div>
                   </Link>

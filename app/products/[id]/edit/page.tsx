@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Save, ChevronRight } from "lucide-react"
+import { Editor } from "@tinymce/tinymce-react"
 
 export default function ProductEditPage({ params }: { params: { id: string } }) {
   const [product, setProduct] = useState<any>(null)
@@ -59,6 +60,13 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     setFormData({
       ...formData,
       [name]: value
+    })
+  }
+  
+  const handleDescriptionChange = (content: string) => {
+    setFormData({
+      ...formData,
+      description: content
     })
   }
 
@@ -196,13 +204,26 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                   
                   <div>
                     <label className="block mb-2 font-medium">Description</label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows={4}
-                      className="w-full p-3 border rounded-md"
+                    <Editor
+                      apiKey="no-api-key"
+                      initialValue={formData.description}
+                      init={{
+                        height: 300,
+                        menubar: false,
+                        plugins: [
+                          'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                          'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                          'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                        ],
+                        toolbar: 'undo redo | blocks | ' +
+                          'bold italic forecolor | alignleft aligncenter ' +
+                          'alignright alignjustify | bullist numlist outdent indent | ' +
+                          'removeformat | help',
+                        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                      }}
+                      onEditorChange={handleDescriptionChange}
                     />
+                    <p className="text-xs text-gray-500 mt-1">Use the rich text editor to format your product description</p>
                   </div>
                   
                   <div>

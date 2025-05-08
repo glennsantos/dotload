@@ -53,6 +53,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     fetchProduct()
   }, [params.slug])
 
+  // Function to validate mobile number format
+  const validateMobileNumber = (number: string): boolean => {
+    // Basic mobile number validation - should be numeric and at least 10 digits
+    // This can be adjusted based on specific country requirements
+    const mobileRegex = /^[0-9]{10,15}$/;
+    return mobileRegex.test(number.replace(/[\s-()]/g, ''));
+  }
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -62,9 +70,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       return
     }
     
-    // Mobile number validation for e-wallet payments
-    if (paymentMethod.startsWith('ewallet') && !mobileNumber) {
-      setPaymentError("Mobile number is required for e-wallet payments")
+    // Mobile number validation for all payments
+    if (!mobileNumber) {
+      setPaymentError("Mobile number is required")
+      return
+    }
+    
+    // Validate mobile number format
+    if (!validateMobileNumber(mobileNumber)) {
+      setPaymentError("Please enter a valid mobile number (10-15 digits)")
       return
     }
     

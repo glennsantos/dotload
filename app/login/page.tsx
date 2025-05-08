@@ -52,6 +52,10 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Dispatch auth:login event to update UI components
+        window.dispatchEvent(new CustomEvent('auth:login', {
+          detail: { user: data.user }
+        }));
         // Redirect to callback URL or dashboard on successful login
         router.push(decodeURI(callbackUrl));
       } else if (response.status === 403 && data.requiresVerification) {

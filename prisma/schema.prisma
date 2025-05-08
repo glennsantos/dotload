@@ -14,6 +14,7 @@ model User {
   password               String
   name                   String?
   products               Product[]
+  payouts                Payout[]
   
   // Email verification fields
   emailVerified          Boolean  @default(false)
@@ -88,6 +89,21 @@ model Purchase {
   
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+}
+
+model Payout {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  amount            Float
+  status            String   // pending, completed, failed
+  externalId        String   @unique
+  disbursementId    String?  @unique
+  bankCode          String
+  accountNumber     String
+  accountHolderName String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model PasswordReset {

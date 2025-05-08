@@ -3,7 +3,12 @@
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Eye, EyeOff } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -12,7 +17,8 @@ export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState({ type: "", text: "" })
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -26,22 +32,23 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Reset message
-    setMessage({ type: "", text: "" })
+    // Reset messages
+    setError(null)
+    setSuccess(null)
     
     // Validate passwords
     if (newPassword !== confirmPassword) {
-      setMessage({ type: "error", text: "Passwords don't match" })
+      setError("Passwords don't match")
       return
     }
     
     if (newPassword.length < 8) {
-      setMessage({ type: "error", text: "Password must be at least 8 characters" })
+      setError("Password must be at least 8 characters")
       return
     }
     
     if (!token) {
-      setMessage({ type: "error", text: "Reset token is missing" })
+      setError("Reset token is missing")
       return
     }
     
@@ -62,10 +69,7 @@ export default function ResetPasswordPage() {
       const data = await response.json()
       
       if (response.ok) {
-        setMessage({ 
-          type: "success", 
-          text: "Your password has been reset successfully. You can now login with your new password." 
-        })
+        setSuccess("Your password has been reset successfully. You can now login with your new password.")
         setNewPassword("")
         setConfirmPassword("")
         
@@ -74,63 +78,54 @@ export default function ResetPasswordPage() {
           router.push('/login')
         }, 3000)
       } else {
-        setMessage({ 
-          type: "error", 
-          text: data.message || "Failed to reset password. The token may be invalid or expired." 
-        })
+        setError(data.message || "Failed to reset password. The token may be invalid or expired.")
       }
     } catch (error) {
-      setMessage({ 
-        type: "error", 
-        text: "An error occurred. Please try again later." 
-      })
+      setError("An error occurred. Please try again later.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Reset your password
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Reset Password</CardTitle>
+          <CardDescription>
             Enter your new password below
-          </p>
-        </div>
-
-        {message.text && (
-          <div 
-            className={`p-4 rounded-md ${
-              message.type === "error" 
-                ? "bg-red-50 text-red-700 border border-red-200" 
-                : "bg-green-50 text-green-700 border border-green-200"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <input type="hidden" name="token" value={token} />
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="mb-4">
-              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-1">
-                New Password
-              </label>
+          {success && (
+            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertTitle>Success</AlertTitle>
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          )}
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input type="hidden" name="token" value={token} />
+            
+            <div>
+              <Label htmlFor="new-password">New Password</Label>
               <div className="relative">
-                <input
+                <Input
                   id="new-password"
-                  name="newPassword"
                   type={showPassword ? "text" : "password"}
-                  required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="New password"
+                  placeholder="Enter your new password"
+                  required
                   minLength={8}
                 />
                 <button
@@ -143,20 +138,16 @@ export default function ResetPasswordPage() {
               </div>
             </div>
             
-            <div className="mb-4">
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm New Password
-              </label>
+            <div>
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
               <div className="relative">
-                <input
+                <Input
                   id="confirm-password"
-                  name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Confirm new password"
+                  placeholder="Confirm your new password"
+                  required
                 />
                 <button
                   type="button"
@@ -167,29 +158,20 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
             </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
+            
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Resetting..." : "Reset Password"}
-            </button>
-          </div>
-
-          <div className="flex items-center justify-center">
-            <Link 
-              href="/login" 
-              className="flex items-center text-sm text-blue-600 hover:text-blue-500"
-            >
-              <ArrowLeft size={16} className="mr-1" />
-              Back to login
-            </Link>
-          </div>
-        </form>
-      </div>
+            </Button>
+            
+            <div className="text-center mt-4 text-sm">
+              <Link href="/login" className="text-blue-600 hover:underline flex items-center justify-center">
+                <ArrowLeft size={16} className="mr-1" />
+                Back to login
+              </Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

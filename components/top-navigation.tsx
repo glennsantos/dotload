@@ -2,9 +2,16 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, Search, Bell, User, LogOut, Settings } from "lucide-react"
+import { Menu, X, Search, Bell, User, LogOut, Settings, ShoppingBag } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+// Create a custom event for auth state changes
+declare global {
+  interface WindowEventMap {
+    'auth:login': CustomEvent<{user: any}>
+    'auth:logout': CustomEvent
+  }
+}
 
 
 interface TopNavigationProps {
@@ -21,6 +28,7 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [user, setUser] = useState(initialUser)
   const [isLoading, setIsLoading] = useState(true)
+  const [hasPurchases, setHasPurchases] = useState(false)
   const router = useRouter()
   const userMenuRef = useRef<HTMLDivElement>(null)
   
@@ -56,6 +64,11 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
           const data = await response.json();
           console.log('Client-side auth check successful:', data.user);
           setUser(data.user);
+          
+          // Check if user has purchases for buyer dashboard link
+          if (data.user?.id) {
+            checkUserPurchases(data.user.id);
+          }
         } else {
           const errorText = await response.text();
           console.log('Client-side auth check failed:', errorText);
@@ -74,7 +87,43 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
     };
 
     checkAuth();
+    
+    // Add event listeners for auth state changes
+    const handleLogin = (event: CustomEvent<{user: any}>) => {
+      console.log('Auth:login event received', event.detail.user);
+      setUser(event.detail.user);
+      if (event.detail.user?.id) {
+        checkUserPurchases(event.detail.user.id);
+      }
+    };
+    
+    const handleLogout = () => {
+      console.log('Auth:logout event received');
+      setUser(null);
+      setHasPurchases(false);
+    };
+    
+    window.addEventListener('auth:login', handleLogin as EventListener);
+    window.addEventListener('auth:logout', handleLogout);
+    
+    return () => {
+      window.removeEventListener('auth:login', handleLogin as EventListener);
+      window.removeEventListener('auth:logout', handleLogout);
+    };
   }, [initialUser]);
+  
+  // Check if user has purchases
+  const checkUserPurchases = async (userId: string) => {
+    try {
+      const response = await fetch('/api/purchases/user');
+      if (response.ok) {
+        const data = await response.json();
+        setHasPurchases(data.purchases && data.purchases.length > 0);
+      }
+    } catch (error) {
+      console.error('Error checking user purchases:', error);
+    }
+  };
   
   // Log user state changes
   useEffect(() => {
@@ -106,6 +155,11 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
       })
 
       if (response.ok) {
+        // Update user state immediately instead of redirecting
+        setUser(null)
+        // Dispatch logout event
+        window.dispatchEvent(new CustomEvent('auth:logout'))
+        // Still redirect to login page
         router.push('/login')
       } else {
         console.error('Logout failed')
@@ -156,6 +210,24 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                     <p className="font-medium">{user.name || 'User'}</p>
                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
                   </div>
+                  <Link 
+                    href="/dashboard" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <User size={16} className="mr-2" />
+                    Dashboard
+                  </Link>
+                  {hasPurchases && (
+                    <Link 
+                      href="/buyer-dashboard" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <ShoppingBag size={16} className="mr-2" />
+                      My Purchases
+                    </Link>
+                  )}
                   <Link 
                     href="/settings" 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
