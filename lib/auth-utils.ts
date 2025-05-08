@@ -15,7 +15,10 @@ export interface AuthUser {
  */
 export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
-    const token = cookies().get('token')?.value;
+    // Get the token from cookies
+    const cookieStore = await cookies();
+    const tokenCookie = cookieStore.get('token');
+    const token = tokenCookie?.value;
     
     if (!token) {
       return null;
@@ -43,9 +46,12 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 /**
  * Get just the user ID from the JWT token in cookies
  */
-export function getAuthUserId(): string | null {
+export async function getAuthUserId(): Promise<string | null> {
   try {
-    const token = cookies().get('token')?.value;
+    // Get the token from cookies
+    const cookieStore = await cookies();
+    const tokenCookie = cookieStore.get('token');
+    const token = tokenCookie?.value;
     
     if (!token) {
       return null;

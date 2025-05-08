@@ -70,8 +70,7 @@ async function processFiles(formData: FormData, userId: string, productId: strin
       processedFiles.push({
         filename: file.name,
         path: result.secure_url,
-        mimetype: file.type,
-        size: file.size
+        mimetype: file.type
       });
     } catch (error) {
       console.error('Content file upload error:', error);
@@ -85,8 +84,7 @@ async function processFiles(formData: FormData, userId: string, productId: strin
       processedFiles.push({
         filename: file.name,
         path: `uploads/${filename}`,
-        mimetype: file.type,
-        size: file.size
+        mimetype: file.type
       });
     }
   }
@@ -99,7 +97,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     
     // Get the current authenticated user's ID
-    const userId = getAuthUserId();
+    const userId = await getAuthUserId();
     
     // If no authenticated user, return error
     if (!userId) {
@@ -212,7 +210,7 @@ export async function POST(request: NextRequest) {
         price: parsedPrice,
         currency: 'PHP', // Set default currency to Philippine Pesos
         description,
-        slug,
+        ...(slug ? { slug } : {}),
         coverImagePath,
         userId, // Use the found or created user ID
         ...paymentOptions,
@@ -227,8 +225,7 @@ export async function POST(request: NextRequest) {
             ...contentLinks.map((link: string) => ({
               filename: link.split('/').pop() || 'external-link',
               path: link,
-              mimetype: 'text/url',
-              size: 0
+              mimetype: 'text/url'
             }))
           ]
         }
@@ -257,7 +254,7 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     // Get the current authenticated user's ID
-    const userId = getAuthUserId();
+    const userId = await getAuthUserId();
     
     // If no authenticated user, return error
     if (!userId) {
