@@ -127,7 +127,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
             </p>
             
             <Link 
-              href={`/p/${purchase?.product?.slug || params.slug}/content?code=${accessCode}`}
+              href={`/buyer-dashboard?code=${accessCode}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition-colors"
             >
               <Download size={20} />
