@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import Xendit from 'xendit-node';
 import { getPurchaseById, updatePurchaseStatus } from '@/lib/purchase-utils';
+import { sendPurchaseConfirmationEmail } from '@/lib/email';
 
-// Initialize Xendit with API key from environment variables
-const xenditClient = new Xendit({
-  secretKey: process.env.XENDIT_SECRET_KEY || '',
-});
+// Xendit API base URL
+const XENDIT_API_URL = 'https://api.xendit.co';
 
 export async function POST(request: NextRequest) {
   console.log('[Xendit Payment] Starting payment process');
@@ -87,12 +84,10 @@ export async function POST(request: NextRequest) {
                            walletType === 'OVO' ? 'OVO' :
                            walletType === 'LINKAJA' ? 'LINKAJA' : 'GCASH';
 
-        // Create a payment request using the new Xendit API
-        // Using Xendit SDK with proper type handling
+        // Create a payment request using direct Xendit API call
         console.log(`[Xendit Payment] Creating payment request with Xendit API`);
-        // @ts-ignore - Ignore TypeScript errors for Xendit SDK
-        const paymentRequest = await xenditClient.PaymentRequest.createPaymentRequest({
-          // Using snake_case as required by Xendit API
+        
+        const paymentRequestBody = {
           reference_id: `purchase_${purchase.id}`,
           amount,
           currency,
@@ -113,7 +108,25 @@ export async function POST(request: NextRequest) {
             product_id: purchase.productId,
             purchase_id: purchase.id
           }
+        };
+        
+        const response = await fetch(`${XENDIT_API_URL}/payment_requests`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${Buffer.from(process.env.XENDIT_SECRET_KEY + ':').toString('base64')}`,
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(paymentRequestBody)
         });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`[Xendit Payment] API error:`, errorData);
+          throw new Error(`Xendit API error: ${response.status} ${response.statusText}`);
+        }
+        
+        const paymentRequest = await response.json();
         
         // Update purchase with payment ID
         console.log(`[Xendit Payment] Updating purchase status to pending with payment ID: ${paymentRequest.id}`);
@@ -125,11 +138,11 @@ export async function POST(request: NextRequest) {
         if (paymentRequest.actions && paymentRequest.actions.length > 0) {
           // Find the appropriate action URL - prefer mobile if available
           const mobileAction = paymentRequest.actions.find(action => 
-            action.urlType === 'MOBILE'
+            action.url_type === 'MOBILE'
           );
           
           const webAction = paymentRequest.actions.find(action => 
-            action.urlType === 'WEB'
+            action.url_type === 'WEB'
           );
           
           redirectUrl = (mobileAction || webAction)?.url || '';
@@ -141,6 +154,26 @@ export async function POST(request: NextRequest) {
         }
         
         console.log(`[Xendit Payment] Payment request successful, redirecting to: ${redirectUrl}`);
+        
+        // Send purchase confirmation email immediately
+        try {
+          const productSlug = purchase.product.slug || purchase.product.id;
+          
+          await sendPurchaseConfirmationEmail(
+            purchase.email,
+            purchase.product.name,
+            purchase.accessCode,
+            productSlug,
+            purchase.amount,
+            purchase.currency
+          );
+          
+          console.log(`[Xendit Payment] Purchase confirmation email sent to ${purchase.email}`);
+        } catch (emailError) {
+          console.error('[Xendit Payment] Error sending purchase confirmation email:', emailError);
+          // Continue processing even if email fails
+        }
+        
         return NextResponse.json({
           success: true,
           accessCode: purchase.accessCode,

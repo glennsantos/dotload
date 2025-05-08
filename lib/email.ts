@@ -98,6 +98,58 @@ export async function sendPasswordResetEmail(
   return transporter.sendMail(mailOptions);
 }
 
+// Send purchase confirmation email with product content link
+export async function sendPurchaseConfirmationEmail(
+  to: string,
+  productName: string,
+  accessCode: string,
+  productSlug: string,
+  amount: number,
+  currency: string,
+  name?: string | null
+) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const contentUrl = `${baseUrl}/p/${productSlug}/content?code=${accessCode}`;
+
+  const mailOptions = {
+    from: fromEmail,
+    to,
+    subject: `Your alaCarte Purchase: ${productName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Thank You for Your Purchase!</h2>
+        <p>Hello${name ? ` ${name}` : ''},</p>
+        <p>Thank you for purchasing <strong>${productName}</strong>. Your payment of <strong>${currency} ${amount.toFixed(2)}</strong> has been successfully processed.</p>
+        
+        <div style="margin: 30px 0;">
+          <p><strong>Access Your Content</strong></p>
+          <a href="${contentUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            Access Your Purchase
+          </a>
+        </div>
+        
+        <p>Or copy and paste this link in your browser:</p>
+        <p style="word-break: break-all; color: #666;">${contentUrl}</p>
+        
+        <p style="margin-top: 30px; color: #666; font-size: 14px;">Keep this email for your records. The link above provides permanent access to your purchased content.</p>
+      </div>
+    `,
+    text: `
+      Thank You for Your Purchase!
+      
+      Hello${name ? ` ${name}` : ''},
+      
+      Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} has been successfully processed.
+      
+      Access Your Content: ${contentUrl}
+      
+      Keep this email for your records. The link above provides permanent access to your purchased content.
+    `,
+  };
+
+  return transporter.sendMail(mailOptions);
+}
+
 // Test the email configuration
 export async function testEmailConfig() {
   try {

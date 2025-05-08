@@ -46,11 +46,10 @@ export async function POST(request: NextRequest) {
       // Get the full purchase details including the product
       const purchaseWithProduct = await getPurchaseById(purchaseId);
       
-      // Send email notification with product access link (implement this later)
-      if (purchaseWithProduct && purchaseWithProduct.email) {
-        // TODO: Send email with access link
-        console.log(`Should send email to ${purchaseWithProduct.email} with access code ${purchaseWithProduct.accessCode}`);
-      }
+      // Email is now sent when payment is created, not in webhook
+      console.log(`Payment for purchase ${purchaseId} completed successfully`);
+      
+      // If needed, additional post-payment processing can be done here
       
       return NextResponse.json({ success: true });
     } else if (event === 'payment.failed') {

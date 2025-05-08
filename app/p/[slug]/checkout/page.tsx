@@ -212,35 +212,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 />
               </div>
               
-              {/* Mobile number field - show for e-wallet payments */}
-              {paymentMethod.startsWith('ewallet') && (
-                <div className="mb-6">
-                  <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
-                  <div className="relative">
-                    <input
-                      type="tel"
-                      id="mobileNumber"
-                      className="w-full px-4 py-2 pl-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                      placeholder="9XX XXX XXXX"
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
-                    />
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="text-gray-500">+63</span>
-                    </div>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500">Enter your mobile number registered with {paymentMethod.includes('gcash') ? 'GCash' : 
-                    paymentMethod.includes('grabpay') ? 'GrabPay' : 
-                    paymentMethod.includes('shopeepay') ? 'ShopeePay' : 
-                    paymentMethod.includes('paymaya') ? 'Maya' : 'your e-wallet'}</p>
-                </div>
-              )}
-              
               <h2 className="text-lg font-medium text-gray-900 mb-4">Payment Method</h2>
               
               {/* Payment method selection */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select a payment option</label>
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <button
                     type="button"
@@ -288,10 +264,38 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                     <Wallet className="h-6 w-6 mb-2" />
                     <span className="text-sm">Maya</span>
                   </button>
-                  
-
                 </div>
               </div>
+              
+              {/* Mobile number field - show for e-wallet payments */}
+              {paymentMethod.startsWith('ewallet') && (
+                <div className="mb-6">
+                  <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      id="mobileNumber"
+                      className="w-full px-4 py-2 pl-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="9XX XXX XXXX"
+                      value={mobileNumber}
+                      onChange={(e) => setMobileNumber(e.target.value)}
+                      required={paymentMethod.startsWith('ewallet')}
+                    />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <span className="text-gray-500">+63</span>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-sm text-gray-500">Enter your mobile number registered with {paymentMethod.includes('gcash') ? 'GCash' : 
+                    paymentMethod.includes('grabpay') ? 'GrabPay' : 
+                    paymentMethod.includes('shopeepay') ? 'ShopeePay' : 
+                    paymentMethod.includes('paymaya') ? 'Maya' : 'your e-wallet'}</p>
+                </div>
+              )}
+              
+              {/* Card payment details heading */}
+              {paymentMethod === "card" && (
+                <h2 className="text-lg font-medium text-gray-900 mb-4">Card Details</h2>
+              )}
               
               {/* Card payment form */}
               {paymentMethod === "card" && (
