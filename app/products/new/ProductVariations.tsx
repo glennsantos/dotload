@@ -89,13 +89,13 @@ export default function ProductVariations({
         <div className="mb-6">
           <h2 className="text-2xl font-medium mb-4">Product Variations</h2>
           <p className="text-gray-600 mb-6">
-            Add variations like size, color, or format to give customers more options.
+            Add variations like size, color, or format to give customers more options. (Optional)
           </p>
 
           {variations.length === 0 ? (
             <div className="text-center p-8 border-2 border-dashed rounded-md">
-              <h3 className="font-medium mb-2">No variations added yet</h3>
-              <p className="text-gray-600 mb-4">Add variations like size, color, or format</p>
+              <h3 className="font-medium mb-2">No variations added yet (Optional)</h3>
+              <p className="text-gray-600 mb-4">Add variations like size, color, or format if needed</p>
               <button onClick={addVariation} className="px-4 py-2 bg-black text-white rounded-md">
                 Add Variation
               </button>

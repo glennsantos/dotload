@@ -43,6 +43,69 @@ export default function NewProduct() {
     setProductData({ ...productData, price: e.target.value })
   }
 
+  const handleSubmit = async () => {
+    try {
+      console.log('Submitting product data:', productData);
+      
+      // Prepare form data
+      const formData = new FormData();
+      
+      // Add basic product details
+      formData.append('name', productData.name);
+      formData.append('type', productData.type);
+      formData.append('price', productData.price);
+      formData.append('description', productData.description || '');
+      
+      // Add variations if exist - convert to string first to avoid parsing issues
+      const variationsString = JSON.stringify(productData.variations || []);
+      console.log('Variations string:', variationsString);
+      formData.append('variations', variationsString);
+      
+      // Add payment options - convert to string first
+      const paymentOptionsString = JSON.stringify(productData.paymentOptions || {});
+      console.log('Payment options string:', paymentOptionsString);
+      formData.append('paymentOptions', paymentOptionsString);
+      
+      // Add cover image
+      if (productData.coverImage) {
+        formData.append('coverImage', productData.coverImage);
+      }
+      
+      // Add files
+      productData.files.forEach((file, index) => {
+        formData.append('files', file);
+      });
+
+      // Log form data for debugging
+      console.log('Form data entries:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      // Submit to backend using Next.js API route
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to create product');
+      }
+
+      const result = await response.json();
+      console.log('Product created:', result);
+      router.push('/products');
+    } catch (error: unknown) {
+      console.error('Product submission error:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('An unknown error occurred');
+      }
+    }
+  };
+
   const handleNext = () => {
     if (step === 1 && (!productData.name || !productData.type)) {
       alert("Please fill in all required fields")
@@ -53,8 +116,7 @@ export default function NewProduct() {
       setStep(step + 1)
     } else {
       // Submit the form
-      console.log("Product data:", productData)
-      router.push("/products")
+      handleSubmit()
     }
   }
 

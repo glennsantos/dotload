@@ -3,6 +3,8 @@ import * as bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import { sendVerificationEmail } from '@/lib/email';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
@@ -62,12 +64,19 @@ export async function POST(req: NextRequest) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    
+    // Create user with verification token
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        name: name || null  // Allow optional name
+        name: name || null,  // Allow optional name
+        emailVerified: false,
+        verificationToken,
+        verificationTokenExpiry
       },
       select: {
         id: true,
@@ -75,19 +84,21 @@ export async function POST(req: NextRequest) {
         name: true
       }
     });
+    
+    // Send verification email
+    await sendVerificationEmail(email, verificationToken, name);
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email }, 
-      JWT_SECRET, 
-      { expiresIn: '24h' }
-    );
-
-    return NextResponse.json({
-      message: 'User registered successfully',
+    // Create a response with verification message
+    const response = NextResponse.json({
+      message: 'User registered successfully. Please check your email to verify your account.',
       user,
-      token
+      requiresVerification: true
     }, { status: 201 });
+    
+    // We don't set the authentication cookie until the email is verified
+    // This ensures users verify their email before accessing protected routes
+
+    return response;
   } catch (error) {
     console.error('Registration error:', error);
     

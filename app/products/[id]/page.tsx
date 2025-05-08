@@ -72,6 +72,15 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           >
             Settings
           </button>
+          <Link href={`/products/${params.id}/content`} className="px-6 py-3 hover:text-black text-gray-600">
+            Content
+          </Link>
+          <Link href={`/products/${params.id}/checkout`} className="px-6 py-3 hover:text-black text-gray-600">
+            Checkout
+          </Link>
+          <Link href={`/products/${params.id}/share`} className="px-6 py-3 hover:text-black text-gray-600">
+            Share
+          </Link>
         </div>
       </div>
 

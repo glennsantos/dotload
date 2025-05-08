@@ -2,10 +2,46 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Search, Bell, User } from "lucide-react"
+import { Menu, X, Search, Bell, User, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-export default function TopNavigation() {
+
+
+interface TopNavigationProps {
+  user?: {
+    id?: string;
+    name?: string | null;
+    email?: string;
+  } | null;
+}
+
+export default function TopNavigation({ user }: TopNavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const router = useRouter()
+  
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        router.push('/login')
+      } else {
+        console.error('Logout failed')
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setIsLoggingOut(false)
+      setMobileMenuOpen(false)
+    }
+  }
 
   return (
     <header className="bg-black text-white">
@@ -37,9 +73,15 @@ export default function TopNavigation() {
           <button className="hover:text-gray-300">
             <Bell size={20} />
           </button>
-          <button className="hover:text-gray-300">
-            <User size={20} />
-          </button>
+          {user ? (
+            <Link href="/settings" className="hover:text-gray-300">
+              <User size={20} />
+            </Link>
+          ) : (
+            <Link href="/login" className="hover:text-gray-300">
+              <User size={20} />
+            </Link>
+          )}
           <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -67,6 +109,16 @@ export default function TopNavigation() {
           <Link href="/help" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
             Help
           </Link>
+          {user && (
+            <button 
+              className="flex items-center w-full py-2 text-red-400 hover:text-red-300"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              <LogOut size={18} className="mr-2" />
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
+            </button>
+          )}
         </nav>
       )}
     </header>
