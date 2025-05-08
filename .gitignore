@@ -25,14 +25,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-references/auth/Gumroad Web 6.png
-references/auth/Gumroad Web 335.png
-references/auth/Gumroad Web 336.png
-references/onboarding/Gumroad Web 1.png
-references/onboarding/Gumroad Web 2.png
-references/onboarding/Gumroad Web 3.png
-references/onboarding/Gumroad Web 4.png
-references/onboarding/Gumroad Web 5.png
-references/onboarding/Gumroad Web 6.png
-references/onboarding/Gumroad Web 7.png
-references/onboarding/Gumroad Web 8.png
+
+# references
+references/
