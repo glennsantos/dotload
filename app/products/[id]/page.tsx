@@ -116,7 +116,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             className={`px-6 py-3 ${activeTab === "checkout" ? "border-b-2 border-black" : ""}`}
             onClick={() => setActiveTab("checkout")}
           >
-            Checkout
+            Pricing
           </button>
           <button
             className={`px-6 py-3 ${activeTab === "share" ? "border-b-2 border-black" : ""}`}
