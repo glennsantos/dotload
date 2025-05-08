@@ -48,6 +48,7 @@ model Product {
   // Optional Relations
   files                  File[]
   variations             Variation[]
+  purchases              Purchase[]
 }
 
 model File {
@@ -65,4 +66,23 @@ model Variation {
   options                String
   productId              String
   product                Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Purchase {
+  id                     String   @id @default(cuid())
+  email                  String
+  mobileNumber           String
+  amount                 Float
+  currency               String   @default("PHP")
+  paymentMethod          String   // card, gcash, grabpay, etc.
+  paymentId              String?  // Payment ID from Xendit
+  status                 String   // pending, completed, failed
+  accessCode             String   @unique // Unique code for accessing the product
+  
+  // Relation to Product
+  product                Product  @relation(fields: [productId], references: [id])
+  productId              String
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }

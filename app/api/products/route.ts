@@ -6,6 +6,7 @@ import { join } from 'path';
 import { mkdir } from 'fs/promises';
 import { cwd } from 'process';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { generateUniqueSlug } from '@/lib/slug-utils';
 
 // Ensure uploads directory exists
 async function ensureUploadsDir() {
@@ -202,6 +203,9 @@ export async function POST(request: NextRequest) {
       // Continue with empty array
     }
     
+    // Generate a unique slug if not provided
+    const productSlug = slug || await generateUniqueSlug(name);
+    
     // Create product in database
     const product = await prisma.product.create({
       data: {
@@ -210,10 +214,12 @@ export async function POST(request: NextRequest) {
         price: parsedPrice,
         currency: 'PHP', // Set default currency to Philippine Pesos
         description,
-        ...(slug ? { slug } : {}),
+        // Add slug if it's supported by the schema
+        ...(productSlug ? { slug: productSlug } : {}),
         coverImagePath,
         userId, // Use the found or created user ID
-        ...paymentOptions,
+        allowPayWhatYouWant: paymentOptions.allowPayWhatYouWant,
+        offerCoupons: paymentOptions.offerCoupons,
         ...(parsedVariations.length > 0 ? { 
           variations: {
             create: parsedVariations
