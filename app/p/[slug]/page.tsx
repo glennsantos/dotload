@@ -72,10 +72,10 @@ export default function PublicProductPage({ params }: ProductPageProps) {
     )
   }
 
-  // Mock ratings data (replace with actual data when available)
-  const ratings = {
-    average: 4.9,
-    count: 11,
+  // Get ratings data from the product if available
+  const ratings = product.ratings || {
+    average: 0,
+    count: 0,
     displayStars: 5
   }
 
@@ -129,23 +129,25 @@ export default function PublicProductPage({ params }: ProductPageProps) {
               {product.description || 'No description available'}
             </div>
             
-            {/* Ratings - Desktop only */}
-            <div className="hidden md:block mb-8">
-              <h3 className="text-xl font-semibold mb-4">Ratings</h3>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      size={20} 
-                      className={i < Math.floor(ratings.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
-                    />
-                  ))}
+            {/* Ratings - Desktop only - Only shown if there are ratings */}
+            {ratings.count > 0 && (
+              <div className="hidden md:block mb-8">
+                <h3 className="text-xl font-semibold mb-4">Ratings</h3>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        size={20} 
+                        className={i < Math.floor(ratings.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
+                      />
+                    ))}
+                  </div>
+                  <span className="font-medium">{ratings.average}</span>
+                  <span className="text-gray-500">({ratings.count} ratings)</span>
                 </div>
-                <span className="font-medium">{ratings.average}</span>
-                <span className="text-gray-500">({ratings.count} ratings)</span>
               </div>
-            </div>
+            )}
           </div>
           
           {/* Right panel - Checkout options */}
@@ -190,58 +192,25 @@ export default function PublicProductPage({ params }: ProductPageProps) {
                   Add to Cart
                 </button>
               </div>
-              
-              {/* Content description */}
-              <div className="border-t border-gray-200 pt-6 mt-6">
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <Info size={18} />
-                  What you'll get
-                </h3>
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>80+ long form videos</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Well over 15 hours of content!</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Life time access!</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Stream from your browser or alaCarte app</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>12 project files (6 of finished patterns / songs and more to follow!)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Sample pack</span>
-                  </li>
-                </ul>
-              </div>
-              
-              {/* Ratings - Mobile only */}
-              <div className="md:hidden mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-medium mb-3">Ratings</h3>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        size={18} 
-                        className={i < Math.floor(ratings.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
-                      />
-                    ))}
+              {/* Ratings - Mobile only - Only shown if there are ratings */}
+              {ratings.count > 0 && (
+                <div className="md:hidden mt-6 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-medium mb-3">Ratings</h3>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          size={18} 
+                          className={i < Math.floor(ratings.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
+                        />
+                      ))}
+                    </div>
+                    <span className="font-medium">{ratings.average}</span>
+                    <span className="text-gray-500">({ratings.count} ratings)</span>
                   </div>
-                  <span className="font-medium">{ratings.average}</span>
-                  <span className="text-gray-500">({ratings.count} ratings)</span>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

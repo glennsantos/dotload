@@ -54,12 +54,6 @@ export default function TopNavigation({ user }: TopNavigationProps) {
             <Link href="/products" className="hover:text-gray-300">
               Products
             </Link>
-            <Link href="/analytics" className="hover:text-gray-300">
-              Analytics
-            </Link>
-            <Link href="/audience" className="hover:text-gray-300">
-              Audience
-            </Link>
           </nav>
         </div>
 
@@ -91,12 +85,7 @@ export default function TopNavigation({ user }: TopNavigationProps) {
           <Link href="/products" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
             Products
           </Link>
-          <Link href="/analytics" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
-            Analytics
-          </Link>
-          <Link href="/audience" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
-            Audience
-          </Link>
+
           <Link href="/settings" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
             Settings
           </Link>
