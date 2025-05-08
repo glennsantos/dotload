@@ -102,37 +102,92 @@ export default function ProductsList() {
     )
   }
 
+  // Dashboard cards
+  const dashboardCards = [
+    { title: "Total Revenue", value: "$0", info: true },
+    { title: "Customers", value: "1", info: true },
+    { title: "Active Members", value: "0", info: true },
+    { title: "MRR", value: "$0", info: true },
+  ]
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {products.map((product) => (
-        <Link 
-          href={`/products/${product.id}`} 
-          key={product.id} 
-          className="border rounded-md overflow-hidden hover:shadow-md transition-shadow duration-200"
-        >
-          <div className="relative h-48 w-full bg-gray-100">
-            {product.coverImagePath ? (
-              <Image 
-                src={`/${product.coverImagePath}`} 
-                alt={product.name} 
-                fill 
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full w-full bg-gray-200">
-                <span className="text-gray-400">No image</span>
-              </div>
-            )}
-          </div>
-          <div className="p-4">
-            <h3 className="font-medium text-lg mb-1">{product.name}</h3>
-            <div className="flex justify-between items-center">
-              <span className="font-medium">${product.price.toFixed(2)}</span>
-              <span className="text-sm text-gray-500 capitalize">{product.type}</span>
+    <div className="space-y-8">
+      {/* Dashboard Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {dashboardCards.map((card, index) => (
+          <div key={index} className="border rounded-md p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">{card.title}</span>
+              {card.info && <Info size={16} className="text-gray-400" />}
             </div>
+            <div className="text-3xl font-normal">{card.value}</div>
           </div>
-        </Link>
-      ))}
+        ))}
+      </div>
+
+      {/* Products Header */}
+      <div>
+        <h2 className="text-xl font-normal mb-4">Products</h2>
+      </div>
+
+      {/* Products Table */}
+      <div className="border rounded-md overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b bg-white">
+              <th className="text-left py-3 px-4 font-normal text-sm">Name</th>
+              <th className="text-right py-3 px-4 font-normal text-sm">Sales</th>
+              <th className="text-right py-3 px-4 font-normal text-sm">Revenue</th>
+              <th className="text-right py-3 px-4 font-normal text-sm">Price</th>
+              <th className="text-right py-3 px-4 font-normal text-sm">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.id} className="border-b hover:bg-gray-50">
+                <td className="py-3 px-4">
+                  <Link href={`/products/${product.id}`} className="flex items-center gap-3">
+                    <div className="w-12 h-12 relative overflow-hidden rounded">
+                      {product.coverImagePath ? (
+                        <Image 
+                          src={`/${product.coverImagePath}`} 
+                          alt={product.name} 
+                          fill 
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">No image</span>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-medium">{product.name}</div>
+                      <div className="text-sm text-gray-500">
+                        jensmithgoastravel.alacarte.com/l/{product.id}
+                      </div>
+                    </div>
+                  </Link>
+                </td>
+                <td className="py-3 px-4 text-right">0</td>
+                <td className="py-3 px-4 text-right">$0</td>
+                <td className="py-3 px-4 text-right">${product.price.toFixed(2)}+</td>
+                <td className="py-3 px-4 text-right">
+                  <div className="flex items-center justify-end">
+                    <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                    <span>Published</span>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            <tr className="bg-gray-50">
+              <td colSpan={2} className="py-3 px-4 font-medium">Totals</td>
+              <td className="py-3 px-4 text-right">$0</td>
+              <td colSpan={2}></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
