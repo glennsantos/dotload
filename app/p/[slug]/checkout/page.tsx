@@ -103,16 +103,19 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         throw new Error(data.error || "Payment failed")
       }
       
+      // Use the product's slug if available, otherwise fall back to the URL parameter
+      const slugToUse = product.slug || params.slug
+      
       // Handle different payment methods
       if (paymentMethod === "card") {
         // Card payments are processed directly
-        router.push(`/p/${params.slug}/success?code=${data.accessCode}`)
+        router.push(`/p/${slugToUse}/success?code=${data.accessCode}`)
       } else {
         // E-wallet payments require redirect
         if (data.redirectUrl) {
           window.location.href = data.redirectUrl
         } else {
-          router.push(`/p/${params.slug}/success?code=${data.accessCode}`)
+          router.push(`/p/${slugToUse}/success?code=${data.accessCode}`)
         }
       }
     } catch (err: any) {
@@ -157,7 +160,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               Home
             </Link>
             <ChevronRight size={16} className="mx-2 text-gray-400" />
-            <Link href={`/p/${params.slug}`} className="text-gray-600 hover:text-black">
+            <Link href={`/p/${product.slug || params.slug}`} className="text-gray-600 hover:text-black">
               {product.name}
             </Link>
             <ChevronRight size={16} className="mx-2 text-gray-400" />

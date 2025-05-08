@@ -47,13 +47,10 @@ export default function TopNavigation({ user }: TopNavigationProps) {
     <header className="bg-black text-white">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center">
-          <Link href="/dashboard" className="text-2xl font-bold mr-8">
+          <Link href="/products" className="text-2xl font-bold mr-8">
             alaCarte
           </Link>
           <nav className="hidden md:flex space-x-6">
-            <Link href="/dashboard" className="hover:text-gray-300">
-              Dashboard
-            </Link>
             <Link href="/products" className="hover:text-gray-300">
               Products
             </Link>
@@ -91,9 +88,6 @@ export default function TopNavigation({ user }: TopNavigationProps) {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <nav className="px-4 pt-2 pb-4 space-y-2 md:hidden">
-          <Link href="/dashboard" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
-            Dashboard
-          </Link>
           <Link href="/products" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
             Products
           </Link>

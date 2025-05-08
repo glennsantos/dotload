@@ -89,7 +89,7 @@ export default function FailurePage({ params }: FailurePageProps) {
           
           <div className="mb-8">
             <Link 
-              href={`/p/${params.slug}/checkout`}
+              href={`/p/${product?.slug || params.slug}/checkout`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition-colors"
             >
               Try Again
@@ -102,7 +102,7 @@ export default function FailurePage({ params }: FailurePageProps) {
             </p>
             
             <Link 
-              href={`/p/${params.slug}`}
+              href={`/p/${product?.slug || params.slug}`}
               className="text-black hover:underline"
             >
               Return to Product Page

@@ -42,7 +42,9 @@ export default function PublicProductPage({ params }: ProductPageProps) {
   }, [params.slug])
 
   const handlePurchase = () => {
-    router.push(`/p/${params.slug}/checkout`)
+    // Use the product's slug if available, otherwise fall back to the URL parameter
+    const slugToUse = product.slug || params.slug
+    router.push(`/p/${slugToUse}/checkout`)
   }
 
   if (loading) {

@@ -172,7 +172,7 @@ export default function ContentPage({ params }: ContentPageProps) {
               
               <div className="flex space-x-4">
                 <Link 
-                  href={`/p/${params.slug}`}
+                  href={`/p/${purchase?.product?.slug || params.slug}`}
                   className="text-black hover:underline"
                 >
                   Return to Product Page

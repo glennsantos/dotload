@@ -23,7 +23,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   
   // Get the callback URL if it exists
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = searchParams.get('callbackUrl') || '/products';
   
   // Check for verified=true in URL params (redirected from email verification)
   useEffect(() => {
@@ -106,8 +106,8 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle>Welcome Back</CardTitle>
           <CardDescription>
-            Log in to access your alaCarte dashboard
-            {callbackUrl !== '/dashboard' && (
+            Log in to access your alaCarte products
+            {callbackUrl !== '/products' && (
               <div className="mt-2 text-xs flex items-center text-muted-foreground">
                 <span>You'll be redirected to: </span>
                 <span className="ml-1 font-medium truncate">{decodeURI(callbackUrl)}</span>

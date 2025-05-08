@@ -25,6 +25,11 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const pathname = request.nextUrl.pathname;
 
+  // Redirect dashboard to products page
+  if (pathname === '/dashboard') {
+    return NextResponse.redirect(new URL('/products', request.url));
+  }
+
   // Check if the route is public
   if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route))) {
     return NextResponse.next();
@@ -33,7 +38,7 @@ export function middleware(request: NextRequest) {
   // If no token, redirect to login with return URL
   if (!token) {
     const url = new URL('/login', request.url);
-    url.searchParams.set('callbackUrl', encodeURI(request.nextUrl.pathname));
+    url.searchParams.set('callbackUrl', encodeURI(pathname === '/dashboard' ? '/products' : pathname));
     return NextResponse.redirect(url);
   }
 
