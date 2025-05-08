@@ -1,5 +1,7 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Plus } from "lucide-react"
+import ProductsList from "./components/ProductsList"
 
 export default function ProductsPage() {
   return (
@@ -11,13 +13,7 @@ export default function ProductsPage() {
         </Link>
       </div>
 
-      <div className="border rounded-md p-8 text-center">
-        <h2 className="text-xl font-medium mb-2">You don't have any products yet</h2>
-        <p className="text-gray-600 mb-6">Create your first product to start selling</p>
-        <Link href="/products/new" className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
-          <Plus size={18} /> Create Product
-        </Link>
-      </div>
+      <ProductsList />
     </div>
   )
 }

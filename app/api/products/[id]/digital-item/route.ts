@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthUserId } from '@/lib/auth-utils';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
@@ -24,7 +25,18 @@ export async function POST(
   try {
     const productId = params.id;
     
-    // Check if product exists
+    // Get the current authenticated user's ID
+    const userId = getAuthUserId();
+    
+    // If no authenticated user, return error
+    if (!userId) {
+      return NextResponse.json({ 
+        error: 'Authentication required',
+        details: 'You must be logged in to upload a digital item'
+      }, { status: 401 });
+    }
+    
+    // Check if product exists and belongs to the current user
     const product = await prisma.product.findUnique({
       where: { id: productId }
     });
@@ -33,6 +45,14 @@ export async function POST(
       return NextResponse.json({ 
         error: 'Product not found' 
       }, { status: 404 });
+    }
+    
+    // Verify that the product belongs to the current user
+    if (product.userId !== userId) {
+      return NextResponse.json({ 
+        error: 'Unauthorized',
+        details: 'You do not have permission to modify this product'
+      }, { status: 403 });
     }
     
     const formData = await request.formData();

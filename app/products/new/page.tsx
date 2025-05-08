@@ -107,8 +107,8 @@ export default function NewProduct() {
   };
 
   const handleNext = () => {
-    if (step === 1 && (!productData.name || !productData.type)) {
-      alert("Please fill in all required fields")
+    if (step === 1 && (!productData.name || !productData.type || !productData.price)) {
+      alert("Please fill in all required fields: name, type, and price")
       return
     }
 

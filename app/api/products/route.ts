@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser, getAuthUserId } from '@/lib/auth-utils';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
@@ -86,6 +87,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
+    // Additional price validation - ensure it's not empty or zero
+    if (parsedPrice === 0) {
+      return NextResponse.json({ 
+        error: 'Invalid price', 
+        details: 'Price must be greater than zero' 
+      }, { status: 400 });
+    }
+    
     // Parse variations
     let parsedVariations: Array<{ name: string; options: string }> = [];
     try {
@@ -130,22 +139,15 @@ export async function POST(request: NextRequest) {
     // Process uploaded files
     const { coverImagePath, processedFiles } = await processFiles(formData);
     
-    // Find an existing user or create a default one
-    let userId;
-    const existingUser = await prisma.user.findFirst();
+    // Get the current authenticated user's ID
+    const userId = getAuthUserId();
     
-    if (existingUser) {
-      userId = existingUser.id;
-    } else {
-      // Create a default user if none exists
-      const defaultUser = await prisma.user.create({
-        data: {
-          email: 'default@alacarte.com',
-          name: 'Default User',
-          password: 'hashed_password_would_go_here' // In a real app, this would be properly hashed
-        }
-      });
-      userId = defaultUser.id;
+    // If no authenticated user, return error
+    if (!userId) {
+      return NextResponse.json({ 
+        error: 'Authentication required',
+        details: 'You must be logged in to create a product'
+      }, { status: 401 });
     }
     
     // Create product in database
@@ -191,7 +193,22 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    // Get the current authenticated user's ID
+    const userId = getAuthUserId();
+    
+    // If no authenticated user, return error
+    if (!userId) {
+      return NextResponse.json({ 
+        error: 'Authentication required',
+        details: 'You must be logged in to view your products'
+      }, { status: 401 });
+    }
+
+    // Find products for the current user
     const products = await prisma.product.findMany({
+      where: {
+        userId: userId
+      },
       include: {
         files: true,
         variations: true
