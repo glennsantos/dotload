@@ -24,10 +24,9 @@ model Product {
   name                   String
   type                   String
   price                  Float
+  currency               String   @default("PHP")
   description            String?
   coverImagePath         String?
-  files                  File[]
-  variations             Variation[]
   
   // Relation to User
   user                   User     @relation(fields: [userId], references: [id])
@@ -36,10 +35,12 @@ model Product {
   // Payment Options
   allowPayWhatYouWant    Boolean  @default(false)
   offerCoupons           Boolean  @default(false)
-  subscriptionBilling    Boolean  @default(false)
-  
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+  
+  // Optional Relations
+  files                  File[]
+  variations             Variation[]
 }
 
 model File {
@@ -55,6 +56,6 @@ model Variation {
   id                     String   @id @default(cuid())
   name                   String
   options                String
-  product                Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId              String
+  product                Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
