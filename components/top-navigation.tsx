@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, Search, Bell, User, LogOut } from "lucide-react"
+import { Menu, X, Search, Bell, User, LogOut, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 
@@ -15,11 +15,86 @@ interface TopNavigationProps {
   } | null;
 }
 
-export default function TopNavigation({ user }: TopNavigationProps) {
+export default function TopNavigation({ user: initialUser }: TopNavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [user, setUser] = useState(initialUser)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const userMenuRef = useRef<HTMLDivElement>(null)
   
+  // Log initial user data from server
+  console.log('Initial user data from server:', initialUser)
+  
+  // Check authentication status on the client side
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        setIsLoading(true);
+        console.log('Checking auth on client side...');
+        
+        // First try to use the initialUser from server-side props
+        if (initialUser) {
+          console.log('Using server-provided user data:', initialUser);
+          setUser(initialUser);
+          setIsLoading(false);
+          return;
+        }
+        
+        // If no server-side user data, make client-side request
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // Include credentials to send cookies
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Client-side auth check successful:', data.user);
+          setUser(data.user);
+        } else {
+          const errorText = await response.text();
+          console.log('Client-side auth check failed:', errorText);
+          // Check if we need to redirect to login
+          if (response.status === 401) {
+            console.log('User is not authenticated, showing login options');
+          }
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [initialUser]);
+  
+  // Log user state changes
+  useEffect(() => {
+    console.log('Current user state:', user);
+  }, [user]);
+
+  // Handle clicks outside the user menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
@@ -40,6 +115,7 @@ export default function TopNavigation({ user }: TopNavigationProps) {
     } finally {
       setIsLoggingOut(false)
       setMobileMenuOpen(false)
+      setUserMenuOpen(false)
     }
   }
 
@@ -65,9 +141,40 @@ export default function TopNavigation({ user }: TopNavigationProps) {
             <Bell size={20} />
           </button>
           {user ? (
-            <Link href="/settings" className="hover:text-gray-300">
-              <User size={20} />
-            </Link>
+            <div className="relative" ref={userMenuRef}>
+              <button 
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center hover:text-gray-300 focus:outline-none"
+              >
+                <User size={20} />
+                <span className="ml-2 hidden md:inline">{user.name || user.email}</span>
+              </button>
+              
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 py-2 bg-white rounded-md shadow-xl z-20">
+                  <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
+                    <p className="font-medium">{user.name || 'User'}</p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                  <Link 
+                    href="/settings" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Settings size={16} className="mr-2" />
+                    Settings
+                  </Link>
+                  <button 
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                  >
+                    <LogOut size={16} className="mr-2" />
+                    {isLoggingOut ? 'Logging out...' : 'Logout'}
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Link href="/login" className="hover:text-gray-300">
               <User size={20} />
@@ -85,22 +192,34 @@ export default function TopNavigation({ user }: TopNavigationProps) {
           <Link href="/products" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
             Products
           </Link>
-
-          <Link href="/settings" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
-            Settings
-          </Link>
-          <Link href="/help" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
-            Help
-          </Link>
-          {user && (
-            <button 
-              className="flex items-center w-full py-2 text-red-400 hover:text-red-300"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-            >
-              <LogOut size={18} className="mr-2" />
-              {isLoggingOut ? 'Logging out...' : 'Logout'}
-            </button>
+          
+          {user ? (
+            <>
+              <Link href="/settings" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+                <span className="flex items-center">
+                  <Settings size={18} className="mr-2" />
+                  Settings
+                </span>
+              </Link>
+              <Link href="/help" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+                Help
+              </Link>
+              <button 
+                className="flex items-center w-full py-2 text-red-400 hover:text-red-300"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+              >
+                <LogOut size={18} className="mr-2" />
+                {isLoggingOut ? 'Logging out...' : 'Logout'}
+              </button>
+            </>
+          ) : (
+            <Link href="/login" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+              <span className="flex items-center">
+                <User size={18} className="mr-2" />
+                Login
+              </span>
+            </Link>
           )}
         </nav>
       )}
