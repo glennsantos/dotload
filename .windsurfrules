@@ -9,15 +9,6 @@ HOME
 AUTH
 1. If not logged in, redirect to login page
 
-CREATE PRODUCT
-1. In product create wizard, change currency to Ph Pesos
-2. in product wizard, remove payment methods
-3. remove subscription billing also
-4. make back button in Product Content consistent with the other back buttons
-5. remove When to publish in publish settings, should automatically publish now
-6. remove visibility, automatically public
-7. in Share Your Product, put the correct url (not alacarte.com, should be the current url)
-8. fix social media sharing buttons
   
 PRODUCT PAGE
 1. Don't put ratings if there are none for the product
@@ -26,3 +17,6 @@ PRODUCT PAGE
 SUCCESS PAGE
 1. The access content button should show the buyer dashboard (attach screen)
 2. If not a user yet, this should also automatically create one for them, asking any missing details
+
+PAYOUT
+1. Add a way for the user to request payout using Xendit. Study docs first

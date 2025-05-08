@@ -41,7 +41,6 @@ export default function NewProduct() {
     paymentOptions: {
       allowPayWhatYouWant: false,
       offerCoupons: false,
-      subscriptionBilling: false,
     },
   })
 
@@ -231,10 +230,8 @@ export default function NewProduct() {
                 <label className="block mb-2 font-medium">Price</label>
                 <div className="flex items-center">
                   <div className="relative">
-                    <select className="h-12 appearance-none bg-white border rounded-l-md px-3 pr-8 focus:outline-none">
-                      <option>$</option>
-                      <option>€</option>
-                      <option>£</option>
+                    <select className="h-12 appearance-none bg-white border rounded-l-md px-3 pr-8 focus:outline-none" disabled>
+                      <option>₱</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -282,34 +279,6 @@ export default function NewProduct() {
                   description="Educational content or tutorials"
                   selected={productData.type === "course"}
                   onClick={() => handleTypeSelect("course")}
-                />
-                <ProductTypeCard
-                  icon="📦"
-                  title="Physical Product"
-                  description="Tangible items that require shipping"
-                  selected={productData.type === "physical_product"}
-                  onClick={() => handleTypeSelect("physical_product")}
-                />
-                <ProductTypeCard
-                  icon="🔄"
-                  title="Subscription"
-                  description="Recurring access to content or services"
-                  selected={productData.type === "subscription"}
-                  onClick={() => handleTypeSelect("subscription")}
-                />
-                <ProductTypeCard
-                  icon="🎟️"
-                  title="Membership"
-                  description="Ongoing access to exclusive content"
-                  selected={productData.type === "membership"}
-                  onClick={() => handleTypeSelect("membership")}
-                />
-                <ProductTypeCard
-                  icon="🎨"
-                  title="Other"
-                  description="Any other type of product"
-                  selected={productData.type === "other"}
-                  onClick={() => handleTypeSelect("other")}
                 />
               </div>
               
@@ -397,13 +366,16 @@ export default function NewProduct() {
                 <div className="flex mb-4">
                   <input
                     type="text"
-                    value={`https://alacarte.com/${createdProduct.slug || createdProduct.id}`}
+                    value={`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`}
                     readOnly
                     className="flex-1 p-3 border rounded-l-md bg-gray-100"
                   />
+                  <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
+                    ₱
+                  </span>
                   <button 
                     onClick={() => {
-                      navigator.clipboard.writeText(`https://alacarte.com/${createdProduct.slug || createdProduct.id}`);
+                      navigator.clipboard.writeText(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`);
                       alert('URL copied to clipboard!');
                     }}
                     className="px-4 py-2 bg-black text-white rounded-r-md"
@@ -417,9 +389,9 @@ export default function NewProduct() {
                 <h3 className="font-medium mb-2">Social Media</h3>
                 <p className="text-sm text-gray-600 mb-4">Share your product on social media</p>
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-md">Twitter</button>
-                  <button className="px-4 py-2 bg-blue-800 text-white rounded-md">Facebook</button>
-                  <button className="px-4 py-2 bg-pink-600 text-white rounded-md">Instagram</button>
+                  <button onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${window.location.origin}/${createdProduct.slug || createdProduct.id}`)}&text=${encodeURIComponent(`Check out ${createdProduct.name}`)}`, '_blank')} className="px-4 py-2 bg-blue-600 text-white rounded-md">Twitter</button>
+                  <button onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} className="px-4 py-2 bg-blue-800 text-white rounded-md">Facebook</button>
+                  <button onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${window.location.origin}/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} className="px-4 py-2 bg-[#0077b5] text-white rounded-md">LinkedIn</button>
                 </div>
               </div>
 
@@ -428,7 +400,7 @@ export default function NewProduct() {
                 <p className="text-sm text-gray-600 mb-4">Add this product to your website</p>
                 <div className="bg-gray-100 p-3 rounded-md">
                   <code className="text-sm">
-                    &lt;iframe src="https://alacarte.com/${createdProduct.slug || createdProduct.id}/embed" frameborder="0"
+                    &lt;iframe src="${window.location.origin}/p/${createdProduct.slug || createdProduct.id}/embed" frameborder="0"
                     width="100%" height="auto" style="min-height: 400px;"&gt;&lt;/iframe&gt;
                   </code>
                 </div>

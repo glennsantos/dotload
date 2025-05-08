@@ -76,7 +76,7 @@ export default function PaymentOptions({
                       <label className="block mb-1 text-sm">Suggested Price</label>
                       <div className="flex">
                         <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
-                          $
+                          ₱
                         </span>
                         <input
                           type="text"
@@ -90,7 +90,7 @@ export default function PaymentOptions({
                       <label className="block mb-1 text-sm">Minimum Price</label>
                       <div className="flex">
                         <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
-                          $
+                          ₱
                         </span>
                         <input
                           type="text"
@@ -109,7 +109,7 @@ export default function PaymentOptions({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">Offer coupons</h3>
-                  <p className="text-sm text-gray-600">Create discount codes for your product</p>
+                  <p className="text-sm text-gray-600">Create discount coupons for your product</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -124,98 +124,11 @@ export default function PaymentOptions({
 
               {productData.paymentOptions?.offerCoupons && (
                 <div className="mt-4 pt-4 border-t">
-                  <button className="px-4 py-2 bg-black text-white rounded-md">Create Coupon</button>
+                  <button className="px-4 py-2 border rounded-md">
+                    Create Coupon
+                  </button>
                 </div>
               )}
-            </div>
-
-            <div className="border rounded-md p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Subscription billing</h3>
-                  <p className="text-sm text-gray-600">Charge customers on a recurring basis</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={productData.paymentOptions?.subscriptionBilling || false}
-                    onChange={() => handleToggleOption("subscriptionBilling")}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                </label>
-              </div>
-
-              {productData.paymentOptions?.subscriptionBilling && (
-                <div className="mt-4 pt-4 border-t">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block mb-1 text-sm">Billing Interval</label>
-                      <select className="w-full p-2 border rounded-md">
-                        <option>Monthly</option>
-                        <option>Quarterly</option>
-                        <option>Yearly</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block mb-1 text-sm">Free Trial (days)</label>
-                      <input type="number" className="w-full p-2 border rounded-md" placeholder="0" min="0" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-2xl font-medium mb-4">Payment Methods</h2>
-
-          <div className="space-y-4">
-            <div className="border rounded-md p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium">Credit Card</h3>
-                <span className="text-green-600 text-sm">Connected</span>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">Accept payments via credit card (enabled by default)</p>
-              <div className="flex gap-2">
-                <div className="bg-gray-100 p-2 rounded">
-                  <span className="font-medium">Visa</span>
-                </div>
-                <div className="bg-gray-100 p-2 rounded">
-                  <span className="font-medium">Mastercard</span>
-                </div>
-                <div className="bg-gray-100 p-2 rounded">
-                  <span className="font-medium">Amex</span>
-                </div>
-                <div className="bg-gray-100 p-2 rounded">
-                  <span className="font-medium">Discover</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="border rounded-md p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium">PayPal</h3>
-                <button className="text-blue-600">Connect</button>
-              </div>
-              <p className="text-sm text-gray-600">Connect your PayPal account to accept payments</p>
-            </div>
-
-            <div className="border rounded-md p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium">Apple Pay</h3>
-                <button className="text-blue-600">Connect</button>
-              </div>
-              <p className="text-sm text-gray-600">Allow customers to pay with Apple Pay</p>
-            </div>
-
-            <div className="border rounded-md p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium">Google Pay</h3>
-                <button className="text-blue-600">Connect</button>
-              </div>
-              <p className="text-sm text-gray-600">Allow customers to pay with Google Pay</p>
             </div>
           </div>
         </div>

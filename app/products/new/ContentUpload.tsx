@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, X, Link as LinkIcon, File, Plus } from "lucide-react"
+import { Upload, X, Link as LinkIcon, File, Plus, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 
 export default function ContentUpload({
@@ -102,7 +102,7 @@ export default function ContentUpload({
         </h1>
         <div className="flex gap-2">
           <button onClick={onBack} className="px-4 py-2 border rounded-md flex items-center gap-2">
-            Back
+            <ChevronLeft size={18} /> Back
           </button>
           <button onClick={onCancel} className="px-4 py-2 border rounded-md flex items-center gap-2">
             <X size={18} /> Cancel

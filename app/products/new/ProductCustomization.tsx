@@ -92,7 +92,7 @@ export default function ProductCustomization({
               <div className="mb-6">
                 <label className="block mb-2 font-medium">Slug</label>
                 <div className="flex items-center">
-                  <span className="text-gray-500 mr-2">alacarte.com/</span>
+                  <span className="text-gray-500 mr-2">{window.location.origin}/p/</span>
                   <input
                     type="text"
                     value={productData.slug || ""}
@@ -173,7 +173,7 @@ export default function ProductCustomization({
                 Preview will be generated after submission
               </div>
               <div className="flex items-center justify-between mb-2">
-                <div className="bg-purple-200 text-sm px-2 py-1 rounded">${productData.price || "2.99"}</div>
+                <div className="bg-purple-200 text-sm px-2 py-1 rounded">₱{productData.price || "2.99"}</div>
                 <div className="text-sm text-gray-500">0 ratings</div>
               </div>
               <div className="bg-yellow-100 text-sm p-2 rounded mb-4">This product is not currently for sale</div>
