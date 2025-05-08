@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { updatePurchaseStatus } from '@/lib/purchase-utils';
+import { updatePurchaseStatus, getPurchaseById } from '@/lib/purchase-utils';
+import { sendPurchaseConfirmationEmail } from '@/lib/email';
 import crypto from 'crypto';
 
 // Verify Xendit webhook signature
@@ -120,6 +121,28 @@ async function handleEWalletPayment(data: any) {
     if (data.status === 'SUCCEEDED') {
       await updatePurchaseStatus(purchaseId, 'completed', data.id);
       console.log(`Purchase ${purchaseId} marked as completed`);
+      
+      // Send purchase confirmation email with content link
+      try {
+        const purchase = await getPurchaseById(purchaseId);
+        if (purchase) {
+          const productSlug = purchase.product.slug || purchase.product.id;
+          
+          await sendPurchaseConfirmationEmail(
+            purchase.email,
+            purchase.product.name,
+            purchase.accessCode,
+            productSlug,
+            purchase.amount,
+            purchase.currency
+          );
+          
+          console.log(`Purchase confirmation email sent to ${purchase.email} for e-wallet payment`);
+        }
+      } catch (emailError) {
+        console.error('Error sending purchase confirmation email:', emailError);
+        // Continue processing even if email fails
+      }
     } else if (data.status === 'FAILED') {
       await updatePurchaseStatus(purchaseId, 'failed', data.id);
       console.log(`Purchase ${purchaseId} marked as failed`);
@@ -150,6 +173,28 @@ async function handleQrCodePayment(data: any) {
     if (data.status === 'COMPLETED') {
       await updatePurchaseStatus(purchaseId, 'completed', data.id);
       console.log(`Purchase ${purchaseId} marked as completed`);
+      
+      // Send purchase confirmation email with content link
+      try {
+        const purchase = await getPurchaseById(purchaseId);
+        if (purchase) {
+          const productSlug = purchase.product.slug || purchase.product.id;
+          
+          await sendPurchaseConfirmationEmail(
+            purchase.email,
+            purchase.product.name,
+            purchase.accessCode,
+            productSlug,
+            purchase.amount,
+            purchase.currency
+          );
+          
+          console.log(`Purchase confirmation email sent to ${purchase.email} for QR code payment`);
+        }
+      } catch (emailError) {
+        console.error('Error sending purchase confirmation email:', emailError);
+        // Continue processing even if email fails
+      }
     } else if (data.status === 'FAILED') {
       await updatePurchaseStatus(purchaseId, 'failed', data.id);
       console.log(`Purchase ${purchaseId} marked as failed`);
@@ -180,6 +225,28 @@ async function handleCardPayment(data: any) {
     if (data.status === 'CAPTURED') {
       await updatePurchaseStatus(purchaseId, 'completed', data.id);
       console.log(`Purchase ${purchaseId} marked as completed`);
+      
+      // Send purchase confirmation email with content link
+      try {
+        const purchase = await getPurchaseById(purchaseId);
+        if (purchase) {
+          const productSlug = purchase.product.slug || purchase.product.id;
+          
+          await sendPurchaseConfirmationEmail(
+            purchase.email,
+            purchase.product.name,
+            purchase.accessCode,
+            productSlug,
+            purchase.amount,
+            purchase.currency
+          );
+          
+          console.log(`Purchase confirmation email sent to ${purchase.email} for card payment`);
+        }
+      } catch (emailError) {
+        console.error('Error sending purchase confirmation email:', emailError);
+        // Continue processing even if email fails
+      }
     } else if (data.status === 'FAILED') {
       await updatePurchaseStatus(purchaseId, 'failed', data.id);
       console.log(`Purchase ${purchaseId} marked as failed`);

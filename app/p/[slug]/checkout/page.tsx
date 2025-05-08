@@ -129,8 +129,31 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           return
         }
       } else if (paymentMethod === "card") {
-        // Handle card payment (to be implemented)
-        // For now, just redirect to success page
+        // Handle card payment with Xendit
+        const paymentResponse = await fetch("/api/payments/xendit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            purchaseId: purchaseData.id,
+            paymentMethod: "card",
+            cardNumber,
+            cardExpiry,
+            cardCvc,
+            cardName,
+            amount: product.price,
+            currency: product.currency || 'PHP',
+          }),
+        })
+        
+        const paymentData = await paymentResponse.json()
+        
+        if (!paymentResponse.ok) {
+          throw new Error(paymentData.error || "Card payment processing failed")
+        }
+        
+        // If payment was successful, redirect to success page
         router.push(`/p/${product.slug || params.slug}/success?code=${purchaseData.accessCode}`)
         return
       }
