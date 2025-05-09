@@ -199,9 +199,6 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
               Purchases
             </Link>
           )}
-          <Link href="/help" className="hover:text-gray-300">
-            Help
-          </Link>
           {user ? (
             <div className="relative" ref={userMenuRef}>
               <button 

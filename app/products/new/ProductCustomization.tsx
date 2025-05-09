@@ -5,7 +5,6 @@ import type React from "react"
 import { useState, useRef } from "react"
 import { X, Upload, ChevronLeft } from "lucide-react"
 import NextImage from "next/image"
-import { Editor } from "@tinymce/tinymce-react"
 
 export default function ProductCustomization({
   productData,
