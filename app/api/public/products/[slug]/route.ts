@@ -39,6 +39,8 @@ export async function GET(
       description: product.description,
       coverImagePath: product.coverImagePath,
       allowPayWhatYouWant: product.allowPayWhatYouWant,
+      offerCoupons: product.offerCoupons,
+      discountCodes: product.discountCodes,
       variations: product.variations.map(variation => ({
         id: variation.id,
         name: variation.name,

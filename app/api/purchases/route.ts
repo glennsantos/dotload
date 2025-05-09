@@ -52,7 +52,11 @@ export async function POST(request: NextRequest) {
       email, 
       mobileNumber,
       amount,
-      currency = 'PHP'
+      currency = 'PHP',
+      paymentMethod = 'pending',
+      discountCode,
+      discountAmount,
+      selectedVariation
     } = body;
     
     if (!productId || !email || !amount) {
@@ -81,7 +85,7 @@ export async function POST(request: NextRequest) {
       mobileNumber,
       amount,
       currency,
-      paymentMethod: 'pending', // Will be updated when payment method is selected
+      paymentMethod, // Use the payment method from the request
     });
     
     return NextResponse.json({

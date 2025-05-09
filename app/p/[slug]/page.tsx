@@ -165,27 +165,6 @@ export default function PublicProductPage({ params }: ProductPageProps) {
                 )}
               </div>
               
-              {/* Product variations/options */}
-              {product.variations && product.variations.length > 0 && (
-                <div className="space-y-6 mb-8">
-                  {product.variations.map((variation: any) => (
-                    <div key={variation.id}>
-                      <h3 className="text-sm font-medium text-gray-900 mb-3">{variation.name}</h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        {JSON.parse(variation.options).map((option: string, index: number) => (
-                          <div 
-                            key={index}
-                            className="border border-gray-300 bg-white rounded-md px-4 py-3 text-sm cursor-pointer hover:border-gray-900 transition-colors"
-                          >
-                            {option}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
               {/* Add to cart button - Desktop */}
               <div className="hidden md:block space-y-4 mb-6">
                 <button

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeft, ChevronRight, CreditCard, Smartphone, QrCode, Wallet } from "lucide-react"
+import { ArrowLeft, ChevronRight, CreditCard, Smartphone, QrCode, Wallet, Tag } from "lucide-react"
 
 interface CheckoutPageProps {
   params: {
@@ -29,6 +29,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [cardName, setCardName] = useState("")
   const [processingPayment, setProcessingPayment] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(errorParam || null)
+  const [discountCode, setDiscountCode] = useState("")
+  const [appliedDiscount, setAppliedDiscount] = useState<any>(null)
+  const [selectedVariation, setSelectedVariation] = useState<string>("") // Store selected variation
 
   useEffect(() => {
     async function fetchProduct() {
@@ -42,6 +45,17 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         
         const productData = await response.json()
         setProduct(productData)
+        
+        // Set default variation if available
+        if (productData.variations && productData.variations.length > 0) {
+          const firstVariation = productData.variations[0]
+          const firstOption = firstVariation.options ? 
+            (typeof firstVariation.options === 'string' ? 
+              JSON.parse(firstVariation.options)[0] : 
+              firstVariation.options[0]) : 
+            ''
+          setSelectedVariation(`${firstVariation.id}:${firstOption}`)
+        }
       } catch (err) {
         console.error('Error fetching product:', err)
         setError('Failed to load product. Please try again later.')
@@ -59,6 +73,75 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     // This can be adjusted based on specific country requirements
     const mobileRegex = /^[0-9]{10,15}$/;
     return mobileRegex.test(number.replace(/[\s-()]/g, ''));
+  }
+  
+  // Function to validate and apply discount code
+  const validateDiscountCode = () => {
+    if (!discountCode || !product) return;
+    
+    // Reset any previously applied discount
+    setAppliedDiscount(null);
+    setPaymentError(null);
+    
+    try {
+      // Parse discount codes from product
+      const discountCodes = product.discountCodes ? 
+        (typeof product.discountCodes === 'string' ? 
+          JSON.parse(product.discountCodes) : 
+          product.discountCodes) : 
+        [];
+
+      console.log(product.discountCodes)
+      
+      // Find matching discount code
+      const matchedDiscount = discountCodes.find(
+        (code: any) => code.code.toLowerCase() === discountCode.toLowerCase()
+      );
+      
+      if (!matchedDiscount) {
+        setPaymentError("Invalid discount code");
+        return;
+      }
+      
+      // Check if discount is within valid date range
+      const currentDate = new Date();
+      const startDate = matchedDiscount.startDate ? new Date(matchedDiscount.startDate) : null;
+      const endDate = matchedDiscount.endDate ? new Date(matchedDiscount.endDate) : null;
+      
+      if ((startDate && currentDate < startDate) || (endDate && currentDate > endDate)) {
+        setPaymentError("Discount code is not valid at this time");
+        return;
+      }
+      
+      // Apply the discount
+      setAppliedDiscount(matchedDiscount);
+    } catch (err) {
+      console.error('Error applying discount code:', err);
+      setPaymentError("Error applying discount code");
+    }
+  }
+  
+  // Calculate the final price after discount
+  const calculateFinalPrice = (): number => {
+    if (!product) return 0;
+    
+    let price = product.price;
+    
+    if (appliedDiscount) {
+      if (appliedDiscount.type === 'percentage') {
+        // Apply percentage discount
+        const discountAmount = (parseFloat(appliedDiscount.amount) / 100) * price;
+        price = price - discountAmount;
+      } else if (appliedDiscount.type === 'fixed') {
+        // Apply fixed amount discount
+        price = price - parseFloat(appliedDiscount.amount);
+      }
+      
+      // Ensure price doesn't go below zero
+      price = Math.max(price, 0);
+    }
+    
+    return price;
   }
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,6 +165,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       return
     }
     
+    // Validate variation selection if product has variations
+    if (product.variations && product.variations.length > 0 && !selectedVariation) {
+      setPaymentError("Please select a product variation")
+      return
+    }
+    
     if (paymentMethod === "card") {
       if (!cardNumber || !cardExpiry || !cardCvc || !cardName) {
         setPaymentError("All card details are required")
@@ -93,6 +182,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setProcessingPayment(true)
       setPaymentError(null)
       
+      // Calculate final price with discount applied
+      const finalPrice = calculateFinalPrice()
+      
       // Create a purchase first
       const purchaseResponse = await fetch("/api/purchases", {
         method: "POST",
@@ -103,8 +195,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           productId: product.id,
           email,
           mobileNumber,
-          amount: product.price,
+          amount: finalPrice,
           currency: product.currency || 'PHP',
+          discountCode: appliedDiscount ? discountCode : null,
+          discountAmount: appliedDiscount ? (product.price - finalPrice) : 0,
+          selectedVariation: selectedVariation || null,
         }),
       })
       
@@ -126,7 +221,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             purchaseId: purchaseData.id,
             paymentMethod,
             mobileNumber,
-            amount: product.price,
+            amount: finalPrice,
             currency: product.currency || 'PHP',
           }),
         })
@@ -134,200 +229,205 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         const paymentData = await paymentResponse.json()
         
         if (!paymentResponse.ok) {
-          throw new Error(paymentData.error || "Payment processing failed")
+          throw new Error(paymentData.error || "Failed to process payment")
         }
         
-        // Redirect to e-wallet payment page
-        if (paymentData.redirectUrl) {
-          window.location.href = paymentData.redirectUrl
-          return
+        // Redirect to e-wallet checkout URL
+        if (paymentData.checkoutUrl) {
+          window.location.href = paymentData.checkoutUrl
         }
-      } else if (paymentMethod === "card") {
-        // Handle card payment with Xendit
-        const paymentResponse = await fetch("/api/payments/xendit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            purchaseId: purchaseData.id,
-            paymentMethod: "card",
-            cardNumber,
-            cardExpiry,
-            cardCvc,
-            cardName,
-            amount: product.price,
-            currency: product.currency || 'PHP',
-          }),
-        })
-        
-        const paymentData = await paymentResponse.json()
-        
-        if (!paymentResponse.ok) {
-          throw new Error(paymentData.error || "Card payment processing failed")
-        }
-        
-        // If payment was successful, redirect to success page
-        router.push(`/p/${product.slug || params.slug}/success?code=${purchaseData.accessCode}`)
-        return
+      } else {
+        // For card payments, redirect to success page
+        router.push(`/p/${params.slug}/success?code=${purchaseData.accessCode}`)
       }
-      
-      // Fallback - redirect to success page
-      router.push(`/p/${product.slug || params.slug}/success?code=${purchaseData.accessCode}`)
-    } catch (err: any) {
-      console.error("Payment error:", err)
-      setPaymentError(err.message || "Payment failed. Please try again.")
-    } finally {
+    } catch (error) {
+      console.error('Payment processing error:', error)
+      setPaymentError(error instanceof Error ? error.message : "Payment processing failed")
       setProcessingPayment(false)
     }
   }
-
+  
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center py-12">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-          <p className="mt-2 text-gray-600">Loading checkout...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
       </div>
     )
   }
-
+  
   if (error || !product) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="border rounded-md p-8 text-center max-w-md mx-auto">
-          <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
-          <p className="text-gray-600 mb-6">{error || 'Product not found'}</p>
-          <Link href="/" className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
-            <ArrowLeft size={18} /> Back to Home
-          </Link>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="text-red-500 text-xl mb-4">{error || "Product not found"}</div>
+        <Link href="/" className="text-blue-600 hover:underline flex items-center">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Return to Home
+        </Link>
       </div>
     )
   }
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center text-sm">
-            <Link href="/" className="text-gray-600 hover:text-black">
-              Home
+          <div className="flex items-center">
+            <Link href={`/p/${params.slug}`} className="text-gray-500 hover:text-gray-700 flex items-center">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to Product
             </Link>
-            <ChevronRight size={16} className="mx-2 text-gray-400" />
-            <Link href={`/p/${product.slug || params.slug}`} className="text-gray-600 hover:text-black">
-              {product.name}
-            </Link>
-            <ChevronRight size={16} className="mx-2 text-gray-400" />
-            <span className="font-medium">Checkout</span>
           </div>
         </div>
       </header>
-
+      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start xl:gap-x-16">
-          {/* Checkout form */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-7">
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+            
             <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-6">Contact Information</h2>
-              
               {/* Email field */}
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email address
-                </label>
+              <div className="mb-6">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   type="email"
                   id="email"
                   name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
-                  placeholder="your.email@example.com"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="your@email.com"
                   required
                 />
+              </div>
+              
+              {/* Mobile number field */}
+              <div className="mb-6">
+                <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <input
+                  type="tel"
+                  id="mobileNumber"
+                  name="mobileNumber"
+                  value={mobileNumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. 09123456789"
+                  required
+                />
+              </div>
+              
+              {/* Product Variations */}
+              {product?.variations && product.variations.length > 0 && (
+                <div className="mb-6">
+                  <label htmlFor="variation" className="block text-sm font-medium text-gray-700 mb-1">Select Variation</label>
+                  <select
+                    id="variation"
+                    name="variation"
+                    value={selectedVariation}
+                    onChange={(e) => setSelectedVariation(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select a variation</option>
+                    {product.variations.map((variation: any) => {
+                      const options = typeof variation.options === 'string' ? 
+                        JSON.parse(variation.options) : variation.options;
+                      
+                      return options.map((option: string, optionIndex: number) => (
+                        <option key={`${variation.id}-${optionIndex}`} value={`${variation.id}:${option}`}>
+                          {variation.name}: {option}
+                        </option>
+                      ));
+                    })}
+                  </select>
+                </div>
+              )}
+              
+              {/* Discount Code field */}
+              <div className="mb-6">
+                <label htmlFor="discountCode" className="block text-sm font-medium text-gray-700 mb-1">Discount Code</label>
+                <div className="flex">
+                  <input
+                    type="text"
+                    id="discountCode"
+                    name="discountCode"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    className="flex-1 p-3 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter discount code"
+                  />
+                  <button
+                    type="button"
+                    onClick={validateDiscountCode}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 rounded-r-md flex items-center"
+                  >
+                    <Tag className="h-4 w-4 mr-1" />
+                    Apply
+                  </button>
+                </div>
+                {appliedDiscount && (
+                  <div className="mt-2 text-sm text-green-600">
+                    Discount applied: {appliedDiscount.type === 'percentage' ? `${appliedDiscount.amount}%` : `${product.currency} ${appliedDiscount.amount}`} off
+                  </div>
+                )}
               </div>
               
               <h2 className="text-lg font-medium text-gray-900 mb-4">Payment Method</h2>
               
               {/* Payment method selection */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select a payment option</label>
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <button
-                    type="button"
-                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "card" ? "border-black bg-gray-50" : "border-gray-300"}`}
-                    onClick={() => setPaymentMethod("card")}
-                  >
-                    <CreditCard className="h-6 w-6 mb-2" />
-                    <span className="text-sm">Card</span>
-                  </button>
-                  
-                  <button
-                    type="button"
-                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "ewallet-gcash" ? "border-black bg-gray-50" : "border-gray-300"}`}
-                    onClick={() => setPaymentMethod("ewallet-gcash")}
-                  >
-                    <Smartphone className="h-6 w-6 mb-2" />
-                    <span className="text-sm">GCash</span>
-                  </button>
-                  
-                  <button
-                    type="button"
-                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "ewallet-grabpay" ? "border-black bg-gray-50" : "border-gray-300"}`}
-                    onClick={() => setPaymentMethod("ewallet-grabpay")}
-                  >
-                    <Wallet className="h-6 w-6 mb-2" />
-                    <span className="text-sm">GrabPay</span>
-                  </button>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div 
+                  className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'card' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+                  onClick={() => setPaymentMethod('card')}
+                >
+                  <div className="flex-shrink-0 mr-3">
+                    <CreditCard className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Credit Card</p>
+                    <p className="text-xs text-gray-500">Pay with Visa, Mastercard</p>
+                  </div>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-4">
-                  <button
-                    type="button"
-                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "ewallet-shopeepay" ? "border-black bg-gray-50" : "border-gray-300"}`}
-                    onClick={() => setPaymentMethod("ewallet-shopeepay")}
-                  >
-                    <Wallet className="h-6 w-6 mb-2" />
-                    <span className="text-sm">ShopeePay</span>
-                  </button>
-                  
-                  <button
-                    type="button"
-                    className={`flex flex-col items-center justify-center p-4 rounded-md border ${paymentMethod === "ewallet-paymaya" ? "border-black bg-gray-50" : "border-gray-300"}`}
-                    onClick={() => setPaymentMethod("ewallet-paymaya")}
-                  >
-                    <Wallet className="h-6 w-6 mb-2" />
-                    <span className="text-sm">Maya</span>
-                  </button>
+                <div 
+                  className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'ewallet_gcash' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+                  onClick={() => setPaymentMethod('ewallet_gcash')}
+                >
+                  <div className="flex-shrink-0 mr-3">
+                    <Smartphone className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">GCash</p>
+                    <p className="text-xs text-gray-500">Pay with GCash</p>
+                  </div>
+                </div>
+                
+                <div 
+                  className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'ewallet_grabpay' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+                  onClick={() => setPaymentMethod('ewallet_grabpay')}
+                >
+                  <div className="flex-shrink-0 mr-3">
+                    <Wallet className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">GrabPay</p>
+                    <p className="text-xs text-gray-500">Pay with GrabPay</p>
+                  </div>
+                </div>
+                
+                <div 
+                  className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'ewallet_paymaya' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+                  onClick={() => setPaymentMethod('ewallet_paymaya')}
+                >
+                  <div className="flex-shrink-0 mr-3">
+                    <QrCode className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Maya</p>
+                    <p className="text-xs text-gray-500">Pay with Maya</p>
+                  </div>
                 </div>
               </div>
-              
-              {/* Mobile number field - show for e-wallet payments */}
-              {paymentMethod.startsWith('ewallet') && (
-                <div className="mb-6">
-                  <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
-                  <div className="relative">
-                    <input
-                      type="tel"
-                      id="mobileNumber"
-                      className="w-full px-4 py-2 pl-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                      placeholder="9XX XXX XXXX"
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
-                      required={paymentMethod.startsWith('ewallet')}
-                    />
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="text-gray-500">+63</span>
-                    </div>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500">Enter your mobile number registered with {paymentMethod.includes('gcash') ? 'GCash' : 
-                    paymentMethod.includes('grabpay') ? 'GrabPay' : 
-                    paymentMethod.includes('shopeepay') ? 'ShopeePay' : 
-                    paymentMethod.includes('paymaya') ? 'Maya' : 'your e-wallet'}</p>
-                </div>
-              )}
               
               {/* Card payment details heading */}
               {paymentMethod === "card" && (
@@ -347,7 +447,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                       name="cardName"
                       value={cardName}
                       onChange={(e) => setCardName(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="John Doe"
                       required
                     />
@@ -362,7 +462,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                       name="cardNumber"
                       value={cardNumber}
                       onChange={(e) => setCardNumber(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="4111 1111 1111 1111"
                       required
                     />
@@ -378,7 +478,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                         name="cardExpiry"
                         value={cardExpiry}
                         onChange={(e) => setCardExpiry(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
+                        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="MM/YY"
                         required
                       />
@@ -393,7 +493,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                         name="cardCvc"
                         value={cardCvc}
                         onChange={(e) => setCardCvc(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
+                        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="123"
                         required
                       />
@@ -407,10 +507,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 <div className="mb-6 p-4 bg-gray-50 rounded-md">
                   <p className="text-sm text-gray-600">
                     You will be redirected to complete your payment with {paymentMethod.includes('gcash') ? "GCash" : 
-                    paymentMethod.includes('grabpay') ? "GrabPay" : 
-                    paymentMethod.includes('shopeepay') ? "ShopeePay" : 
-                    paymentMethod.includes('paymaya') ? "Maya" : 
-                    paymentMethod}.
+                      paymentMethod.includes('grabpay') ? "GrabPay" : 
+                      paymentMethod.includes('shopeepay') ? "ShopeePay" : 
+                      paymentMethod.includes('paymaya') ? "Maya" : 
+                      paymentMethod}.
                   </p>
                 </div>
               )}
@@ -434,14 +534,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                     <span className="ml-2">Processing...</span>
                   </div>
                 ) : (
-                  `Pay ${product.currency} ${product.price.toFixed(2)}`
+                  `Pay ${product.currency} ${calculateFinalPrice().toFixed(2)}`
                 )}
               </button>
             </form>
           </div>
           
           {/* Order summary */}
-          <div className="mt-10 lg:mt-0 lg:col-span-5">
+          <div className="lg:col-span-5">
             <div className="bg-white shadow-sm rounded-lg p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-6">Order Summary</h2>
               
@@ -476,6 +576,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   <p className="text-sm font-medium text-gray-900">{product.currency} {product.price.toFixed(2)}</p>
                 </div>
                 
+                {appliedDiscount && (
+                  <div className="flex justify-between mb-2 text-green-600">
+                    <p className="text-sm">Discount ({appliedDiscount.type === 'percentage' ? `${appliedDiscount.amount}%` : `${product.currency} ${appliedDiscount.amount}`})</p>
+                    <p className="text-sm font-medium">- {product.currency} {(product.price - calculateFinalPrice()).toFixed(2)}</p>
+                  </div>
+                )}
+                
                 <div className="flex justify-between mb-2">
                   <p className="text-sm text-gray-600">Taxes</p>
                   <p className="text-sm font-medium text-gray-900">{product.currency} 0.00</p>
@@ -483,7 +590,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 
                 <div className="flex justify-between pt-4 border-t border-gray-200">
                   <p className="text-base font-medium text-gray-900">Total</p>
-                  <p className="text-base font-medium text-gray-900">{product.currency} {product.price.toFixed(2)}</p>
+                  <p className="text-base font-medium text-gray-900">{product.currency} {calculateFinalPrice().toFixed(2)}</p>
                 </div>
               </div>
             </div>
