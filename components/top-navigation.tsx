@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, Search, Bell, User, LogOut, Settings, ShoppingBag } from "lucide-react"
+import { Menu, X, Search, Bell, User, LogOut, Settings, ShoppingBag, Wallet, BookOpen } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 // Create a custom event for auth state changes
@@ -229,6 +229,28 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                     <Settings size={16} className="mr-2" />
                     Settings
                   </Link>
+                  <Link 
+                    href="/payouts" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => {
+                      console.log('Payouts menu item clicked');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <Wallet size={16} className="mr-2" />
+                    Payouts
+                  </Link>
+                  <Link 
+                    href="/ledger" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => {
+                      console.log('Ledger menu item clicked');
+                      setUserMenuOpen(false);
+                    }}
+                  >
+                    <BookOpen size={16} className="mr-2" />
+                    Ledger
+                  </Link>
                   <button 
                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
                     onClick={handleLogout}
@@ -273,6 +295,24 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                 <span className="flex items-center">
                   <Settings size={18} className="mr-2" />
                   Settings
+                </span>
+              </Link>
+              <Link href="/payouts" className="block py-2 hover:text-gray-300" onClick={() => {
+                console.log('Mobile Payouts menu item clicked');
+                setMobileMenuOpen(false);
+              }}>
+                <span className="flex items-center">
+                  <Wallet size={18} className="mr-2" />
+                  Payouts
+                </span>
+              </Link>
+              <Link href="/ledger" className="block py-2 hover:text-gray-300" onClick={() => {
+                console.log('Mobile Ledger menu item clicked');
+                setMobileMenuOpen(false);
+              }}>
+                <span className="flex items-center">
+                  <BookOpen size={18} className="mr-2" />
+                  Ledger
                 </span>
               </Link>
               <Link href="/help" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
