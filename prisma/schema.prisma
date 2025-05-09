@@ -46,6 +46,12 @@ model Product {
   // Payment Options
   allowPayWhatYouWant    Boolean  @default(false)
   offerCoupons           Boolean  @default(false)
+  discountCodes          String?  // JSON string of discount codes
+  
+  // Visibility and Status
+  isPublic               Boolean  @default(true)
+  status                 String   @default("active") // active, draft, archived
+  
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
   

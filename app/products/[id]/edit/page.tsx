@@ -16,10 +16,21 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     description: "",
     price: "",
     type: "",
+    visibility: "",
+    status: "",
   })
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [discountCodes, setDiscountCodes] = useState<Array<{code: string, amount: string, type: string, startDate: string, endDate: string}>>([])  
+  const [newDiscountCode, setNewDiscountCode] = useState({
+    code: '',
+    amount: '',
+    type: 'percentage',
+    startDate: '',
+    endDate: ''
+  })
 
   useEffect(() => {
     async function fetchProduct() {
@@ -39,13 +50,28 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
           throw new Error('Product not found')
         }
         
-        setProduct(foundProduct)
+        setProduct(foundProduct);
         setFormData({
-          name: foundProduct.name,
-          description: foundProduct.description,
-          price: foundProduct.price.toString(),
-          type: foundProduct.type,
-        })
+          name: foundProduct.name || '',
+          description: foundProduct.description || '',
+          price: foundProduct.price?.toString() || '',
+          type: foundProduct.type || '',
+          visibility: foundProduct.isPublic ? 'public' : 'private',
+          status: foundProduct.status || 'active',
+        });
+        
+        // Initialize discount codes if available
+        if (foundProduct.discountCodes) {
+          try {
+            const parsedCodes = typeof foundProduct.discountCodes === 'string' 
+              ? JSON.parse(foundProduct.discountCodes) 
+              : foundProduct.discountCodes;
+            setDiscountCodes(Array.isArray(parsedCodes) ? parsedCodes : []);
+          } catch (err) {
+            console.error('Error parsing discount codes:', err);
+            setDiscountCodes([]);
+          }
+        }
       } catch (err) {
         console.error('Error fetching product:', err)
         setError('Failed to load product. Please try again later.')
@@ -74,6 +100,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
 
   const handleSave = async () => {
     try {
+      setIsSaving(true);
       const response = await fetch(`/api/products/${params.id}`, {
         method: 'PUT',
         headers: {
@@ -84,6 +111,12 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
           description: formData.description,
           price: parseFloat(formData.price),
           type: formData.type,
+          isPublic: formData.visibility === "public",
+          status: formData.status,
+          // Include any other fields that need to be saved
+          allowPayWhatYouWant: product.allowPayWhatYouWant,
+          offerCoupons: product.offerCoupons,
+          discountCodes: product.offerCoupons ? product.discountCodes : null,
         }),
       })
 
@@ -92,37 +125,13 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
       }
 
       const updatedProduct = await response.json()
-      setProduct(updatedProduct)
+      setProduct(updatedProduct.product || updatedProduct)
       alert('Product updated successfully')
     } catch (err) {
       console.error('Error updating product:', err)
       alert('Failed to update product. Please try again later.')
-    }
-  }
-
-  const handleSaveSettings = async (visibility: string, status: string) => {
-    try {
-      const response = await fetch(`/api/products/${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          isPublic: visibility === 'public',
-          status: status
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`)
-      }
-
-      const updatedProduct = await response.json()
-      setProduct(updatedProduct.product)
-      alert('Product settings updated successfully')
-    } catch (err) {
-      console.error('Error updating product settings:', err)
-      alert('Failed to update product settings. Please try again later.')
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -504,24 +513,11 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                       id="payWhatYouWant" 
                       className="sr-only peer" 
                       checked={product.allowPayWhatYouWant || false}
-                      onChange={async (e) => {
-                        try {
-                          const response = await fetch(`/api/products/${params.id}`, {
-                            method: 'PUT',
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                              allowPayWhatYouWant: e.target.checked
-                            }),
-                          })
-                          if (!response.ok) throw new Error(`Error: ${response.status}`)
-                          const result = await response.json()
-                          setProduct(result.product)
-                        } catch (err) {
-                          console.error('Error updating payment options:', err)
-                          alert('Failed to update payment options')
-                        }
+                      onChange={(e) => {
+                        setProduct({
+                          ...product,
+                          allowPayWhatYouWant: e.target.checked
+                        })
                       }}
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
@@ -541,23 +537,23 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                       id="offerCoupons" 
                       className="sr-only peer" 
                       checked={product.offerCoupons || false}
-                      onChange={async (e) => {
-                        try {
-                          const response = await fetch(`/api/products/${params.id}`, {
-                            method: 'PUT',
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                              offerCoupons: e.target.checked
-                            }),
-                          })
-                          if (!response.ok) throw new Error(`Error: ${response.status}`)
-                          const result = await response.json()
-                          setProduct(result.product)
-                        } catch (err) {
-                          console.error('Error updating discount code settings:', err)
-                          alert('Failed to update discount code settings')
+                      onChange={(e) => {
+                        setProduct({
+                          ...product,
+                          offerCoupons: e.target.checked
+                        })
+                        
+                        // Initialize discount codes from product if available
+                        if (e.target.checked && product.discountCodes) {
+                          try {
+                            const parsedCodes = typeof product.discountCodes === 'string' 
+                              ? JSON.parse(product.discountCodes) 
+                              : product.discountCodes;
+                            setDiscountCodes(parsedCodes || []);
+                          } catch (err) {
+                            console.error('Error parsing discount codes:', err);
+                            setDiscountCodes([]);
+                          }
                         }
                       }}
                     />
@@ -567,6 +563,138 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                 <div className="text-gray-500 text-sm">
                   Allow customers to use discount codes during checkout.
                 </div>
+                
+                {product.offerCoupons && (
+                  <div className="mt-4 border-t pt-4">
+                    <h3 className="font-medium mb-3">Discount Codes</h3>
+                    
+                    {discountCodes.length > 0 && (
+                      <div className="mb-4">
+                        <div className="bg-gray-100 p-3 rounded-t grid grid-cols-5 gap-2 font-medium text-sm">
+                          <div>Code</div>
+                          <div>Amount</div>
+                          <div>Type</div>
+                          <div>Start Date</div>
+                          <div>End Date</div>
+                        </div>
+                        <div className="border border-t-0 rounded-b divide-y">
+                          {discountCodes.map((code, index) => (
+                            <div key={index} className="p-3 grid grid-cols-5 gap-2 items-center text-sm">
+                              <div>{code.code}</div>
+                              <div>{code.amount}</div>
+                              <div>{code.type}</div>
+                              <div>{code.startDate}</div>
+                              <div className="flex items-center justify-between">
+                                <span>{code.endDate}</span>
+                                <button 
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete the discount code "${code.code}"?`)) {
+                                      const updatedCodes = [...discountCodes];
+                                      updatedCodes.splice(index, 1);
+                                      setDiscountCodes(updatedCodes);
+                                    }
+                                  }}
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="border rounded p-3 mb-3">
+                      <h4 className="font-medium mb-2">Add New Discount Code</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Discount Code</label>
+                          <input 
+                            type="text" 
+                            value={newDiscountCode.code}
+                            onChange={(e) => setNewDiscountCode({...newDiscountCode, code: e.target.value})}
+                            placeholder="e.g. SUMMER20" 
+                            className="w-full p-2 border rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Discount Amount</label>
+                          <input 
+                            type="number" 
+                            value={newDiscountCode.amount}
+                            onChange={(e) => setNewDiscountCode({...newDiscountCode, amount: e.target.value})}
+                            placeholder="e.g. 20" 
+                            className="w-full p-2 border rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Discount Type</label>
+                          <select 
+                            value={newDiscountCode.type}
+                            onChange={(e) => setNewDiscountCode({...newDiscountCode, type: e.target.value})}
+                            className="w-full p-2 border rounded"
+                          >
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Start Date</label>
+                          <input 
+                            type="date" 
+                            value={newDiscountCode.startDate}
+                            onChange={(e) => setNewDiscountCode({...newDiscountCode, startDate: e.target.value})}
+                            className="w-full p-2 border rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">End Date</label>
+                          <input 
+                            type="date" 
+                            value={newDiscountCode.endDate}
+                            onChange={(e) => setNewDiscountCode({...newDiscountCode, endDate: e.target.value})}
+                            className="w-full p-2 border rounded"
+                          />
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          if (!newDiscountCode.code || !newDiscountCode.amount) {
+                            alert('Please enter a discount code and amount');
+                            return;
+                          }
+                          
+                          // Check for duplicate codes
+                          if (discountCodes.some(code => code.code.toLowerCase() === newDiscountCode.code.toLowerCase())) {
+                            alert('A discount code with this name already exists');
+                            return;
+                          }
+                          
+                          // Add the new discount code
+                          const updatedCodes = [...discountCodes, newDiscountCode];
+                          setDiscountCodes(updatedCodes);
+                          
+                          // Update the product object to include the new discount codes
+                          setProduct({
+                            ...product,
+                            discountCodes: JSON.stringify(updatedCodes)
+                          });
+                          setNewDiscountCode({
+                            code: '',
+                            amount: '',
+                            type: 'percentage',
+                            startDate: '',
+                            endDate: ''
+                          });
+                        }}
+                        className="px-3 py-1 bg-black text-white rounded hover:bg-gray-800"
+                      >
+                        Add Discount Code
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mb-4 font-medium">Preview</div>
@@ -582,6 +710,83 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                     <div>${product.price.toFixed(2)}</div>
                   </div>
                 </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsSaving(true);
+                      // Validate discount codes before saving
+                      if (product.offerCoupons && discountCodes.length > 0) {
+                        for (const code of discountCodes) {
+                          if (!code.code || !code.amount) {
+                            alert('All discount codes must have a code and amount');
+                            setIsSaving(false);
+                            return;
+                          }
+                        }
+                      }
+                      
+                      const response = await fetch(`/api/products/${params.id}`, {
+                        method: 'PUT',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          allowPayWhatYouWant: product.allowPayWhatYouWant,
+                          offerCoupons: product.offerCoupons,
+                          discountCodes: product.offerCoupons ? JSON.stringify(discountCodes) : null,
+                          productId: params.id // Ensure the discount codes are mapped to the right product
+                        }),
+                      });
+                      
+                      if (!response.ok) throw new Error(`Error: ${response.status}`);
+                      const result = await response.json();
+                      
+                      // Update the product with the saved data
+                      setProduct({
+                        ...product,
+                        allowPayWhatYouWant: result.product.allowPayWhatYouWant,
+                        offerCoupons: result.product.offerCoupons,
+                        discountCodes: result.product.discountCodes
+                      });
+                      
+                      // If discount codes were saved, update the local state
+                      if (result.product.discountCodes) {
+                        try {
+                          const parsedCodes = typeof result.product.discountCodes === 'string' 
+                            ? JSON.parse(result.product.discountCodes) 
+                            : result.product.discountCodes;
+                          setDiscountCodes(Array.isArray(parsedCodes) ? parsedCodes : []);
+                        } catch (err) {
+                          console.error('Error parsing discount codes:', err);
+                        }
+                      }
+                      
+                      alert('Payment options saved successfully');
+                    } catch (err) {
+                      console.error('Error saving payment options:', err);
+                      alert('Failed to save payment options');
+                    } finally {
+                      setIsSaving(false);
+                    }
+                  }}
+                  className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 flex items-center gap-2"
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} />
+                      Save Changes
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -600,7 +805,15 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                       type="radio" 
                       name="visibility" 
                       value="public" 
-                      defaultChecked={product.isPublic} 
+                      checked={formData.visibility === "public"} 
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            visibility: "public"
+                          });
+                        }
+                      }}
                       className="h-4 w-4"
                     />
                     <span>Public</span>
@@ -610,7 +823,15 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                       type="radio" 
                       name="visibility" 
                       value="private" 
-                      defaultChecked={!product.isPublic} 
+                      checked={formData.visibility === "private"} 
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            visibility: "private"
+                          });
+                        }
+                      }}
                       className="h-4 w-4"
                     />
                     <span>Private</span>
@@ -624,7 +845,13 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                 <select 
                   id="status" 
                   name="status" 
-                  defaultValue={product.status || "active"}
+                  value={formData.status}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      status: e.target.value
+                    });
+                  }}
                   className="w-full p-3 border rounded-md"
                 >
                   <option value="active">Active</option>

@@ -59,6 +59,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const productId = params.id;
   try {
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
@@ -74,7 +75,7 @@ export async function GET(
     // Find the product by ID
     const product = await prisma.product.findUnique({
       where: {
-        id: params.id,
+        id: productId,
       },
       include: {
         files: true,
@@ -112,6 +113,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const productId = params.id;
+    
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
     
@@ -126,7 +129,7 @@ export async function PUT(
     // Find the product by ID
     const existingProduct = await prisma.product.findUnique({
       where: {
-        id: params.id,
+        id: productId,
       }
     });
     
@@ -180,7 +183,7 @@ export async function PUT(
       }
       
       // Process uploaded files if any
-      const { coverImagePath: newCoverImagePath } = await processFiles(formData, userId, params.id);
+      const { coverImagePath: newCoverImagePath } = await processFiles(formData, userId, productId);
       if (newCoverImagePath) {
         coverImagePath = newCoverImagePath;
       }
@@ -239,7 +242,7 @@ export async function PUT(
         // Delete existing variations and create new ones
         await prisma.variation.deleteMany({
           where: {
-            productId: params.id
+            productId: productId
           }
         });
         
@@ -248,7 +251,7 @@ export async function PUT(
           prisma.variation.create({
             data: {
               ...variation,
-              productId: params.id
+              productId: productId
             }
           })
         ));
@@ -282,7 +285,10 @@ export async function PUT(
         ...(jsonData.description !== undefined ? { description: jsonData.description } : {}),
         ...(jsonData.price !== undefined ? { price: jsonData.price } : {}),
         ...(jsonData.allowPayWhatYouWant !== undefined ? { allowPayWhatYouWant: !!jsonData.allowPayWhatYouWant } : {}),
-        ...(jsonData.offerCoupons !== undefined ? { offerCoupons: !!jsonData.offerCoupons } : {})
+        ...(jsonData.offerCoupons !== undefined ? { offerCoupons: !!jsonData.offerCoupons } : {}),
+        ...(jsonData.discountCodes !== undefined ? { discountCodes: jsonData.discountCodes } : {}),
+        ...(jsonData.isPublic !== undefined ? { isPublic: !!jsonData.isPublic } : {}),
+        ...(jsonData.status !== undefined ? { status: jsonData.status } : {})
       };
       
       // Handle variations update if provided
@@ -290,7 +296,7 @@ export async function PUT(
         // Delete existing variations and create new ones
         await prisma.variation.deleteMany({
           where: {
-            productId: params.id
+            productId: productId
           }
         });
         
@@ -300,28 +306,64 @@ export async function PUT(
             data: {
               name: variation.name || 'Unnamed Variation',
               options: JSON.stringify(variation.options || []),
-              productId: params.id
+              productId: productId
             }
           })
         ));
       }
     }
     
-    // Update product in database
+    // Validate discount codes if provided
+    if (updateData.discountCodes) {
+      try {
+        // Parse the discount codes to ensure they're valid JSON
+        const parsedCodes = JSON.parse(updateData.discountCodes);
+        
+        // Validate each discount code
+        if (Array.isArray(parsedCodes)) {
+          for (const code of parsedCodes) {
+            if (!code.code || !code.amount) {
+              return NextResponse.json({ 
+                error: 'Invalid discount code', 
+                details: 'Each discount code must have a code and amount'
+              }, { status: 400 });
+            }
+          }
+        } else {
+          return NextResponse.json({ 
+            error: 'Invalid discount codes format', 
+            details: 'Discount codes must be an array'
+          }, { status: 400 });
+        }
+      } catch (error) {
+        return NextResponse.json({ 
+          error: 'Invalid discount codes format', 
+          details: 'Failed to parse discount codes JSON'
+        }, { status: 400 });
+      }
+    }
+    
+    // Update the product with the provided data
     const updatedProduct = await prisma.product.update({
       where: {
-        id: params.id
+        id: productId
       },
-      data: updateData,
+      data: updateData
+    });
+    
+    // Fetch the updated product with all its data
+    const refreshedProduct = await prisma.product.findUnique({
+      where: {
+        id: productId
+      },
       include: {
-        variations: true,
-        files: true
+        variations: true
       }
     });
     
-    return NextResponse.json({
+    return NextResponse.json({ 
       message: 'Product updated successfully',
-      product: updatedProduct
+      product: refreshedProduct
     });
   } catch (error) {
     console.error('Product update error:', error);
@@ -336,6 +378,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const productId = params.id;
   try {
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
@@ -351,7 +394,7 @@ export async function DELETE(
     // Find the product by ID
     const existingProduct = await prisma.product.findUnique({
       where: {
-        id: params.id,
+        id: productId,
       }
     });
     
@@ -373,20 +416,20 @@ export async function DELETE(
     // Delete associated files and variations
     await prisma.file.deleteMany({
       where: {
-        productId: params.id
+        productId: productId
       }
     });
     
     await prisma.variation.deleteMany({
       where: {
-        productId: params.id
+        productId: productId
       }
     });
     
     // Delete the product
     await prisma.product.delete({
       where: {
-        id: params.id
+        id: productId
       }
     });
     

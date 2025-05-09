@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
     const price = formData.get('price') as string;
     const description = formData.get('description') as string || '';
     const slug = formData.get('slug') as string || '';
+    const visibility = formData.get('visibility') as string;
+    const status = formData.get('status') as string;
     
     // Validate required fields
     if (!name || !type || !price) {
@@ -168,25 +170,40 @@ export async function POST(request: NextRequest) {
     // Generate a unique slug if not provided
     const productSlug = slug || await generateUniqueSlug(name);
     
-    // Create product in database
+    // Create product data object
+    const productData: any = {
+      name,
+      type,
+      price: parsedPrice,
+      currency: 'PHP', // Set default currency to Philippine Pesos
+      description,
+      coverImagePath,
+      userId,
+      allowPayWhatYouWant: paymentOptions.allowPayWhatYouWant,
+      offerCoupons: paymentOptions.offerCoupons,
+    };
+    
+    // Add slug if provided
+    if (productSlug) {
+      productData.slug = productSlug;
+    }
+    
+    // Add visibility and status if provided
+    if (visibility) {
+      productData.isPublic = visibility === 'public';
+    }
+    
+    if (status) {
+      productData.status = status;
+    }
+    
+    // Create product with relations
     const product = await prisma.product.create({
       data: {
-        name,
-        type,
-        price: parsedPrice,
-        currency: 'PHP', // Set default currency to Philippine Pesos
-        description,
-        // Add slug if it's supported by the schema
-        ...(productSlug ? { slug: productSlug } : {}),
-        coverImagePath,
-        userId, // Use the found or created user ID
-        allowPayWhatYouWant: paymentOptions.allowPayWhatYouWant,
-        offerCoupons: paymentOptions.offerCoupons,
-        ...(parsedVariations.length > 0 ? { 
-          variations: {
-            create: parsedVariations
-          }
-        } : {}),
+        ...productData,
+        variations: parsedVariations.length > 0 ? {
+          create: parsedVariations
+        } : undefined,
         files: {
           create: [
             ...processedFiles,
