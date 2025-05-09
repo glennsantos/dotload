@@ -30,9 +30,6 @@ export default async function LedgerLayout({
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
     const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string; emailVerified?: boolean };
     
-    // Log decoded token for debugging
-    console.log('Transactions Layout - Decoded Token:', decoded);
-
     // Get the user from the database
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },

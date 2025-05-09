@@ -26,13 +26,28 @@ type PayoutFormData = {
   accountHolderName: string;
 };
 
+// Fee configuration type
+type FeeConfig = {
+  percentageFee: number;
+  fixedFee: number;
+};
+
+type FeeResponse = {
+  feeConfig: FeeConfig;
+  examples: {
+    amount: number;
+    processingFee: number;
+    netAmount: number;
+    percentageFeeAmount: number;
+    fixedFeeAmount: number;
+  };
+  description: string;
+};
+
 // List of supported banks
 const SUPPORTED_BANKS = [
   { code: 'BDO', name: 'Banco de Oro' },
   { code: 'BPI', name: 'Bank of the Philippine Islands' },
-  { code: 'LANDBANK', name: 'Land Bank of the Philippines' },
-  { code: 'METROBANK', name: 'Metropolitan Bank and Trust Company' },
-  { code: 'PNB', name: 'Philippine National Bank' },
   { code: 'UNIONBANK', name: 'UnionBank of the Philippines' },
   { code: 'GCASH', name: 'GCash' },
 ];
@@ -51,16 +66,21 @@ export default function PayoutPage() {
     accountHolderName: '',
   });
   const [processingFee, setProcessingFee] = useState(0);
+  const [netAmount, setNetAmount] = useState(0);
+  const [feeConfig, setFeeConfig] = useState<FeeConfig>({ percentageFee: 0.10, fixedFee: 20 });
+  const [feeDescription, setFeeDescription] = useState('');
 
-  // Fetch balance data
+  // Fetch balance data and fee configuration
   useEffect(() => {
-    const fetchBalance = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/transactions');
         
-        if (!response.ok) {
-          if (response.status === 401) {
+        // Fetch balance data
+        const balanceResponse = await fetch('/api/transactions');
+        
+        if (!balanceResponse.ok) {
+          if (balanceResponse.status === 401) {
             // Redirect to login if unauthorized
             router.push('/login');
             return;
@@ -68,17 +88,29 @@ export default function PayoutPage() {
           throw new Error('Failed to fetch balance data');
         }
         
-        const data = await response.json();
-        setBalance(data.summary ? {
-          total: data.summary.totalIncome || 0,
-          available: data.summary.currentBalance || 0,
+        const balanceData = await balanceResponse.json();
+        setBalance(balanceData.summary ? {
+          total: balanceData.summary.totalIncome || 0,
+          available: balanceData.summary.availableBalance || 0,
           pending: 0
         } : { total: 0, available: 0, pending: 0 });
+        
+        // Fetch fee configuration
+        const feeResponse = await fetch('/api/fees');
+        
+        if (!feeResponse.ok) {
+          throw new Error('Failed to fetch fee configuration');
+        }
+        
+        const feeData: FeeResponse = await feeResponse.json();
+        setFeeConfig(feeData.feeConfig);
+        setFeeDescription(feeData.description);
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
         toast({
           title: 'Error',
-          description: 'Failed to load balance information',
+          description: 'Failed to load required information',
           variant: 'destructive',
         });
       } finally {
@@ -86,13 +118,37 @@ export default function PayoutPage() {
       }
     };
     
-    fetchBalance();
+    fetchData();
   }, [router, toast]);
 
-  // Calculate processing fee (5% of payout amount)
+  // Calculate processing fee based on backend configuration
   useEffect(() => {
-    setProcessingFee(formData.amount * 0.05);
-  }, [formData.amount]);
+    const calculateFee = async () => {
+      try {
+        if (formData.amount <= 0) {
+          setProcessingFee(0);
+          setNetAmount(0);
+          return;
+        }
+        
+        // Calculate processing fee using the formula: percentage + fixed fee
+        const percentageFeeAmount = formData.amount * feeConfig.percentageFee;
+        const totalFee = percentageFeeAmount + feeConfig.fixedFee;
+        
+        // Ensure fee doesn't exceed maximum percentage
+        const maxFeePercentage = 0.50; // 50% maximum fee
+        const maxFee = formData.amount * maxFeePercentage;
+        
+        const finalFee = Math.min(totalFee, maxFee);
+        setProcessingFee(finalFee);
+        setNetAmount(formData.amount - finalFee);
+      } catch (error) {
+        console.error('Error calculating fee:', error);
+      }
+    };
+    
+    calculateFee();
+  }, [formData.amount, feeConfig]);
 
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +183,16 @@ export default function PayoutPage() {
       toast({
         title: 'Insufficient balance',
         description: `Your available balance is ${formatCurrency(balance.available)}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Verify that the net amount after fees is positive
+    if (netAmount <= 0) {
+      toast({
+        title: 'Invalid amount',
+        description: 'The amount is too small to cover the processing fee',
         variant: 'destructive',
       });
       return;
@@ -171,16 +237,22 @@ export default function PayoutPage() {
       // Create a reference ID for tracking this payout
       const referenceId = `payout-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
       
+      // Prepare payout data
+      const payoutData = {
+        amount: formData.amount,
+        bankCode: formData.bankCode,
+        accountNumber: formData.accountNumber,
+        accountHolderName: formData.accountHolderName,
+        referenceId: referenceId,
+        // No need to send processingFee - it will be calculated on the server
+      };
+      
       const response = await fetch('/api/transactions/payout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          processingFee,
-          referenceId,
-        }),
+        body: JSON.stringify(payoutData),
       });
       
       if (!response.ok) {
@@ -277,7 +349,7 @@ export default function PayoutPage() {
             {formData.amount > 0 && (
               <div className="text-sm text-muted-foreground">
                 <div className="flex justify-between">
-                  <span>Processing Fee (5%):</span>
+                  <span>Processing Fee ({feeConfig.percentageFee * 100}% + ₱{feeConfig.fixedFee}):</span>
                   <span>{formatCurrency(processingFee)}</span>
                 </div>
                 <div className="flex justify-between font-medium">
@@ -390,15 +462,18 @@ export default function PayoutPage() {
               <span className="font-medium">{formatCurrency(formData.amount)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Processing Fee (5%):</span>
+              <span className="text-muted-foreground">Processing Fee:</span>
               <span className="font-medium">{formatCurrency(processingFee)}</span>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {feeDescription}
             </div>
             
             <Separator className="my-4" />
             
             <div className="flex justify-between">
               <span className="font-bold">You will receive:</span>
-              <span className="font-bold">{formatCurrency(formData.amount - processingFee)}</span>
+              <span className="font-bold">{formatCurrency(netAmount)}</span>
             </div>
           </div>
         </CardContent>

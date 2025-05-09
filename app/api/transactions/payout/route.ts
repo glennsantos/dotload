@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { createTransaction } from '../route';
+import { calculateProcessingFee, calculateNetAmount, DEFAULT_PAYOUT_FEE_CONFIG } from '../../../../lib/fee-utils';
 
 const prisma = new PrismaClient();
 
@@ -24,6 +25,10 @@ interface XenditPayoutRequest {
   amount: number;
   currency: string;
   description: string;
+  receipt_notification?: {
+    email_to?: string[];
+    email_cc?: string[];
+  };
 }
 
 // Map our bank codes to Xendit channel codes
@@ -49,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const data = await request.json();
-    const { amount, bankCode, accountNumber, accountHolderName, processingFee, referenceId: clientReferenceId } = data;
+    const { amount, bankCode, accountNumber, accountHolderName, referenceId: clientReferenceId } = data;
 
     // Validate required fields
     if (!amount || !bankCode || !accountNumber || !accountHolderName) {
@@ -58,6 +63,18 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Calculate processing fee dynamically
+    const processingFee = calculateProcessingFee(amount);
+    const receivedAmount = calculateNetAmount(amount);
+
+    // Log the fee calculation for transparency
+    console.log('Payout Fee Calculation:', {
+      grossAmount: amount,
+      processingFee,
+      netAmount: receivedAmount,
+      feeConfig: DEFAULT_PAYOUT_FEE_CONFIG
+    });
 
     // Get user from database
     const user = await prisma.user.findUnique({
@@ -74,7 +91,7 @@ export async function POST(request: NextRequest) {
       SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
       WHERE "userId" = ${user.id}
       AND type = 'income'
-      AND status = 'completed'
+      AND (status = 'completed' OR status = 'pending')
     `;
     const totalIncome = Number((totalIncomeResult as any)[0].sum);
 
@@ -82,7 +99,7 @@ export async function POST(request: NextRequest) {
       SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
       WHERE "userId" = ${user.id}
       AND type = 'payout'
-      AND status = 'completed'
+      AND (status = 'completed' OR status = 'pending')
     `;
     const totalPayouts = Number((totalPayoutsResult as any)[0].sum);
 
@@ -90,7 +107,7 @@ export async function POST(request: NextRequest) {
       SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
       WHERE "userId" = ${user.id}
       AND type = 'fee'
-      AND status = 'completed'
+      AND (status = 'completed' OR status = 'pending')
     `;
     const totalFees = Number((totalFeesResult as any)[0].sum);
 
@@ -100,7 +117,7 @@ export async function POST(request: NextRequest) {
     // Check if user has enough balance
     if (amount > availableBalance) {
       return NextResponse.json(
-        { error: 'Insufficient balance', availableBalance },
+        { error: 'Insufficient balance', availableBalance, processingFee },
         { status: 400 }
       );
     }
@@ -126,7 +143,7 @@ export async function POST(request: NextRequest) {
         account_number: accountNumber,
         account_holder_name: accountHolderName,
       },
-      amount,
+      amount: receivedAmount,
       currency: 'PHP',
       description: `Payout for ${user.name || user.email}`,
       receipt_notification: {
@@ -173,10 +190,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a payout transaction
     const payoutTransaction = await createTransaction({
       userId: user.id,
-      amount,
+      amount: receivedAmount,
       currency: 'PHP',
       type: 'payout',
       status: 'pending',
@@ -189,24 +205,29 @@ export async function POST(request: NextRequest) {
         channelCode,
         bankCode,
         accountNumber,
-        accountHolderName
+        accountHolderName,
+        processingFee // Store the processing fee in metadata for reference
       }
     });
 
     // Create a fee transaction for the processing fee
+    // This is a separate transaction to track the fee explicitly
     const feeTransaction = await createTransaction({
       userId: user.id,
       amount: processingFee,
       currency: 'PHP',
       type: 'fee',
-      status: 'pending',
-      description: 'Payout processing fee (5%)',
+      status: 'completed', // Fee is immediately completed since it's deducted right away
+      description: 'Payout processing fee',
       reference: disbursement.id,
       referenceType: 'fee',
       metadata: {
         payoutId: disbursement.id,
         referenceId,
-        feeType: 'payout_processing'
+        feeType: 'payout_processing',
+        grossAmount: amount,
+        netAmount: receivedAmount,
+        feeConfig: DEFAULT_PAYOUT_FEE_CONFIG
       }
     });
 

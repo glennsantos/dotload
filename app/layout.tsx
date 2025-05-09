@@ -37,8 +37,6 @@ async function getCurrentUser() {
       select: { id: true, name: true, email: true }
     });
 
-    console.log(user);
-
     await prisma.$disconnect();
     return user;
   } catch (error) {

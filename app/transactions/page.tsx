@@ -31,6 +31,7 @@ type Summary = {
   totalPayouts: number;
   totalFees: number;
   currentBalance: number;
+  availableBalance: number;
 };
 
 type Pagination = {
@@ -49,6 +50,7 @@ export default function TransactionsPage() {
     totalPayouts: 0,
     totalFees: 0,
     currentBalance: 0,
+    availableBalance: 0,
   });
   const [pagination, setPagination] = useState<Pagination>({
     total: 0,
@@ -83,6 +85,7 @@ export default function TransactionsPage() {
           totalPayouts: 0,
           totalFees: 0,
           currentBalance: 0,
+          availableBalance: 0,
         });
         setPagination(data.pagination || {
           total: 0,
@@ -242,10 +245,11 @@ export default function TransactionsPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Current Balance</CardTitle>
+                <CardTitle>Available Balance</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{formatCurrency(summary.currentBalance)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(summary.availableBalance)}</p>
+                {summary.availableBalance > 0 && (
                 <div className="mt-2">
                   <Button 
                     variant="outline" 
@@ -256,17 +260,15 @@ export default function TransactionsPage() {
                     <Wallet className="h-4 w-4 mr-2" /> Request Payout
                   </Button>
                 </div>
+                )}
               </CardContent>
             </Card>
-            
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Fees
-                </CardTitle>
+              <CardHeader>
+                <CardTitle>Current Balance</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{formatCurrency(summary.totalFees)}</div>
+                <p className="text-2xl font-bold">{formatCurrency(summary.currentBalance)}</p>
               </CardContent>
             </Card>
           </div>

@@ -32,19 +32,13 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
   const router = useRouter()
   const userMenuRef = useRef<HTMLDivElement>(null)
   
-  // Log initial user data from server
-  console.log('Initial user data from server:', initialUser)
-  
   // Check authentication status on the client side
   useEffect(() => {
     const checkAuth = async () => {
       try {
         setIsLoading(true);
-        console.log('Checking auth on client side...');
-        
         // First try to use the initialUser from server-side props
         if (initialUser) {
-          console.log('Using server-provided user data:', initialUser);
           setUser(initialUser);
           setIsLoading(false);
           return;
@@ -128,11 +122,6 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
     }
   };
   
-  // Log user state changes
-  useEffect(() => {
-    console.log('Current user state:', user);
-  }, [user]);
-
   // Handle clicks outside the user menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

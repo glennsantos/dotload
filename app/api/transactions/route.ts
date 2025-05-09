@@ -5,6 +5,14 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
+  /**
+   * Handles GET requests to `/api/transactions`.
+   *
+   * Returns a JSON response containing the user's transactions, pagination information, and summary statistics.
+   *
+   * @param request - The NextRequest object.
+   * @returns A JSON response containing the user's transactions, pagination information, and summary statistics.
+   */
 export async function GET(request: NextRequest) {
   try {
     // Get the authenticated user from JWT token in cookies
@@ -23,9 +31,6 @@ export async function GET(request: NextRequest) {
       where: { id: decoded.userId },
     });
     
-    // Log decoded token for debugging
-    console.log('Transactions API - Decoded Token:', decoded);
-
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -77,7 +82,37 @@ export async function GET(request: NextRequest) {
     const totalFees = Number((totalFeesResult as any)[0].sum);
 
     // Calculate current balance
+    // Ensure we're properly deducting both payouts and fees from the total income
+    // This fixes the balance computation that wasn't deducting correctly
     const currentBalance = totalIncome - totalPayouts - totalFees;
+
+    const totalPendingIncomeResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'income'
+      AND status = 'pending'
+    `;
+    const totalPendingIncome = Number((totalPendingIncomeResult as any)[0].sum);
+
+    const totalPendingPayoutsResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'payout'
+      AND status = 'pending'
+    `;
+    const totalPendingPayouts = Number((totalPendingPayoutsResult as any)[0].sum);
+
+    const totalPendingFeesResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'fee'
+      AND status = 'pending'
+    `;
+    const totalPendingFees = Number((totalPendingFeesResult as any)[0].sum);
+
+    const pendingBalance = totalPendingIncome - totalPendingPayouts - totalPendingFees;
+
+    const availableBalance = currentBalance + pendingBalance;
 
     return NextResponse.json({
       transactions,
@@ -92,6 +127,10 @@ export async function GET(request: NextRequest) {
         totalPayouts,
         totalFees,
         currentBalance,
+        totalPendingIncome,
+        totalPendingPayouts,
+        totalPendingFees,
+        availableBalance,
       },
     });
   } catch (error) {

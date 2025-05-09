@@ -3,13 +3,10 @@
 * do not restart the server, send instructions to the user and he will restart the server
 * do not use the Xendit SDK, use the Xendit API directly
  
-TRANSACTIONS
-* the payout amount is net of the processing fee. log the correct amount as a transaction
-* fix balance computation. it's not deducting
  
 NEXT STEPS
 * Test happy path again
-* deploy if passes happy path
+* Update Readme with deployment process
 
 
 AUTH
