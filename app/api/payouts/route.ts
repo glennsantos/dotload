@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
     
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { id: string, email: string };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string, email: string, emailVerified?: boolean };
 
     // Parse request body
     const data = await request.json();
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.userId },
       include: { products: true },
     });
 
@@ -147,7 +147,23 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    // More detailed error logging
     console.error('Error processing payout:', error);
+    
+    // Check for specific error types
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Handle specific database errors
+      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        return NextResponse.json(
+          { error: 'Database table does not exist. Please run migrations.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to process payout request' },
       { status: 500 }
@@ -166,11 +182,11 @@ export async function GET(request: NextRequest) {
     }
     
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { id: string, email: string };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string, email: string, emailVerified?: boolean };
 
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.userId },
     });
 
     if (!user) {
@@ -215,7 +231,23 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    // More detailed error logging
     console.error('Error fetching payouts:', error);
+    
+    // Check for specific error types
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Handle specific database errors
+      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        return NextResponse.json(
+          { error: 'Database table does not exist. Please run migrations.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch payout information' },
       { status: 500 }

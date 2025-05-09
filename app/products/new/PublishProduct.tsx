@@ -48,44 +48,7 @@ export default function PublishProduct({
           <p className="text-gray-600 mb-6">Configure when and how your product will be available.</p>
 
           <div className="space-y-6">
-
-
-            <div className="border rounded-md p-6">
-              <h3 className="font-medium mb-4">Search Engine Optimization</h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Meta Title</label>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded-md"
-                    placeholder="Enter meta title"
-                    defaultValue={productData.name}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Appears in browser tab and search results</p>
-                </div>
-
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Meta Description</label>
-                  <textarea
-                    className="w-full p-2 border rounded-md h-20"
-                    placeholder="Enter meta description"
-                    defaultValue={productData.description?.substring(0, 160) || ""}
-                  ></textarea>
-                  <p className="text-xs text-gray-500 mt-1">Brief description that appears in search results</p>
-                </div>
-
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Keywords</label>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded-md"
-                    placeholder="e.g., travel, japan, guide"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Comma-separated keywords related to your product</p>
-                </div>
-              </div>
-            </div>
+            {/* SEO section removed as requested */}
           </div>
         </div>
 

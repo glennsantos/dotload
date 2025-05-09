@@ -46,13 +46,10 @@ export default function NewProduct() {
   })
 
   // Calculate total steps based on product type
-  let totalSteps = 4; // Default number of steps
+  let totalSteps = 3; // Default number of steps (reduced from 4)
   
   // Add content upload step for digital products
   const digitalProductTypes = ['digital_product', 'course', 'ebook', 'audiobook'];
-  if (digitalProductTypes.includes(productData.type)) {
-    totalSteps = 5;
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -307,47 +304,21 @@ export default function NewProduct() {
         <ProductCustomization
           productData={productData}
           setProductData={setProductData}
-          onNext={() => setStep(digitalProductTypes.includes(productData.type) ? 3 : 4)}
+          onNext={() => setStep(3)}
           onBack={handleBack}
           onCancel={handleCancel}
         />
       )}
-      {step === 3 && digitalProductTypes.includes(productData.type) && (
+      {step === 3 && (
         <ContentUpload
           productData={productData}
           setProductData={setProductData}
-          onNext={() => setStep(4)}
+          onNext={handleSubmit}
           onBack={() => setStep(2)}
           onCancel={handleCancel}
         />
       )}
-      {step === 3 && !digitalProductTypes.includes(productData.type) && (
-        <PaymentOptions
-          productData={productData}
-          setProductData={setProductData}
-          onNext={() => setStep(4)}
-          onBack={() => setStep(2)}
-          onCancel={handleCancel}
-        />
-      )}
-      {step === 4 && (
-        <PaymentOptions
-          productData={productData}
-          setProductData={setProductData}
-          onNext={() => setStep(5)}
-          onBack={() => setStep(3)}
-          onCancel={handleCancel}
-        />
-      )}
-      {step === 5 && (
-        <PublishProduct
-          productData={productData}
-          onPublish={handleSubmit}
-          onBack={() => setStep(4)}
-          onCancel={handleCancel}
-          isSubmitting={isSubmitting}
-        />
-      )}
+      {/* Step 5 removed as requested */}
       {step === totalSteps + 1 && createdProduct && (
         <div>
           

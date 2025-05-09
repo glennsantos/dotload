@@ -28,7 +28,7 @@ export default async function PayoutsLayout({
   try {
     // Verify the token
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string; emailVerified?: boolean };
     
     // Log decoded token for debugging
     console.log('Payouts Layout - Decoded Token:', decoded);

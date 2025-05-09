@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 
 export const metadata: Metadata = {
-  title: 'Ledger | alaCarte',
+  title: 'Transactions | alaCarte',
   description: 'Track your income and payouts',
 };
 
@@ -28,10 +28,10 @@ export default async function LedgerLayout({
   try {
     // Verify the token
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string; emailVerified?: boolean };
     
     // Log decoded token for debugging
-    console.log('Ledger Layout - Decoded Token:', decoded);
+    console.log('Transactions Layout - Decoded Token:', decoded);
 
     // Get the user from the database
     const user = await prisma.user.findUnique({

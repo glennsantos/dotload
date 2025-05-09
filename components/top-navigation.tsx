@@ -229,27 +229,17 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                     <Settings size={16} className="mr-2" />
                     Settings
                   </Link>
+
                   <Link 
-                    href="/payouts" 
+                    href="/transactions" 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                     onClick={() => {
-                      console.log('Payouts menu item clicked');
-                      setUserMenuOpen(false);
-                    }}
-                  >
-                    <Wallet size={16} className="mr-2" />
-                    Payouts
-                  </Link>
-                  <Link 
-                    href="/ledger" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={() => {
-                      console.log('Ledger menu item clicked');
+                      console.log('Transactions menu item clicked');
                       setUserMenuOpen(false);
                     }}
                   >
                     <BookOpen size={16} className="mr-2" />
-                    Ledger
+                    Transactions
                   </Link>
                   <button 
                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
@@ -297,26 +287,14 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                   Settings
                 </span>
               </Link>
-              <Link href="/payouts" className="block py-2 hover:text-gray-300" onClick={() => {
-                console.log('Mobile Payouts menu item clicked');
-                setMobileMenuOpen(false);
-              }}>
-                <span className="flex items-center">
-                  <Wallet size={18} className="mr-2" />
-                  Payouts
-                </span>
-              </Link>
-              <Link href="/ledger" className="block py-2 hover:text-gray-300" onClick={() => {
-                console.log('Mobile Ledger menu item clicked');
+              <Link href="/transactions" className="block py-2 hover:text-gray-300" onClick={() => {
+                console.log('Mobile Transactions menu item clicked');
                 setMobileMenuOpen(false);
               }}>
                 <span className="flex items-center">
                   <BookOpen size={18} className="mr-2" />
-                  Ledger
+                  Transactions
                 </span>
-              </Link>
-              <Link href="/help" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
-                Help
               </Link>
               <button 
                 className="flex items-center w-full py-2 text-red-400 hover:text-red-300"

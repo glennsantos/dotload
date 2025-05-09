@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Download, Filter } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, Filter, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,7 +40,7 @@ type Pagination = {
   totalPages: number;
 };
 
-export default function LedgerPage() {
+export default function TransactionsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -65,7 +65,7 @@ export default function LedgerPage() {
     const fetchTransactions = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/ledger?page=${pagination.page}&limit=${pagination.limit}`);
+        const response = await fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`);
         
         if (!response.ok) {
           if (response.status === 401) {
@@ -73,7 +73,7 @@ export default function LedgerPage() {
             router.push('/login');
             return;
           }
-          throw new Error('Failed to fetch ledger data');
+          throw new Error('Failed to fetch transactions data');
         }
         
         const data = await response.json();
@@ -94,7 +94,7 @@ export default function LedgerPage() {
         setError(err instanceof Error ? err.message : 'An error occurred');
         toast({
           title: 'Error',
-          description: 'Failed to load ledger information',
+          description: 'Failed to load transactions information',
           variant: 'destructive',
         });
       } finally {
@@ -203,7 +203,7 @@ export default function LedgerPage() {
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       {isLoading ? (
         <div className="flex justify-center items-center min-h-[400px]">
-          <p>Loading ledger information...</p>
+          <p>Loading transactions information...</p>
         </div>
       ) : error ? (
         <Alert variant="destructive">
@@ -213,7 +213,7 @@ export default function LedgerPage() {
       ) : (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Seller Ledger</h1>
+            <h1 className="text-2xl font-bold">Seller Transactions</h1>
             <div className="flex space-x-2">
               <Button variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
@@ -223,37 +223,39 @@ export default function LedgerPage() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Current Balance
-                </CardTitle>
+              <CardHeader>
+                <CardTitle>Total Income</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(summary.currentBalance)}</div>
+                <p className="text-2xl font-bold">{formatCurrency(summary.totalIncome)}</p>
               </CardContent>
             </Card>
-            
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Income
-                </CardTitle>
+              <CardHeader>
+                <CardTitle>Total Payouts</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{formatCurrency(summary.totalIncome)}</div>
+                <p className="text-2xl font-bold">{formatCurrency(summary.totalPayouts)}</p>
               </CardContent>
             </Card>
-            
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Payouts
-                </CardTitle>
+              <CardHeader>
+                <CardTitle>Current Balance</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{formatCurrency(summary.totalPayouts)}</div>
+                <p className="text-2xl font-bold">{formatCurrency(summary.currentBalance)}</p>
+                <div className="mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => router.push('/payout')}
+                    className="w-full"
+                  >
+                    <Wallet className="h-4 w-4 mr-2" /> Request Payout
+                  </Button>
+                </div>
               </CardContent>
             </Card>
             

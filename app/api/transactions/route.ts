@@ -16,12 +16,15 @@ export async function GET(request: NextRequest) {
     }
     
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { id: string, email: string };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string, email: string, emailVerified?: boolean };
 
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.userId },
     });
+    
+    // Log decoded token for debugging
+    console.log('Transactions API - Decoded Token:', decoded);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -92,9 +95,25 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    // More detailed error logging
     console.error('Error fetching ledger:', error);
+    
+    // Check for specific error types
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Handle specific database errors
+      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        return NextResponse.json(
+          { error: 'Database table does not exist. Please run migrations.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch ledger information' },
+      { error: 'Failed to fetch transactions information' },
       { status: 500 }
     );
   }

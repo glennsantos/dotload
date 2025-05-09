@@ -100,13 +100,13 @@ export const config = {
     '/audience/:path*',
     '/help/:path*',
     '/payouts/:path*',
-    '/ledger/:path*',
+    '/transactions/:path*',
     // Add API routes that need protection
     '/api/products/:path*',
     '/api/users/:path*',
     '/api/files/:path*',
     '/api/payouts/:path*',
-    '/api/ledger/:path*',
+    '/api/transactions/:path*',
     // Exclude public API routes
     '/((?!api/auth/login|api/auth/register|api/auth/verify-email|api/auth/logout)api/:path*)',
   ]
