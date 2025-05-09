@@ -12,6 +12,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [productUrl, setProductUrl] = useState('')
   const pathname = usePathname()
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         }
         
         setProduct(foundProduct)
+        setProductUrl(`${window.location.origin}/p/${foundProduct.slug || foundProduct.id}`)
       } catch (err) {
         console.error('Error fetching product:', err)
         setError('Failed to load product. Please try again later.')
@@ -383,12 +385,27 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   </div>
                   <div className="mb-4">
                     <div className="font-medium mb-2">Social Media</div>
-                    <div className="flex gap-2">
-                      <button className="p-2 border rounded-md">Twitter</button>
-                      <button className="p-2 border rounded-md">Facebook</button>
-                      <button className="p-2 border rounded-md">Instagram</button>
-                      <button className="p-2 border rounded-md">LinkedIn</button>
-                    </div>
+                    <p className="text-sm text-gray-600 mb-4">Share your product on social media</p>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => window.open(`https://x.com/intent/tweet?url=${encodeURIComponent(productUrl)}&text=${encodeURIComponent(`Check out ${product.name}`)}`, '_blank')} 
+                          className="px-4 py-2 bg-black text-white rounded-md"
+                        >
+                          X (Twitter)
+                        </button>
+                        <button 
+                          onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`, '_blank')} 
+                          className="px-4 py-2 bg-blue-800 text-white rounded-md"
+                        >
+                          Facebook
+                        </button>
+                        <button 
+                          onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(productUrl)}`, '_blank')} 
+                          className="px-4 py-2 bg-[#0077b5] text-white rounded-md"
+                        >
+                          LinkedIn
+                        </button>
+                      </div>
                   </div>
                 </div>
                 <div className="mb-4 font-medium">Preview</div>

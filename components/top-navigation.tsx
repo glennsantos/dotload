@@ -182,11 +182,16 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
           </Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center space-x-6">
           <Link href="/products" className="hover:text-gray-300">
             Products
           </Link>
-          {hasPurchases && (
+          {user && hasPurchases && (
+            <Link href="/buyer-dashboard" className="hover:text-gray-300">
+              Buyer Dashboard
+            </Link>
+          )}
+          {user && (
             <Link href="/purchases" className="hover:text-gray-300">
               Purchases
             </Link>
@@ -213,12 +218,20 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                     <User className="mr-2" size={16} /> Profile
                   </Link>
                   {hasPurchases && (
-                    <Link
-                      href="/purchases"
-                      className="block px-4 py-2 hover:bg-gray-100 flex items-center"
-                    >
-                      <ShoppingBag className="mr-2" size={16} /> Purchases
-                    </Link>
+                    <>
+                      <Link
+                        href="/buyer-dashboard"
+                        className="block px-4 py-2 hover:bg-gray-100 flex items-center"
+                      >
+                        <ShoppingBag className="mr-2" size={16} /> Buyer Dashboard
+                      </Link>
+                      <Link
+                        href="/purchases"
+                        className="block px-4 py-2 hover:bg-gray-100 flex items-center"
+                      >
+                        <ShoppingBag className="mr-2" size={16} /> Purchases
+                      </Link>
+                    </>
                   )}
                   <Link 
                     href="/settings" 
@@ -256,6 +269,15 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
           <Link href="/products" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
             Products
           </Link>
+          
+          {user && hasPurchases && (
+            <Link href="/buyer-dashboard" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+              <span className="flex items-center">
+                <ShoppingBag size={18} className="mr-2" />
+                Buyer Dashboard
+              </span>
+            </Link>
+          )}
           
           {user ? (
             <>

@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ShoppingCart, Info, Star } from "lucide-react"
+import RichTextRenderer from "@/components/rich-text-renderer"
 
 interface ProductPageProps {
   params: {
@@ -126,7 +127,10 @@ export default function PublicProductPage({ params }: ProductPageProps) {
             
             {/* Product description */}
             <div className="prose max-w-none text-gray-600 mb-8">
-              {product.description || 'No description available'}
+              <RichTextRenderer 
+                content={product.description || 'No description available'}
+                className="text-gray-600"
+              />
             </div>
             
             {/* Ratings - Desktop only - Only shown if there are ratings */}

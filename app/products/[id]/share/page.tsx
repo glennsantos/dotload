@@ -110,10 +110,10 @@ export default function ProductSharePage({ params }: { params: { id: string } })
             <p className="text-sm text-gray-600 mb-4">Share your product on social media</p>
             <div className="flex gap-2">
               <button 
-                onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(productUrl)}&text=${encodeURIComponent(`Check out ${product.name}`)}`, '_blank')} 
-                className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                onClick={() => window.open(`https://x.com/intent/tweet?url=${encodeURIComponent(productUrl)}&text=${encodeURIComponent(`Check out ${product.name}`)}`, '_blank')} 
+                className="px-4 py-2 bg-black text-white rounded-md"
               >
-                Twitter
+                X (Twitter)
               </button>
               <button 
                 onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`, '_blank')} 

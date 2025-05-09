@@ -62,6 +62,13 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
       [name]: value
     })
   }
+  
+  const handleDescriptionChange = (value: string) => {
+    setFormData({
+      ...formData,
+      description: value
+    })
+  }
 
   const handleSave = async () => {
     try {
@@ -196,13 +203,11 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                     placeholder="Enter product name"
                   />
                 </div>
-                <div className="mb-4">
-                  <label htmlFor="description" className="block mb-2 font-medium">
-                    Description
-                  </label>
-                  <RichTextEditor 
+                <div className="mb-6">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <RichTextEditor
                     value={formData.description || ''}
-                    onChange={(value) => setFormData({...formData, description: value})}
+                    onChange={handleDescriptionChange}
                     placeholder="Describe your product"
                   />
                 </div>
