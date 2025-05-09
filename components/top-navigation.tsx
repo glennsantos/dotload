@@ -205,27 +205,19 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
               </button>
               
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 py-2 bg-white rounded-md shadow-xl z-20">
-                  <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
-                    <p className="font-medium">{user.name || 'User'}</p>
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                  </div>
-                  <Link 
-                    href="/dashboard" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={() => setUserMenuOpen(false)}
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg z-50">
+                  <Link
+                    href="/account"
+                    className="block px-4 py-2 hover:bg-gray-100 flex items-center"
                   >
-                    <User size={16} className="mr-2" />
-                    Dashboard
+                    <User className="mr-2" size={16} /> Profile
                   </Link>
                   {hasPurchases && (
-                    <Link 
-                      href="/buyer-dashboard" 
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                      onClick={() => setUserMenuOpen(false)}
+                    <Link
+                      href="/purchases"
+                      className="block px-4 py-2 hover:bg-gray-100 flex items-center"
                     >
-                      <ShoppingBag size={16} className="mr-2" />
-                      My Purchases
+                      <ShoppingBag className="mr-2" size={16} /> Buyer Dashboard
                     </Link>
                   )}
                   <Link 

@@ -14,7 +14,7 @@ const debugLog = (message: string, ...args: any[]) => {
 };
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env';
+const JWT_SECRET = process.env.JWT_SECRET!.trim(); // Ensure no whitespace
 
 export async function POST(req: NextRequest) {
   try {
@@ -98,13 +98,35 @@ export async function POST(req: NextRequest) {
     debugLog('Generating JWT token');
     let token;
     try {
+      // Log details before token generation
+      console.log('Token Generation - User ID:', user.id);
+      console.log('Token Generation - User Email:', user.email);
+      console.log('Token Generation - JWT Secret:', JWT_SECRET);
+      console.log('Token Generation - JWT Secret Length:', JWT_SECRET.length);
+      
       token = jwt.sign(
         { userId: user.id, email: user.email }, 
         JWT_SECRET, 
-        { expiresIn: '24h' }
+        { 
+          expiresIn: '24h',
+          algorithm: 'HS256' // Explicitly set algorithm
+        }
       );
+      
+      // Log token details after generation
+      console.log('Generated Token:', token);
+      console.log('Generated Token Length:', token.length);
+      
       debugLog('JWT token generated successfully');
     } catch (tokenError) {
+      // Log detailed error information
+      console.error('Token Generation Error:', tokenError);
+      if (tokenError instanceof Error) {
+        console.error('Error Name:', tokenError.name);
+        console.error('Error Message:', tokenError.message);
+        console.error('Error Stack:', tokenError.stack);
+      }
+      
       debugLog('Error generating JWT token', tokenError);
       return NextResponse.json({ error: 'Error during authentication' }, { status: 500 });
     }

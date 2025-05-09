@@ -37,16 +37,44 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex')
+    // Retrieve JWT secret from login route for consistency
+    const JWT_SECRET = process.env.JWT_SECRET!.trim(); // Ensure no whitespace
     let decoded;
     try {
-      decoded = jwt.verify(token.value, JWT_SECRET) as { userId: string, email: string }
+      // Log token details for debugging
+      console.log('JWT Secret:', JWT_SECRET);
+      console.log('Token Value:', token.value);
+      console.log('Token Length:', token.value?.length);
+      
+      // Verify token with detailed logging
+      decoded = jwt.verify(token.value, JWT_SECRET, {
+        algorithms: ['HS256'], // Specify the expected algorithm
+        maxAge: '24h' // Match the token expiration from login route
+      }) as { userId: string, email: string };
+      
+      console.log('Decoded Token:', decoded);
     } catch (jwtError) {
       console.error('JWT Verification Error:', jwtError);
+      
+      // Detailed error logging
+      if (jwtError instanceof Error) {
+        console.error('Error Name:', jwtError.name);
+        console.error('Error Message:', jwtError.message);
+        console.error('Error Stack:', jwtError.stack);
+      }
+      
       return NextResponse.json(
-        { message: 'Invalid or expired authentication token' },
+        { 
+          message: 'Invalid or expired authentication token',
+          error: jwtError instanceof Error ? jwtError.message : 'Unknown JWT error',
+          details: {
+            name: jwtError instanceof Error ? jwtError.name : 'UnknownError',
+            token: token.value ? 'Token present' : 'No token',
+            tokenLength: token.value?.length || 0
+          }
+        },
         { status: 401 }
-      )
+      );
     }
     
     // Get user from database

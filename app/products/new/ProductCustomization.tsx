@@ -51,7 +51,7 @@ export default function ProductCustomization({
   const handleDescriptionChange = (content: string) => {
     setProductData({
       ...productData,
-      description: content,
+      description: content
     })
   }
 
@@ -134,19 +134,20 @@ export default function ProductCustomization({
                 <div className="border-2 border-dashed rounded-md p-6 text-center">
                   {coverImagePreview ? (
                     <div className="relative">
-                      <div className="relative w-full h-48 rounded overflow-hidden">
+                      <div className="relative w-full h-48 mt-4">
                         <NextImage 
                           src={coverImagePreview} 
-                          alt="Cover preview" 
+                          alt="Cover Preview" 
                           fill 
-                          style={{ objectFit: 'cover' }} 
+                          className="object-cover rounded-lg"
                         />
                       </div>
-                      <button 
+                      <button
+                        type="button"
                         onClick={handleRemoveCoverImage}
-                        className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md"
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
                       >
-                        <X size={16} />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
