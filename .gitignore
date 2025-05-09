@@ -28,3 +28,7 @@ next-env.d.ts
 
 # references
 references/
+
+#uploads
+uploads/
+

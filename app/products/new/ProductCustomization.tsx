@@ -78,16 +78,6 @@ export default function ProductCustomization({
 
           <div className="p-6">
             <div>
-              <div className="mb-6">
-                <label className="block mb-2 font-medium">Name</label>
-                <input
-                  type="text"
-                  value={productData.name || ""}
-                  onChange={(e) => setProductData({ ...productData, name: e.target.value })}
-                  className="w-full p-3 border rounded-md"
-                  placeholder="Enter product name"
-                />
-              </div>
               
               <div className="mb-6">
                 <label className="block mb-2 font-medium">Slug</label>
@@ -102,30 +92,6 @@ export default function ProductCustomization({
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">This will be the URL for your product page</p>
-              </div>
-
-              <div className="mb-6">
-                <label className="block mb-2 font-medium">Description</label>
-                <Editor
-                  apiKey="no-api-key"
-                  initialValue={productData.description || ""}
-                  init={{
-                    height: 300,
-                    menubar: false,
-                    plugins: [
-                      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                      'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                    ],
-                    toolbar: 'undo redo | blocks | ' +
-                      'bold italic forecolor | alignleft aligncenter ' +
-                      'alignright alignjustify | bullist numlist outdent indent | ' +
-                      'removeformat | help',
-                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-                  }}
-                  onEditorChange={handleDescriptionChange}
-                />
-                <p className="text-xs text-gray-500 mt-1">Use the rich text editor to format your product description</p>
               </div>
 
               <div className="mb-6">

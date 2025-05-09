@@ -266,7 +266,7 @@ export default function NewProduct() {
                 />
                 <ProductTypeCard
                   icon="📚"
-                  title="E-Book"
+                  title="eBook"
                   description="Digital books, guides, or PDFs"
                   selected={productData.type === "ebook"}
                   onClick={() => handleTypeSelect("ebook")}

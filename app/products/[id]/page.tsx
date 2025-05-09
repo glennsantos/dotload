@@ -137,7 +137,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <div className="text-sm text-gray-500">Product Type</div>
-                      <div className="font-medium">{product.type === "ebook" ? "E-book" : product.type}</div>
+                      <div className="font-medium">{product.type === "ebook" ? "eBook" : product.type}</div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-500">Price</div>

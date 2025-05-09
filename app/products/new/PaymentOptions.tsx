@@ -52,58 +52,6 @@ export default function PaymentOptions({
           <p className="text-gray-600 mb-6">Configure how customers can pay for your product.</p>
 
           <div className="space-y-4">
-            <div className="border rounded-md p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Pay what you want</h3>
-                  <p className="text-sm text-gray-600">Allow customers to pay more than your set price</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={productData.paymentOptions?.allowPayWhatYouWant || false}
-                    onChange={() => handleToggleOption("allowPayWhatYouWant")}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                </label>
-              </div>
-
-              {productData.paymentOptions?.allowPayWhatYouWant && (
-                <div className="mt-4 pt-4 border-t">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block mb-1 text-sm">Suggested Price</label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
-                          ₱
-                        </span>
-                        <input
-                          type="text"
-                          className="flex-1 p-2 border rounded-r-md"
-                          placeholder="0.00"
-                          defaultValue={productData.price || "2.99"}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block mb-1 text-sm">Minimum Price</label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
-                          ₱
-                        </span>
-                        <input
-                          type="text"
-                          className="flex-1 p-2 border rounded-r-md"
-                          placeholder="0.00"
-                          defaultValue="0.00"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
 
             <div className="border rounded-md p-4">
               <div className="flex items-center justify-between">

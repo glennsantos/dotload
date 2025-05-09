@@ -7,6 +7,124 @@ import Image from "next/image"
 import { ArrowLeft, Save, ChevronRight } from "lucide-react"
 import RichTextEditor from "@/components/rich-text-editor"
 
+// Variation Item Component for managing individual variations
+const VariationItem = ({ variation, index, onUpdate, onDelete }: { 
+  variation: { id?: string, name: string, options: string[] }, 
+  index: number, 
+  onUpdate: (data: {name: string, options: string[]}) => void,
+  onDelete: () => void
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(variation.name);
+  const [editedOptions, setEditedOptions] = useState([...variation.options]);
+  
+  return (
+    <div className="border rounded-md p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-medium">Variation #{index + 1}</h3>
+        <div className="flex gap-3">
+          {isEditing ? (
+            <>
+              <button 
+                className="text-blue-600 text-sm"
+                onClick={() => {
+                  onUpdate({
+                    name: editedName,
+                    options: editedOptions
+                  });
+                  setIsEditing(false);
+                }}
+              >
+                Save
+              </button>
+              <button 
+                className="text-gray-500 text-sm"
+                onClick={() => {
+                  setEditedName(variation.name);
+                  setEditedOptions([...variation.options]);
+                  setIsEditing(false);
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button 
+              className="text-blue-600 text-sm"
+              onClick={() => setIsEditing(true)}
+            >
+              Edit
+            </button>
+          )}
+          <button 
+            className="text-red-500 text-sm"
+            onClick={onDelete}
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+      
+      <div className="mb-3">
+        <label className="block mb-1 text-sm font-medium">Variation Name</label>
+        <input
+          type="text"
+          value={isEditing ? editedName : variation.name}
+          onChange={(e) => isEditing && setEditedName(e.target.value)}
+          className="w-full p-2 border rounded-md"
+          disabled={!isEditing}
+        />
+      </div>
+      
+      <div>
+        <label className="block mb-1 text-sm font-medium">Options</label>
+        <div className="space-y-2">
+          {(isEditing ? editedOptions : variation.options).map((option, optionIndex) => (
+            <div key={optionIndex} className="flex gap-2">
+              <input
+                type="text"
+                value={option}
+                onChange={(e) => {
+                  if (isEditing) {
+                    const newOptions = [...editedOptions];
+                    newOptions[optionIndex] = e.target.value;
+                    setEditedOptions(newOptions);
+                  }
+                }}
+                className="flex-1 p-2 border rounded-md"
+                disabled={!isEditing}
+              />
+              {isEditing && (
+                <button 
+                  className="p-2 text-red-500"
+                  onClick={() => {
+                    const newOptions = editedOptions.filter((_, i) => i !== optionIndex);
+                    setEditedOptions(newOptions);
+                  }}
+                  aria-label="Remove option"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        {isEditing && (
+          <button 
+            className="mt-2 flex items-center gap-1 text-blue-600"
+            onClick={() => {
+              setEditedOptions([...editedOptions, '']);
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Option
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function ProductEditPage({ params }: { params: { id: string } }) {
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -24,6 +142,8 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false)
+  const [saveResult, setSaveResult] = useState<{success: boolean, message: string}>({success: false, message: ''})
   const [discountCodes, setDiscountCodes] = useState<Array<{code: string, amount: string, type: string, startDate: string, endDate: string}>>([])
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean,
@@ -37,6 +157,10 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     startDate: '',
     endDate: ''
   })
+  const [variations, setVariations] = useState<Array<{id?: string, name: string, options: string[]}>>([]) 
+  const [newVariation, setNewVariation] = useState<{name: string, options: string[]}>({name: '', options: ['']})
+  const [deleteVariationConfirmation, setDeleteVariationConfirmation] = useState<{isOpen: boolean, id: string, index: number}>({isOpen: false, id: '', index: -1})
+  const [isSavingVariation, setIsSavingVariation] = useState(false)
 
   useEffect(() => {
     async function fetchProduct() {
@@ -78,6 +202,21 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
             setDiscountCodes([]);
           }
         }
+        
+        // Initialize variations if available
+        if (foundProduct.variations && foundProduct.variations.length > 0) {
+          try {
+            const processedVariations = foundProduct.variations.map((variation: any) => ({
+              id: variation.id,
+              name: variation.name,
+              options: typeof variation.options === 'string' ? JSON.parse(variation.options) : variation.options
+            }));
+            setVariations(processedVariations);
+          } catch (err) {
+            console.error('Error processing variations:', err);
+            setVariations([]);
+          }
+        }
       } catch (err) {
         console.error('Error fetching product:', err)
         setError('Failed to load product. Please try again later.')
@@ -95,6 +234,8 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
       ...formData,
       [name]: value
     })
+
+    console.log(formData)
   }
   
   const handleDescriptionChange = (value: string) => {
@@ -119,10 +260,9 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
           type: formData.type,
           isPublic: formData.visibility === "public",
           status: formData.status,
-          // Include any other fields that need to be saved
           allowPayWhatYouWant: product.allowPayWhatYouWant,
           offerCoupons: product.offerCoupons,
-          discountCodes: product.offerCoupons ? product.discountCodes : null,
+          discountCodes: JSON.stringify(discountCodes)
         }),
       })
 
@@ -130,16 +270,165 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
         throw new Error(`Error: ${response.status}`)
       }
 
-      const updatedProduct = await response.json()
-      setProduct(updatedProduct.product || updatedProduct)
-      toast.success('Product updated successfully')
-    } catch (err) {
-      console.error('Error updating product:', err)
-      toast.error('Failed to update product. Please try again later.')
+      const result = await response.json();
+
+      // Set success message and show confirmation modal
+      setSaveResult({
+        success: true,
+        message: 'Product updated successfully!'
+      });
+      setShowSaveConfirmation(true);
+    } catch (error) {
+      console.error('Error updating product:', error);
+
+      // Set error message and show confirmation modal
+      setSaveResult({
+        success: false,
+        message: 'Failed to update product. Please try again.'
+      });
+      setShowSaveConfirmation(true);
     } finally {
       setIsSaving(false);
     }
-  }
+  };
+
+  // Handle adding a new option to a variation being created
+  const handleAddOption = () => {
+    setNewVariation({
+      ...newVariation,
+      options: [...newVariation.options, '']
+    });
+  };
+
+  // Handle removing an option from a variation being created
+  const handleRemoveOption = (index: number) => {
+    setNewVariation({
+      ...newVariation,
+      options: newVariation.options.filter((_, i) => i !== index)
+    });
+  };
+
+  // Handle option text change for a new variation
+  const handleOptionChange = (index: number, value: string) => {
+    const updatedOptions = [...newVariation.options];
+    updatedOptions[index] = value;
+    setNewVariation({
+      ...newVariation,
+      options: updatedOptions
+    });
+  };
+
+  // Handle adding a new variation
+  const handleAddVariation = async () => {
+    if (!newVariation.name.trim()) {
+      toast.error('Variation name is required');
+      return;
+    }
+
+    if (newVariation.options.some(option => !option.trim())) {
+      toast.error('All options must have a value');
+      return;
+    }
+
+    setIsSavingVariation(true);
+
+    try {
+      const response = await fetch(`/api/products/${params.id}/variations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newVariation.name,
+          options: JSON.stringify(newVariation.options),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || `Error: ${response.status}`);
+      }
+
+      const newVariationData = await response.json();
+      
+      // Add the new variation to the list
+      setVariations([...variations, {
+        id: newVariationData.id,
+        name: newVariationData.name,
+        options: typeof newVariationData.options === 'string' 
+          ? JSON.parse(newVariationData.options) 
+          : newVariationData.options
+      }]);
+
+      // Reset the form
+      setNewVariation({ name: '', options: [''] });
+      toast.success('Variation added successfully');
+    } catch (error) {
+      console.error('Error adding variation:', error);
+      toast.error('Failed to add variation. Please try again.');
+    } finally {
+      setIsSavingVariation(false);
+    }
+  };
+
+  // Handle updating an existing variation
+  const handleUpdateVariation = async (variationId: string, updatedData: {name: string, options: string[]}) => {
+    try {
+      const response = await fetch(`/api/products/${params.id}/variations/${variationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: updatedData.name,
+          options: JSON.stringify(updatedData.options),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || `Error: ${response.status}`);
+      }
+
+      // Update the variation in the local state
+      setVariations(variations.map(v => 
+        v.id === variationId ? {
+          ...v,
+          name: updatedData.name,
+          options: updatedData.options
+        } : v
+      ));
+
+      toast.success('Variation updated successfully');
+    } catch (error) {
+      console.error('Error updating variation:', error);
+      toast.error('Failed to update variation. Please try again.');
+    }
+  };
+
+  // Handle deleting a variation
+  const handleDeleteVariation = async () => {
+    if (!deleteVariationConfirmation.id) return;
+    
+    try {
+      const response = await fetch(`/api/products/${params.id}/variations/${deleteVariationConfirmation.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || `Error: ${response.status}`);
+      }
+
+      // Remove the variation from the local state
+      setVariations(variations.filter(v => v.id !== deleteVariationConfirmation.id));
+      setDeleteVariationConfirmation({isOpen: false, id: '', index: -1});
+      toast.success('Variation deleted successfully');
+    } catch (error) {
+      console.error('Error deleting variation:', error);
+      toast.error('Failed to delete variation. Please try again.');
+    }
+  };
 
   const handleDeleteProduct = async () => {
     try {
@@ -315,9 +604,9 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                   >
                     <option value="">Select a product type</option>
                     <option value="digital_product">Digital Product</option>
-                    <option value="physical_product">Physical Product</option>
-                    <option value="service">Service</option>
-                    <option value="subscription">Subscription</option>
+                    <option value="ebook">eBook</option>
+                    <option value="audiobook">Audiobook</option>
+                    <option value="course">Course</option>
                   </select>
                 </div>
               </div>
@@ -398,65 +687,134 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
           <div className="space-y-6">
             <div className="border rounded-md p-6">
               <h2 className="text-xl font-medium mb-4">Product Variations</h2>
+              <p className="text-gray-600 mb-6">Add variations like size, color, or format to give customers more options</p>
               
-              {product.variations && product.variations.length > 0 ? (
-                <div className="space-y-4">
-                  {product.variations.map((variation: any, index: number) => (
-                    <div key={variation.id} className="border rounded-md p-4">
-                      <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-medium">{variation.name || `Variation ${index + 1}`}</h3>
-                        <button className="text-red-500 text-sm">Remove</button>
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="block mb-1 text-sm font-medium">Variation Name</label>
-                        <input
-                          type="text"
-                          defaultValue={variation.name}
-                          className="w-full p-2 border rounded-md"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block mb-1 text-sm font-medium">Options</label>
-                        <div className="space-y-2">
-                          {JSON.parse(variation.options || '[]').map((option: string, optionIndex: number) => (
-                            <div key={optionIndex} className="flex gap-2">
-                              <input
-                                type="text"
-                                defaultValue={option}
-                                className="flex-1 p-2 border rounded-md"
-                              />
-                              <button className="p-2 text-red-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                        <button className="mt-2 flex items-center gap-1 text-blue-600">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                          Add Option
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+              {variations.length > 0 ? (
+                <div className="space-y-6">
+                  {variations.map((variation, index) => {
+                    // Using a unique key for each variation component to maintain state properly
+                    const variationKey = variation.id || `new-variation-${index}`;
+                    return (
+                      <VariationItem 
+                        key={variationKey}
+                        variation={variation}
+                        index={index}
+                        onUpdate={(updatedData) => {
+                          if (variation.id) {
+                            handleUpdateVariation(variation.id, updatedData);
+                          }
+                        }}
+                        onDelete={() => {
+                          if (variation.id) {
+                            setDeleteVariationConfirmation({
+                              isOpen: true,
+                              id: variation.id,
+                              index: index
+                            });
+                          } else {
+                            // For variations not yet saved to DB
+                            setVariations(variations.filter((_, i) => i !== index));
+                          }
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center p-8 border-2 border-dashed rounded-md">
                   <h3 className="font-medium mb-2">No variations added yet</h3>
                   <p className="text-gray-600 mb-4">Add variations like size, color, or format to give customers more options</p>
-                  <button className="px-4 py-2 bg-black text-white rounded-md">
-                    Add Variation
-                  </button>
                 </div>
               )}
               
-              {product.variations && product.variations.length > 0 && (
-                <button className="mt-4 flex items-center gap-2 px-4 py-2 border rounded-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  Add Another Variation
+              {/* Form to add a new variation */}
+              <div className="mt-6 border-t pt-6">
+                <h3 className="font-medium mb-4">Add New Variation</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block mb-1 text-sm font-medium">Variation Name</label>
+                    <input
+                      type="text"
+                      value={newVariation.name}
+                      onChange={(e) => setNewVariation({...newVariation, name: e.target.value})}
+                      placeholder="e.g., Size, Color, Material"
+                      className="w-full p-2 border rounded-md"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block mb-1 text-sm font-medium">Options</label>
+                    <div className="space-y-2">
+                      {newVariation.options.map((option, index) => (
+                        <div key={index} className="flex gap-2">
+                          <input
+                            type="text"
+                            value={option}
+                            onChange={(e) => handleOptionChange(index, e.target.value)}
+                            placeholder={`Option ${index + 1}`}
+                            className="flex-1 p-2 border rounded-md"
+                          />
+                          <button 
+                            className="p-2 text-red-500"
+                            onClick={() => handleRemoveOption(index)}
+                            disabled={newVariation.options.length <= 1}
+                            aria-label="Remove option"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button 
+                      className="mt-2 flex items-center gap-1 text-blue-600"
+                      onClick={handleAddOption}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                      Add Option
+                    </button>
+                  </div>
+                  
+                  <button 
+                    className="px-4 py-2 bg-black text-white rounded-md flex items-center gap-2"
+                    onClick={handleAddVariation}
+                    disabled={isSavingVariation}
+                  >
+                    {isSavingVariation ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>Add Variation</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Variation Delete Confirmation Modal */}
+        {deleteVariationConfirmation.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-medium mb-4">Delete Variation</h3>
+              <p className="mb-6">Are you sure you want to delete this variation? This action cannot be undone.</p>
+              
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setDeleteVariationConfirmation({isOpen: false, id: '', index: -1})}
+                  className="px-4 py-2 border rounded-md"
+                >
+                  Cancel
                 </button>
-              )}
+                <button 
+                  onClick={handleDeleteVariation}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Delete Variation
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -466,43 +824,148 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
             <div className="border rounded-md p-6">
               <h2 className="text-xl font-medium mb-4">Product Content</h2>
               
-              {product.files && product.files.length > 0 ? (
-                <div className="space-y-4">
-                  <h3 className="font-medium">Files</h3>
-                  <ul className="border rounded-md divide-y">
-                    {product.files.map((file: any) => (
-                      <li key={file.id} className="p-3 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                          <span>{file.filename}</span>
-                        </div>
-                        <button className="text-red-500">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+              <div className="space-y-6">
+                {/* Included Content Section */}
+                <div>
+                  {product.files && product.files.length > 0 ? (
+                    <div className="space-y-4">
+                      <h3 className="font-medium">Product Files</h3>
+                      <ul className="border rounded-md divide-y">
+                        {product.files.map((file: any) => (
+                          <li key={file.id} className="p-4 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                              <div>
+                                <div className="font-medium">{file.filename}</div>
+                                <div className="text-xs text-gray-500 truncate max-w-xs">
+                                  {file.path && (
+                                    <>
+                                      Path: {file.path.startsWith('http') ? (
+                                        <a href={file.path} target="_blank" rel="noopener noreferrer" className="hover:underline text-blue-500">{file.path}</a>
+                                      ) : (
+                                        <a href={`/api/secure-files/${encodeURIComponent(file.path)}`} target="_blank" rel="noopener noreferrer" className="hover:underline text-blue-500">Secure File Link</a>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <button 
+                              className="text-red-500 hover:text-red-700"
+                              onClick={async () => {
+                                if (confirm('Are you sure you want to delete this file?')) {
+                                  try {
+                                    const response = await fetch(`/api/products/${params.id}/files/${file.id}`, {
+                                      method: 'DELETE',
+                                    });
+                                    
+                                    if (!response.ok) {
+                                      throw new Error(`Error: ${response.status}`);
+                                    }
+                                    
+                                    // Update the product state by removing the deleted file
+                                    setProduct({
+                                      ...product,
+                                      files: product.files.filter((f: any) => f.id !== file.id)
+                                    });
+                                    
+                                    toast.success('File deleted successfully');
+                                  } catch (error) {
+                                    console.error('Error deleting file:', error);
+                                    toast.error('Failed to delete file. Please try again.');
+                                  }
+                                }
+                              }}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="text-center p-6 border-2 border-dashed rounded-md mb-4">
+                      <h4 className="font-medium mb-2">No files added yet</h4>
+                      <p className="text-gray-600 text-sm">Upload files that customers will receive after purchase</p>
+                    </div>
+                  )}
                   
-                  <div>
-                    <label className="block mb-2 font-medium">Add Files</label>
-                    <input
-                      type="file"
-                      multiple
-                      className="w-full p-2 border rounded-md"
-                    />
+                  <div className="mt-6">
+                    <div className="flex flex-col space-y-3">
+                      <input
+                        type="file"
+                        multiple
+                        id="file-upload"
+                        className="hidden w-full p-2 border rounded-md"
+                        onChange={async (e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            setIsUploading(true);
+                            const formData = new FormData();
+                            
+                            for (let i = 0; i < e.target.files.length; i++) {
+                              formData.append('files', e.target.files[i]);
+                            }
+                            
+                            try {
+                              const response = await fetch(`/api/products/${params.id}/files`, {
+                                method: 'POST',
+                                body: formData,
+                              });
+                              
+                              if (!response.ok) {
+                                throw new Error(`Error: ${response.status}`);
+                              }
+                              
+                              const result = await response.json();
+                              
+                              // Update the product state with the new files
+                              setProduct({
+                                ...product,
+                                files: [...(product.files || []), ...result.files]
+                              });
+                              
+                              toast.success('Files uploaded successfully');
+                            } catch (error) {
+                              console.error('Error uploading files:', error);
+                              toast.error('Failed to upload files. Please try again.');
+                            } finally {
+                              setIsUploading(false);
+                              // Clear the file input
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                        disabled={isUploading}
+                      />
+                      <button
+                        onClick={() => document.getElementById('file-upload')?.click()}
+                        className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isUploading}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        {isUploading ? 'Uploading...' : 'Upload Files'}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center p-8 border-2 border-dashed rounded-md">
-                  <h3 className="font-medium mb-2">No content files added yet</h3>
-                  <p className="text-gray-600 mb-4">Upload files that customers will receive after purchase</p>
-                  <input
-                    type="file"
-                    multiple
-                    className="w-full p-2 border rounded-md"
-                  />
-                </div>
-              )}
+              </div>
+              
+              <div className="mt-6 pt-6 border-t">
+                <p className="text-gray-600 mb-3">
+                  These items are files that customers will receive after purchasing your product. These can include:
+                </p>
+                <ul className="list-disc pl-5 text-gray-600 mb-3 space-y-1">
+                  <li>PDF documents</li>
+                  <li>eBooks</li>
+                  <li>Software applications</li>
+                  <li>Audio or video files</li>
+                  <li>Design templates</li>
+                  <li>Source code</li>
+                </ul>
+                <p className="text-gray-600">
+                  The file you upload will be securely stored and only made available to customers after they complete their purchase.
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -949,6 +1412,60 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
           </div>
         )}
       </div>
+      
+      {/* Save Confirmation Modal */}
+      {showSaveConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="flex items-center mb-4">
+              {saveResult.success ? (
+                <div className="bg-green-100 text-green-700 p-3 rounded-full mr-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              ) : (
+                <div className="bg-red-100 text-red-700 p-3 rounded-full mr-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              )}
+              <h3 className="text-xl font-medium">
+                {saveResult.success ? 'Success!' : 'Error'}
+              </h3>
+            </div>
+            
+            <p className="mb-6">{saveResult.message}</p>
+            
+            <div className="flex justify-end">
+              <button 
+                onClick={() => {
+                  setShowSaveConfirmation(false);
+                  if (saveResult.success) {
+                    // Refresh product data if save was successful
+                    const fetchProduct = async () => {
+                      try {
+                        const response = await fetch(`/api/products/${params.id}`);
+                        if (response.ok) {
+                          const updatedProduct = await response.json();
+                          setProduct(updatedProduct);
+                        }
+                      } catch (error) {
+                        console.error('Error fetching updated product:', error);
+                      }
+                    };
+                    fetchProduct();
+                  }
+                }}
+                className={`px-4 py-2 rounded-md ${saveResult.success ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white`}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

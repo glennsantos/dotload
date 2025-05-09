@@ -59,7 +59,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const productId = params.id;
+  // Await the params to fix the error
+  const { id } = await params;
+  const productId = id;
   try {
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
@@ -113,7 +115,9 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const productId = params.id;
+    // Await the params to fix the error
+    const { id } = await params;
+    const productId = id;
     
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
@@ -284,6 +288,7 @@ export async function PUT(
         ...(jsonData.name !== undefined ? { name: jsonData.name } : {}),
         ...(jsonData.description !== undefined ? { description: jsonData.description } : {}),
         ...(jsonData.price !== undefined ? { price: jsonData.price } : {}),
+        ...(jsonData.type !== undefined ? { type: jsonData.type } : {}),
         ...(jsonData.allowPayWhatYouWant !== undefined ? { allowPayWhatYouWant: !!jsonData.allowPayWhatYouWant } : {}),
         ...(jsonData.offerCoupons !== undefined ? { offerCoupons: !!jsonData.offerCoupons } : {}),
         ...(jsonData.discountCodes !== undefined ? { discountCodes: jsonData.discountCodes } : {}),
@@ -378,7 +383,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const productId = params.id;
+  // Await the params to fix the error
+  const { id } = await params;
+  const productId = id;
   try {
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
