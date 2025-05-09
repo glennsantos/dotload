@@ -2,19 +2,15 @@
 * use the existing prisma Next.js routes for the API
 * do not restart the server, send instructions to the user and he will restart the server
 * do not use the Xendit SDK, use the Xendit API directly
-
-PAYOUT
-/home/aryeh/dev/alacarte/app/payout/page.tsx
-Create the payout transaction once they click Confirm Payout
-  
-TODO
-* Test happy path again
-* Debug ewallet payments
-
+ 
 TRANSACTIONS
 * the payout amount is net of the processing fee. log the correct amount as a transaction
 * fix balance computation. it's not deducting
-* 
+ 
+NEXT STEPS
+* Test happy path again
+* deploy if passes happy path
+
 
 AUTH
 /home/aryeh/dev/alacarte/app/products/page.tsx
@@ -27,5 +23,5 @@ PAYMENT OPTIONS
 3. [For QA] Whenever a fee is charged, add an entry into the transactions table
 
 WEBHOOKS
-1. implement webhook listeners for purchases
-2. implement webhook listeners for payouts
+1. implement webhook listeners for purchases to confirm status and update status in db
+2. implement webhook listeners for payouts to confirm and update status in db
