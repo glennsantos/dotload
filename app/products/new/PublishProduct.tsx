@@ -23,7 +23,7 @@ export default function PublishProduct({
     <div>
       <header className="p-6 border-b flex justify-between items-center">
         <h1 className="text-3xl font-normal truncate">
-          {productData.name || "Solo Travel to Japan in Your 20s: A Comprehensive Guide"}
+          {productData.name}
         </h1>
         <div className="flex gap-2">
           <button onClick={onBack} className="px-4 py-2 border rounded-md flex items-center gap-2">

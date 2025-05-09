@@ -3,9 +3,6 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
-import dynamic from 'next/dynamic';
-
-const TopNavigation = dynamic(() => import('@/components/top-navigation'));
 
 export const metadata: Metadata = {
   title: 'Payouts | alaCarte',
@@ -31,11 +28,14 @@ export default async function PayoutsLayout({
   try {
     // Verify the token
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { id: string; email: string };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string };
+    
+    // Log decoded token for debugging
+    console.log('Payouts Layout - Decoded Token:', decoded);
 
     // Get the user from the database
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.userId },
       select: { id: true, name: true, email: true },
     });
 
@@ -46,7 +46,6 @@ export default async function PayoutsLayout({
 
     return (
       <div className="flex flex-col h-screen">
-        <TopNavigation user={user} />
         <main className="flex-1 overflow-auto bg-gray-50">
           {children}
         </main>
