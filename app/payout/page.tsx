@@ -168,6 +168,9 @@ export default function PayoutPage() {
     try {
       setIsLoading(true);
       
+      // Create a reference ID for tracking this payout
+      const referenceId = `payout-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+      
       const response = await fetch('/api/transactions/payout', {
         method: 'POST',
         headers: {
@@ -175,27 +178,35 @@ export default function PayoutPage() {
         },
         body: JSON.stringify({
           ...formData,
-          processingFee
+          processingFee,
+          referenceId,
         }),
       });
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Payout error:', errorData);
         throw new Error(errorData.error || 'Failed to process payout');
       }
       
       const data = await response.json();
+      console.log('Payout response:', data);
       
+      // Show a more detailed success message
       toast({
         title: 'Payout requested',
-        description: 'Your payout request has been submitted successfully',
+        description: `Your payout of ${formatCurrency(formData.amount - processingFee)} has been submitted successfully. Transaction ID: ${data.payout?.id || referenceId}`,
         variant: 'default',
       });
       
-      // Redirect to transactions page
-      router.push('/transactions');
+      // Add a slight delay before redirecting to ensure the user sees the success message
+      setTimeout(() => {
+        // Redirect to transactions page
+        router.push('/transactions');
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Payout error:', err);
       toast({
         title: 'Error',
         description: err instanceof Error ? err.message : 'Failed to process payout',

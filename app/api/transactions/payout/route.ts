@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const data = await request.json();
-    const { amount, bankCode, accountNumber, accountHolderName, processingFee } = data;
+    const { amount, bankCode, accountNumber, accountHolderName, processingFee, referenceId: clientReferenceId } = data;
 
     // Validate required fields
     if (!amount || !bankCode || !accountNumber || !accountHolderName) {
@@ -105,8 +105,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a payout request with Xendit
-    const referenceId = `payout-${user.id}-${Date.now()}`;
+    // Create a payout request with Xendit using direct API call
+    // Use the client-provided referenceId if available, otherwise generate one
+    const referenceId = clientReferenceId || `payout-${user.id}-${Date.now()}`;
     
     // Map our bank code to Xendit channel code
     const channelCode = bankCodeMapping[bankCode];
