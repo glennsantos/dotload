@@ -1,22 +1,31 @@
 * save form input to the provided Postgre
 * use the existing prisma Next.js routes for the API
 * do not restart the server, send instructions to the user and he will restart the server
-
-HOME
-1. Remove analytics and audience links in nav bar
-
-
-AUTH
-1. If not logged in, redirect to login page
-
-  
-PRODUCT PAGE
-1. Don't put ratings if there are none for the product
-2. Remove the Content description
-
-SUCCESS PAGE
-1. The access content button should show the buyer dashboard (attach screen)
-2. If not a user yet, this should also automatically create one for them, asking any missing details
+* do not use the Xendit SDK, use the Xendit API directly
 
 PAYOUT
-1. Add a way for the user to request payout using Xendit. Study docs first
+/home/aryeh/dev/alacarte/app/payout/page.tsx
+Create the payout transaction once they click Confirm Payout
+  
+TODO
+* Test happy path again
+* Debug ewallet payments
+
+TRANSACTIONS
+* the payout amount is net of the processing fee. log the correct amount as a transaction
+* fix balance computation. it's not deducting
+* 
+
+AUTH
+/home/aryeh/dev/alacarte/app/products/page.tsx
+1.  When a user who is not logged in visits the /products page, redirect them to the login page
+
+PAYMENT OPTIONS
+/home/aryeh/dev/alacarte/app/products/new/PaymentOptions.tsx
+1. [For QA] Whenever a purchase is made, add an entry into the transactions table
+2. [For QA] Whenever a payout is made, add an entry into the transactions table
+3. [For QA] Whenever a fee is charged, add an entry into the transactions table
+
+WEBHOOKS
+1. implement webhook listeners for purchases
+2. implement webhook listeners for payouts
