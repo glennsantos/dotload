@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Save, ChevronRight } from "lucide-react"
-// Removed TinyMCE integration
+import RichTextEditor from "@/components/rich-text-editor"
 
 export default function ProductEditPage({ params }: { params: { id: string } }) {
   const [product, setProduct] = useState<any>(null)
@@ -55,7 +55,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     fetchProduct()
   }, [params.id])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData({
       ...formData,
@@ -182,43 +182,68 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
             <div className="md:col-span-2 space-y-6">
               <div className="border rounded-md p-6">
                 <h2 className="text-xl font-medium mb-4">Basic Information</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block mb-2 font-medium">Product Name</label>
+                <div className="mb-4">
+                  <label htmlFor="name" className="block mb-2 font-medium">
+                    Product name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border rounded-md"
+                    placeholder="Enter product name"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="description" className="block mb-2 font-medium">
+                    Description
+                  </label>
+                  <RichTextEditor 
+                    value={formData.description || ''}
+                    onChange={(value) => setFormData({...formData, description: value})}
+                    placeholder="Describe your product"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="price" className="block mb-2 font-medium">
+                    Price
+                  </label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
+                      ₱
+                    </span>
                     <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={formData.price}
                       onChange={handleInputChange}
-                      className="w-full p-3 border rounded-md"
+                      className="w-full p-3 border rounded-r-md"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
                     />
                   </div>
-                  
-                  <div>
-                    <label className="block mb-2 font-medium">Description</label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      className="w-full p-3 border rounded-md min-h-[300px]"
-                      placeholder="Enter product description"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Enter a detailed description of your product</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block mb-2 font-medium">Product Type</label>
-                    <input
-                      type="text"
-                      name="type"
-                      value={formData.type}
-                      onChange={handleInputChange}
-                      className="w-full p-3 border rounded-md"
-                      disabled
-                    />
-                    <p className="text-sm text-gray-500 mt-1">Product type cannot be changed after creation</p>
-                  </div>
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="type" className="block mb-2 font-medium">
+                    Product type
+                  </label>
+                  <select
+                    id="type"
+                    name="type"
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border rounded-md"
+                  >
+                    <option value="">Select a product type</option>
+                    <option value="digital_product">Digital Product</option>
+                    <option value="physical_product">Physical Product</option>
+                    <option value="service">Service</option>
+                    <option value="subscription">Subscription</option>
+                  </select>
                 </div>
               </div>
             </div>

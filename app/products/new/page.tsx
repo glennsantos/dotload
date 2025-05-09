@@ -10,6 +10,7 @@ import ProductCustomization from "./ProductCustomization"
 import PaymentOptions from "./PaymentOptions"
 import PublishProduct from "./PublishProduct"
 import ContentUpload from "./ContentUpload"
+import RichTextEditor from "@/components/rich-text-editor"
 
 // Define the Product type
 type Product = {
@@ -214,39 +215,43 @@ export default function NewProduct() {
             </div>
 
             <div className="md:col-span-2">
-              <div className="mb-8">
-                <label className="block mb-2 font-medium">Product Title</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={productData.name}
-                  onChange={handleInputChange}
-                  placeholder="Name of your product"
-                  className="w-full p-3 border rounded-md"
-                />
-              </div>
-
-              <div className="mb-8">
-                <label className="block mb-2 font-medium">Price</label>
-                <div className="flex items-center">
-                  <div className="relative">
-                    <select className="h-12 appearance-none bg-white border rounded-l-md px-3 pr-8 focus:outline-none" disabled>
-                      <option>₱</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                      </svg>
-                    </div>
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block mb-2 font-medium">Product Name</label>
                   <input
                     type="text"
-                    name="price"
-                    value={productData.price === 0 ? '' : productData.price}
-                    onChange={handlePriceChange}
-                    placeholder="Price your product"
-                    className="flex-1 h-12 p-3 border-l-0 border rounded-r-md"
+                    value={productData.name}
+                    onChange={(e) => setProductData({ ...productData, name: e.target.value })}
+                    className="w-full p-3 border rounded-md"
+                    placeholder="Enter product name"
                   />
+                </div>
+                
+                <div>
+                  <label className="block mb-2 font-medium">Description</label>
+                  <RichTextEditor 
+                    value={productData.description || ''}
+                    onChange={(value) => setProductData({ ...productData, description: value})}
+                    placeholder="Describe your product"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block mb-2 font-medium">Price</label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
+                      ₱
+                    </span>
+                    <input
+                      type="number"
+                      value={productData.price}
+                      onChange={handlePriceChange}
+                      className="w-full p-3 border rounded-r-md"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -389,9 +394,9 @@ export default function NewProduct() {
                 <h3 className="font-medium mb-2">Social Media</h3>
                 <p className="text-sm text-gray-600 mb-4">Share your product on social media</p>
                 <div className="flex gap-2">
-                  <button onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${window.location.origin}/${createdProduct.slug || createdProduct.id}`)}&text=${encodeURIComponent(`Check out ${createdProduct.name}`)}`, '_blank')} className="px-4 py-2 bg-blue-600 text-white rounded-md">Twitter</button>
-                  <button onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} className="px-4 py-2 bg-blue-800 text-white rounded-md">Facebook</button>
-                  <button onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${window.location.origin}/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} className="px-4 py-2 bg-[#0077b5] text-white rounded-md">LinkedIn</button>
+                  <button onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}&text=${encodeURIComponent(`Check out ${createdProduct.name}`)}`, '_blank')} className="px-4 py-2 bg-blue-600 text-white rounded-md">Twitter</button>
+                  <button onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} className="px-4 py-2 bg-blue-800 text-white rounded-md">Facebook</button>
+                  <button onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} className="px-4 py-2 bg-[#0077b5] text-white rounded-md">LinkedIn</button>
                 </div>
               </div>
 

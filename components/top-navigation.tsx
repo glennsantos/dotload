@@ -175,25 +175,25 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
 
   return (
     <header className="bg-black text-white">
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/products" className="text-2xl font-bold mr-8">
             alaCarte
           </Link>
-          <nav className="hidden md:flex space-x-6">
-            <Link href="/products" className="hover:text-gray-300">
-              Products
-            </Link>
-          </nav>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <button className="hover:text-gray-300">
-            <Search size={20} />
-          </button>
-          <button className="hover:text-gray-300">
-            <Bell size={20} />
-          </button>
+        <div className="flex items-center gap-4">
+          <Link href="/products" className="hover:text-gray-300">
+            Products
+          </Link>
+          {hasPurchases && (
+            <Link href="/purchases" className="hover:text-gray-300">
+              Purchases
+            </Link>
+          )}
+          <Link href="/help" className="hover:text-gray-300">
+            Help
+          </Link>
           {user ? (
             <div className="relative" ref={userMenuRef}>
               <button 
@@ -217,7 +217,7 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                       href="/purchases"
                       className="block px-4 py-2 hover:bg-gray-100 flex items-center"
                     >
-                      <ShoppingBag className="mr-2" size={16} /> Buyer Dashboard
+                      <ShoppingBag className="mr-2" size={16} /> Purchases
                     </Link>
                   )}
                   <Link 
