@@ -77,7 +77,11 @@ export const getPurchaseByAccessCode = async (accessCode: string) => {
         accessCode,
       },
       include: {
-        product: true,
+        product: {
+          include: {
+            user: true
+          }
+        },
       },
     });
     
@@ -115,7 +119,11 @@ export const getPurchaseById = async (id: string) => {
         id,
       },
       include: {
-        product: true,
+        product: {
+          include: {
+            user: true
+          }
+        },
       },
     });
     

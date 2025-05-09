@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { updatePurchaseStatus, getPurchaseById } from '@/lib/purchase-utils';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
+import { createPurchaseTransaction } from '@/lib/transaction-utils';
 import crypto from 'crypto';
 
 // Verify Xendit webhook signature
@@ -96,6 +97,20 @@ async function handleInvoicePaid(data: any) {
     // Update purchase status to completed
     await updatePurchaseStatus(purchaseId, 'completed', data.id);
     
+    // Get purchase details to create transaction
+    const purchase = await getPurchaseById(purchaseId);
+    if (purchase && purchase.product && purchase.product.user) {
+      // Create transaction entry for the seller
+      await createPurchaseTransaction(
+        purchase.product.user.id,
+        purchaseId,
+        purchase.amount,
+        purchase.currency,
+        purchase.product.name
+      );
+      console.log(`Transaction created for purchase ${purchaseId}`);
+    }
+    
     console.log(`Purchase ${purchaseId} marked as completed`);
   } catch (error) {
     console.error('Error handling invoice paid webhook:', error);
@@ -121,6 +136,20 @@ async function handleEWalletPayment(data: any) {
     if (data.status === 'SUCCEEDED') {
       await updatePurchaseStatus(purchaseId, 'completed', data.id);
       console.log(`Purchase ${purchaseId} marked as completed`);
+      
+      // Get purchase details to create transaction
+      const purchase = await getPurchaseById(purchaseId);
+      if (purchase && purchase.product && purchase.product.user) {
+        // Create transaction entry for the seller
+        await createPurchaseTransaction(
+          purchase.product.user.id,
+          purchaseId,
+          purchase.amount,
+          purchase.currency,
+          purchase.product.name
+        );
+        console.log(`Transaction created for purchase ${purchaseId}`);
+      }
       
       // Send purchase confirmation email with content link
       try {
@@ -174,6 +203,20 @@ async function handleQrCodePayment(data: any) {
       await updatePurchaseStatus(purchaseId, 'completed', data.id);
       console.log(`Purchase ${purchaseId} marked as completed`);
       
+      // Get purchase details to create transaction
+      const purchase = await getPurchaseById(purchaseId);
+      if (purchase && purchase.product && purchase.product.user) {
+        // Create transaction entry for the seller
+        await createPurchaseTransaction(
+          purchase.product.user.id,
+          purchaseId,
+          purchase.amount,
+          purchase.currency,
+          purchase.product.name
+        );
+        console.log(`Transaction created for purchase ${purchaseId}`);
+      }
+      
       // Send purchase confirmation email with content link
       try {
         const purchase = await getPurchaseById(purchaseId);
@@ -225,6 +268,20 @@ async function handleCardPayment(data: any) {
     if (data.status === 'CAPTURED') {
       await updatePurchaseStatus(purchaseId, 'completed', data.id);
       console.log(`Purchase ${purchaseId} marked as completed`);
+      
+      // Get purchase details to create transaction
+      const purchase = await getPurchaseById(purchaseId);
+      if (purchase && purchase.product && purchase.product.user) {
+        // Create transaction entry for the seller
+        await createPurchaseTransaction(
+          purchase.product.user.id,
+          purchaseId,
+          purchase.amount,
+          purchase.currency,
+          purchase.product.name
+        );
+        console.log(`Transaction created for purchase ${purchaseId}`);
+      }
       
       // Send purchase confirmation email with content link
       try {

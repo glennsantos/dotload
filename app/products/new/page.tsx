@@ -39,6 +39,7 @@ export default function NewProduct() {
     coverImage: null as File | null,
     contentFiles: [] as File[],
     contentLinks: [] as string[],
+    discountCodes: [] as Array<{code: string, amount: string, type: string, startDate: string, endDate: string}>,
     paymentOptions: {
       allowPayWhatYouWant: false,
       offerCoupons: false,
@@ -83,6 +84,11 @@ export default function NewProduct() {
       const paymentOptionsString = JSON.stringify(productData.paymentOptions || {});
       console.log('Payment options string:', paymentOptionsString);
       formData.append('paymentOptions', paymentOptionsString);
+      
+      // Add discount codes if enabled
+      if (productData.paymentOptions.offerCoupons) {
+        formData.append('discountCodes', JSON.stringify(productData.discountCodes));
+      }
       
       // Add files if any
       if (productData.coverImage) {
@@ -201,14 +207,7 @@ export default function NewProduct() {
 
           <div className="p-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
-              <p className="mb-4">Make some selections, fill in some boxes, and go live in minutes.</p>
-              <p className="mb-4">
-                Our{" "}
-                <Link href="/help" className="underline font-medium">
-                  Help Center
-                </Link>{" "}
-                has everything you need to know.
-              </p>
+              <p className="mb-4">Make some selections, fill in some boxes, and go live in minutes!</p>
             </div>
 
             <div className="md:col-span-2">

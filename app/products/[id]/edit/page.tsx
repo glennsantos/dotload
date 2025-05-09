@@ -262,7 +262,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
           status: formData.status,
           allowPayWhatYouWant: product.allowPayWhatYouWant,
           offerCoupons: product.offerCoupons,
-          discountCodes: JSON.stringify(discountCodes)
+          discountCodes: product.offerCoupons ? JSON.stringify(discountCodes) : null
         }),
       })
 

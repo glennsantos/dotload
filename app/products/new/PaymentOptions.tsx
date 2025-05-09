@@ -18,6 +18,7 @@ export default function PaymentOptions({
   onCancel: () => void
 }) {
   const [discountCodes, setDiscountCodes] = useState<Array<{code: string, amount: string, type: string, startDate: string, endDate: string}>>(productData.discountCodes || []);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{isOpen: boolean, code: string, index: number}>({isOpen: false, code: '', index: -1});
   const [newDiscountCode, setNewDiscountCode] = useState({
     code: '',
     amount: '',
@@ -62,6 +63,12 @@ export default function PaymentOptions({
                   ...productData,
                   discountCodes: discountCodes
                 });
+              } else {
+                // If coupons are disabled, clear any existing discount codes
+                setProductData({
+                  ...productData,
+                  discountCodes: []
+                });
               }
               onNext();
             }} 
@@ -100,6 +107,46 @@ export default function PaymentOptions({
                 <div className="mt-4 pt-4 border-t">
                   <h3 className="font-medium mb-3">Discount Codes</h3>
                   
+                  {/* Delete Confirmation Modal */}
+                  {deleteConfirmation.isOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <h2 className="text-xl font-bold mb-4 text-gray-800">Confirm Deletion</h2>
+                        <p className="mb-6 text-gray-600">
+                          Are you sure you want to delete the discount code 
+                          <span className="font-semibold text-red-600"> {deleteConfirmation.code}</span>?
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                          <button 
+                            onClick={() => setDeleteConfirmation({ isOpen: false, code: '', index: -1 })}
+                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            onClick={() => {
+                              // Remove from local state
+                              const updatedCodes = [...discountCodes];
+                              updatedCodes.splice(deleteConfirmation.index, 1);
+                              setDiscountCodes(updatedCodes);
+                              
+                              // Update the product data
+                              setProductData({
+                                ...productData,
+                                discountCodes: updatedCodes
+                              });
+                              
+                              setDeleteConfirmation({ isOpen: false, code: '', index: -1 });
+                            }}
+                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {discountCodes.length > 0 && (
                     <div className="mb-4">
                       <div className="bg-gray-100 p-3 rounded-t grid grid-cols-5 gap-2 font-medium text-sm">
@@ -120,12 +167,10 @@ export default function PaymentOptions({
                               <span>{code.endDate}</span>
                               <button 
                                 onClick={() => {
-                                  const updatedCodes = [...discountCodes];
-                                  updatedCodes.splice(index, 1);
-                                  setDiscountCodes(updatedCodes);
-                                  setProductData({
-                                    ...productData,
-                                    discountCodes: updatedCodes
+                                  setDeleteConfirmation({
+                                    isOpen: true,
+                                    code: code.code,
+                                    index: index
                                   });
                                 }}
                                 className="text-red-500 hover:text-red-700"

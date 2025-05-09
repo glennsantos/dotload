@@ -21,6 +21,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState("")
+  const [user, setUser] = useState<any>(null)
   const [mobileNumber, setMobileNumber] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<string>("card")
   const [cardNumber, setCardNumber] = useState("")
@@ -32,6 +33,31 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [discountCode, setDiscountCode] = useState("")
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null)
   const [selectedVariation, setSelectedVariation] = useState<string>("") // Store selected variation
+
+  // Fetch user data to prepopulate email
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        // Use the correct API endpoint for getting the current user
+        const response = await fetch('/api/auth/me')
+        if (response.ok) {
+          const userData = await response.json()
+          console.log('User data fetched:', userData)
+          if (userData && userData.email) {
+            setUser(userData)
+            setEmail(userData.email)
+            console.log('Email set to:', userData.email)
+          }
+        } else {
+          console.log('User not logged in or session not available')
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+      }
+    }
+    
+    fetchUserData()
+  }, [])
 
   useEffect(() => {
     async function fetchProduct() {
