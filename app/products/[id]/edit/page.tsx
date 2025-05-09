@@ -17,6 +17,8 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     price: "",
     type: "",
   })
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
@@ -95,6 +97,52 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     } catch (err) {
       console.error('Error updating product:', err)
       alert('Failed to update product. Please try again later.')
+    }
+  }
+
+  const handleSaveSettings = async (visibility: string, status: string) => {
+    try {
+      const response = await fetch(`/api/products/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isPublic: visibility === 'public',
+          status: status
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`)
+      }
+
+      const updatedProduct = await response.json()
+      setProduct(updatedProduct.product)
+      alert('Product settings updated successfully')
+    } catch (err) {
+      console.error('Error updating product settings:', err)
+      alert('Failed to update product settings. Please try again later.')
+    }
+  }
+
+  const handleDeleteProduct = async () => {
+    try {
+      setIsDeleting(true)
+      const response = await fetch(`/api/products/${params.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`)
+      }
+
+      window.location.href = '/products'
+    } catch (err) {
+      console.error('Error deleting product:', err)
+      alert('Failed to delete product. Please try again later.')
+      setIsDeleting(false)
+      setShowDeleteModal(false)
     }
   }
 
@@ -181,6 +229,12 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
             onClick={() => setActiveTab("pricing")}
           >
             Pricing
+          </button>
+          <button
+            className={`px-6 py-3 ${activeTab === "settings" ? "border-b-2 border-black" : ""}`}
+            onClick={() => setActiveTab("settings")}
+          >
+            Settings
           </button>
         </div>
           
@@ -439,20 +493,79 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
         
         {activeTab === "pricing" && (
           <div className="space-y-6">
-            
-
             <div className="border rounded-md p-6">
               <div className="mb-4 font-medium">Payment options</div>
               <div className="border rounded p-4 mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="font-medium">Allow customers to pay what they want</div>
                   <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="payWhatYouWant" className="sr-only peer" />
+                    <input 
+                      type="checkbox" 
+                      id="payWhatYouWant" 
+                      className="sr-only peer" 
+                      checked={product.allowPayWhatYouWant || false}
+                      onChange={async (e) => {
+                        try {
+                          const response = await fetch(`/api/products/${params.id}`, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              allowPayWhatYouWant: e.target.checked
+                            }),
+                          })
+                          if (!response.ok) throw new Error(`Error: ${response.status}`)
+                          const result = await response.json()
+                          setProduct(result.product)
+                        } catch (err) {
+                          console.error('Error updating payment options:', err)
+                          alert('Failed to update payment options')
+                        }
+                      }}
+                    />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
                   </label>
                 </div>
                 <div className="text-gray-500 text-sm">
                   Let customers choose how much they want to pay for this product.
+                </div>
+              </div>
+
+              <div className="border rounded p-4 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="font-medium">Enable discount codes</div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      id="offerCoupons" 
+                      className="sr-only peer" 
+                      checked={product.offerCoupons || false}
+                      onChange={async (e) => {
+                        try {
+                          const response = await fetch(`/api/products/${params.id}`, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              offerCoupons: e.target.checked
+                            }),
+                          })
+                          if (!response.ok) throw new Error(`Error: ${response.status}`)
+                          const result = await response.json()
+                          setProduct(result.product)
+                        } catch (err) {
+                          console.error('Error updating discount code settings:', err)
+                          alert('Failed to update discount code settings')
+                        }
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                  </label>
+                </div>
+                <div className="text-gray-500 text-sm">
+                  Allow customers to use discount codes during checkout.
                 </div>
               </div>
 
@@ -471,6 +584,101 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === "settings" && (
+          <div className="space-y-6">
+            <div className="border rounded-md p-6">
+              <h2 className="text-xl font-medium mb-4">Product Settings</h2>
+              
+              <div className="mb-6">
+                <label className="block mb-2 font-medium">Visibility</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2">
+                    <input 
+                      type="radio" 
+                      name="visibility" 
+                      value="public" 
+                      defaultChecked={product.isPublic} 
+                      className="h-4 w-4"
+                    />
+                    <span>Public</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input 
+                      type="radio" 
+                      name="visibility" 
+                      value="private" 
+                      defaultChecked={!product.isPublic} 
+                      className="h-4 w-4"
+                    />
+                    <span>Private</span>
+                  </label>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Public products can be viewed by anyone with the link.</p>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block mb-2 font-medium">Status</label>
+                <select 
+                  id="status" 
+                  name="status" 
+                  defaultValue={product.status || "active"}
+                  className="w-full p-3 border rounded-md"
+                >
+                  <option value="active">Active</option>
+                  <option value="draft">Draft</option>
+                  <option value="archived">Archived</option>
+                </select>
+                <p className="text-sm text-gray-500 mt-1">Active products are available for purchase.</p>
+              </div>
+            </div>
+
+            <div className="border rounded-md p-6 bg-red-50">
+              <h2 className="text-xl font-medium mb-4 text-red-600">Danger Zone</h2>
+              <p className="mb-4 text-gray-700">Once you delete a product, there is no going back. Please be certain.</p>
+              
+              <button 
+                onClick={() => setShowDeleteModal(true)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Delete Product
+              </button>
+            </div>
+
+            {showDeleteModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                  <h3 className="text-xl font-medium mb-4">Delete Product</h3>
+                  <p className="mb-6">Are you sure you want to delete <strong>{product.name}</strong>? This action cannot be undone.</p>
+                  
+                  <div className="flex justify-end gap-3">
+                    <button 
+                      onClick={() => setShowDeleteModal(false)}
+                      className="px-4 py-2 border rounded-md"
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={handleDeleteProduct}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+                          Deleting...
+                        </>
+                      ) : (
+                        'Delete Product'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

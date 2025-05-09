@@ -124,12 +124,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           >
             Analytics
           </button>
-          <button
-            className={`px-6 py-3 ${activeTab === "settings" ? "border-b-2 border-black" : ""}`}
-            onClick={() => setActiveTab("settings")}
-          >
-            Settings
-          </button>
         </div>
       </div>
 
@@ -317,37 +311,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <div className="text-center">
                   <BarChart2 size={48} className="mx-auto mb-2 text-gray-300" />
                   <p className="text-gray-500">No sales data available yet</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "settings" && (
-          <div>
-            <div className="mb-6">
-              <h2 className="text-xl font-medium mb-4">Product Settings</h2>
-              <div className="border rounded-md p-6 space-y-6">
-                <div>
-                  <label className="block mb-2 font-medium">Visibility</label>
-                  <select className="w-full p-3 border rounded-md">
-                    <option>Public</option>
-                    <option>Unlisted</option>
-                    <option>Password Protected</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block mb-2 font-medium">Product Status</label>
-                  <select className="w-full p-3 border rounded-md">
-                    <option>Active</option>
-                    <option>Draft</option>
-                    <option>Archived</option>
-                  </select>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <button className="px-4 py-2 bg-red-500 text-white rounded-md">Delete Product</button>
                 </div>
               </div>
             </div>
