@@ -178,46 +178,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   </div>
                 </div>
               </div>
-
-              <div className="mb-6">
-                <h2 className="text-xl font-medium mb-4">Digital Item for Sale</h2>
-                <div className="border rounded-md p-4">
-                  {product.files && product.files.length > 0 ? (
-                    <div className="space-y-3">
-                      {product.files.map((file: any) => (
-                        <div key={file.id} className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center gap-3">
-                            <File size={20} className="text-gray-500" />
-                            <div>
-                              <div className="font-medium">{file.filename}</div>
-                              <div className="text-xs text-gray-500">
-                                {(file.size / 1024 / 1024).toFixed(2)} MB • {file.mimetype}
-                              </div>
-                            </div>
-                          </div>
-                          <a 
-                            href={`/${file.path}`} 
-                            download
-                            className="p-2 text-gray-500 hover:text-black"
-                          >
-                            <Download size={18} />
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-gray-500 mb-4">No files uploaded yet</p>
-                      <Link
-                        href={`/products/${params.id}/upload`}
-                        className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2"
-                      >
-                        Upload Files
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
 
             <div>

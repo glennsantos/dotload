@@ -32,7 +32,7 @@ interface Purchase {
   }
 }
 
-export default function BuyerDashboardPage() {
+export default function PurchasesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const accessCode = searchParams.get('code')
@@ -307,13 +307,6 @@ export default function BuyerDashboardPage() {
                         {purchase.status}
                       </span>
                     </div>
-                    
-                    <p className="text-gray-600 mb-6">
-                      {purchase.product.description.length > 150 
-                        ? `${purchase.product.description.substring(0, 150)}...` 
-                        : purchase.product.description
-                      }
-                    </p>
                     
                     <div className="space-y-2">
                       <h3 className="font-medium">Files:</h3>

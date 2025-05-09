@@ -115,10 +115,13 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
   // Check if user has purchases
   const checkUserPurchases = async (userId: string) => {
     try {
-      const response = await fetch('/api/purchases/user');
+      const response = await fetch('/api/purchases');
       if (response.ok) {
         const data = await response.json();
-        setHasPurchases(data.purchases && data.purchases.length > 0);
+        // Check if data is an array and has items
+        const hasItems = Array.isArray(data) && data.length > 0;
+        console.log('User has purchases:', hasItems);
+        setHasPurchases(hasItems);
       }
     } catch (error) {
       console.error('Error checking user purchases:', error);
@@ -220,12 +223,6 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                   {hasPurchases && (
                     <>
                       <Link
-                        href="/buyer-dashboard"
-                        className="block px-4 py-2 hover:bg-gray-100 flex items-center"
-                      >
-                        <ShoppingBag className="mr-2" size={16} /> Buyer Dashboard
-                      </Link>
-                      <Link
                         href="/purchases"
                         className="block px-4 py-2 hover:bg-gray-100 flex items-center"
                       >
@@ -271,10 +268,10 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
           </Link>
           
           {user && hasPurchases && (
-            <Link href="/buyer-dashboard" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/purchases" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
               <span className="flex items-center">
                 <ShoppingBag size={18} className="mr-2" />
-                Buyer Dashboard
+                Purchases
               </span>
             </Link>
           )}

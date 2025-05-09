@@ -1,6 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createPurchase } from '@/lib/purchase-utils';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+
+export async function GET(request: NextRequest) {
+  try {
+    // Get the authenticated user from JWT token in cookies
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string, email: string };
+
+    // Get user's purchases
+    const purchases = await prisma.purchase.findMany({
+      where: {
+        email: decoded.email
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        product: {
+          include: {
+            files: true
+          }
+        }
+      }
+    });
+
+    return NextResponse.json(purchases);
+  } catch (error) {
+    console.error('Error fetching user purchases:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch purchase information' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,7 +87,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       id: purchase.id,
       accessCode: purchase.accessCode,
-      status: purchase.paymentStatus
+      status: purchase.status
     });
   } catch (error) {
     console.error('Purchase creation error:', error);
