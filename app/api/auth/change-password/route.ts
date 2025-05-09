@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 
 const prisma = new PrismaClient()
 
@@ -26,18 +27,27 @@ export async function POST(request: NextRequest) {
     }
     
     // Get user from token
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const token = cookieStore.get('token')
     
     if (!token) {
       return NextResponse.json(
-        { message: 'Unauthorized' },
+        { message: 'Unauthorized: No token found' },
         { status: 401 }
       )
     }
     
-    const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'
-    const decoded = jwt.verify(token.value, JWT_SECRET) as { userId: string, email: string }
+    const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex')
+    let decoded;
+    try {
+      decoded = jwt.verify(token.value, JWT_SECRET) as { userId: string, email: string }
+    } catch (jwtError) {
+      console.error('JWT Verification Error:', jwtError);
+      return NextResponse.json(
+        { message: 'Invalid or expired authentication token' },
+        { status: 401 }
+      )
+    }
     
     // Get user from database
     const user = await prisma.user.findUnique({

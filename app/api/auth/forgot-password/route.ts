@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+import { sendPasswordResetEmail } from '@/lib/email';
 
 const prisma = new PrismaClient();
 
@@ -70,9 +71,15 @@ export async function POST(req: NextRequest) {
     
     debugLog('Password reset URL (would be sent via email):', resetUrl);
     
-    // TODO: Implement actual email sending
-    // For now, just log the reset URL and return success
-    console.log(`[Password Reset] Reset URL for ${email}: ${resetUrl}`);
+    // Send password reset email
+    try {
+      await sendPasswordResetEmail(email, resetToken, user.name);
+      debugLog('Password reset email sent successfully');
+    } catch (emailError) {
+      debugLog('Failed to send password reset email:', emailError);
+      // Log the error but still return success to prevent email enumeration
+      console.error('Password reset email sending failed:', emailError);
+    }
 
     return NextResponse.json(
       { message: 'If your email exists in our system, you will receive password reset instructions.' },
