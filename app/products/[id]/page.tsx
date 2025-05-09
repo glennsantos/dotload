@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ArrowLeft, Edit, BarChart2, Share2, ExternalLink, ChevronRight, Download, File, Check } from "lucide-react"
+import RichTextRenderer from "@/components/rich-text-renderer"
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState("product")
@@ -174,7 +175,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   </div>
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Description</div>
-                    <div className="text-sm">{product.description}</div>
+                    <RichTextRenderer 
+                      content={product.description || 'No description available'}
+                      className="text-gray-600"
+                    />
                   </div>
                 </div>
               </div>
@@ -386,7 +390,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                     )}
                     <div>
                       <div className="font-medium">{product.name}</div>
-                      <div className="text-sm text-gray-500 mb-1">{product.description}</div>
+                      <RichTextRenderer 
+                        content={product.description || 'No description available'}
+                        className="text-gray-600"
+                      />
                       <div className="text-sm font-medium">${product.price.toFixed(2)}</div>
                     </div>
                   </div>
