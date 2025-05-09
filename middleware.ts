@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verify, JwtPayload } from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET!.trim(); // Ensure no whitespace
 
 // List of public routes that don't require authentication
 const PUBLIC_ROUTES = [
@@ -13,7 +13,9 @@ const PUBLIC_ROUTES = [
   '/api/auth/login',
   '/api/auth/register',
   '/api/auth/verify-email',
-  '/api/auth/logout'
+  '/api/auth/logout',
+  '/uploads',
+  '/uploads/*'
 ];
 
 // Routes that require authentication but not email verification
@@ -44,8 +46,30 @@ export function middleware(request: NextRequest) {
 
   // Verify token
   try {
+    // Log token details for debugging
+    console.log('Middleware JWT Secret:', JWT_SECRET);
+    console.log('Middleware Token Value:', token);
+    console.log('Middleware Token Length:', token?.length);
+    
     // Decode the token to get user information
-    const decoded = verify(token, JWT_SECRET) as JwtPayload & { userId: string; email: string; emailVerified?: boolean };
+    const decoded = verify(token, JWT_SECRET, {
+      algorithms: ['HS256'], // Specify the expected algorithm
+      maxAge: '24h' // Match the token expiration from login route
+    }) as JwtPayload & { userId: string; email: string; emailVerified?: boolean };
+    
+    // Additional validation
+    if (!decoded.userId || !decoded.email) {
+      console.error('Invalid token payload');
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    
+    // Log decoded token details
+    console.log('Middleware Decoded Token:', {
+      userId: decoded.userId,
+      email: decoded.email,
+      iat: decoded.iat,
+      exp: decoded.exp
+    });
     
     // Check if the route requires email verification
     const requiresVerification = !AUTH_ONLY_ROUTES.some(route => pathname === route || pathname.startsWith(route));
