@@ -590,7 +590,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-base font-medium text-gray-900">{product.name}</h3>
-                  <p className="mt-1 text-sm text-gray-500">{product.description?.substring(0, 100) || 'No description'}</p>
                 </div>
                 <p className="text-base font-medium text-gray-900">{product.currency} {product.price.toFixed(2)}</p>
               </div>
