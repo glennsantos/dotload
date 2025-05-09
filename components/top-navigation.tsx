@@ -211,12 +211,6 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
               
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg z-50">
-                  <Link
-                    href="/account"
-                    className="block px-4 py-2 hover:bg-gray-100 flex items-center"
-                  >
-                    <User className="mr-2" size={16} /> Profile
-                  </Link>
                   {hasPurchases && (
                     <>
                       <Link
