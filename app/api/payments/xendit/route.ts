@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
           }
         };
         
+        console.log(`[Xendit Payment] Sending request to ${XENDIT_API_URL}/payment_requests with payload:`, JSON.stringify(paymentRequestBody, null, 2));
         const response = await fetch(`${XENDIT_API_URL}/payment_requests`, {
           method: 'POST',
           headers: {
@@ -138,13 +139,17 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify(paymentRequestBody)
         });
         
+        console.log(`[Xendit Payment] Received response from ${XENDIT_API_URL}/payment_requests with status: ${response.status} ${response.statusText}`);
         if (!response.ok) {
           const errorData = await response.json();
           console.error(`[Xendit Payment] API error:`, errorData);
           throw new Error(`Xendit API error: ${response.status} ${response.statusText}`);
         }
         
-        const paymentRequest = await response.json();
+        const responseText = await response.text();
+        console.log(`[Xendit Payment] Raw response from payment_requests:`, responseText);
+        const paymentRequest = JSON.parse(responseText);
+        console.log(`[Xendit Payment] Parsed payment request response:`, JSON.stringify(paymentRequest, null, 2));
         
         // Update purchase with payment ID
         console.log(`[Xendit Payment] Updating purchase status to pending with payment ID: ${paymentRequest.id}`);
@@ -222,6 +227,7 @@ export async function POST(request: NextRequest) {
             is_single_use: true
           };
           
+          console.log(`[Xendit Payment] Sending tokenization request to ${XENDIT_API_URL}/credit_card_tokens with payload:`, JSON.stringify(tokenizationBody, null, 2));
           const tokenResponse = await fetch(`${XENDIT_API_URL}/credit_card_tokens`, {
             method: 'POST',
             headers: {
@@ -234,6 +240,9 @@ export async function POST(request: NextRequest) {
           
           if (!tokenResponse.ok) {
             let errorMessage = `Card tokenization failed: ${tokenResponse.status} ${tokenResponse.statusText}`;
+
+            console.log(`[Xendit Payment] Received response from ${XENDIT_API_URL}/credit_card_tokens with status: ${tokenResponse.status} ${tokenResponse.statusText}`);
+
             try {
               const errorData = await tokenResponse.json();
               console.error(`[Xendit Payment] Card tokenization error:`, errorData);
@@ -253,6 +262,8 @@ export async function POST(request: NextRequest) {
           }
           
           const tokenData = await tokenResponse.json();
+          console.log(`[Xendit Payment] Raw tokenization response:`, tokenData);
+          console.log(`[Xendit Payment] Parsed tokenization response:`, JSON.stringify(tokenData, null, 2));
           const cardToken = tokenData.id;
           
           console.log(`[Xendit Payment] Card successfully tokenized: ${cardToken}`);
@@ -274,6 +285,7 @@ export async function POST(request: NextRequest) {
             }
           };
           
+          console.log(`[Xendit Payment] Sending card charge request to ${XENDIT_API_URL}/credit_card_charges with payload:`, JSON.stringify(chargeBody, null, 2));
           const chargeResponse = await fetch(`${XENDIT_API_URL}/credit_card_charges`, {
             method: 'POST',
             headers: {
@@ -304,7 +316,10 @@ export async function POST(request: NextRequest) {
             throw new Error(errorMessage);
           }
           
-          const chargeData = await chargeResponse.json();
+          const chargeResponseText = await chargeResponse.text();
+          console.log(`[Xendit Payment] Raw card charge response:`, chargeResponseText);
+          const chargeData = JSON.parse(chargeResponseText);
+          console.log(`[Xendit Payment] Parsed card charge response:`, JSON.stringify(chargeData, null, 2));
           
           // Update purchase with payment ID
           console.log(`[Xendit Payment] Card charge successful with ID: ${chargeData.id}`);

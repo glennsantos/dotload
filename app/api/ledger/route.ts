@@ -1,0 +1,130 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+
+const prisma = new PrismaClient();
+
+export async function GET(request: NextRequest) {
+  try {
+    // Get the authenticated user from JWT token in cookies
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
+    const decoded = jwt.verify(token, jwtSecret) as { id: string, email: string };
+
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get pagination parameters from query string
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
+
+    // Get transactions for the user
+    const transactions = await prisma.$queryRaw`
+      SELECT * FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      ORDER BY "createdAt" DESC
+      LIMIT ${limit} OFFSET ${skip}
+    `;
+
+    // Get total count for pagination
+    const totalCountResult = await prisma.$queryRaw`
+      SELECT COUNT(*) as count FROM "Transaction"
+      WHERE "userId" = ${user.id}
+    `;
+    const totalCount = Number((totalCountResult as any)[0].count);
+
+    // Calculate summary statistics
+    const totalIncomeResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'income'
+      AND status = 'completed'
+    `;
+    const totalIncome = Number((totalIncomeResult as any)[0].sum);
+
+    const totalPayoutsResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'payout'
+      AND status = 'completed'
+    `;
+    const totalPayouts = Number((totalPayoutsResult as any)[0].sum);
+
+    const totalFeesResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'fee'
+      AND status = 'completed'
+    `;
+    const totalFees = Number((totalFeesResult as any)[0].sum);
+
+    // Calculate current balance
+    const currentBalance = totalIncome - totalPayouts - totalFees;
+
+    return NextResponse.json({
+      transactions,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+      summary: {
+        totalIncome,
+        totalPayouts,
+        totalFees,
+        currentBalance,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching ledger:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch ledger information' },
+      { status: 500 }
+    );
+  }
+}
+
+// Helper function to create a transaction
+export async function createTransaction(data: {
+  userId: string;
+  amount: number;
+  currency?: string;
+  type: 'income' | 'payout' | 'fee';
+  status: 'completed' | 'pending' | 'failed';
+  description: string;
+  reference?: string;
+  referenceType?: string;
+  metadata?: any;
+}) {
+  try {
+    const { metadata, ...rest } = data;
+    
+    // Create transaction using Prisma
+    return await prisma.transaction.create({
+      data: {
+        ...rest,
+        currency: data.currency || 'PHP',
+        metadata: metadata ? JSON.stringify(metadata) : null,
+      },
+    });
+  } catch (error) {
+    console.error('Error creating transaction:', error);
+    throw error;
+  }
+}

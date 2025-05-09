@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, Wallet, BookOpen } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 // No longer using Radix UI components due to potential React 19 compatibility issues
@@ -152,6 +152,28 @@ export default function UserMenu({ user }: UserMenuProps) {
               >
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
+              </button>
+              
+              <button
+                className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => {
+                  setIsOpen(false);
+                  router.push('/payouts');
+                }}
+              >
+                <Wallet className="mr-2 h-4 w-4" />
+                <span>Payouts</span>
+              </button>
+              
+              <button
+                className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => {
+                  setIsOpen(false);
+                  router.push('/ledger');
+                }}
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                <span>Ledger</span>
               </button>
               
               <button

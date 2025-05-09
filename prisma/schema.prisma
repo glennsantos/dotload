@@ -15,6 +15,7 @@ model User {
   name                   String?
   products               Product[]
   payouts                Payout[]
+  transactions           Transaction[]
   
   // Email verification fields
   emailVerified          Boolean  @default(false)
@@ -120,6 +121,23 @@ model PasswordReset {
   // Relation to User
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                 String   @unique
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model Transaction {
+  id                     String   @id @default(uuid())
+  userId                 String
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount                 Float
+  currency               String   @default("PHP")
+  type                   String   // income, payout, fee
+  status                 String   // completed, pending, failed
+  description            String
+  reference              String?  // Purchase ID, Payout ID, etc.
+  referenceType          String?  // Purchase, Payout, etc.
+  metadata               String?  // JSON string with additional data
   
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt

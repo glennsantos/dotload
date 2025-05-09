@@ -37,7 +37,7 @@ const xenditClient = {
 export async function POST(request: NextRequest) {
   try {
     // Get the authenticated user from JWT token in cookies
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     
     if (!token) {
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Get the authenticated user from JWT token in cookies
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     
     if (!token) {
