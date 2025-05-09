@@ -19,6 +19,7 @@ export default function PaymentOptions({
 }) {
   const [discountCodes, setDiscountCodes] = useState<Array<{code: string, amount: string, type: string, startDate: string, endDate: string}>>(productData.discountCodes || []);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{isOpen: boolean, code: string, index: number}>({isOpen: false, code: '', index: -1});
+  const [editingDiscount, setEditingDiscount] = useState<{isEditing: boolean, index: number, code: any}>({isEditing: false, index: -1, code: null});
   const [newDiscountCode, setNewDiscountCode] = useState({
     code: '',
     amount: '',
@@ -107,6 +108,106 @@ export default function PaymentOptions({
                 <div className="mt-4 pt-4 border-t">
                   <h3 className="font-medium mb-3">Discount Codes</h3>
                   
+                  {/* Edit Discount Code Modal */}
+                  {editingDiscount.isEditing && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+                        <h2 className="text-xl font-bold mb-4 text-gray-800">Edit Discount Code</h2>
+                        <div className="grid grid-cols-1 gap-3 mb-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Discount Code</label>
+                            <input 
+                              type="text" 
+                              value={editingDiscount.code.code}
+                              onChange={(e) => setEditingDiscount({
+                                ...editingDiscount, 
+                                code: {...editingDiscount.code, code: e.target.value}
+                              })}
+                              className="w-full p-2 border rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Discount Amount</label>
+                            <input 
+                              type="number" 
+                              value={editingDiscount.code.amount}
+                              onChange={(e) => setEditingDiscount({
+                                ...editingDiscount, 
+                                code: {...editingDiscount.code, amount: e.target.value}
+                              })}
+                              className="w-full p-2 border rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Discount Type</label>
+                            <select 
+                              value={editingDiscount.code.type}
+                              onChange={(e) => setEditingDiscount({
+                                ...editingDiscount, 
+                                code: {...editingDiscount.code, type: e.target.value}
+                              })}
+                              className="w-full p-2 border rounded"
+                            >
+                              <option value="percentage">Percentage (%)</option>
+                              <option value="fixed">Fixed Amount</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Start Date</label>
+                            <input 
+                              type="date" 
+                              value={editingDiscount.code.startDate}
+                              onChange={(e) => setEditingDiscount({
+                                ...editingDiscount, 
+                                code: {...editingDiscount.code, startDate: e.target.value}
+                              })}
+                              className="w-full p-2 border rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">End Date</label>
+                            <input 
+                              type="date" 
+                              value={editingDiscount.code.endDate}
+                              onChange={(e) => setEditingDiscount({
+                                ...editingDiscount, 
+                                code: {...editingDiscount.code, endDate: e.target.value}
+                              })}
+                              className="w-full p-2 border rounded"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-3">
+                          <button 
+                            onClick={() => setEditingDiscount({isEditing: false, index: -1, code: null})}
+                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            onClick={() => {
+                              // Update the discount code
+                              const updatedCodes = [...discountCodes];
+                              updatedCodes[editingDiscount.index] = editingDiscount.code;
+                              setDiscountCodes(updatedCodes);
+                              
+                              // Update the product data
+                              setProductData({
+                                ...productData,
+                                discountCodes: updatedCodes
+                              });
+                              
+                              setEditingDiscount({isEditing: false, index: -1, code: null});
+                            }}
+                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                          >
+                            Save Changes
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Delete Confirmation Modal */}
                   {deleteConfirmation.isOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -165,18 +266,34 @@ export default function PaymentOptions({
                             <div>{code.startDate}</div>
                             <div className="flex items-center justify-between">
                               <span>{code.endDate}</span>
-                              <button 
-                                onClick={() => {
-                                  setDeleteConfirmation({
-                                    isOpen: true,
-                                    code: code.code,
-                                    index: index
-                                  });
-                                }}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                              </button>
+                              <div className="flex space-x-2">
+                                <button 
+                                  onClick={() => {
+                                    setEditingDiscount({
+                                      isEditing: true,
+                                      index: index,
+                                      code: {...code}
+                                    });
+                                  }}
+                                  className="text-blue-500 hover:text-blue-700"
+                                  title="Edit"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setDeleteConfirmation({
+                                      isOpen: true,
+                                      code: code.code,
+                                      index: index
+                                    });
+                                  }}
+                                  className="text-red-500 hover:text-red-700"
+                                  title="Delete"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         ))}
