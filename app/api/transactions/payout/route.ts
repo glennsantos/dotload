@@ -6,33 +6,32 @@ import { createTransaction } from '../route';
 
 const prisma = new PrismaClient();
 
-// We'll use a type-safe approach with Xendit
-type XenditDisbursement = {
-  create: (params: {
-    externalID: string;
-    amount: number;
-    bankCode: string;
-    accountHolderName: string;
-    accountNumber: string;
-    description: string;
-  }) => Promise<{
-    id: string;
-    status: string;
-  }>;
-};
+// Xendit API configuration
+const XENDIT_API_KEY = process.env.XENDIT_API_KEY || 'xnd_development_your_key_here';
+const XENDIT_API_URL = 'https://api.xendit.co';
 
-// Mock Xendit client for development
-const xenditClient = {
-  disbursement: {
-    create: async (params: any) => {
-      console.log('Xendit disbursement request:', params);
-      // Simulate a successful disbursement
-      return {
-        id: `disbursement-${Date.now()}`,
-        status: 'PENDING',
-      };
-    }
-  } as XenditDisbursement
+// Define Xendit Payout types based on the documentation
+type PayoutChannelCode = 'PH_BDO' | 'PH_BPI' | 'PH_UBP' | 'PH_GCASH';
+
+// Interface for Xendit Payout request
+interface XenditPayoutRequest {
+  reference_id: string;
+  channel_code: PayoutChannelCode;
+  channel_properties: {
+    account_number: string;
+    account_holder_name: string;
+  };
+  amount: number;
+  currency: string;
+  description: string;
+}
+
+// Map our bank codes to Xendit channel codes
+const bankCodeMapping: Record<string, PayoutChannelCode> = {
+  'BDO': 'PH_BDO',
+  'BPI': 'PH_BPI',
+  'UBP': 'PH_UBP',
+  'GCASH': 'PH_GCASH',
 };
 
 export async function POST(request: NextRequest) {
@@ -106,18 +105,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a disbursement request with Xendit
-    const externalId = `payout-${user.id}-${Date.now()}`;
+    // Create a payout request with Xendit
+    const referenceId = `payout-${user.id}-${Date.now()}`;
     
-    // Create the disbursement with Xendit
-    const disbursement = await xenditClient.disbursement.create({
-      externalID: externalId,
+    // Map our bank code to Xendit channel code
+    const channelCode = bankCodeMapping[bankCode];
+    if (!channelCode) {
+      return NextResponse.json(
+        { error: 'Invalid bank code' },
+        { status: 400 }
+      );
+    }
+    
+    // Create the payout with Xendit using direct API call
+    const payoutRequest: XenditPayoutRequest = {
+      reference_id: referenceId,
+      channel_code: channelCode,
+      channel_properties: {
+        account_number: accountNumber,
+        account_holder_name: accountHolderName,
+      },
       amount,
-      bankCode,
-      accountHolderName,
-      accountNumber,
+      currency: 'PHP',
       description: `Payout for ${user.name || user.email}`,
-    });
+      receipt_notification: {
+        email_to: [user.email],
+        email_cc: ['admin@alacarte.com']
+      }
+    };
+    
+    console.log('Xendit payout request:', payoutRequest);
+    
+    // Call Xendit API directly to create the payout
+    const idempotencyKey = `payout-idempotency-${user.id}-${Date.now()}`;
+    let disbursement;
+    
+    try {
+      const response = await fetch(`${XENDIT_API_URL}/v2/payouts`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(XENDIT_API_KEY + ':').toString('base64')}`,
+          'Content-Type': 'application/json',
+          'idempotency-key': idempotencyKey
+        },
+        body: JSON.stringify(payoutRequest)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Xendit API error:', errorData);
+        throw new Error(`Xendit API error: ${response.status} ${response.statusText}`);
+      }
+      
+      const payout = await response.json();
+      
+      // Extract the payout ID and status
+      disbursement = {
+        id: payout.id,
+        status: payout.status,
+      };
+    } catch (error) {
+      console.error('Error processing Xendit payout:', error);
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Failed to process payout request' },
+        { status: 500 }
+      );
+    }
 
     // Create a payout transaction
     const payoutTransaction = await createTransaction({
@@ -130,8 +183,9 @@ export async function POST(request: NextRequest) {
       reference: disbursement.id,
       referenceType: 'payout',
       metadata: {
-        disbursementId: disbursement.id,
-        externalId,
+        payoutId: disbursement.id,
+        referenceId,
+        channelCode,
         bankCode,
         accountNumber,
         accountHolderName
@@ -149,7 +203,8 @@ export async function POST(request: NextRequest) {
       reference: disbursement.id,
       referenceType: 'fee',
       metadata: {
-        disbursementId: disbursement.id,
+        payoutId: disbursement.id,
+        referenceId,
         feeType: 'payout_processing'
       }
     });
