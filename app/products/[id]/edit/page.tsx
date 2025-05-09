@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from 'react'
+import toast, { Toaster } from 'react-hot-toast';
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Save, ChevronRight } from "lucide-react"
@@ -23,7 +24,12 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [discountCodes, setDiscountCodes] = useState<Array<{code: string, amount: string, type: string, startDate: string, endDate: string}>>([])  
+  const [discountCodes, setDiscountCodes] = useState<Array<{code: string, amount: string, type: string, startDate: string, endDate: string}>>([])
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean,
+    code: string,
+    index: number
+  }>({ isOpen: false, code: '', index: -1 })  
   const [newDiscountCode, setNewDiscountCode] = useState({
     code: '',
     amount: '',
@@ -126,10 +132,10 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
 
       const updatedProduct = await response.json()
       setProduct(updatedProduct.product || updatedProduct)
-      alert('Product updated successfully')
+      toast.success('Product updated successfully')
     } catch (err) {
       console.error('Error updating product:', err)
-      alert('Failed to update product. Please try again later.')
+      toast.error('Failed to update product. Please try again later.')
     } finally {
       setIsSaving(false);
     }
@@ -149,7 +155,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
       window.location.href = '/products'
     } catch (err) {
       console.error('Error deleting product:', err)
-      alert('Failed to delete product. Please try again later.')
+      toast.error('Failed to delete product. Please try again later.')
       setIsDeleting(false)
       setShowDeleteModal(false)
     }
@@ -176,6 +182,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
             <ArrowLeft size={18} /> Back to Products
           </Link>
         </div>
+        <Toaster position="top-right" />
       </div>
     )
   }
@@ -539,6 +546,62 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                 </div>
                 <div className="text-gray-500 text-sm">
                   Allow customers to use discount codes during checkout.
+
+                  {/* Delete Confirmation Modal */}
+                  {deleteConfirmation.isOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <h2 className="text-xl font-bold mb-4 text-gray-800">Confirm Deletion</h2>
+                        <p className="mb-6 text-gray-600">
+                          Are you sure you want to delete the discount code 
+                          <span className="font-semibold text-red-600"> {deleteConfirmation.code}</span>?
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                          <button 
+                            onClick={() => setDeleteConfirmation({ isOpen: false, code: '', index: -1 })}
+                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            onClick={async () => {
+                              try {
+                                // Delete discount code from database
+                                const response = await fetch(`/api/products/${params.id}/discount-codes`, {
+                                  method: 'DELETE',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({
+                                    code: deleteConfirmation.code
+                                  })
+                                });
+
+                                if (!response.ok) {
+                                  throw new Error('Failed to delete discount code');
+                                }
+
+                                // Remove from local state
+                                const updatedCodes = [...discountCodes];
+                                updatedCodes.splice(deleteConfirmation.index, 1);
+                                setDiscountCodes(updatedCodes);
+                                setDeleteConfirmation({ isOpen: false, code: '', index: -1 });
+
+                                // Optional: Show success toast
+                                toast.success('Discount code deleted successfully');
+                              } catch (error) {
+                                console.error('Error deleting discount code:', error);
+                                toast.error('Failed to delete discount code');
+                              }
+                            }}
+                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {product.offerCoupons && (
@@ -565,11 +628,11 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                                 <span>{code.endDate}</span>
                                 <button 
                                   onClick={() => {
-                                    if (confirm(`Are you sure you want to delete the discount code "${code.code}"?`)) {
-                                      const updatedCodes = [...discountCodes];
-                                      updatedCodes.splice(index, 1);
-                                      setDiscountCodes(updatedCodes);
-                                    }
+                                    setDeleteConfirmation({
+                                      isOpen: true,
+                                      code: code.code,
+                                      index: index
+                                    });
                                   }}
                                   className="text-red-500 hover:text-red-700"
                                 >
