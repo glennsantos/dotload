@@ -439,43 +439,9 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
         
         {activeTab === "pricing" && (
           <div className="space-y-6">
-            <div className="border rounded-md p-6">
-              <h2 className="text-xl font-medium mb-4">Pricing</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block mb-2 font-medium">Price</label>
-                  <div className="flex">
-                    <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
-                      $
-                    </span>
-                    <input
-                      type="text"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      className="flex-1 p-3 border rounded-r-md"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            
 
             <div className="border rounded-md p-6">
-              <div className="mb-4 font-medium">Discount codes</div>
-              <div className="border rounded p-4 mb-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="font-medium">Offer discount codes</div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="offerCoupons" className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                  </label>
-                </div>
-                <div className="text-gray-500 text-sm">
-                  Enable discount codes for this product. You can create and manage discount codes in the settings.
-                </div>
-              </div>
-
               <div className="mb-4 font-medium">Payment options</div>
               <div className="border rounded p-4 mb-4">
                 <div className="flex items-center justify-between mb-4">
@@ -487,20 +453,6 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                 </div>
                 <div className="text-gray-500 text-sm">
                   Let customers choose how much they want to pay for this product.
-                </div>
-              </div>
-
-              <div className="mb-4 font-medium">Shipping information</div>
-              <div className="border rounded p-4 mb-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="font-medium">Collect shipping information</div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="collectShipping" className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                  </label>
-                </div>
-                <div className="text-gray-500 text-sm">
-                  Collect shipping information from customers during checkout.
                 </div>
               </div>
 

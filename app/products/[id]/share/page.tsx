@@ -89,7 +89,7 @@ export default function ProductSharePage({ params }: { params: { id: string } })
             <div className="flex mb-4">
               <input
                 type="text"
-                value={productUrl}
+                value={`${window.location.origin}/p/${product.slug || params.id}`}
                 readOnly
                 className="flex-1 p-3 border rounded-l-md bg-gray-100"
               />

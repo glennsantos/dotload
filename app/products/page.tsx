@@ -24,15 +24,6 @@ export default function ProductsPage() {
           </Link>
         </div>
       </div>
-
-      <div className="mb-4">
-        <div className="flex space-x-2">
-          <button className="px-4 py-2 bg-white border rounded-full text-sm">All products</button>
-          <button className="px-4 py-2 text-sm">Discover</button>
-          <button className="px-4 py-2 text-sm">Affiliated</button>
-        </div>
-      </div>
-
       <ProductsList />
     </div>
   )
