@@ -40,6 +40,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       try {
         // Use the correct API endpoint for getting the current user
         const response = await fetch('/api/auth/me')
+
         if (response.ok) {
           const userData = await response.json()
           console.log('User data fetched:', userData)
@@ -47,6 +48,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             setUser(userData)
             setEmail(userData.email)
             console.log('Email set to:', userData.email)
+            
+            // Force update the email input field by directly setting its value
+            const emailInput = document.getElementById('email') as HTMLInputElement
+            if (emailInput) {
+              emailInput.value = userData.email
+            }
           }
         } else {
           console.log('User not logged in or session not available')
@@ -58,6 +65,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     
     fetchUserData()
   }, [])
+
+  // This effect runs whenever the email state changes
+  useEffect(() => {
+    // Ensure the email input field is updated when the email state changes
+    const emailInput = document.getElementById('email') as HTMLInputElement
+    if (emailInput && emailInput.value !== email) {
+      emailInput.value = email
+    }
+  }, [email])  // This effect depends on the email state
 
   useEffect(() => {
     async function fetchProduct() {
