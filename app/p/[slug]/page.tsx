@@ -82,17 +82,6 @@ export default function PublicProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="min-h-screen bg-white pb-20 md:pb-0">  {/* Added padding bottom for mobile fixed button */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-gray-900">alaCarte</Link>
-          <nav className="hidden md:flex space-x-8">
-            <Link href="#" className="text-gray-600 hover:text-gray-900">Products</Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-900">Pricing</Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-900">About</Link>
-          </nav>
-        </div>
-      </header>
-
       {/* Hero Image Section */}
       <div className="w-full bg-black">
         {product.coverImagePath ? (
