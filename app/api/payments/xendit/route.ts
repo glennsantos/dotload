@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPurchaseById, updatePurchaseStatus } from '@/lib/purchase-utils';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
-import { createCustomer, createPaymentMethod, createEWalletCustomer, createEWalletPaymentMethod, createEWalletCharge, createPayment } from '@/lib/xendit-client';
+import { 
+  createCustomer, 
+  createPaymentMethod, 
+  createEWalletCustomer, 
+  createEWalletPaymentMethod, 
+  createEWalletCharge, 
+  createPayment,
+  processCardPayment
+} from '@/lib/xendit-client';
 import { prisma } from '@/lib/prisma';
 
 // Xendit API base URL
@@ -661,11 +669,147 @@ export async function POST(request: NextRequest) {
       }
 
     } else if (paymentMethod === 'card') {
-      // Card payment implementation would go here
-      return NextResponse.json({ 
-        error: 'Card payments not implemented yet', 
-        details: 'Card payment implementation is in progress'
-      }, { status: 501 });
+      console.log(`[Xendit Payment] Processing card payment for purchase ${purchaseId}`);
+      console.log(`[Xendit Payment] Card details received: ${cardNumber ? 'Card number provided' : 'No card number'}, ${cardExpiry ? 'Expiry provided' : 'No expiry'}, ${cardCvc ? 'CVC provided' : 'No CVC'}, ${cardName ? 'Name provided' : 'No name'}`);
+      
+      // Create a transaction record for the payment attempt
+      try {
+        const transaction = await prisma.transaction.create({
+          data: {
+            type: 'PURCHASE',
+            status: 'PENDING',
+            amount: amount,
+            currency: currency,
+            description: `Card payment for ${purchase.product.name}`,
+            reference: purchase.id,
+            referenceType: 'Purchase',
+            metadata: JSON.stringify({
+              paymentMethod: 'card',
+              cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A'
+            }),
+            userId: purchase.product.userId
+          }
+        });
+        
+        console.log(`[Xendit Payment] Transaction record created for card payment with ID: ${transaction.id}`);
+        
+        // Update purchase status to pending
+        await prisma.purchase.update({
+          where: { id: purchase.id },
+          data: {
+            paymentMethod: 'card',
+            status: 'pending'
+          }
+        });
+        
+        console.log(`[Xendit Payment] Purchase updated with card payment method`);
+        
+        // Process the card payment using our new function
+        try {
+          console.log(`[Xendit Payment] Processing card payment with Xendit`);
+          
+          // Create metadata for the payment
+          const metadata = {
+            product_id: purchase.productId,
+            purchase_id: purchase.id,
+            transaction_id: transaction.id
+          };
+          
+          // Generate a unique external ID for this payment
+          const externalId = `purchase_${purchase.id}_${Date.now()}`;
+          
+          // Process the card payment (tokenize + charge)
+          const paymentResult = await processCardPayment({
+            cardNumber,
+            cardExpiry,
+            cardCvc,
+            cardName,
+            amount,
+            currency,
+            externalId,
+            metadata
+          });
+          
+          console.log(`[Xendit Payment] Card payment successful with ID: ${paymentResult.paymentId}`);
+          
+          // Update the transaction record with the payment ID
+          await prisma.transaction.update({
+            where: { id: transaction.id },
+            data: {
+              status: 'COMPLETED',
+              reference: paymentResult.paymentId,
+              metadata: JSON.stringify({
+                paymentMethod: 'card',
+                cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A',
+                paymentId: paymentResult.paymentId,
+                status: paymentResult.status
+              })
+            }
+          });
+          
+          // Update purchase status to completed
+          await updatePurchaseStatus(purchase.id, 'completed', paymentResult.paymentId);
+          
+          // Send purchase confirmation email
+          try {
+            const productSlug = purchase.product.slug || purchase.product.id;
+            
+            await sendPurchaseConfirmationEmail(
+              purchase.email,
+              purchase.product.name,
+              purchase.accessCode,
+              productSlug,
+              purchase.amount,
+              purchase.currency
+            );
+            
+            console.log(`[Xendit Payment] Purchase confirmation email sent to ${purchase.email}`);
+          } catch (emailError) {
+            console.error('[Xendit Payment] Error sending purchase confirmation email:', emailError);
+            // Continue processing even if email fails
+          }
+          
+          // Return success response with access code
+          return NextResponse.json({
+            success: true,
+            accessCode: purchase.accessCode,
+            paymentId: paymentResult.paymentId,
+            status: 'completed'
+          });
+          
+        } catch (paymentError) {
+          console.error('[Xendit Payment] Card payment processing error:', paymentError);
+          
+          // Update transaction to failed status
+          await prisma.transaction.update({
+            where: { id: transaction.id },
+            data: {
+              status: 'FAILED',
+              metadata: JSON.stringify({
+                paymentMethod: 'card',
+                cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A',
+                error: paymentError instanceof Error ? paymentError.message : 'Unknown error'
+              })
+            }
+          });
+          
+          // Update purchase status to failed
+          await prisma.purchase.update({
+            where: { id: purchase.id },
+            data: {
+              status: 'failed'
+            }
+          });
+          
+          return NextResponse.json({ 
+            error: 'Card payment failed', 
+            details: paymentError instanceof Error ? paymentError.message : 'Unknown error'
+          }, { status: 500 });
+        }
+      } catch (error) {
+        console.error('[Xendit Payment] Error creating transaction record for card payment:', error);
+        throw error;
+      }
     } else {
       // Handle other payment methods if needed
       console.log(`[Xendit Payment] Unsupported payment method: ${paymentMethod}`);

@@ -294,9 +294,39 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         } else {
           throw new Error('No redirect URL provided for payment');
         }
+      } else if (paymentMethod === "card") {
+        // Process card payment with Xendit
+        console.log('Processing card payment with Xendit');
+        const paymentResponse = await fetch("/api/payments/xendit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            purchaseId: purchaseData.id,
+            paymentMethod,
+            cardNumber,
+            cardExpiry,
+            cardCvc,
+            cardName,
+            amount: finalPrice,
+            currency: product.currency || 'PHP',
+          }),
+        });
+        
+        const paymentData = await paymentResponse.json();
+        
+        if (!paymentResponse.ok) {
+          throw new Error(paymentData.error || paymentData.details || "Failed to process card payment");
+        }
+        
+        console.log('Card payment successful:', paymentData);
+        
+        // For successful card payments, redirect to success page
+        router.push(`/p/${params.slug}/success?code=${purchaseData.accessCode}`);
       } else {
-        // For card payments, redirect to success page
-        router.push(`/p/${params.slug}/success?code=${purchaseData.accessCode}`)
+        // For other payment methods, redirect to success page
+        router.push(`/p/${params.slug}/success?code=${purchaseData.accessCode}`);
       }
     } catch (error) {
       console.error('Payment processing error:', error)
@@ -434,19 +464,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               
               {/* Payment method selection */}
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div 
-                  className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'card' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
-                  onClick={() => setPaymentMethod('card')}
-                >
-                  <div className="flex-shrink-0 mr-3">
-                    <CreditCard className="h-6 w-6 text-gray-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Credit Card</p>
-                    <p className="text-xs text-gray-500">Pay with Visa, Mastercard</p>
-                  </div>
-                </div>
-                
+             
                 <div 
                   className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'ewallet_gcash' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
                   onClick={() => setPaymentMethod('ewallet_gcash')}
@@ -483,6 +501,19 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   <div>
                     <p className="font-medium">Maya</p>
                     <p className="text-xs text-gray-500">Pay with Maya</p>
+                  </div>
+                </div>
+
+                <div 
+                  className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'ewallet_shopee' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+                  onClick={() => setPaymentMethod('ewallet_shopee')}
+                >
+                  <div className="flex-shrink-0 mr-3">
+                    <QrCode className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Shopee</p>
+                    <p className="text-xs text-gray-500">Pay with Shopee</p>
                   </div>
                 </div>
               </div>

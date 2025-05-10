@@ -659,4 +659,172 @@ export async function createEWalletCharge({
   }
 }
 
+// Tokenize a credit card
+export async function tokenizeCard({
+  cardNumber,
+  cardExpMonth,
+  cardExpYear,
+  cardCvn,
+  isSingleUse = true,
+}: {
+  cardNumber: string;
+  cardExpMonth: string;
+  cardExpYear: string;
+  cardCvn: string;
+  isSingleUse?: boolean;
+}) {
+  try {
+    console.log(`[Xendit] Tokenizing credit card`);
+    
+    // Clean card number (remove spaces)
+    const cleanCardNumber = cardNumber.replace(/\s+/g, '');
+    
+    // Direct API call to tokenize card
+    const response = await fetch(`${XENDIT_API_URL}/credit_card_tokens`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${Buffer.from(process.env.XENDIT_SECRET_KEY + ':').toString('base64')}`,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        card_number: cleanCardNumber,
+        card_exp_month: cardExpMonth,
+        card_exp_year: cardExpYear,
+        card_cvn: cardCvn,
+        is_single_use: isSingleUse
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[Xendit] Card tokenization error:', errorData);
+      throw new Error(`Failed to tokenize card: ${response.status} ${response.statusText}`);
+    }
+    
+    const tokenData = await response.json();
+    console.log(`[Xendit] Card successfully tokenized with ID: ${tokenData.id}`);
+    
+    return tokenData;
+  } catch (error) {
+    console.error('Error tokenizing Xendit card:', error);
+    throw error;
+  }
+}
+
+// Charge a credit card using a token
+export async function chargeCard({
+  tokenId,
+  externalId,
+  amount,
+  currency = 'PHP',
+  cardCvn,
+  descriptor = 'alaCarte Purchase',
+  metadata,
+}: {
+  tokenId: string;
+  externalId: string;
+  amount: number;
+  currency?: string;
+  cardCvn: string;
+  descriptor?: string;
+  metadata?: Record<string, any>;
+}) {
+  try {
+    console.log(`[Xendit] Charging card with token: ${tokenId}`);
+    
+    // Direct API call to charge card
+    const response = await fetch(`${XENDIT_API_URL}/credit_card_charges`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${Buffer.from(process.env.XENDIT_SECRET_KEY + ':').toString('base64')}`,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        token_id: tokenId,
+        external_id: externalId,
+        amount,
+        currency,
+        card_cvn: cardCvn,
+        capture: true,
+        descriptor,
+        metadata
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[Xendit] Card charge error:', errorData);
+      throw new Error(`Failed to charge card: ${response.status} ${response.statusText}`);
+    }
+    
+    const chargeData = await response.json();
+    console.log(`[Xendit] Card successfully charged with ID: ${chargeData.id}`);
+    
+    return chargeData;
+  } catch (error) {
+    console.error('Error charging Xendit card:', error);
+    throw error;
+  }
+}
+
+// Process a complete credit card payment flow (tokenize + charge)
+export async function processCardPayment({
+  cardNumber,
+  cardExpiry,
+  cardCvc,
+  cardName,
+  amount,
+  currency = 'PHP',
+  externalId,
+  metadata,
+}: {
+  cardNumber: string;
+  cardExpiry: string; // Format: MM/YY
+  cardCvc: string;
+  cardName: string;
+  amount: number;
+  currency?: string;
+  externalId: string;
+  metadata?: Record<string, any>;
+}) {
+  try {
+    console.log(`[Xendit] Processing complete card payment flow for: ${externalId}`);
+    
+    // Parse expiry month and year from cardExpiry (format: MM/YY)
+    const [expiryMonth, expiryYear] = cardExpiry.split('/').map((part: string) => part.trim());
+    
+    // Step 1: Tokenize the card
+    const tokenData = await tokenizeCard({
+      cardNumber,
+      cardExpMonth: expiryMonth,
+      cardExpYear: `20${expiryYear}`, // Add '20' prefix to convert YY to YYYY
+      cardCvn: cardCvc,
+      isSingleUse: true
+    });
+    
+    // Step 2: Charge the card using the token
+    const chargeData = await chargeCard({
+      tokenId: tokenData.id,
+      externalId,
+      amount,
+      currency,
+      cardCvn: cardCvc,
+      descriptor: 'alaCarte Purchase',
+      metadata
+    });
+    
+    return {
+      success: true,
+      paymentId: chargeData.id,
+      status: chargeData.status,
+      chargeData
+    };
+  } catch (error) {
+    console.error('Error processing card payment:', error);
+    throw error;
+  }
+}
+
 export default xenditClient;
