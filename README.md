@@ -376,3 +376,428 @@ pnpm dev
 - [ ] SSL certificates are installed and working
 - [ ] Monitoring and alerts are configured
 - [ ] Backup strategy is implemented
+
+## Simple EC2 Deployment Guide with AWS CLI
+
+This guide provides a simpler approach to deploy alaCarte to an EC2 instance using AWS CLI and `pnpm dev` or `pnpm start`.
+
+### Deployment Checklist
+
+- [ ] Set up AWS CLI
+- [ ] Create an EC2 key pair
+- [ ] Set up security groups
+- [ ] Launch an EC2 instance
+- [ ] Connect to existing RDS database
+- [ ] Install Node.js 22.x and dependencies
+- [ ] Clone and configure the application
+- [ ] Set up environment variables
+- [ ] Run database migrations
+- [ ] Start the application
+- [ ] Set up a domain and SSL (optional)
+
+### 1. Set up AWS CLI
+
+First, ensure you have AWS CLI installed and configured with your credentials:
+
+```bash
+# Install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# Configure AWS CLI
+aws configure
+```
+
+Enter your AWS Access Key ID, Secret Access Key, default region (e.g., ap-southeast-1), and output format (json).
+
+### 2. Create an EC2 key pair
+
+```bash
+# Create a key pair
+aws ec2 create-key-pair \
+  --key-name alacarte-key \
+  --query 'KeyMaterial' \
+  --output text > alacarte-key.pem
+
+# Set proper permissions
+chmod 400 alacarte-key.pem
+```
+
+### 3. Set up security groups
+
+```bash
+# Create security group for EC2
+aws ec2 create-security-group \
+  --group-name alacarte-ec2-sg \
+  --description "Security group for alaCarte EC2 instance"
+
+# Get your public IP
+MY_IP=$(curl -s https://checkip.amazonaws.com)/32
+
+# Add inbound rules
+aws ec2 authorize-security-group-ingress \
+  --group-name alacarte-ec2-sg \
+  --protocol tcp \
+  --port 22 \
+  --cidr $MY_IP
+
+aws ec2 authorize-security-group-ingress \
+  --group-name alacarte-ec2-sg \
+  --protocol tcp \
+  --port 80 \
+  --cidr 0.0.0.0/0
+
+aws ec2 authorize-security-group-ingress \
+  --group-name alacarte-ec2-sg \
+  --protocol tcp \
+  --port 443 \
+  --cidr 0.0.0.0/0
+
+aws ec2 authorize-security-group-ingress \
+  --group-name alacarte-ec2-sg \
+  --protocol tcp \
+  --port 3000 \
+  --cidr 0.0.0.0/0
+```
+
+### 4. Allow EC2 to access your RDS instance
+
+```bash
+# Get your EC2 security group ID
+EC2_SG_ID=$(aws ec2 describe-security-groups \
+  --group-names alacarte-ec2-sg \
+  --query 'SecurityGroups[0].GroupId' \
+  --output text)
+
+# Get your RDS security group ID (replace rds-sg-name with your actual RDS security group name)
+RDS_SG_NAME="your-rds-sg-name"
+RDS_SG_ID=$(aws ec2 describe-security-groups \
+  --group-names $RDS_SG_NAME \
+  --query 'SecurityGroups[0].GroupId' \
+  --output text)
+
+# Allow EC2 security group to access RDS
+aws ec2 authorize-security-group-ingress \
+  --group-id $RDS_SG_ID \
+  --protocol tcp \
+  --port 5432 \
+  --source-group $EC2_SG_ID
+```
+
+### 5. Launch an EC2 instance
+
+```bash
+# Get the latest Amazon Linux 2023 AMI ID
+AMI_ID=$(aws ec2 describe-images \
+  --owners amazon \
+  --filters "Name=name,Values=al2023-ami-2023*-x86_64" "Name=state,Values=available" \
+  --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+  --output text)
+
+# Launch EC2 instance
+INSTANCE_ID=$(aws ec2 run-instances \
+  --image-id $AMI_ID \
+  --count 1 \
+  --instance-type t2.small \
+  --key-name alacarte-key \
+  --security-groups alacarte-ec2-sg \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=alacarte-server}]' \
+  --block-device-mappings '[{"DeviceName":"/dev/xvda","Ebs":{"VolumeSize":10,"DeleteOnTermination":true}}]' \
+  --query 'Instances[0].InstanceId' \
+  --output text)
+
+# Wait for instance to be running
+aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+
+# Get public DNS name
+PUBLIC_DNS=$(aws ec2 describe-instances \
+  --instance-ids $INSTANCE_ID \
+  --query 'Reservations[0].Instances[0].PublicDnsName' \
+  --output text)
+
+echo "EC2 instance launched with ID: $INSTANCE_ID"
+echo "Public DNS: $PUBLIC_DNS"
+```
+
+### 6. Connect to your EC2 instance
+
+```bash
+# Connect to your EC2 instance using the key pair and public DNS
+ssh -i alacarte-key.pem ec2-user@$PUBLIC_DNS
+```
+
+### 7. Install Node.js 22.x and dependencies
+
+Once connected to your EC2 instance, run these commands:
+
+```bash
+# Install Node.js 22.x
+curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+sudo yum install -y nodejs
+
+# Install pnpm
+npm install -g pnpm
+
+# Install Git and other dependencies
+sudo yum install -y git
+
+# Install PostgreSQL client for database connection testing
+sudo yum install -y postgresql
+```
+
+### 8. Connect to existing RDS database
+
+Before proceeding, gather the following information about your RDS instance:
+- Endpoint (hostname)
+- Port (typically 5432 for PostgreSQL)
+- Database name (alacarte_db)
+- Username and password
+
+Test the connection to your RDS instance:
+
+```bash
+# Test connection (replace with your actual RDS details)
+RDS_ENDPOINT="your-rds-endpoint"
+RDS_USERNAME="your-username"
+RDS_DATABASE="alacarte_db"
+
+# Test the connection
+psql -h $RDS_ENDPOINT -U $RDS_USERNAME -d $RDS_DATABASE
+# You'll be prompted for the password
+```
+
+### 9. Clone and configure the application
+
+```bash
+# Clone the repository
+git clone https://github.com/glennsantos/alacarte.git
+cd alacarte
+
+# Install dependencies
+pnpm install
+```
+
+### 10. Set up environment variables
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit the .env file with your configuration
+cat > .env << EOL
+# Database connection (replace with your actual RDS details)
+DATABASE_URL=postgresql://$RDS_USERNAME:your-password@$RDS_ENDPOINT:5432/$RDS_DATABASE
+DIRECT_URL=postgresql://$RDS_USERNAME:your-password@$RDS_ENDPOINT:5432/$RDS_DATABASE
+
+# Xendit configuration (replace with your actual Xendit details)
+XENDIT_API_KEY=your_xendit_api_key
+XENDIT_SECRET_KEY=your_xendit_secret_key
+XENDIT_WEBHOOK_SECRET=your_webhook_secret
+
+# Other environment variables as needed
+NEXTAUTH_URL=http://$(curl -s http://169.254.169.254/latest/meta-data/public-hostname):3000
+NEXTAUTH_SECRET=$(openssl rand -base64 32)
+EOL
+```
+
+### 11. Run database migrations
+
+```bash
+# Run Prisma migrations
+pnpm prisma migrate deploy
+```
+
+### 12. Start the application
+
+For development mode as requested:
+
+```bash
+# Start in development mode
+pnpm dev
+```
+
+To keep the application running after you disconnect from SSH, use PM2:
+
+```bash
+# Install PM2
+npm install -g pm2
+
+# Start the application with PM2
+pm2 start npm --name "alacarte" -- run dev
+
+# Set PM2 to start on boot
+pm2 save
+pm2 startup
+sudo env PATH=$PATH:/usr/bin pm2 startup -u ec2-user --hp /home/ec2-user
+```
+
+### 13. Set up a domain and SSL (optional)
+
+#### Create and assign an Elastic IP
+
+Run these commands on your local machine with AWS CLI configured:
+
+```bash
+# Allocate a new Elastic IP
+EIP_ALLOCATION_ID=$(aws ec2 allocate-address \
+  --domain vpc \
+  --query 'AllocationId' \
+  --output text)
+
+# Associate Elastic IP with your EC2 instance
+aws ec2 associate-address \
+  --allocation-id $EIP_ALLOCATION_ID \
+  --instance-id $INSTANCE_ID
+
+# Get the allocated public IP
+ELASTIC_IP=$(aws ec2 describe-addresses \
+  --allocation-ids $EIP_ALLOCATION_ID \
+  --query 'Addresses[0].PublicIp' \
+  --output text)
+
+echo "Elastic IP allocated: $ELASTIC_IP"
+```
+
+#### Register a domain with Route 53 (optional)
+
+```bash
+# Register a domain (replace with your desired domain)
+DOMAIN_NAME="yourdomain.com"
+
+# Check domain availability
+aws route53domains check-domain-availability \
+  --domain-name $DOMAIN_NAME
+
+# If available, register the domain
+aws route53domains register-domain \
+  --domain-name $DOMAIN_NAME \
+  --duration-in-years 1 \
+  --auto-renew \
+  --admin-contact "$(cat admin-contact.json)" \
+  --registrant-contact "$(cat registrant-contact.json)" \
+  --tech-contact "$(cat tech-contact.json)" \
+  --privacy-protect-admin-contact \
+  --privacy-protect-registrant-contact \
+  --privacy-protect-tech-contact
+```
+
+#### Create DNS records in Route 53
+
+```bash
+# Create a hosted zone
+HOSTED_ZONE_ID=$(aws route53 create-hosted-zone \
+  --name $DOMAIN_NAME \
+  --caller-reference $(date +%s) \
+  --query 'HostedZone.Id' \
+  --output text | sed 's/\/hostedzone\///')
+
+# Create A record pointing to your Elastic IP
+aws route53 change-resource-record-sets \
+  --hosted-zone-id $HOSTED_ZONE_ID \
+  --change-batch '{"Changes":[{"Action":"CREATE","ResourceRecordSet":{"Name":"'$DOMAIN_NAME'.",'"Type":"A","TTL":300,"ResourceRecords":[{"Value":"'$ELASTIC_IP'"}]}}]}'
+
+# Create www subdomain
+aws route53 change-resource-record-sets \
+  --hosted-zone-id $HOSTED_ZONE_ID \
+  --change-batch '{"Changes":[{"Action":"CREATE","ResourceRecordSet":{"Name":"www.'$DOMAIN_NAME'.",'"Type":"A","TTL":300,"ResourceRecords":[{"Value":"'$ELASTIC_IP'"}]}}]}'
+```
+
+#### Set up Nginx and SSL on your EC2 instance
+
+Run these commands on your EC2 instance:
+
+```bash
+# Install Nginx
+sudo yum install -y nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+# Create Nginx configuration
+sudo mkdir -p /etc/nginx/sites-available
+sudo mkdir -p /etc/nginx/sites-enabled
+
+# Add include directive to nginx.conf if it doesn't exist
+if ! grep -q "include /etc/nginx/sites-enabled/*" /etc/nginx/nginx.conf; then
+  sudo sed -i '/http {/a \
+    include /etc/nginx/sites-enabled/*;' /etc/nginx/nginx.conf
+fi
+
+# Create site configuration
+cat > /tmp/alacarte << EOL
+server {
+    listen 80;
+    server_name $DOMAIN_NAME www.$DOMAIN_NAME;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
+EOL
+
+sudo cp /tmp/alacarte /etc/nginx/sites-available/alacarte
+sudo ln -s /etc/nginx/sites-available/alacarte /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+# Install Certbot for SSL
+sudo yum install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d $DOMAIN_NAME -d www.$DOMAIN_NAME --non-interactive --agree-tos --email your-email@example.com
+```
+
+### 14. Deployment Verification Checklist
+
+After completing the deployment, verify the following:
+
+- [ ] Application is accessible via public IP or domain
+- [ ] Database connection is working
+- [ ] Xendit payment integration is functioning
+- [ ] File uploads are working
+- [ ] User registration and login are working
+- [ ] Product creation and management are working
+- [ ] Webhooks are properly configured
+
+### 15. Troubleshooting
+
+```bash
+# Check application logs
+pm2 logs alacarte
+
+# Check Nginx logs
+sudo tail -f /var/log/nginx/error.log
+
+# Check system logs
+sudo journalctl -u nginx
+
+# Test database connection
+psql -h $RDS_ENDPOINT -U $RDS_USERNAME -d $RDS_DATABASE
+
+# Restart the application after making changes
+pm2 restart alacarte
+```
+
+### 16. Cleanup (when needed)
+
+To clean up resources when no longer needed:
+
+```bash
+# Stop the EC2 instance
+aws ec2 stop-instances --instance-ids $INSTANCE_ID
+
+# Terminate the EC2 instance (permanent deletion)
+aws ec2 terminate-instances --instance-ids $INSTANCE_ID
+
+# Release the Elastic IP
+aws ec2 release-address --allocation-id $EIP_ALLOCATION_ID
+
+# Delete security group (only after instance is terminated)
+aws ec2 delete-security-group --group-name alacarte-ec2-sg
+
+# Delete key pair
+aws ec2 delete-key-pair --key-name alacarte-key
+```
