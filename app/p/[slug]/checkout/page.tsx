@@ -258,9 +258,25 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           throw new Error(paymentData.error || "Failed to process payment")
         }
         
-        // Redirect to e-wallet checkout URL
-        if (paymentData.checkoutUrl) {
-          window.location.href = paymentData.checkoutUrl
+        // Handle the redirect response from the API
+        if (paymentData.redirect && paymentData.redirectUrl) {
+          console.log(`Redirecting to: ${paymentData.redirectUrl}`);
+          // Use window.location.href for a full page redirect
+          window.location.href = paymentData.redirectUrl;
+        } else if (paymentData.requiresAction && paymentData.actionUrl) {
+          // Redirect to the authentication URL for account linking
+          console.log('Redirecting to authentication URL:', paymentData.actionUrl);
+          window.location.href = paymentData.actionUrl;
+        } else if (paymentData.redirectUrl) {
+          // For backward compatibility
+          console.log('Redirecting to payment gateway:', paymentData.redirectUrl);
+          window.location.href = paymentData.redirectUrl;
+        } else if (paymentData.checkoutUrl) {
+          // Legacy support for checkoutUrl
+          console.log('Redirecting to checkout URL:', paymentData.checkoutUrl);
+          window.location.href = paymentData.checkoutUrl;
+        } else {
+          throw new Error('No redirect URL provided for payment');
         }
       } else {
         // For card payments, redirect to success page

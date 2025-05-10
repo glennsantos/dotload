@@ -1,13 +1,15 @@
 * save form input to the provided Postgre
 * use the existing prisma Next.js routes for the API
 * do not restart the server, send instructions to the user and he will restart the server
-* do not use the Xendit SDK, use the Xendit API directly
+* use the Xendit API directly. do not use the Xendit SDK.
  
  
 NEXT STEPS
 * Test happy path again
 * Update Readme with deployment process
 
+NEW PRODUCT WIZARD
+1. Add loading to final submit button
 
 AUTH
 /home/aryeh/dev/alacarte/app/products/page.tsx

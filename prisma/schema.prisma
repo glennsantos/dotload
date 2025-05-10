@@ -16,6 +16,7 @@ model User {
   products               Product[]
   payouts                Payout[]
   transactions           Transaction[]
+  paymentCustomers       PaymentCustomer[]
   
   // Email verification fields
   emailVerified          Boolean  @default(false)
@@ -87,6 +88,8 @@ model Purchase {
   currency               String   @default("PHP")
   paymentMethod          String   // card, gcash, grabpay, etc.
   paymentId              String?  // Payment ID from Xendit
+  paymentCustomerId      String?  // Reference to PaymentCustomer if using tokenized flow
+  paymentMethodId        String?  // Reference to PaymentMethod if using tokenized flow
   status                 String   // pending, completed, failed
   accessCode             String   @unique // Unique code for accessing the product
   
@@ -138,6 +141,36 @@ model Transaction {
   reference              String?  // Purchase ID, Payout ID, etc.
   referenceType          String?  // Purchase, Payout, etc.
   metadata               String?  // JSON string with additional data
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model PaymentCustomer {
+  id                     String   @id @default(uuid())
+  userId                 String
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  externalId             String   @unique // Xendit customer ID
+  referenceId            String   @unique // Our internal reference ID
+  email                  String?
+  mobileNumber           String?
+  name                   String?
+  paymentMethods         PaymentMethod[]
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model PaymentMethod {
+  id                     String   @id @default(uuid())
+  customerId             String
+  customer               PaymentCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  externalId             String   @unique // Xendit payment method ID
+  type                   String   // EWALLET, CARD, etc.
+  ewallet                Json?    // Ewallet specific details
+  status                 String   // ACTIVE, INACTIVE
+  reusability            String   @default("MULTIPLE_USE") // MULTIPLE_USE or ONE_TIME_USE
+  metadata               String?  // Additional metadata
   
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
