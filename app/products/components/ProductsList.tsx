@@ -48,6 +48,12 @@ export default function ProductsList() {
         setLoading(true)
         const response = await fetch('/api/products')
         
+        if (response.status === 401 || response.status === 403) {
+          // Redirect to login if unauthorized
+          window.location.href = `/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`
+          return
+        }
+        
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`)
         }

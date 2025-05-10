@@ -827,4 +827,73 @@ export async function processCardPayment({
   }
 }
 
+// Create an e-wallet payment (direct method without tokenization)
+export async function createEWalletPayment({
+  amount,
+  referenceId,
+  email,
+  phone,
+  name,
+  ewalletType,
+  successRedirectUrl,
+  failureRedirectUrl,
+}: {
+  amount: number;
+  referenceId: string;
+  email: string;
+  phone: string;
+  name: string;
+  ewalletType: 'GCASH' | 'GRABPAY' | 'SHOPEEPAY' | 'PAYMAYA';
+  successRedirectUrl: string;
+  failureRedirectUrl: string;
+}) {
+  try {
+    console.log(`[Xendit] Creating e-wallet payment for ${ewalletType}`);
+    
+    // Direct API call to create e-wallet payment
+    const response = await fetch(`${XENDIT_API_URL}/ewallets/charges`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${Buffer.from(process.env.XENDIT_SECRET_KEY + ':').toString('base64')}`,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        reference_id: referenceId,
+        currency: 'PHP',
+        amount: amount,
+        checkout_method: 'ONE_TIME_PAYMENT',
+        channel_code: ewalletType,
+        channel_properties: {
+          success_redirect_url: successRedirectUrl,
+          failure_redirect_url: failureRedirectUrl,
+          mobile_number: phone
+        },
+        customer: {
+          given_names: name,
+          email: email,
+          mobile_number: phone
+        },
+        metadata: {
+          branch_code: 'ALaCarte_001'
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[Xendit] E-wallet payment creation error:', errorData);
+      throw new Error(`Failed to create e-wallet payment: ${response.status} ${response.statusText}`);
+    }
+    
+    const paymentData = await response.json();
+    console.log(`[Xendit] E-wallet payment created with ID: ${paymentData.id}`);
+    
+    return paymentData;
+  } catch (error) {
+    console.error('Error creating Xendit e-wallet payment:', error);
+    throw error;
+  }
+}
+
 export default xenditClient;

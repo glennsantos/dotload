@@ -1,112 +1,91 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
 model User {
-  id                     String   @id @default(cuid())
-  email                  String   @unique
-  password               String
-  name                   String?
-  products               Product[]
-  payouts                Payout[]
-  transactions           Transaction[]
-  paymentCustomers       PaymentCustomer[]
-  
-  // Email verification fields
-  emailVerified          Boolean  @default(false)
-  verificationToken      String?  @unique
+  id                      String         @id @default(cuid())
+  email                   String         @unique
+  password                String
+  name                    String?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  emailVerified           Boolean        @default(false)
+  verificationToken       String?        @unique
   verificationTokenExpiry DateTime?
-  
-  // Password reset relation
-  passwordReset          PasswordReset?
-  
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  passwordReset           PasswordReset?
+  payouts                 Payout[]
+  products                Product[]
+  transactions            Transaction[]
 }
 
 model Product {
-  id                     String   @id @default(cuid())
-  name                   String
-  slug                   String?
-  type                   String
-  price                  Float
-  currency               String   @default("PHP")
-  description            String?
-  coverImagePath         String?
-  digitalItemPath        String?  // Path to the digital item for sale
-  
-  // Relation to User
-  user                   User     @relation(fields: [userId], references: [id])
-  userId                 String
-  
-  // Payment Options
-  allowPayWhatYouWant    Boolean  @default(false)
-  offerCoupons           Boolean  @default(false)
-  discountCodes          String?  // JSON string of discount codes
-  
-  // Visibility and Status
-  isPublic               Boolean  @default(true)
-  status                 String   @default("active") // active, draft, archived
-  
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  
-  // Optional Relations
-  files                  File[]
-  variations             Variation[]
-  purchases              Purchase[]
+  id                  String      @id @default(cuid())
+  name                String
+  type                String
+  price               Float
+  description         String?
+  coverImagePath      String?
+  userId              String
+  allowPayWhatYouWant Boolean     @default(false)
+  offerCoupons        Boolean     @default(false)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  currency            String      @default("PHP")
+  digitalItemPath     String?
+  slug                String?
+  isPublic            Boolean     @default(true)
+  status              String      @default("active")
+  discountCodes       String?
+  files               File[]
+  user                User        @relation(fields: [userId], references: [id])
+  purchases           Purchase[]
+  variations          Variation[]
 }
 
 model File {
-  id                     String   @id @default(cuid())
-  filename               String
-  path                   String
-  mimetype               String
-  product                Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId              String
+  id        String  @id @default(cuid())
+  filename  String
+  path      String
+  mimetype  String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Variation {
-  id                     String   @id @default(cuid())
-  name                   String
-  options                String
-  productId              String
-  product                Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  name      String
+  options   String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Purchase {
-  id                     String   @id @default(cuid())
-  email                  String
-  mobileNumber           String
-  amount                 Float
-  currency               String   @default("PHP")
-  paymentMethod          String   // card, gcash, grabpay, etc.
-  paymentId              String?  // Payment ID from Xendit
-  paymentCustomerId      String?  // Reference to PaymentCustomer if using tokenized flow
-  paymentMethodId        String?  // Reference to PaymentMethod if using tokenized flow
-  status                 String   // pending, completed, failed
-  accessCode             String   @unique // Unique code for accessing the product
-  
-  // Relation to Product
-  product                Product  @relation(fields: [productId], references: [id])
-  productId              String
-  
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String
+  mobileNumber  String
+  amount        Float
+  currency      String   @default("PHP")
+  paymentMethod String
+  paymentId     String?
+  status        String
+  accessCode    String   @unique
+  productId     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  product       Product  @relation(fields: [productId], references: [id])
 }
 
 model Payout {
   id                String   @id @default(uuid())
   userId            String
-  user              User     @relation(fields: [userId], references: [id])
   amount            Float
-  status            String   // pending, completed, failed
+  status            String
   externalId        String   @unique
   disbursementId    String?  @unique
   bankCode          String
@@ -114,64 +93,31 @@ model Payout {
   accountHolderName String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id])
 }
 
 model PasswordReset {
-  id                     String   @id @default(cuid())
-  token                  String   @unique
-  expiresAt              DateTime
-  
-  // Relation to User
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                 String   @unique
-  
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Transaction {
-  id                     String   @id @default(uuid())
-  userId                 String
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount                 Float
-  currency               String   @default("PHP")
-  type                   String   // income, payout, fee
-  status                 String   // completed, pending, failed
-  description            String
-  reference              String?  // Purchase ID, Payout ID, etc.
-  referenceType          String?  // Purchase, Payout, etc.
-  metadata               String?  // JSON string with additional data
-  
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-}
-
-model PaymentCustomer {
-  id                     String   @id @default(uuid())
-  userId                 String
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  externalId             String   @unique // Xendit customer ID
-  referenceId            String   @unique // Our internal reference ID
-  email                  String?
-  mobileNumber           String?
-  name                   String?
-  paymentMethods         PaymentMethod[]
-  
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-}
-
-model PaymentMethod {
-  id                     String   @id @default(uuid())
-  customerId             String
-  customer               PaymentCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  externalId             String   @unique // Xendit payment method ID
-  type                   String   // EWALLET, CARD, etc.
-  ewallet                Json?    // Ewallet specific details
-  status                 String   // ACTIVE, INACTIVE
-  reusability            String   @default("MULTIPLE_USE") // MULTIPLE_USE or ONE_TIME_USE
-  metadata               String?  // Additional metadata
-  
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id            String   @id @default(uuid())
+  userId        String
+  amount        Float
+  currency      String   @default("PHP")
+  type          String
+  status        String
+  description   String
+  reference     String?
+  referenceType String?
+  metadata      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

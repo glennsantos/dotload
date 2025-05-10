@@ -1,9 +1,32 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import { Plus, Search } from "lucide-react"
 import ProductsList from "./components/ProductsList"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function ProductsPage() {
+  const router = useRouter()
+  
+  // Check authentication on page load
+  useEffect(() => {
+    // Check if user is authenticated by making a request to the auth endpoint
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/auth/me')
+        if (response.status === 401 || response.status === 403) {
+          // Redirect to login if unauthorized
+          router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`)
+        }
+      } catch (error) {
+        console.error('Authentication check failed:', error)
+      }
+    }
+    
+    checkAuth()
+  }, [router])
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
