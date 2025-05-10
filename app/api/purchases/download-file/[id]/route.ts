@@ -6,10 +6,14 @@ import { readFile } from 'fs/promises';
 import { cwd } from 'process';
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
+    // Extract the file ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const fileId = pathParts[pathParts.length - 1];
+    
     // Get access code from query parameters
     const searchParams = request.nextUrl.searchParams;
     const accessCode = searchParams.get('code');
@@ -40,7 +44,7 @@ export async function GET(
     }
     
     // Find the file by ID
-    const file = purchase.product.files.find((f: any) => f.id === params.id);
+    const file = purchase.product.files.find((f: any) => f.id === fileId);
     
     if (!file) {
       return NextResponse.json({ 

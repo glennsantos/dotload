@@ -56,13 +56,21 @@ async function processFiles(formData: FormData, userId: string, productId: strin
 }
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
-  // Await the params to fix the error
-  const { id } = await params;
-  const productId = id;
   try {
+    // Extract the product ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productsIndex = pathParts.indexOf('products');
+    const productId = pathParts[productsIndex + 1];
+    
+    if (!productId) {
+      return NextResponse.json({ 
+        error: 'Missing product ID',
+        details: 'Product ID is required'
+      }, { status: 400 });
+    }
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
     
@@ -111,13 +119,21 @@ export async function GET(
 }
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
-    // Await the params to fix the error
-    const { id } = await params;
-    const productId = id;
+    // Extract the product ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productsIndex = pathParts.indexOf('products');
+    const productId = pathParts[productsIndex + 1];
+    
+    if (!productId) {
+      return NextResponse.json({ 
+        error: 'Missing product ID',
+        details: 'Product ID is required'
+      }, { status: 400 });
+    }
     
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
@@ -380,13 +396,21 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
-  // Await the params to fix the error
-  const { id } = await params;
-  const productId = id;
   try {
+    // Extract the product ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productsIndex = pathParts.indexOf('products');
+    const productId = pathParts[productsIndex + 1];
+    
+    if (!productId) {
+      return NextResponse.json({ 
+        error: 'Missing product ID',
+        details: 'Product ID is required'
+      }, { status: 400 });
+    }
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
     

@@ -6,11 +6,20 @@ import { uploadToCloudinary } from '@/lib/cloudinary';
 // Function removed - using Cloudinary exclusively
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
-    const productId = params.id;
+    // Extract the product ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productId = pathParts[pathParts.indexOf('products') + 1];
+    
+    if (!productId) {
+      return NextResponse.json({ 
+        error: 'Missing product ID',
+        details: 'Product ID is required'
+      }, { status: 400 });
+    }
     
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();

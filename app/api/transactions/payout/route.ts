@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import { createTransaction } from '../route';
-import { calculateProcessingFee, calculateNetAmount, DEFAULT_PAYOUT_FEE_CONFIG } from '../../../../lib/fee-utils';
-
-const prisma = new PrismaClient();
+import { createTransaction } from '@/lib/transaction-utils';
+import { calculateProcessingFee, calculateNetAmount, DEFAULT_PAYOUT_FEE_CONFIG } from '@/lib/fee-utils';
 
 // Xendit API configuration
 const XENDIT_API_KEY = process.env.XENDIT_API_KEY || 'xnd_development_your_key_here';

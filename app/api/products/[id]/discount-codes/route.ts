@@ -7,10 +7,21 @@ type ProductWithDiscountCodes = {
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
+    // Extract the product ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productId = pathParts[pathParts.indexOf('products') + 1];
+    
+    if (!productId) {
+      return NextResponse.json({ 
+        error: 'Missing product ID',
+        details: 'Product ID is required'
+      }, { status: 400 });
+    }
+    
     // Parse the request body
     const { code } = await request.json();
 
@@ -23,7 +34,7 @@ export async function DELETE(
 
     // Fetch the current product
     const product = await prisma.product.findUnique({
-      where: { id: params.id }
+      where: { id: productId }
     }) as ProductWithDiscountCodes;
 
     if (!product) {
@@ -46,7 +57,7 @@ export async function DELETE(
 
     // Update the product with the new discount codes
     await prisma.product.update({
-      where: { id: params.id },
+      where: { id: productId },
       data: { 
         discountCodes: updatedDiscountCodes ? JSON.stringify(updatedDiscountCodes) : null
       } as any

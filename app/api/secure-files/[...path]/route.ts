@@ -5,12 +5,22 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { path: string[] } }
+  request: NextRequest
 ) {
   try {
+    // Extract the path from the URL
+    const url = new URL(request.url);
+    const urlPathSegments = url.pathname.split('/').filter(Boolean);
+    
+    // Remove 'api' and 'secure-files' from the path segments
+    const apiIndex = urlPathSegments.indexOf('api');
+    const secureFilesIndex = urlPathSegments.indexOf('secure-files');
+    
+    // Extract the actual file path segments (everything after 'secure-files')
+    const pathParams = urlPathSegments.slice(secureFilesIndex + 1);
+    
     // Reconstruct the file path from the URL segments
-    const filePath = params.path.join('/');
+    const filePath = pathParams.join('/');
     
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
@@ -80,13 +90,16 @@ export async function GET(
       }
       
       // Check if the user has purchased the product
-      const purchase = await prisma.purchase.findFirst({
-        where: {
-          productId: productId,
-          status: 'completed',
-          email: userEmail
-        }
-      });
+      // Using the Purchase model from the Prisma schema
+      const purchaseResults = await prisma.$queryRaw`
+        SELECT * FROM "Purchase"
+        WHERE "productId" = ${productId}
+        AND "status" = 'completed'
+        AND "email" = ${userEmail}
+        LIMIT 1
+      `;
+      
+      const purchase = Array.isArray(purchaseResults) && purchaseResults.length > 0 ? purchaseResults[0] : null;
       
       if (!purchase) {
         // If no purchase found by email, check if the user has an access code

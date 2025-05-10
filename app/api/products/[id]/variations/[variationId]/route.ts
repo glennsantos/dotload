@@ -3,12 +3,22 @@ import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string, variationId: string } }
+  request: NextRequest
 ) {
   try {
-    const { id, variationId } = params;
-    const productId = id;
+    // Extract the product ID and variation ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productsIndex = pathParts.indexOf('products');
+    const productId = pathParts[productsIndex + 1];
+    const variationId = pathParts[pathParts.indexOf('variations') + 1];
+    
+    if (!productId || !variationId) {
+      return NextResponse.json({ 
+        error: 'Missing required IDs',
+        details: 'Product ID and Variation ID are required'
+      }, { status: 400 });
+    }
     
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
@@ -68,12 +78,22 @@ export async function GET(
 }
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string, variationId: string } }
+  request: NextRequest
 ) {
   try {
-    const { id, variationId } = params;
-    const productId = id;
+    // Extract the product ID and variation ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productsIndex = pathParts.indexOf('products');
+    const productId = pathParts[productsIndex + 1];
+    const variationId = pathParts[pathParts.indexOf('variations') + 1];
+    
+    if (!productId || !variationId) {
+      return NextResponse.json({ 
+        error: 'Missing required IDs',
+        details: 'Product ID and Variation ID are required'
+      }, { status: 400 });
+    }
     
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
@@ -155,12 +175,22 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string, variationId: string } }
+  request: NextRequest
 ) {
   try {
-    const { id, variationId } = params;
-    const productId = id;
+    // Extract the product ID and variation ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productsIndex = pathParts.indexOf('products');
+    const productId = pathParts[productsIndex + 1];
+    const variationId = pathParts[pathParts.indexOf('variations') + 1];
+    
+    if (!productId || !variationId) {
+      return NextResponse.json({ 
+        error: 'Missing required IDs',
+        details: 'Product ID and Variation ID are required'
+      }, { status: 400 });
+    }
     
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();

@@ -6,7 +6,8 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, ChevronRight, CreditCard, Smartphone, QrCode, Wallet, Tag } from "lucide-react"
 
-interface CheckoutPageProps {
+// Define the props type for the checkout page
+type CheckoutPageProps = {
   params: {
     slug: string
   }

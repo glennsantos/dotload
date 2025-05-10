@@ -3,11 +3,22 @@ import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string, fileId: string } }
+  request: NextRequest
 ) {
   try {
-    const { id: productId, fileId } = params;
+    // Extract the product ID and file ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productsIndex = pathParts.indexOf('products');
+    const productId = pathParts[productsIndex + 1];
+    const fileId = pathParts[pathParts.indexOf('files') + 1];
+    
+    if (!productId || !fileId) {
+      return NextResponse.json({ 
+        error: 'Missing required IDs',
+        details: 'Product ID and File ID are required'
+      }, { status: 400 });
+    }
     
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();

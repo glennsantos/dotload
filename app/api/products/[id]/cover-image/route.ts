@@ -10,10 +10,21 @@ import { uploadToCloudinary } from '@/lib/cloudinary';
 // Function removed - using Cloudinary exclusively
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
+    // Extract the product ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productId = pathParts[pathParts.indexOf('products') + 1];
+    
+    if (!productId) {
+      return NextResponse.json({ 
+        error: 'Missing product ID',
+        details: 'Product ID is required'
+      }, { status: 400 });
+    }
+    
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
     
@@ -28,7 +39,7 @@ export async function POST(
     // Find the product by ID
     const existingProduct = await prisma.product.findUnique({
       where: {
-        id: params.id,
+        id: productId,
       }
     });
     
@@ -64,7 +75,7 @@ export async function POST(
     // Upload to Cloudinary
     const arrayBuffer = await coverImage.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const folder = `users/${userId}/products/${params.id}/cover`;
+    const folder = `users/${userId}/products/${productId}/cover`;
     
     const result = await uploadToCloudinary(buffer, {
       folder,
@@ -76,7 +87,7 @@ export async function POST(
     // Update the product with the new cover image path
     const updatedProduct = await prisma.product.update({
       where: {
-        id: params.id
+        id: productId
       },
       data: {
         coverImagePath

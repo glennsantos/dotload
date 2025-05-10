@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
 
   /**
    * Handles GET requests to `/api/transactions`.
@@ -158,31 +156,4 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to create a transaction
-export async function createTransaction(data: {
-  userId: string;
-  amount: number;
-  currency?: string;
-  type: 'income' | 'payout' | 'fee';
-  status: 'completed' | 'pending' | 'failed';
-  description: string;
-  reference?: string;
-  referenceType?: string;
-  metadata?: any;
-}) {
-  try {
-    const { metadata, ...rest } = data;
-    
-    // Create transaction using Prisma
-    return await prisma.transaction.create({
-      data: {
-        ...rest,
-        currency: data.currency || 'PHP',
-        metadata: metadata ? JSON.stringify(metadata) : null,
-      },
-    });
-  } catch (error) {
-    console.error('Error creating transaction:', error);
-    throw error;
-  }
-}
+// Note: The createTransaction function has been moved to /lib/transaction-utils.ts
