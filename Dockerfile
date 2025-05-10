@@ -9,7 +9,7 @@ COPY package.json package-lock.json* pnpm-lock.yaml* ./
 RUN \
   if [ -f pnpm-lock.yaml ]; then \
     npm install -g pnpm && \
-    pnpm install --frozen-lockfile; \
+    pnpm install; \
   elif [ -f package-lock.json ]; then \
     npm ci; \
   else \
