@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createPurchase, updatePurchaseStatus } from '@/lib/purchase-utils';
-import { createEWalletPayment, createInvoice, createQRCodePayment } from '@/lib/xendit-client';
+import { createInvoice, createQRCodePayment } from '@/lib/xendit-client';
+import xenditClient from '@/lib/xendit';
 
 export async function POST(request: NextRequest) {
   console.log('[Payment Creation] Starting payment creation process');
