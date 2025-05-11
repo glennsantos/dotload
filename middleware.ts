@@ -102,6 +102,7 @@ export const config = {
     '/payouts/:path*',
     '/transactions/:path*',
     // Add API routes that need protection
+    '/api/products',
     '/api/products/:path*',
     '/api/users/:path*',
     '/api/files/:path*',
