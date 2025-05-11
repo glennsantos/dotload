@@ -14,6 +14,7 @@ export const createPurchase = async ({
   amount,
   currency = 'PHP',
   paymentMethod,
+  userId,
 }: {
   productId: string;
   email: string;
@@ -21,6 +22,7 @@ export const createPurchase = async ({
   amount: number;
   currency?: string;
   paymentMethod: string;
+  userId?: string;
 }) => {
   try {
     const accessCode = generateAccessCode();
@@ -35,6 +37,7 @@ export const createPurchase = async ({
         status: 'pending',
         accessCode,
         productId,
+        userId,
       },
     });
     
@@ -82,6 +85,7 @@ export const getPurchaseByAccessCode = async (accessCode: string) => {
             user: true
           }
         },
+        user: true,
       },
     });
     
@@ -124,6 +128,7 @@ export const getPurchaseById = async (id: string) => {
             user: true
           }
         },
+        user: true,
       },
     });
     

@@ -100,9 +100,18 @@ async function handleInvoicePaid(data: any) {
     // Get purchase details to create transaction
     const purchase = await getPurchaseById(purchaseId);
     if (purchase && purchase.product && purchase.product.user) {
-      // Create transaction entry for the seller
+      // Create transaction entries for both buyer and seller
+      await createPurchaseTransaction(
+        purchase.userId || 'guest',      // Use 'guest' if no user ID (guest purchase)
+        purchase.product.user.id,
+        purchaseId,
+        purchase.amount,
+        purchase.currency,
+        purchase.product.name
+      );
       await createPurchaseTransaction(
         purchase.product.user.id,
+        purchase.userId || 'guest', // Use 'guest' if no user ID (guest purchase)
         purchaseId,
         purchase.amount,
         purchase.currency,
@@ -143,6 +152,7 @@ async function handleEWalletPayment(data: any) {
         // Create transaction entry for the seller
         await createPurchaseTransaction(
           purchase.product.user.id,
+          purchase.userId || 'guest', // Use 'guest' if no user ID (guest purchase)
           purchaseId,
           purchase.amount,
           purchase.currency,
@@ -209,6 +219,7 @@ async function handleQrCodePayment(data: any) {
         // Create transaction entry for the seller
         await createPurchaseTransaction(
           purchase.product.user.id,
+          purchase.userId || 'guest', // Use 'guest' if no user ID (guest purchase)
           purchaseId,
           purchase.amount,
           purchase.currency,
@@ -275,6 +286,7 @@ async function handleCardPayment(data: any) {
         // Create transaction entry for the seller
         await createPurchaseTransaction(
           purchase.product.user.id,
+          purchase.userId || 'guest', // Use 'guest' if no user ID (guest purchase)
           purchaseId,
           purchase.amount,
           purchase.currency,

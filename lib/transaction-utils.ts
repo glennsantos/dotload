@@ -41,16 +41,37 @@ export async function createTransaction(data: CreateTransactionParams) {
 
 /**
  * Create income transaction when a purchase is completed
+ * @param buyerId - ID of the user making the purchase
+ * @param sellerId - ID of the user who owns the product
+ * @param purchaseId - ID of the purchase
+ * @param amount - Amount of the purchase
+ * @param currency - Currency of the purchase (default: PHP)
+ * @param productName - Name of the product purchased
  */
 export async function createPurchaseTransaction(
-  userId: string,
+  buyerId: string,
+  sellerId: string,
   purchaseId: string,
   amount: number,
   currency: string = 'PHP',
   productName: string
 ) {
+  // Create purchase transaction for the buyer
+  await createTransaction({
+    userId: buyerId,
+    amount: -amount, // Negative amount for purchase
+    currency,
+    type: 'income',
+    status: 'completed',
+    description: `Purchase of ${productName}`,
+    reference: purchaseId,
+    referenceType: 'purchase',
+    metadata: { purchaseId, type: 'purchase' },
+  });
+
+  // Create income transaction for the seller
   return createTransaction({
-    userId,
+    userId: sellerId,
     amount,
     currency,
     type: 'income',
@@ -58,7 +79,7 @@ export async function createPurchaseTransaction(
     description: `Sale of ${productName}`,
     reference: purchaseId,
     referenceType: 'purchase',
-    metadata: { purchaseId },
+    metadata: { purchaseId, type: 'sale' },
   });
 }
 

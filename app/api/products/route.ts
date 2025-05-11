@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser, getAuthUserId } from '@/lib/auth-utils';
 import { writeFile } from 'fs/promises';
@@ -60,10 +61,18 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     
     // Get the current authenticated user's ID
+    console.log('Getting auth user ID...');
     const userId = await getAuthUserId();
+    console.log('Auth user ID:', userId);
+    
+    // Get the token from cookies for debugging
+    const cookieStore = await cookies();
+    const tokenCookie = cookieStore.get('token');
+    console.log('Token cookie present:', !!tokenCookie);
     
     // If no authenticated user, return error
     if (!userId) {
+      console.log('No user ID found - authentication required');
       return NextResponse.json({ 
         error: 'Authentication required',
         details: 'You must be logged in to create a product'
@@ -171,6 +180,18 @@ export async function POST(request: NextRequest) {
     const productSlug = slug || await generateUniqueSlug(name);
     
     // Create product data object
+    console.log('Creating product data object with:', {
+      userId,
+      name,
+      type,
+      price: parsedPrice,
+      hasDescription: !!description,
+      hasCoverImage: !!coverImagePath,
+      contentFiles: processedFiles.length,
+      contentLinks: contentLinks.length
+    });
+    
+    // Remove userId from productData since we'll add it explicitly in create
     const productData: any = {
       name,
       type,
@@ -198,9 +219,17 @@ export async function POST(request: NextRequest) {
     }
     
     // Create product with relations
+    console.log('Creating product with data:', {
+      ...productData,
+      userId,
+      variations: parsedVariations.length > 0 ? 'present' : 'none',
+      files: processedFiles.length + contentLinks.length
+    });
+    
     const product = await prisma.product.create({
       data: {
         ...productData,
+        userId, // Explicitly include userId here
         variations: parsedVariations.length > 0 ? {
           create: parsedVariations
         } : undefined,
