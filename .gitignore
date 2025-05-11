@@ -45,5 +45,6 @@ scripts/
 /*.conf
 ssh*
 /*.sh
+*.json
 
 EC2-DEPLOYMENT-GUIDE.md
