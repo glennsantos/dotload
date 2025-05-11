@@ -82,7 +82,8 @@ export const getPurchaseByAccessCode = async (accessCode: string) => {
       include: {
         product: {
           include: {
-            user: true
+            user: true,
+            files: true // Include files in the product query
           }
         },
         user: true,
@@ -125,7 +126,8 @@ export const getPurchaseById = async (id: string) => {
       include: {
         product: {
           include: {
-            user: true
+            user: true,
+            files: true // Include files in the product query
           }
         },
         user: true,

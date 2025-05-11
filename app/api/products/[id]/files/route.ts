@@ -70,6 +70,16 @@ export async function POST(
     // Base directory for uploads
     const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
     
+    // Ensure the uploads directory exists at the root level
+    try {
+      await mkdir(UPLOADS_DIR, { recursive: true });
+      console.log(`Ensured base uploads directory exists: ${UPLOADS_DIR}`);
+    } catch (error: unknown) {
+      const dirError = error instanceof Error ? error : new Error(String(error));
+      console.error('Error creating base uploads directory:', dirError);
+      throw dirError;
+    }
+    
     // Process each file
     for (const file of files) {
       const arrayBuffer = await file.arrayBuffer();
@@ -79,8 +89,15 @@ export async function POST(
       const relativePath = path.join('users', userId, 'products', productId, 'files');
       const uploadDir = path.join(UPLOADS_DIR, relativePath);
       
-      // Ensure directory exists
-      await mkdir(uploadDir, { recursive: true });
+      // Ensure directory exists with detailed error handling
+      try {
+        await mkdir(uploadDir, { recursive: true });
+        console.log(`Created upload directory: ${uploadDir}`);
+      } catch (error: unknown) {
+        const dirError = error instanceof Error ? error : new Error(String(error));
+        console.error(`Error creating upload directory ${uploadDir}:`, dirError);
+        throw new Error(`Failed to create upload directory: ${dirError.message}`);
+      }
       
       // Generate a secure filename to prevent path traversal attacks
       const timestamp = Date.now();
@@ -94,8 +111,15 @@ export async function POST(
       // Full path to save the file
       const filePath = path.join(uploadDir, secureFilename);
       
-      // Save the file using fs.promises.writeFile with a proper type cast
-      await writeFile(filePath, new Uint8Array(buffer));
+      // Save the file using fs.promises.writeFile with a proper type cast and error handling
+      try {
+        await writeFile(filePath, new Uint8Array(buffer));
+        console.log(`Successfully wrote file to: ${filePath}`);
+      } catch (error: unknown) {
+        const writeError = error instanceof Error ? error : new Error(String(error));
+        console.error(`Error writing file to ${filePath}:`, writeError);
+        throw new Error(`Failed to write file: ${writeError.message}`);
+      }
       
       // Generate a URL for secure access
       const relativeFilePath = path.join(relativePath, secureFilename);

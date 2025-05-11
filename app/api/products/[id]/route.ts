@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
-import { writeFile } from 'fs/promises';
+import { writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
 import { cwd } from 'process';
@@ -12,10 +12,24 @@ async function ensureUploadsDir() {
   const uploadsDir = join(cwd(), 'uploads');
   try {
     await mkdir(uploadsDir, { recursive: true });
+    console.log(`Successfully ensured uploads directory exists: ${uploadsDir}`);
+    
+    // Verify the directory exists and is writable
+    try {
+      const testFile = join(uploadsDir, '.test-write-access');
+      await writeFile(testFile, 'test');
+      await unlink(testFile);
+      console.log('Uploads directory is writable');
+    } catch (writeError) {
+      console.error('Uploads directory exists but is not writable:', writeError instanceof Error ? writeError.message : String(writeError));
+      // We'll continue anyway, but log the warning
+    }
+    
     return uploadsDir;
-  } catch (error) {
-    console.error('Error creating uploads directory:', error);
-    throw error;
+  } catch (error: unknown) {
+    const typedError = error instanceof Error ? error : new Error(String(error));
+    console.error('Error creating uploads directory:', typedError);
+    throw typedError;
   }
 }
 
