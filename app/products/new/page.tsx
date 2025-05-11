@@ -27,6 +27,7 @@ type Product = {
 export default function NewProduct() {
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCopyModal, setShowCopyModal] = useState(false);
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [productData, setProductData] = useState({
@@ -348,8 +349,27 @@ export default function NewProduct() {
                   />
                   <button 
                     onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`);
-                      alert('URL copied to clipboard!');
+                      if (typeof window !== 'undefined') {
+                        const url = `${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`;
+                        if (navigator?.clipboard) {
+                          navigator.clipboard.writeText(url)
+                            .then(() => setShowCopyModal(true))
+                            .catch(() => alert('Failed to copy URL'));
+                        } else {
+                          // Fallback for browsers that don't support clipboard API
+                          const textarea = document.createElement('textarea');
+                          textarea.value = url;
+                          document.body.appendChild(textarea);
+                          textarea.select();
+                          try {
+                            document.execCommand('copy');
+                            setShowCopyModal(true);
+                          } catch (err) {
+                            alert('Failed to copy URL');
+                          }
+                          document.body.removeChild(textarea);
+                        }
+                      }
                     }}
                     className="px-4 py-2 bg-black text-white rounded-r-md"
                   >
@@ -378,6 +398,30 @@ export default function NewProduct() {
                   </code>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Copy Success Modal */}
+      {showCopyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 relative">
+            <button 
+              onClick={() => setShowCopyModal(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+            <div className="text-center">
+              <h3 className="text-lg font-medium mb-2">Success!</h3>
+              <p className="text-gray-600">URL copied to clipboard!</p>
+              <button
+                onClick={() => setShowCopyModal(false)}
+                className="mt-4 px-4 py-2 bg-black text-white rounded-md w-full"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
