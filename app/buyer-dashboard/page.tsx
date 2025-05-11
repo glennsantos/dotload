@@ -308,13 +308,6 @@ export default function BuyerDashboardPage() {
                       </span>
                     </div>
                     
-                    <p className="text-gray-600 mb-6">
-                      {purchase.product.description.length > 150 
-                        ? `${purchase.product.description.substring(0, 150)}...` 
-                        : purchase.product.description
-                      }
-                    </p>
-                    
                     <div className="space-y-2">
                       <h3 className="font-medium">Files:</h3>
                       {purchase.product.files && purchase.product.files.length > 0 ? (
