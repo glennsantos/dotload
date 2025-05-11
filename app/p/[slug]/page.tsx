@@ -118,7 +118,7 @@ export default function PublicProductPage({ params }: ProductPageProps) {
             <div className="prose max-w-none text-gray-600 mb-8">
               <RichTextRenderer 
                 content={product.description || 'No description available'}
-                className="text-gray-600"
+                className="text-gray-600 space-y-4 pl-4 pt-6"
               />
             </div>
             
