@@ -199,8 +199,8 @@ export default function NewProduct() {
               <button onClick={handleCancel} className="px-4 py-2 border rounded-md flex items-center gap-2">
                 <X size={18} /> Cancel
               </button>
-              <button onClick={handleNext} className="px-4 py-2 bg-purple-400 hover:bg-purple-500 rounded-md">
-                Next: Customize
+              <button onClick={handleNext} className="px-4 py-2 bg-black text-white rounded-md">
+                Save and Continue
               </button>
             </div>
           </header>
