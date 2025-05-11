@@ -7,14 +7,22 @@ import { cwd } from 'process';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get access code from query parameters
+    // Get access code and file ID from query parameters
     const searchParams = request.nextUrl.searchParams;
-    const accessCode = searchParams.get('code');
+    const accessCode = searchParams.get('accessCode');
+    const fileId = searchParams.get('fileId');
     
     if (!accessCode) {
       return NextResponse.json({ 
         error: 'Missing access code',
         details: 'Access code is required'
+      }, { status: 400 });
+    }
+    
+    if (!fileId) {
+      return NextResponse.json({ 
+        error: 'Missing file ID',
+        details: 'File ID is required'
       }, { status: 400 });
     }
     
@@ -36,34 +44,50 @@ export async function GET(request: NextRequest) {
       }, { status: 403 });
     }
     
-    // Check if product has a digital item
-    if (!purchase.product.digitalItemPath) {
+    // Find the specific file by ID
+    const file = await prisma.file.findUnique({
+      where: {
+        id: fileId
+      }
+    });
+    
+    if (!file) {
       return NextResponse.json({ 
-        error: 'No digital content',
-        details: 'This product does not have digital content'
+        error: 'File not found',
+        details: 'The requested file does not exist'
       }, { status: 404 });
     }
     
-    // Get the digital item path
-    const digitalItemPath = purchase.product.digitalItemPath;
+    // Verify the file belongs to the purchased product
+    if (file.productId !== purchase.productId) {
+      return NextResponse.json({ 
+        error: 'Unauthorized',
+        details: 'You do not have access to this file'
+      }, { status: 403 });
+    }
+    
+    // Get the file path
+    const filePath = file.path;
     
     // If the path is a URL (starts with http or https), redirect to it
-    if (digitalItemPath.startsWith('http://') || digitalItemPath.startsWith('https://')) {
-      return NextResponse.redirect(digitalItemPath);
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return NextResponse.redirect(filePath);
     }
     
     // Otherwise, read the file from the local filesystem
     try {
       // Determine the file path
-      const filePath = digitalItemPath.startsWith('/') 
-        ? digitalItemPath 
-        : join(cwd(), digitalItemPath);
+      const absoluteFilePath = filePath.startsWith('/') 
+        ? filePath 
+        : join(cwd(), filePath);
+      
+      console.log(`Attempting to read file from: ${absoluteFilePath}`);
       
       // Read the file
-      const fileBuffer = await readFile(filePath);
+      const fileBuffer = await readFile(absoluteFilePath);
       
-      // Get the filename from the path
-      const fileName = filePath.split('/').pop() || 'download';
+      // Get the filename from the path or use the one from the database
+      const fileName = file.filename || absoluteFilePath.split('/').pop() || 'download';
       
       // Determine the content type based on file extension
       const extension = fileName.split('.').pop()?.toLowerCase();
