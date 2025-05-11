@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
     const transactions = await prisma.$queryRaw`
       SELECT * FROM "Transaction"
       WHERE "userId" = ${user.id}
+      AND type != 'PURCHASE'
       ORDER BY "createdAt" DESC
       LIMIT ${limit} OFFSET ${skip}
     `;
@@ -51,6 +52,7 @@ export async function GET(request: NextRequest) {
     const totalCountResult = await prisma.$queryRaw`
       SELECT COUNT(*) as count FROM "Transaction"
       WHERE "userId" = ${user.id}
+      AND type != 'PURCHASE'
     `;
     const totalCount = Number((totalCountResult as any)[0].count);
 
