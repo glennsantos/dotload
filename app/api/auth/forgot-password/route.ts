@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     // In a real application, you would send an email with the reset link
     // For this demo, we'll just log it
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    const resetUrl = `http://${process.env.DOMAIN}/reset-password?token=${resetToken}`;
     
     debugLog('Password reset URL (would be sent via email):', resetUrl);
     

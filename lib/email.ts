@@ -19,7 +19,7 @@ export async function sendVerificationEmail(
   token: string,
   name?: string | null
 ) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = `http://${process.env.DOMAIN}`;
   const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
 
   const mailOptions = {
@@ -60,7 +60,7 @@ export async function sendPasswordResetEmail(
   token: string,
   name?: string | null
 ) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = `http://${process.env.DOMAIN}`;
   const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
   const mailOptions = {
@@ -108,7 +108,7 @@ export async function sendPurchaseConfirmationEmail(
   currency: string,
   name?: string | null
 ) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = `http://${process.env.DOMAIN}`;
   const buyerDashboardUrl = `${baseUrl}/buyer-dashboard?code=${accessCode}`;
 
   const mailOptions = {
