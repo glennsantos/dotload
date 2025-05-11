@@ -833,26 +833,54 @@ sudo dnf install -y postgresql15
 scp -r -F ssh_config /path/to/local/alacarte alacarte-ec2:~/
 ```
 
-#### Step 5: Configure Database Connection
+#### Step 5: Configure Environment Variables
 
-Update the .env file with RDS credentials:
+Create or update the `.env` file with the necessary configuration:
 
 ```bash
-# Create/edit .env file
+# Create/edit .env file with proper values
 cat > ~/alacarte/.env << EOL
-DATABASE_URL=postgresql://postgres:your-password@your-rds-endpoint:5432/alacarte_db
-DIRECT_URL=postgresql://postgres:your-password@your-rds-endpoint:5432/alacarte_db
+# Database Configuration
+DATABASE_URL=postgresql://postgres:YourSecurePassword@alacarte-db.cvy41u3lhk79.ap-southeast-1.rds.amazonaws.com:5432/alacarte_db
+DIRECT_URL=postgresql://postgres:YourSecurePassword@alacarte-db.cvy41u3lhk79.ap-southeast-1.rds.amazonaws.com:5432/alacarte_db
 
-# Xendit configuration
-XENDIT_API_KEY=your_xendit_api_key
-XENDIT_SECRET_KEY=your_xendit_secret_key
-XENDIT_WEBHOOK_SECRET=your_webhook_secret
+# Fee Configuration
+PAYOUT_PERCENTAGE_FEE=0.05
+PAYOUT_FIXED_FEE=15
+
+# Xendit Configuration
+XENDIT_API_KEY=xnd_development_YourXenditApiKey
+XENDIT_SECRET_KEY=xnd_development_YourXenditSecretKey
+XENDIT_WEBHOOK_SECRET=YourXenditWebhookSecret
+
+# Email Configuration
+SMTP_HOST=smtp.example.com
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_password
+SMTP_PORT=2525
+EMAIL_FROM=alaCarte <no-reply@example.com>
 
 # NextAuth configuration
-NEXTAUTH_URL=http://your-ec2-public-dns:3000
-NEXTAUTH_SECRET=your-nextauth-secret
+NEXTAUTH_URL=http://ec2-47-128-210-191.ap-southeast-1.compute.amazonaws.com:3000
+NEXTAUTH_SECRET=$(openssl rand -base64 32)
 EOL
 ```
+
+**Important Notes:**
+
+1. **Database Connection**: If you encounter authentication issues with the RDS database, you may need to reset the master password:
+
+```bash
+# Reset RDS master password
+aws rds modify-db-instance \
+  --db-instance-identifier alacarte-db \
+  --master-user-password 'NewSecurePassword!' \
+  --apply-immediately
+```
+
+2. **Xendit API Keys**: For development, use keys with the `xnd_development_` prefix. For production, use `xnd_production_` prefix.
+
+3. **NextAuth Secret**: The command `$(openssl rand -base64 32)` generates a secure random string for the NextAuth secret.
 
 #### Step 6: RDS Security Group Configuration
 
