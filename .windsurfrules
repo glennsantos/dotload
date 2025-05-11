@@ -1,25 +1,21 @@
-* save form input to the provided Postgre
+* when creating forms, ensure that form input is saved to the provided Postgre DB
 * use the existing prisma Next.js routes for the API
 * do not restart the server, send instructions to the user and he will restart the server
-* use the Xendit API directly. do not use the Xendit SDK.
+* when creating payment services, use the Xendit API directly. do not use the Xendit SDK.
+* ask the user if you want to read logs since it takes a long time for you to load the logs.
  
- 
-NEXT STEPS
-* Test happy path again
-* Update Readme with deployment process
+DEPLOY TODOS
+* update env
+* migrate db via prisma
+* Update Readme with updated deployment process
 
 NEW PRODUCT WIZARD
 1. Add loading to final submit button
 
-AUTH
-/home/aryeh/dev/alacarte/app/products/page.tsx
-1.  When a user who is not logged in visits the /products page, redirect them to the login page
-
 PAYMENT OPTIONS
 /home/aryeh/dev/alacarte/app/products/new/PaymentOptions.tsx
-1. [For QA] Whenever a purchase is made, add an entry into the transactions table
-2. [For QA] Whenever a payout is made, add an entry into the transactions table
-3. [For QA] Whenever a fee is charged, add an entry into the transactions table
+1. For purchases, the transaction should have as the user id the id of the user who made the purchase.
+2. For income, the transaction should have as the user id the id of the user who owns the product bought.
 
 WEBHOOKS
 1. implement webhook listeners for purchases to confirm status and update status in db

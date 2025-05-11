@@ -781,7 +781,187 @@ psql -h $RDS_ENDPOINT -U $RDS_USERNAME -d $RDS_DATABASE
 pm2 restart alacarte
 ```
 
-### 16. Cleanup (when needed)
+### 16. Detailed EC2 Deployment Steps
+
+This section provides a detailed guide based on our recent deployment experience.
+
+#### Prerequisites
+- AWS CLI configured with appropriate permissions
+- SSH key pair for EC2 access
+- Existing RDS PostgreSQL database
+
+#### Step 1: SSH Configuration
+
+Create an SSH config file to simplify connections:
+
+```
+Host alacarte-ec2
+    HostName ec2-47-128-210-191.ap-southeast-1.compute.amazonaws.com
+    User ec2-user
+    IdentityFile /path/to/your-key.pem
+    IdentitiesOnly yes
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+```
+
+#### Step 2: Connect to EC2 Instance
+
+```bash
+ssh -F ssh_config alacarte-ec2
+```
+
+#### Step 3: Install Dependencies
+
+```bash
+# Install Node.js 22.x
+sudo dnf install -y nodejs
+
+# Install pnpm
+sudo npm install -g pnpm
+
+# Install PM2
+sudo npm install -g pm2
+
+# Install PostgreSQL client
+sudo dnf install -y postgresql15
+```
+
+#### Step 4: Deploy Application Code
+
+```bash
+# Clone repository or transfer code to EC2
+scp -r -F ssh_config /path/to/local/alacarte alacarte-ec2:~/
+```
+
+#### Step 5: Configure Database Connection
+
+Update the .env file with RDS credentials:
+
+```bash
+# Create/edit .env file
+cat > ~/alacarte/.env << EOL
+DATABASE_URL=postgresql://postgres:your-password@your-rds-endpoint:5432/alacarte_db
+DIRECT_URL=postgresql://postgres:your-password@your-rds-endpoint:5432/alacarte_db
+
+# Xendit configuration
+XENDIT_API_KEY=your_xendit_api_key
+XENDIT_SECRET_KEY=your_xendit_secret_key
+XENDIT_WEBHOOK_SECRET=your_webhook_secret
+
+# NextAuth configuration
+NEXTAUTH_URL=http://your-ec2-public-dns:3000
+NEXTAUTH_SECRET=your-nextauth-secret
+EOL
+```
+
+#### Step 6: RDS Security Group Configuration
+
+If you encounter database connection issues, update the RDS security group:
+
+```bash
+# Get EC2 security group ID
+EC2_SG_ID=$(aws ec2 describe-instances --instance-ids your-instance-id --query 'Reservations[0].Instances[0].SecurityGroups[0].GroupId' --output text)
+
+# Update RDS security group to allow connections from EC2
+aws ec2 authorize-security-group-ingress --group-id your-rds-security-group-id --protocol tcp --port 5432 --source-group $EC2_SG_ID
+```
+
+#### Step 7: Generate Prisma Client and Run Migrations
+
+```bash
+cd ~/alacarte
+pnpm prisma generate
+pnpm prisma migrate deploy
+```
+
+#### Step 8: Start Application with PM2
+
+```bash
+cd ~/alacarte
+pm2 start npm --name "alacarte" -- run dev
+
+# Configure PM2 to start on boot
+pm2 save
+pm2 startup
+# Run the command PM2 outputs
+```
+
+#### Step 9: Configure Nginx as Reverse Proxy
+
+```bash
+# Install Nginx
+sudo dnf install -y nginx
+
+# Create Nginx configuration
+sudo bash -c 'cat > /etc/nginx/conf.d/alacarte.conf << EOL
+server {
+    listen 80;
+    server_name your-ec2-public-dns;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOL'
+
+# Update Nginx main configuration for long server names
+sudo sed -i 's/# server_names_hash_bucket_size.*/server_names_hash_bucket_size 128;/' /etc/nginx/nginx.conf
+
+# Start and enable Nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+#### Step 10: Verify Deployment
+
+Access your application at:
+- http://your-ec2-public-dns:3000 (direct access)
+- http://your-ec2-public-dns (if using Nginx)
+
+### 17. Troubleshooting Common Deployment Issues
+
+#### Database Connection Issues
+
+```bash
+# Reset RDS master password if needed
+aws rds modify-db-instance --db-instance-identifier your-db-identifier --master-user-password 'NewSecurePassword!' --apply-immediately
+
+# Test database connection
+PGPASSWORD='your-password' psql -h your-rds-endpoint -U postgres -d alacarte_db -c 'SELECT current_database();'
+```
+
+#### Nginx Configuration Issues
+
+```bash
+# Test Nginx configuration
+sudo nginx -t
+
+# Check Nginx logs
+sudo tail -f /var/log/nginx/error.log
+```
+
+#### Application Startup Issues
+
+```bash
+# Check PM2 logs
+pm2 logs alacarte
+
+# Restart application
+pm2 restart alacarte
+
+# Check if Prisma client is generated
+cd ~/alacarte && pnpm prisma generate
+```
+
+### 18. Cleanup (when needed)
 
 To clean up resources when no longer needed:
 
