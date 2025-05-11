@@ -1,24 +1,26 @@
 * when creating forms, ensure that form input is saved to the provided Postgre DB
 * use the existing prisma Next.js routes for the API
-* do not restart the server, send instructions to the user and he will restart the server
 * when creating payment services, use the Xendit API directly. do not use the Xendit SDK.
 * ask the user if you want to read logs since it takes a long time for you to load the logs.
 * you are allowed to read and write to files covered by .gitignore but do not commit them.
 * you can create and modify policies and roles in AWS. 
+* you can use AWS CLI
+* always add my current IP to the security group since it changes constantly.
+* when you restart the server, also restart the app.
+* use `ssh -v alacarte-ec2` to connect to the server.
  
 DEPLOY TODOS
 * update env
 * migrate db via prisma
 * what is the use of the s3 bucket created? if it's not for anything else, use it for the uploads of the products.
 
-NEW PRODUCT WIZARD
-1. Add loading to final submit button
-
 PAYMENT OPTIONS
 /home/aryeh/dev/alacarte/app/products/new/PaymentOptions.tsx
-1. For purchases, the transaction should have as the user id the id of the user who made the purchase.
-2. For income, the transaction should have as the user id the id of the user who owns the product bought.
+1. In the transactions list, only list the transactions for that user
 
 WEBHOOKS
 1. implement webhook listeners for purchases to confirm status and update status in db
 2. implement webhook listeners for payouts to confirm and update status in db
+
+DOMAIN
+1. get the domain name from the .env file
