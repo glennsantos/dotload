@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, X, Link as LinkIcon, File, Plus, ChevronLeft } from "lucide-react"
+import { Upload, X, Link as LinkIcon, File, Plus, ChevronLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 export default function ContentUpload({
@@ -21,6 +21,7 @@ export default function ContentUpload({
   const [links, setLinks] = useState<string[]>([])
   const [newLink, setNewLink] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -85,13 +86,18 @@ export default function ContentUpload({
     })
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (files.length === 0 && links.length === 0) {
       setError("Please add at least one file or link")
       return
     }
     
-    onNext()
+    setIsSubmitting(true)
+    try {
+      await onNext()
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -109,8 +115,10 @@ export default function ContentUpload({
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-black text-white rounded-md"
+            disabled={isSubmitting}
+            className="px-4 py-2 bg-black text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
+            {isSubmitting && <Loader2 size={18} className="animate-spin" />}
             Publish!
           </button>
         </div>

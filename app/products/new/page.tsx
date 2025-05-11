@@ -116,7 +116,8 @@ export default function NewProduct() {
       // Submit to backend using Next.js API route
       const response = await fetch('/api/products', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'include' // Add this to ensure cookies are sent
       });
 
       if (!response.ok) {
