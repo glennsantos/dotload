@@ -3,11 +3,13 @@
 * do not restart the server, send instructions to the user and he will restart the server
 * when creating payment services, use the Xendit API directly. do not use the Xendit SDK.
 * ask the user if you want to read logs since it takes a long time for you to load the logs.
+* you are allowed to read and write to files covered by .gitignore but do not commit them.
+* you can create and modify policies and roles in AWS. 
  
 DEPLOY TODOS
 * update env
 * migrate db via prisma
-* Update Readme with updated deployment process
+* what is the use of the s3 bucket created? if it's not for anything else, use it for the uploads of the products.
 
 NEW PRODUCT WIZARD
 1. Add loading to final submit button
