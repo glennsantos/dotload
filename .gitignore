@@ -17,7 +17,13 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files
-.env*
+.env
+.env.docker
+.env.local
+.env.production
+.env.test
+.env.development
+.env.staging
 *-env
 
 # vercel
@@ -35,11 +41,9 @@ uploads/
 
 #scripts 
 scripts/
-
 /*.pem
 /*.conf
 ssh*
-
 /*.sh
 
 EC2-DEPLOYMENT-GUIDE.md
