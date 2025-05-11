@@ -807,7 +807,7 @@ Host alacarte-ec2
 #### Step 2: Connect to EC2 Instance
 
 ```bash
-ssh -F ssh_config alacarte-ec2
+ssh -v alacarte-ec2
 ```
 
 #### Step 3: Install Dependencies
