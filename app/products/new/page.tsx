@@ -346,9 +346,6 @@ export default function NewProduct() {
                     readOnly
                     className="flex-1 p-3 border rounded-l-md bg-gray-100"
                   />
-                  <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-100">
-                    ₱
-                  </span>
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`);

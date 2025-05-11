@@ -10,17 +10,4 @@
 * use `ssh -v alacarte-ec2` to connect to the server.
  
 DEPLOY TODOS
-* update env
-* migrate db via prisma
 * what is the use of the s3 bucket created? if it's not for anything else, use it for the uploads of the products.
-
-PAYMENT OPTIONS
-/home/aryeh/dev/alacarte/app/products/new/PaymentOptions.tsx
-1. In the transactions list, only list the transactions for that user
-
-WEBHOOKS
-1. implement webhook listeners for purchases to confirm status and update status in db
-2. implement webhook listeners for payouts to confirm and update status in db
-
-DOMAIN
-1. get the domain name from the .env file
