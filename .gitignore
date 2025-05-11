@@ -24,6 +24,7 @@ yarn-error.log*
 .env.test
 .env.development
 .env.staging
+.env.ec2
 *-env
 
 # vercel
