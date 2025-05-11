@@ -26,7 +26,7 @@ const RichTextRenderer = ({ content, className = '' }: RichTextRendererProps) =>
 
   return (
     <div 
-      className={`rich-text-content ${className}`}
+      className={`rich-text-content space-y-4 pl-4 pt-6 ${className}`}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   )
