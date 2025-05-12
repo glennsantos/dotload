@@ -22,58 +22,66 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid webhook payload' }, { status: 400 });
     }
     
+    // Extract common fields from the webhook data
+    const paymentId = data.id;
+    const referenceId = data.reference_id;
+    const paymentStatus = data.status?.toLowerCase() || '';
+    
+    if (!paymentId || !referenceId) {
+      return NextResponse.json({ error: 'Missing payment information' }, { status: 400 });
+    }
+    
+    // Extract purchase ID from reference ID (format: purchase_[purchaseId])
+    const purchaseIdMatch = referenceId.match(/purchase_(.+)/);
+    if (!purchaseIdMatch || !purchaseIdMatch[1]) {
+      return NextResponse.json({ error: 'Invalid reference ID format' }, { status: 400 });
+    }
+    
+    const purchaseId = purchaseIdMatch[1];
+    console.log(`Processing payment webhook for purchase ${purchaseId}, status: ${paymentStatus}`);
+    
     // Handle different event types
-    if (event === 'payment.succeeded') {
-      // Extract payment ID and reference ID from the webhook data
-      const paymentId = data.id;
-      const referenceId = data.reference_id;
-      
-      if (!paymentId || !referenceId) {
-        return NextResponse.json({ error: 'Missing payment information' }, { status: 400 });
-      }
-      
-      // Extract purchase ID from reference ID (format: purchase_[purchaseId])
-      const purchaseIdMatch = referenceId.match(/purchase_(.+)/);
-      if (!purchaseIdMatch || !purchaseIdMatch[1]) {
-        return NextResponse.json({ error: 'Invalid reference ID format' }, { status: 400 });
-      }
-      
-      const purchaseId = purchaseIdMatch[1];
-      
-      // Update the purchase status in the database
+    if (event === 'payment.succeeded' || paymentStatus === 'succeeded') {
+      // Update the purchase status in the database to completed
+      // This will allow users to download files
       const updatedPurchase = await updatePurchaseStatus(purchaseId, 'completed', paymentId);
       
       // Get the full purchase details including the product
       const purchaseWithProduct = await getPurchaseById(purchaseId);
       
-      // Email is now sent when payment is created, not in webhook
       console.log(`Payment for purchase ${purchaseId} completed successfully`);
       
-      // If needed, additional post-payment processing can be done here
+      return NextResponse.json({ success: true, status: 'completed' });
       
-      return NextResponse.json({ success: true });
-    } else if (event === 'payment.failed') {
-      // Handle failed payment
-      const paymentId = data.id;
-      const referenceId = data.reference_id;
+    } else if (event === 'payment.failed' || paymentStatus === 'failed') {
+      // Handle failed payment - user should not see the purchase at all
       const failureCode = data.failure_code;
       
-      if (!paymentId || !referenceId) {
-        return NextResponse.json({ error: 'Missing payment information' }, { status: 400 });
-      }
+      console.log(`Payment for purchase ${purchaseId} failed with code: ${failureCode}`);
       
-      // Extract purchase ID from reference ID
-      const purchaseIdMatch = referenceId.match(/purchase_(.+)/);
-      if (!purchaseIdMatch || !purchaseIdMatch[1]) {
-        return NextResponse.json({ error: 'Invalid reference ID format' }, { status: 400 });
-      }
-      
-      const purchaseId = purchaseIdMatch[1];
-      
-      // Update the purchase status in the database
+      // Update the purchase status in the database to failed
       await updatePurchaseStatus(purchaseId, 'failed', paymentId);
       
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, status: 'failed' });
+      
+    } else if (event === 'payment.pending' || paymentStatus === 'pending') {
+      // Handle pending payment - user can see the file link but clicking shows a modal
+      console.log(`Payment for purchase ${purchaseId} is pending processing`);
+      
+      // Update the purchase status in the database to pending
+      await updatePurchaseStatus(purchaseId, 'pending', paymentId);
+      
+      return NextResponse.json({ success: true, status: 'pending' });
+      
+    } else if (event === 'payment.awaiting_capture' || paymentStatus === 'awaiting_capture') {
+      // Handle awaiting capture - same handling as pending
+      console.log(`Payment for purchase ${purchaseId} is awaiting capture`);
+      
+      // Update the purchase status in the database to awaiting_capture
+      await updatePurchaseStatus(purchaseId, 'awaiting_capture', paymentId);
+      
+      return NextResponse.json({ success: true, status: 'awaiting_capture' });
+      
     } else {
       // Handle other event types if needed
       console.log(`Unhandled Xendit webhook event: ${event}`);

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Download, FileText, ExternalLink, Clock, CheckCircle, ShoppingBag } from "lucide-react"
+import { Download, FileText, ExternalLink, Clock, CheckCircle, ShoppingBag, AlertCircle, X } from "lucide-react"
 
 interface Purchase {
   id: string
@@ -46,6 +46,8 @@ export default function BuyerDashboardPage() {
   const [email, setEmail] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [showPaymentPendingModal, setShowPaymentPendingModal] = useState(false)
+  const [pendingFile, setPendingFile] = useState<{name: string, status: string} | null>(null)
 
   useEffect(() => {
     async function fetchPurchases() {
@@ -61,7 +63,13 @@ export default function BuyerDashboardPage() {
           }
           
           const data = await response.json()
-          setPurchases([data])
+          
+          // Only show the purchase if it's not failed
+          if (data.status !== 'failed') {
+            setPurchases([data])
+          } else {
+            setPurchases([])
+          }
           
           // Check if user exists or needs to be created
           const userResponse = await fetch('/api/auth/me')
@@ -83,7 +91,13 @@ export default function BuyerDashboardPage() {
           }
           
           const data = await response.json()
-          setPurchases(Array.isArray(data) ? data : [])
+          
+          // Filter out failed payments
+          const filteredPurchases = Array.isArray(data) 
+            ? data.filter(purchase => purchase.status !== 'failed')
+            : []
+            
+          setPurchases(filteredPurchases)
         }
       } catch (err) {
         console.error('Error fetching purchases:', err)
@@ -315,14 +329,30 @@ export default function BuyerDashboardPage() {
                           {purchase.product.files.map((file) => (
                             <li key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                               <span className="truncate flex-1">{file.filename}</span>
-                              <a 
-                                href={`/api/purchases/download?fileId=${file.id}&accessCode=${purchase.accessCode}`}
-                                className="ml-4 text-blue-600 hover:text-blue-500 flex items-center"
-                                download
-                              >
-                                <Download size={16} className="mr-1" />
-                                Download
-                              </a>
+                              {purchase.status === 'completed' || purchase.status === 'succeeded' ? (
+                                <a 
+                                  href={`/api/purchases/download?fileId=${file.id}&accessCode=${purchase.accessCode}`}
+                                  className="ml-4 text-blue-600 hover:text-blue-500 flex items-center"
+                                  download
+                                >
+                                  <Download size={16} className="mr-1" />
+                                  Download
+                                </a>
+                              ) : (
+                                <button 
+                                  onClick={() => {
+                                    setPendingFile({
+                                      name: file.filename,
+                                      status: purchase.status
+                                    })
+                                    setShowPaymentPendingModal(true)
+                                  }}
+                                  className="ml-4 text-blue-600 hover:text-blue-500 flex items-center"
+                                >
+                                  <Download size={16} className="mr-1" />
+                                  Download
+                                </button>
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -354,6 +384,41 @@ export default function BuyerDashboardPage() {
           </div>
         )}
       </main>
+      
+      {/* Payment Pending Modal */}
+      {showPaymentPendingModal && pendingFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
+            <button 
+              onClick={() => setShowPaymentPendingModal(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <AlertCircle size={48} className="text-yellow-500" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Payment Processing</h3>
+              <p className="text-gray-600 mb-4">
+                {pendingFile.status === 'pending' ? (
+                  <>Your payment for <strong>{pendingFile.name}</strong> is still being processed. You'll be able to download this file once the payment is completed.</>
+                ) : pendingFile.status === 'awaiting_capture' ? (
+                  <>Your payment for <strong>{pendingFile.name}</strong> is awaiting capture. You'll be able to download this file once the payment is completed.</>
+                ) : (
+                  <>Your payment is being processed. You'll be able to download this file once the payment is completed.</>
+                )}
+              </p>
+              <button
+                onClick={() => setShowPaymentPendingModal(false)}
+                className="mt-4 px-4 py-2 bg-black text-white rounded-md w-full"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

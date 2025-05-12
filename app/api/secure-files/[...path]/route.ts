@@ -94,7 +94,7 @@ export async function GET(
       const purchaseResults = await prisma.$queryRaw`
         SELECT * FROM "Purchase"
         WHERE "productId" = ${productId}
-        AND "status" = 'completed'
+        AND ("status" = 'completed' OR "status" = 'succeeded')
         AND "email" = ${userEmail}
         LIMIT 1
       `;

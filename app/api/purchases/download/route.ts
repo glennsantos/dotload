@@ -35,12 +35,30 @@ export async function GET(request: NextRequest) {
         details: 'Invalid access code'
       }, { status: 404 });
     }
+
+    // Check purchase status and handle accordingly
+    if (purchase.status === 'failed') {
+      return NextResponse.json({ 
+        error: 'Purchase failed',
+        details: 'The payment for this purchase has failed'
+      }, { status: 403 });
+    }
     
-    // Check if purchase is completed
-    if (purchase.status !== 'completed') {
+    // For pending or awaiting_capture status, return a specific status code
+    // The frontend will show a modal explaining that the payment is still processing
+    if (purchase.status === 'pending' || purchase.status === 'awaiting_capture') {
+      return NextResponse.json({ 
+        error: 'Payment processing',
+        details: 'Your payment is still being processed',
+        status: purchase.status
+      }, { status: 402 }); // Using 402 Payment Required status code
+    }
+    
+    // Only allow downloads for completed payments
+    if (purchase.status !== 'completed' && purchase.status !== 'succeeded') {
       return NextResponse.json({ 
         error: 'Purchase not completed',
-        details: 'Payment is still pending'
+        details: 'Payment status is invalid'
       }, { status: 403 });
     }
     

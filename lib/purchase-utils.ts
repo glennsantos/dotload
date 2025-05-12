@@ -51,7 +51,7 @@ export const createPurchase = async ({
 // Update purchase status after payment
 export const updatePurchaseStatus = async (
   purchaseId: string,
-  status: 'pending' | 'completed' | 'failed',
+  status: 'pending' | 'completed' | 'failed' | 'awaiting_capture' | 'succeeded',
   paymentId?: string
 ) => {
   try {
