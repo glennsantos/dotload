@@ -1009,3 +1009,9 @@ aws ec2 delete-security-group --group-name alacarte-ec2-sg
 # Delete key pair
 aws ec2 delete-key-pair --key-name alacarte-key
 ```
+
+
+To be able to update the code, you need to refresh the ssh keys of the server. Run these:
+
+eval "$(ssh-agent -s)" && ssh-add ~/.ssh/alacarte2025
+git pull
