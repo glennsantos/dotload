@@ -914,17 +914,58 @@ pm2 startup
 # Run the command PM2 outputs
 ```
 
-#### Step 9: Configure Nginx as Reverse Proxy
+#### Step 9: Configure Nginx as Reverse Proxy with HTTPS
 
 ```bash
 # Install Nginx
 sudo dnf install -y nginx
 
-# Create Nginx configuration
+# Create SSL certificates directory
+sudo mkdir -p /etc/ssl/private
+
+# Generate self-signed SSL certificate
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/nginx-selfsigned.key \
+  -out /etc/ssl/certs/nginx-selfsigned.crt \
+  -subj '/CN=your-ec2-public-dns'
+
+# Create a strong Diffie-Hellman group
+sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+
+# Create SSL parameters configuration
+sudo bash -c 'cat > /etc/nginx/conf.d/ssl-params.conf << EOL
+# SSL parameters
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_prefer_server_ciphers on;
+ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+ssl_session_timeout 1d;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+ssl_dhparam /etc/ssl/certs/dhparam.pem;
+EOL'
+
+# Create Nginx configuration with HTTPS
 sudo bash -c 'cat > /etc/nginx/conf.d/alacarte.conf << EOL
+# HTTP - redirect all requests to HTTPS
 server {
     listen 80;
     server_name your-ec2-public-dns;
+    
+    # Redirect all HTTP requests to HTTPS
+    return 301 https://\$host\$request_uri;
+}
+
+# HTTPS - proxy requests to Node.js app
+server {
+    listen 443 ssl;
+    server_name your-ec2-public-dns;
+
+    # SSL certificate
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    
+    # Include SSL parameters
+    include /etc/nginx/conf.d/ssl-params.conf;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -943,16 +984,30 @@ EOL'
 # Update Nginx main configuration for long server names
 sudo sed -i 's/# server_names_hash_bucket_size.*/server_names_hash_bucket_size 128;/' /etc/nginx/nginx.conf
 
+# Test Nginx configuration
+sudo nginx -t
+
 # Start and enable Nginx
 sudo systemctl start nginx
 sudo systemctl enable nginx
+
+# Update security group to allow HTTPS traffic
+MY_IP=$(curl -s https://checkip.amazonaws.com)/32
+aws ec2 authorize-security-group-ingress \
+  --group-name alacarte-ec2-sg \
+  --protocol tcp \
+  --port 443 \
+  --cidr $MY_IP
 ```
 
 #### Step 10: Verify Deployment
 
 Access your application at:
 - http://your-ec2-public-dns:3000 (direct access)
-- http://your-ec2-public-dns (if using Nginx)
+- http://your-ec2-public-dns (HTTP, redirects to HTTPS)
+- https://your-ec2-public-dns (HTTPS with self-signed certificate)
+
+**Note:** When accessing via HTTPS, your browser will show a security warning because we're using a self-signed certificate. This is normal and expected. In a production environment, you should consider using a trusted certificate from Let's Encrypt or another certificate authority.
 
 ### 17. Troubleshooting Common Deployment Issues
 
@@ -966,7 +1021,7 @@ aws rds modify-db-instance --db-instance-identifier your-db-identifier --master-
 PGPASSWORD='your-password' psql -h your-rds-endpoint -U postgres -d alacarte_db -c 'SELECT current_database();'
 ```
 
-#### Nginx Configuration Issues
+#### Nginx and HTTPS Configuration Issues
 
 ```bash
 # Test Nginx configuration
@@ -974,6 +1029,18 @@ sudo nginx -t
 
 # Check Nginx logs
 sudo tail -f /var/log/nginx/error.log
+
+# Verify SSL certificate
+sudo openssl x509 -in /etc/ssl/certs/nginx-selfsigned.crt -text -noout
+
+# Check if port 443 is listening
+sudo ss -tlnp | grep 443
+
+# Verify security group allows HTTPS
+aws ec2 describe-security-groups --group-names alacarte-ec2-sg --query 'SecurityGroups[0].IpPermissions[?ToPort==`443`]'
+
+# Restart Nginx after configuration changes
+sudo systemctl restart nginx
 ```
 
 #### Application Startup Issues
