@@ -11,15 +11,9 @@
  
 
 DEPLOY TODOS
-* happy path for mobile
+* simulate actual payments in dev
 * check if editing works properly
 * clean up front end console.logs
-* simulate actual payments in dev
-
-SOCIAL SHARING
-* Title should be the product name
-* Description should be the product description
-* Image should be the product image
 
 BUTTON LOADERS
 * add loading state to the purchase button
