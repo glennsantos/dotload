@@ -98,8 +98,11 @@ export default function NewProduct() {
       
       // Add content files if any
       if (productData.contentFiles && productData.contentFiles.length > 0) {
+        console.log(`Adding ${productData.contentFiles.length} content files to form data`);
         productData.contentFiles.forEach((file: File, index: number) => {
-          formData.append(`contentFile-${index}`, file);
+          // Use the correct field name that the API expects
+          formData.append('contentFiles', file);
+          console.log(`Added content file: ${file.name} (${file.size} bytes)`);
         });
       }
       
