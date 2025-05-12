@@ -9,5 +9,23 @@
 * when you restart the server, also restart the app.
 * use `ssh -v alacarte-ec2` to connect to the server.
  
+
 DEPLOY TODOS
-* what is the use of the s3 bucket created? if it's not for anything else, use it for the uploads of the products.
+* happy path for mobile
+* check if editing works properly
+* clean up front end console.logs
+* simulate actual payments in dev
+
+SOCIAL SHARING
+* Title should be the product name
+* Description should be the product description
+* Image should be the product image
+
+BUTTON LOADERS
+* add loading state to the purchase button
+* add a loading state to the new product button
+
+EMAIL
+* change the email content sent to the buyer based on the status of the purchase. 
+  * if pending, say so. 
+  * once completed, send another email with the download link.
