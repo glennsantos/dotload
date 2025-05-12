@@ -4,7 +4,11 @@ import { mkdir, writeFile } from 'fs/promises';
 import crypto from 'crypto';
 
 // Base directory for uploads
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+// Using an absolute path to ensure consistency across environments
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads');
+
+// Export the uploads directory path for use in other modules
+export { UPLOADS_DIR };
 
 // Ensure uploads directory exists
 export async function ensureUploadsDirectory(subPath: string = ''): Promise<string> {
@@ -12,10 +16,23 @@ export async function ensureUploadsDirectory(subPath: string = ''): Promise<stri
   
   try {
     await mkdir(dirPath, { recursive: true });
+    
+    // Check if directory is writable
+    try {
+      const testFile = path.join(dirPath, '.write-test');
+      await writeFile(testFile, '');
+      await fs.promises.unlink(testFile);
+      console.log(`Uploads directory is writable: ${dirPath}`);
+    } catch (writeError) {
+      console.error('Uploads directory exists but is not writable:', 
+        writeError instanceof Error ? writeError.message : String(writeError));
+      throw new Error('Uploads directory is not writable');
+    }
+    
     return dirPath;
   } catch (error) {
     console.error('Error creating directory:', error);
-    throw new Error('Failed to create upload directory');
+    throw new Error(`Failed to create upload directory: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -46,8 +63,8 @@ export async function saveFile(
   const secureFilename = generateSecureFilename(filename);
   const filePath = path.join(uploadDir, secureFilename);
   
-  // Save the file
-  await writeFile(filePath, buffer);
+  // Save the file - convert Buffer to Uint8Array to avoid type issues
+  await writeFile(filePath, new Uint8Array(buffer));
   
   // Generate a URL that will be used by the secure file access API
   const relativeFilePath = path.join(relativePath, secureFilename);

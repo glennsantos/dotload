@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 import fs from 'fs';
 import path from 'path';
-import { mkdir, writeFile } from 'fs/promises';
-import crypto from 'crypto';
+import { writeFile } from 'fs/promises';
+import { UPLOADS_DIR, ensureUploadsDirectory, generateSecureFilename } from '@/lib/file-utils';
 
 export async function POST(
   request: NextRequest
@@ -67,12 +67,9 @@ export async function POST(
     
     const uploadedFiles = [];
     
-    // Base directory for uploads
-    const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
-    
     // Ensure the uploads directory exists at the root level
     try {
-      await mkdir(UPLOADS_DIR, { recursive: true });
+      await ensureUploadsDirectory();
       console.log(`Ensured base uploads directory exists: ${UPLOADS_DIR}`);
     } catch (error: unknown) {
       const dirError = error instanceof Error ? error : new Error(String(error));
@@ -87,26 +84,20 @@ export async function POST(
       
       // Create a secure path structure: uploads/users/{userId}/products/{productId}/files
       const relativePath = path.join('users', userId, 'products', productId, 'files');
-      const uploadDir = path.join(UPLOADS_DIR, relativePath);
       
-      // Ensure directory exists with detailed error handling
+      // Use the ensureUploadsDirectory function to create and validate the directory
+      let uploadDir;
       try {
-        await mkdir(uploadDir, { recursive: true });
+        uploadDir = await ensureUploadsDirectory(relativePath);
         console.log(`Created upload directory: ${uploadDir}`);
       } catch (error: unknown) {
         const dirError = error instanceof Error ? error : new Error(String(error));
-        console.error(`Error creating upload directory ${uploadDir}:`, dirError);
+        console.error(`Error creating upload directory for path ${relativePath}:`, dirError);
         throw new Error(`Failed to create upload directory: ${dirError.message}`);
       }
       
-      // Generate a secure filename to prevent path traversal attacks
-      const timestamp = Date.now();
-      const randomString = crypto.randomBytes(8).toString('hex');
-      const extension = path.extname(file.name);
-      const safeName = path.basename(file.name, extension)
-        .replace(/[^a-zA-Z0-9]/g, '-')
-        .toLowerCase();
-      const secureFilename = `${safeName}-${timestamp}-${randomString}${extension}`;
+      // Generate a secure filename using the utility function
+      const secureFilename = generateSecureFilename(file.name);
       
       // Full path to save the file
       const filePath = path.join(uploadDir, secureFilename);
