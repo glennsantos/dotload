@@ -6,8 +6,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, ChevronRight, CreditCard, Smartphone, QrCode, Wallet, Tag } from "lucide-react"
 
-// Define the props type for the checkout page
-type CheckoutPageProps = {
+interface CheckoutPageProps {
   params: {
     slug: string
   }
@@ -465,7 +464,19 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               
               {/* Payment method selection */}
               <div className="grid grid-cols-2 gap-4 mb-6">
-             
+                <div 
+                  className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'card' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+                  onClick={() => setPaymentMethod('card')}
+                >
+                  <div className="flex-shrink-0 mr-3">
+                    <CreditCard className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Credit Card</p>
+                    <p className="text-xs text-gray-500">Pay with Credit Card</p>
+                  </div>
+                </div>
+
                 <div 
                   className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'ewallet_gcash' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
                   onClick={() => setPaymentMethod('ewallet_gcash')}
