@@ -22,9 +22,23 @@ export default function VerifyEmailPage() {
     // Verify the email token
     const verifyEmail = async () => {
       try {
-        const response = await fetch(`/api/auth/verify-email?token=${token}`);
+        // Add a timeout to the fetch to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+        
+        const response = await fetch(`/api/auth/verify-email?token=${token}`, {
+          signal: controller.signal,
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        clearTimeout(timeoutId);
         
         if (response.ok) {
+          const data = await response.json();
+          console.log('Verification successful:', data);
           setVerificationStatus('success');
           // Redirect to login page after 3 seconds
           setTimeout(() => {
@@ -32,19 +46,21 @@ export default function VerifyEmailPage() {
           }, 3000);
         } else {
           const data = await response.json();
+          console.error('Verification API error response:', data);
           setVerificationStatus('error');
           setErrorMessage(data.error || 'Failed to verify email');
         }
       } catch (error) {
-        console.error('Email verification client error:', {
+        const errorObj = {
           error,
           token,
           timestamp: new Date().toISOString(),
           errorMessage: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        });
+          stack: error instanceof Error ? error.stack : ''
+        };
+        console.error('Email verification client error:', errorObj);
         setVerificationStatus('error');
-        setErrorMessage('An unexpected error occurred');
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred during verification');
       }
     };
 
@@ -103,23 +119,41 @@ export default function VerifyEmailPage() {
                       const email = prompt('Please enter your email to resend verification link:');
                       if (!email) return;
                       
+                      // Add timeout protection
+                      const controller = new AbortController();
+                      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+                      
                       const response = await fetch('/api/auth/verify-email', {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',
+                          'Cache-Control': 'no-cache',
+                          'Pragma': 'no-cache'
                         },
                         body: JSON.stringify({ email }),
+                        signal: controller.signal
                       });
                       
+                      clearTimeout(timeoutId);
+                      
                       if (response.ok) {
+                        const data = await response.json();
+                        console.log('Resend verification response:', data);
                         alert('Verification email sent. Please check your inbox.');
                       } else {
                         const data = await response.json();
+                        console.error('Resend verification error:', data);
                         alert(data.error || 'Failed to send verification email');
                       }
                     } catch (error) {
-                      console.error('Error resending verification:', error);
-                      alert('An unexpected error occurred');
+                      const errorObj = {
+                        error,
+                        timestamp: new Date().toISOString(),
+                        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+                        stack: error instanceof Error ? error.stack : ''
+                      };
+                      console.error('Error resending verification:', errorObj);
+                      alert(error instanceof Error ? `Error: ${error.message}` : 'An unexpected error occurred');
                     }
                   }}
                   className="block text-blue-600 hover:underline"

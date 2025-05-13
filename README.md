@@ -1114,8 +1114,7 @@ aws ec2 delete-key-pair --key-name alacarte-key
 To be able to update the code, you need to refresh the ssh keys of the server. Run these:
 
 ```bash
-eval "$(ssh-agent -s)" && ssh-add ~/.ssh/alacarte2025
-git pull
+cd /home/ec2-user/alacarte && eval "$(ssh-agent -s)" && ssh-add ~/.ssh/alacarte2025 && git pull && pm2 restart all --update-env
 ```
 
 ## Server Configuration Changes

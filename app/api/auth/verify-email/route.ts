@@ -26,18 +26,35 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Verification token has expired' }, { status: 400 });
     }
 
-    // Update user to mark email as verified
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        emailVerified: true,
-        verificationToken: null,
-        verificationTokenExpiry: null,
-      },
-    });
-
-    // Redirect to login page with success message
-    return NextResponse.redirect(new URL('/login?verified=true', req.url));
+    try {
+      // Update user to mark email as verified - ensure this completes with explicit await
+      const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          emailVerified: true,
+          verificationToken: null,
+          verificationTokenExpiry: null,
+        },
+      });
+      
+      // Return success JSON instead of redirecting
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Email verified successfully' 
+      }, { status: 200 });
+    } catch (dbError) {
+      console.error('Database update error:', {
+        error: dbError,
+        userId: user.id,
+        token,
+        timestamp: new Date().toISOString()
+      });
+      
+      return NextResponse.json({ 
+        error: 'Failed to update verification status',
+        details: dbError instanceof Error ? dbError.message : 'Database error'
+      }, { status: 500 });
+    }
   } catch (error) {
     const errorContext = {
       error,
