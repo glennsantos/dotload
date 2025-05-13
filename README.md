@@ -65,6 +65,13 @@ pnpm dev
 
 ### Database Setup
 
+#### Accessing Prisma Studio in Production
+To access Prisma Studio in the EC2 instance:
+1. Ensure your IP is added to the security group for port 5555
+2. Connect to Prisma Studio at `http://<ec2-public-ip>:5555`
+3. Start Prisma Studio on EC2: `yarn prisma studio --port 5555 --host 0.0.0.0`
+
+
 #### PostgreSQL on AWS RDS
 
 1. Create a PostgreSQL database instance on AWS RDS
@@ -882,6 +889,10 @@ AWS_ACCESS_KEY_ID=your_access_key_id
 AWS_SECRET_ACCESS_KEY=your_secret_access_key
 EMAIL_FROM=alaCarte <no-reply@example.com>
 
+### Email Configuration
+
+**Note**: As of May 13, 2025, SES identity verification has been removed from the codebase. The application now relies on AWS SES configuration and permissions to handle email sending. (AWS SES)
+
 # NextAuth configuration
 NEXTAUTH_URL=http://ec2-47-128-210-191.ap-southeast-1.compute.amazonaws.com:3000
 NEXTAUTH_SECRET=$(openssl rand -base64 32)
@@ -1308,11 +1319,8 @@ The email service implementation has been migrated from Nodemailer/Mailtrap to A
    ```
    Save the `AccessKeyId` and `SecretAccessKey` from the output.
 
-5. **Verify an Email Address in SES**:
-   ```bash
-   aws ses verify-email-identity --email-address no-reply@alacarte.app --region ap-southeast-1
-   ```
-   Check the email inbox for a verification link from AWS and click it to confirm.
+5. **Configure AWS SES**:
+   Ensure your AWS SES is properly configured with the necessary permissions and domain verification in the AWS Console.
 
 6. **Update Environment Variables**:
    ```bash

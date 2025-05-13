@@ -11,6 +11,7 @@
  
 
 DEPLOY TODOS
+* fix verification email error
 * simulate actual payments in dev
 * check if editing works properly
 * clean up front end console.logs

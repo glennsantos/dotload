@@ -1,4 +1,4 @@
-import { SESClient, SendEmailCommand, VerifyEmailIdentityCommand } from '@aws-sdk/client-ses';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 // Create an SES client
 const sesClient = new SESClient({
@@ -11,36 +11,6 @@ const sesClient = new SESClient({
 
 // Email sender address
 const fromEmail = process.env.EMAIL_FROM || 'alaCarte <no-reply@alacarte.app>';
-
-// Set of verified email addresses (cache to avoid repeated verification attempts)
-const verifiedEmails = new Set<string>();
-
-// Check if we're in development mode
-const isDev = process.env.NODE_ENV === 'development';
-
-// Function to verify an email address with SES
-async function verifyEmailIfNeeded(email: string): Promise<boolean> {
-  // Extract email from format like "Name <email@example.com>"
-  const emailAddress = email.match(/<([^>]+)>/) ? 
-    email.match(/<([^>]+)>/)![1] : email;
-  
-  // Skip if already verified
-  if (verifiedEmails.has(emailAddress)) {
-    return true;
-  }
-  
-  try {
-    // Attempt to verify the email
-    await sesClient.send(new VerifyEmailIdentityCommand({ EmailAddress: emailAddress }));
-    console.log(`Verification email sent to ${emailAddress}. Please check the inbox and confirm.`);
-    // Add to our local cache of verification attempts
-    verifiedEmails.add(emailAddress);
-    return true;
-  } catch (error) {
-    console.error(`Failed to initiate verification for ${emailAddress}:`, error);
-    return false;
-  }
-}
 
 // Send verification email
 export async function sendVerificationEmail(
@@ -89,51 +59,12 @@ export async function sendVerificationEmail(
   };
 
   try {
-    // In development, attempt to verify both sender and recipient emails
-    if (isDev) {
-      // Verify sender email first
-      await verifyEmailIfNeeded(fromEmail);
-      // Then verify recipient email
-      await verifyEmailIfNeeded(to);
-      
-      // Log the email content in development for debugging
-      console.log('\n==== EMAIL CONTENT (DEV MODE) ====');
-      console.log(`To: ${to}`);
-      console.log(`From: ${fromEmail}`);
-      console.log(`Subject: Verify your alaCarte account`);
-      console.log(`Body: ${textBody}`);
-      console.log('==== END EMAIL CONTENT ====\n');
-      
-      console.log(`In production, this would send a verification email to ${to} with token ${token}`);
-      console.log(`Verification URL: ${verificationUrl}`);
-      
-      // In development, we can return a mock success response
-      if (process.env.MOCK_EMAIL_SUCCESS === 'true') {
-        return { MessageId: `mock-${Date.now()}` };
-      }
-    }
+
     
     // Attempt to send the actual email
     return await sesClient.send(new SendEmailCommand(params));
   } catch (error) {
     console.error('Error sending verification email:', error);
-    
-    // In development, we can provide more helpful error messages
-    if (isDev) {
-      console.log('\n==== TROUBLESHOOTING TIPS ====');
-      console.log('1. Make sure both sender and recipient emails are verified in AWS SES');
-      console.log(`2. Verify sender email: aws ses verify-email-identity --email-address "${fromEmail.replace(/<|>/g, '')}" --region ${process.env.AWS_REGION || 'ap-southeast-1'}`);
-      console.log(`3. Verify recipient email: aws ses verify-email-identity --email-address "${to}" --region ${process.env.AWS_REGION || 'ap-southeast-1'}`);
-      console.log('4. Check if your AWS credentials are correct');
-      console.log('5. Set MOCK_EMAIL_SUCCESS=true in .env to bypass actual email sending in development');
-      console.log('==== END TROUBLESHOOTING TIPS ====\n');
-      
-      // In development with mock success enabled, return mock success even on error
-      if (process.env.MOCK_EMAIL_SUCCESS === 'true') {
-        console.log('Returning mock success response due to MOCK_EMAIL_SUCCESS=true');
-        return { MessageId: `mock-error-bypass-${Date.now()}` };
-      }
-    }
     
     throw error;
   }
@@ -289,9 +220,9 @@ export async function sendPurchaseConfirmationEmail(
     // In development, we can provide more helpful error messages
     if (isDev) {
       console.log('\n==== TROUBLESHOOTING TIPS ====');
-      console.log('1. Make sure both sender and recipient emails are verified in AWS SES');
-      console.log(`2. Verify sender email: aws ses verify-email-identity --email-address "${fromEmail.replace(/<|>/g, '')}" --region ${process.env.AWS_REGION || 'ap-southeast-1'}`);
-      console.log(`3. Verify recipient email: aws ses verify-email-identity --email-address "${to}" --region ${process.env.AWS_REGION || 'ap-southeast-1'}`);
+      console.log('1. Check if your AWS SES service is properly configured');
+      console.log('2. Ensure your AWS credentials are correct');
+      console.log('3. Check if you have permissions to send emails');
       console.log('4. Check if your AWS credentials are correct');
       console.log('5. Set MOCK_EMAIL_SUCCESS=true in .env to bypass actual email sending in development');
       console.log('==== END TROUBLESHOOTING TIPS ====\n');
