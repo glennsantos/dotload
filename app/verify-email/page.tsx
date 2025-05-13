@@ -36,7 +36,13 @@ export default function VerifyEmailPage() {
           setErrorMessage(data.error || 'Failed to verify email');
         }
       } catch (error) {
-        console.error('Verification error:', error);
+        console.error('Email verification client error:', {
+          error,
+          token,
+          timestamp: new Date().toISOString(),
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined
+        });
         setVerificationStatus('error');
         setErrorMessage('An unexpected error occurred');
       }

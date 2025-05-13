@@ -38,7 +38,16 @@ export async function GET(req: NextRequest) {
     // Redirect to login page with success message
     return NextResponse.redirect(new URL('/login?verified=true', req.url));
   } catch (error) {
-    console.error('Email verification error:', error);
+    console.error('Email verification API error:', {
+      error,
+      token: token,
+      timestamp: new Date().toISOString(),
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      requestUrl: req.url,
+      requestMethod: req.method,
+      requestHeaders: Object.fromEntries(req.headers.entries())
+    });
     return NextResponse.json({ 
       error: 'Email verification failed', 
       details: error instanceof Error ? error.message : 'An unexpected error occurred' 
@@ -91,7 +100,16 @@ export async function POST(req: NextRequest) {
       message: 'Verification email sent successfully' 
     }, { status: 200 });
   } catch (error) {
-    console.error('Resend verification email error:', error);
+    console.error('Resend verification email error:', {
+      error,
+      email: email,
+      timestamp: new Date().toISOString(),
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      requestUrl: req.url,
+      requestMethod: req.method,
+      requestHeaders: Object.fromEntries(req.headers.entries())
+    });
     return NextResponse.json({ 
       error: 'Failed to send verification email', 
       details: error instanceof Error ? error.message : 'An unexpected error occurred' 
