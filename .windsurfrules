@@ -11,8 +11,8 @@
  
 
 DEPLOY TODOS
-* fix verification email error
 * simulate actual payments in dev
+  * use this for testing: https://docs.xendit.co/ewallet/integrations/test-scenarios
 * check if editing works properly
 * clean up front end console.logs
 
