@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
+  let token: string | null = null;
   try {
     // Get token from URL
     const { searchParams } = new URL(req.url);
-    const token = searchParams.get('token');
+    token = searchParams.get('token');
 
     if (!token) {
       return NextResponse.json({ error: 'Verification token is required' }, { status: 400 });
@@ -38,16 +39,22 @@ export async function GET(req: NextRequest) {
     // Redirect to login page with success message
     return NextResponse.redirect(new URL('/login?verified=true', req.url));
   } catch (error) {
-    console.error('Email verification API error:', {
+    const errorContext = {
       error,
-      token: token,
+      token,
       timestamp: new Date().toISOString(),
       errorMessage: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       requestUrl: req.url,
       requestMethod: req.method,
-      requestHeaders: Object.fromEntries(req.headers.entries())
-    });
+      requestHeaders: Object.fromEntries(req.headers.entries()),
+      stage: 'verification_process',
+      prismaError: error instanceof Error && error.message.includes('Prisma') ? {
+        code: (error as any).code,
+        meta: (error as any).meta
+      } : null
+    };
+    console.error('Email verification API error:', errorContext);
     return NextResponse.json({ 
       error: 'Email verification failed', 
       details: error instanceof Error ? error.message : 'An unexpected error occurred' 
@@ -100,18 +107,23 @@ export async function POST(req: NextRequest) {
       message: 'Verification email sent successfully' 
     }, { status: 200 });
   } catch (error) {
-    console.error('Resend verification email error:', {
+    const errorContext = {
       error,
-      email: email,
       timestamp: new Date().toISOString(),
       errorMessage: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       requestUrl: req.url,
       requestMethod: req.method,
-      requestHeaders: Object.fromEntries(req.headers.entries())
-    });
+      requestHeaders: Object.fromEntries(req.headers.entries()),
+      stage: error instanceof Error && error.message.includes('sendVerificationEmail') ? 'sending_email' : 'token_generation',
+      prismaError: error instanceof Error && error.message.includes('Prisma') ? {
+        code: (error as any).code,
+        meta: (error as any).meta
+      } : null
+    };
+    console.error('Resend verification email error:', errorContext);
     return NextResponse.json({ 
-      error: 'Failed to send verification email', 
+      error: 'Failed to resend verification email', 
       details: error instanceof Error ? error.message : 'An unexpected error occurred' 
     }, { status: 500 });
   }
