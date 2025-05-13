@@ -11,6 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.808.0",
     "@hookform/resolvers": "^3.9.1",
     "@hugerte/hugerte-react": "^1.0.1",
     "@prisma/client": "6.7.0",

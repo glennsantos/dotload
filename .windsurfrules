@@ -3,8 +3,7 @@
 * when creating payment services, use the Xendit API directly. do not use the Xendit SDK.
 * ask the user if you want to read logs since it takes a long time for you to load the logs.
 * you are allowed to read and write to files covered by .gitignore but do not commit them.
-* you can create and modify policies and roles in AWS. 
-* you can use AWS CLI
+* you can use AWS CLI and you can create / add / remove policies and roles in AWS. you can also create new users and attach new policies to them.
 * always add my current IP to the security group since it changes constantly.
 * when you restart the server, also restart the app.
 * use `ssh -v alacarte-ec2` to connect to the server.

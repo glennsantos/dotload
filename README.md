@@ -162,18 +162,41 @@ pnpm dev
 
 3. Request production access if sending to non-verified recipients
 
-4. Create SMTP credentials
+4. Create IAM user with SES permissions
    ```bash
+   aws iam create-user --user-name alacarte-ses-user
+   
+   # Attach SES permissions policy
+   aws iam attach-user-policy --user-name alacarte-ses-user --policy-arn arn:aws:iam::aws:policy/AmazonSESFullAccess
+   
+   # Create access keys
+   aws iam create-access-key --user-name alacarte-ses-user
+   ```
+
+5. Configure environment variables for SES
+   ```bash
+   # Add these to your .env file
+   AWS_REGION=ap-southeast-1
+   AWS_ACCESS_KEY_ID=your_access_key_id
+   AWS_SECRET_ACCESS_KEY=your_secret_access_key
+   EMAIL_FROM=no-reply@yourdomain.com
+   ```
    aws ses create-smtp-credentials
    ```
 
 5. Update environment variables with SMTP settings
    ```
-   SMTP_HOST=email-smtp.ap-southeast-1.amazonaws.com
-   SMTP_PORT=587
-   SMTP_USER=your_smtp_username
-   SMTP_PASS=your_smtp_password
+   # If using the AWS SDK directly (current implementation)
+   AWS_REGION=ap-southeast-1
+   AWS_ACCESS_KEY_ID=your_access_key_id
+   AWS_SECRET_ACCESS_KEY=your_secret_access_key
    EMAIL_FROM=no-reply@yourdomain.com
+   
+   # If using SMTP interface (alternative approach)
+   # SMTP_HOST=email-smtp.ap-southeast-1.amazonaws.com
+   # SMTP_PORT=587
+   # SMTP_USER=your_smtp_username
+   # SMTP_PASS=your_smtp_password
    ```
 
 ### Payment Gateway Integration
@@ -853,11 +876,10 @@ XENDIT_API_KEY=xnd_development_YourXenditApiKey
 XENDIT_SECRET_KEY=xnd_development_YourXenditSecretKey
 XENDIT_WEBHOOK_SECRET=YourXenditWebhookSecret
 
-# Email Configuration
-SMTP_HOST=smtp.example.com
-SMTP_USER=your_smtp_user
-SMTP_PASS=your_smtp_password
-SMTP_PORT=2525
+# Email Configuration (AWS SES)
+AWS_REGION=ap-southeast-1
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
 EMAIL_FROM=alaCarte <no-reply@example.com>
 
 # NextAuth configuration
@@ -1080,5 +1102,244 @@ aws ec2 delete-key-pair --key-name alacarte-key
 
 To be able to update the code, you need to refresh the ssh keys of the server. Run these:
 
+```bash
 eval "$(ssh-agent -s)" && ssh-add ~/.ssh/alacarte2025
 git pull
+```
+
+## Server Configuration Changes
+
+### 2025-05-13: Consolidated AWS IAM Policies
+
+To improve security management and reduce policy sprawl, we've consolidated multiple AWS IAM policies into a single unified policy.
+
+1. **Policies Consolidated and Removed**:
+   - `AlacarteSESPolicy`: Email sending permissions
+   - `AlaCarteManagementPolicy`: General AWS resource management
+   - `AlaCarteFileTransferPolicy`: S3 file operations
+   - `AlaCarte-RDS-Creation-Policy`: Database management permissions
+
+2. **New Unified Policy**:
+   - Created `AlaCarteUnifiedPolicy` with all necessary permissions
+   - Policy ARN: `arn:aws:iam::227062829795:policy/AlaCarteUnifiedPolicy`
+   - Attached to the grdemo user
+
+3. **Implementation Steps**:
+   ```bash
+   # Create the unified policy
+   aws iam create-policy --policy-name AlaCarteUnifiedPolicy --policy-document '{
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": [
+           "ses:SendEmail",
+           "ses:SendRawEmail",
+           "ses:VerifyEmailIdentity",
+           "ses:VerifyDomainIdentity",
+           "ses:GetSendQuota",
+           "ses:ListIdentities"
+         ],
+         "Resource": "*"
+       },
+       {
+         "Effect": "Allow",
+         "Action": [
+           "s3:PutObject",
+           "s3:GetObject",
+           "s3:DeleteObject",
+           "s3:ListBucket",
+           "s3:GetBucketLocation"
+         ],
+         "Resource": [
+           "arn:aws:s3:::alacarte-*",
+           "arn:aws:s3:::alacarte-*/*"
+         ]
+       },
+       {
+         "Effect": "Allow",
+         "Action": [
+           "rds:CreateDBInstance",
+           "rds:DeleteDBInstance",
+           "rds:DescribeDBInstances",
+           "rds:ModifyDBInstance",
+           "rds:RebootDBInstance",
+           "rds:CreateDBSnapshot",
+           "rds:DeleteDBSnapshot",
+           "rds:DescribeDBSnapshots",
+           "rds:RestoreDBInstanceFromDBSnapshot"
+         ],
+         "Resource": "*"
+       },
+       {
+         "Effect": "Allow",
+         "Action": [
+           "ec2:AuthorizeSecurityGroupIngress",
+           "ec2:DescribeSecurityGroups",
+           "ec2:DescribeNetworkInterfaces"
+         ],
+         "Resource": "*"
+       }
+     ]
+   }' --description "Unified policy for AlaCarte application covering SES, S3, RDS, and EC2 network permissions"
+   
+   # Attach the policy to the current user
+   aws iam attach-user-policy --user-name grdemo --policy-arn arn:aws:iam::227062829795:policy/AlaCarteUnifiedPolicy
+   
+   # Detach duplicate policies from the user
+   aws iam detach-user-policy --user-name grdemo --policy-arn arn:aws:iam::227062829795:policy/AlaCarteFileTransferPolicy
+   aws iam detach-user-policy --user-name grdemo --policy-arn arn:aws:iam::227062829795:policy/AlaCarte-RDS-Creation-Policy
+   
+   # Delete the old policies that are no longer needed
+   aws iam delete-policy --policy-arn arn:aws:iam::227062829795:policy/AlacarteSESPolicy
+   aws iam delete-policy --policy-arn arn:aws:iam::227062829795:policy/AlaCarteManagementPolicy
+   aws iam delete-policy --policy-arn arn:aws:iam::227062829795:policy/AlaCarteFileTransferPolicy
+   
+   # For policies with multiple versions, delete non-default versions first
+   aws iam delete-policy-version --policy-arn arn:aws:iam::227062829795:policy/AlaCarte-RDS-Creation-Policy --version-id v1
+   aws iam delete-policy --policy-arn arn:aws:iam::227062829795:policy/AlaCarte-RDS-Creation-Policy
+   ```
+
+4. **Benefits**:
+   - Simplified permission management
+   - Reduced policy sprawl
+   - Easier to audit and maintain
+   - Consistent permissions across users and roles
+
+### 2025-05-13: Improved AWS SES Email Implementation
+
+1. **Email Service Enhancements**:
+   - Added robust error handling for AWS SES in sandbox mode
+   - Implemented automatic email address verification for development environments
+   - Added development mode fallback with detailed troubleshooting guidance
+   - Created mock email success option for testing without actual email sending
+
+2. **Environment Configuration**:
+   - Added `MOCK_EMAIL_SUCCESS=true` option to bypass actual email sending in development
+   - Updated email sender format to match SES requirements
+   - Added verification for both sender and recipient email addresses
+
+3. **Development Workflow Improvements**:
+   - Added detailed console logging of email content in development mode
+   - Implemented helpful troubleshooting tips for common SES issues
+   - Created automatic verification request system for new email addresses
+
+### 2025-05-13: Migrated Email Service from Nodemailer to AWS SES
+
+1. **Code Changes**:
+   - Replaced nodemailer with AWS SES SDK in `lib/email.ts`
+   - Updated environment variables in all .env files
+   - Updated docker-compose.yml to pass AWS credentials
+
+2. **AWS Configuration**:
+   - Created IAM policy for SES access: `AlacarteSESPolicy` (now part of `AlaCarteUnifiedPolicy`)
+   - Added current IP (158.62.27.85) to security group for SSH access
+
+3. **Deployment Steps**:
+   ```bash
+   # Connect to EC2 server
+   ssh -v alacarte-ec2
+   
+   # Update environment variables
+   cd ~/alacarte
+   nano .env  # Add AWS credentials
+   
+   # Pull latest changes
+   git pull
+   
+   # Install new dependencies
+   pnpm install
+   
+   # Restart the application
+   pm2 restart app
+   pm2 restart alacarte
+   ```
+
+## Email Service Migration
+
+### Migration from Nodemailer/Mailtrap to AWS SES
+
+The email service implementation has been migrated from Nodemailer/Mailtrap to AWS SES (Simple Email Service) using the AWS SDK directly. This change improves reliability and scalability of the email delivery system.
+
+#### Changes Made
+
+1. Replaced Nodemailer with AWS SES SDK:
+   - Installed the AWS SES SDK: `@aws-sdk/client-ses`
+   - Updated the email.ts implementation to use SES instead of Nodemailer
+
+2. Updated environment variables:
+   - Replaced SMTP configuration variables with AWS SES variables:
+     ```
+     # Old Mailtrap Configuration
+     # SMTP_HOST=sandbox.smtp.mailtrap.io
+     # SMTP_USER=your_mailtrap_user
+     # SMTP_PASS=your_mailtrap_password
+     # SMTP_PORT=2525
+     
+     # New AWS SES Configuration
+     AWS_REGION=ap-southeast-1
+     AWS_ACCESS_KEY_ID=your_access_key_id
+     AWS_SECRET_ACCESS_KEY=your_secret_access_key
+     EMAIL_FROM=no-reply@yourdomain.com
+     ```
+
+3. Updated Docker configuration to pass AWS credentials to the container
+
+#### Setup Instructions
+
+1. **Create an IAM Policy for SES**:
+   ```bash
+   aws iam create-policy --policy-name AlacarteSESPolicy --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["ses:SendEmail","ses:SendRawEmail","ses:VerifyEmailIdentity","ses:VerifyDomainIdentity","ses:GetSendQuota","ses:ListIdentities"],"Resource":"*"}]}'
+   ```
+
+2. **Create an IAM User for SES**:
+   ```bash
+   aws iam create-user --user-name alacarte-ses-user
+   ```
+
+3. **Attach the SES Policy to the User**:
+   ```bash
+   aws iam attach-user-policy --user-name alacarte-ses-user --policy-arn arn:aws:iam::ACCOUNT_ID:policy/AlacarteSESPolicy
+   ```
+
+4. **Generate Access Keys for the IAM User**:
+   ```bash
+   aws iam create-access-key --user-name alacarte-ses-user
+   ```
+   Save the `AccessKeyId` and `SecretAccessKey` from the output.
+
+5. **Verify an Email Address in SES**:
+   ```bash
+   aws ses verify-email-identity --email-address no-reply@alacarte.app --region ap-southeast-1
+   ```
+   Check the email inbox for a verification link from AWS and click it to confirm.
+
+6. **Update Environment Variables**:
+   ```bash
+   # Add these to your .env file
+   AWS_REGION=ap-southeast-1
+   AWS_ACCESS_KEY_ID=your_access_key_id
+   AWS_SECRET_ACCESS_KEY=your_secret_access_key
+   EMAIL_FROM=no-reply@alacarte.app
+   ```
+
+7. **For Production Use**:
+   If you plan to send emails to non-verified recipients, request production access in AWS SES through the AWS Console:
+   - Go to AWS SES Console
+   - Navigate to "Account Dashboard"
+   - Under "Sending statistics", click "Request production access"
+   - Follow the instructions to complete the request
+
+8. **Add your current IP to Security Group**:
+   Since your IP changes constantly (as per user rules), ensure you update the security group to allow access from your current IP:
+   ```bash
+   # Get your current public IP
+   CURRENT_IP=$(curl -s https://checkip.amazonaws.com)/32
+   
+   # Update security group
+   aws ec2 authorize-security-group-ingress \
+     --group-id YOUR_SECURITY_GROUP_ID \
+     --protocol tcp \
+     --port 22 \
+     --cidr $CURRENT_IP
+   ```
