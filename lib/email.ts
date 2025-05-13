@@ -188,51 +188,11 @@ export async function sendPurchaseConfirmationEmail(
   };
 
   try {
-    // In development, attempt to verify both sender and recipient emails
-    if (isDev) {
-      // Verify sender email first
-      await verifyEmailIfNeeded(fromEmail);
-      // Then verify recipient email
-      await verifyEmailIfNeeded(to);
-      
-      // Log the email content in development for debugging
-      console.log('\n==== EMAIL CONTENT (DEV MODE) ====');
-      console.log(`To: ${to}`);
-      console.log(`From: ${fromEmail}`);
-      console.log(`Subject: Your alaCarte Purchase: ${productName}`);
-      console.log(`Body: ${textBody}`);
-      console.log('==== END EMAIL CONTENT ====\n');
-      
-      console.log(`In production, this would send a purchase confirmation email to ${to}`);
-      console.log(`Dashboard URL: ${buyerDashboardUrl}`);
-      
-      // In development, we can return a mock success response
-      if (process.env.MOCK_EMAIL_SUCCESS === 'true') {
-        return { MessageId: `mock-${Date.now()}` };
-      }
-    }
     
     // Attempt to send the actual email
     return await sesClient.send(new SendEmailCommand(params));
   } catch (error) {
     console.error('Error sending purchase confirmation email:', error);
-    
-    // In development, we can provide more helpful error messages
-    if (isDev) {
-      console.log('\n==== TROUBLESHOOTING TIPS ====');
-      console.log('1. Check if your AWS SES service is properly configured');
-      console.log('2. Ensure your AWS credentials are correct');
-      console.log('3. Check if you have permissions to send emails');
-      console.log('4. Check if your AWS credentials are correct');
-      console.log('5. Set MOCK_EMAIL_SUCCESS=true in .env to bypass actual email sending in development');
-      console.log('==== END TROUBLESHOOTING TIPS ====\n');
-      
-      // In development with mock success enabled, return mock success even on error
-      if (process.env.MOCK_EMAIL_SUCCESS === 'true') {
-        console.log('Returning mock success response due to MOCK_EMAIL_SUCCESS=true');
-        return { MessageId: `mock-error-bypass-${Date.now()}` };
-      }
-    }
     
     throw error;
   }
