@@ -48,7 +48,8 @@ export async function GET(request: NextRequest) {
     
     // Verify token
     debugLog('Verifying token...');
-    const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env';
+    const JWT_SECRET = process.env.JWT_SECRET;
+    console.log('JWT_SECRET', JWT_SECRET)
     try {
       const decoded = jwt.verify(tokenValue, JWT_SECRET) as { userId: string, email: string };
       debugLog('Token verified, userId:', decoded.userId);
