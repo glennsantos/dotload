@@ -128,12 +128,23 @@ export async function POST(request: NextRequest) {
         console.log(`[Xendit Payment] Created customer with ID: ${customer.id}`);
         
         // Step 2: Create an eWallet Payment Method
+        // Determine the country based on channel code
+        let country = 'PH'; // Default to Philippines
+        
+        // GRABPAY specifically requires country parameter
+        if (channelCode === 'GRABPAY') {
+          country = 'PH'; // Philippines for GRABPAY
+        }
+        
+        console.log(`[Xendit Payment] Creating eWallet payment method with channel: ${channelCode}, country: ${country}`);
+        
         const paymentMethodResponse = await createEWalletPaymentMethod({
           customerId: customer.id,
           channelCode: channelCode, // Use the channel code from the frontend
           mobileNumber: mobileNumber,
           successReturnUrl: successUrl,
-          failureReturnUrl: failureUrl
+          failureReturnUrl: failureUrl,
+          country: country // Add country parameter
         });
         
         console.log(`[Xendit Payment] Created payment method with ID: ${paymentMethodResponse.id}`);

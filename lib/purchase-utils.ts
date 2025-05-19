@@ -10,7 +10,7 @@ export const generateAccessCode = (): string => {
 export const createPurchase = async ({
   productId,
   email,
-  mobileNumber,
+  mobileNumber = '',
   amount,
   currency = 'PHP',
   paymentMethod,
@@ -18,7 +18,7 @@ export const createPurchase = async ({
 }: {
   productId: string;
   email: string;
-  mobileNumber: string;
+  mobileNumber?: string;
   amount: number;
   currency?: string;
   paymentMethod: string;

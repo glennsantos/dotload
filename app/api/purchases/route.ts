@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const purchase = await createPurchase({
       productId,
       email,
-      mobileNumber,
+      mobileNumber: mobileNumber || '', // Make mobileNumber optional
       amount,
       currency,
       paymentMethod, // Use the payment method from the request
@@ -91,7 +91,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       id: purchase.id,
       accessCode: purchase.accessCode,
-      status: purchase.status
+      status: purchase.status,
+      purchaseId: purchase.id // Add purchaseId for redirect
     });
   } catch (error) {
     console.error('Purchase creation error:', error);
