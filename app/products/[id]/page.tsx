@@ -6,8 +6,11 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ArrowLeft, Edit, BarChart2, Share2, ExternalLink, ChevronRight, Download, File, Check } from "lucide-react"
 import RichTextRenderer from "@/components/rich-text-renderer"
+import { use } from "react"
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params as any) as { id: string };
   const [activeTab, setActiveTab] = useState("product")
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -28,7 +31,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         
         const products = await response.json()
         const foundProduct = Array.isArray(products) ? 
-          products.find(p => p.id === params.id) : null
+          products.find(p => p.id === unwrappedParams.id) : null
         
         if (!foundProduct) {
           throw new Error('Product not found')
@@ -45,7 +48,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     }
 
     fetchProduct()
-  }, [params.id])
+  }, [unwrappedParams.id])
 
   if (loading) {
     return (
@@ -92,7 +95,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <h1 className="text-2xl font-normal truncate">{product.name}</h1>
         </div>
         <div className="flex gap-2">
-          <Link href={`/products/${params.id}/edit`} className="px-4 py-2 border rounded-md flex items-center gap-2">
+          <Link href={`/products/${unwrappedParams.id}/edit`} className="px-4 py-2 border rounded-md flex items-center gap-2">
             <Edit size={18} /> Edit
           </Link>
           <button 
@@ -188,7 +191,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                       <div className="text-sm text-gray-500">0 ratings</div>
                     </div>
                     <Link
-                      href={`/p/${product.slug || params.id}`}
+                      href={`/p/${product.slug || unwrappedParams.id}`}
                       target="_blank"
                       className="flex items-center justify-center gap-1 w-full p-2 border rounded-md text-sm hover:bg-gray-50 mt-2"
                     >
@@ -213,14 +216,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                     <div className="flex">
                       <input
                         type="text"
-                        value={`${window.location.origin}/p/${product.slug || params.id}`}
+                        value={`${window.location.origin}/p/${product.slug || unwrappedParams.id}`}
                         readOnly
                         className="flex-1 p-3 border rounded-l-md bg-gray-100"
                       />
                       <button 
                         className="px-4 py-2 bg-black text-white rounded-r-md flex items-center justify-center min-w-[80px]"
                         onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/p/${product.slug || params.id}`)
+                          navigator.clipboard.writeText(`${window.location.origin}/p/${product.slug || unwrappedParams.id}`)
                           setCopied(true)
                           setTimeout(() => setCopied(false), 2000)
                         }}

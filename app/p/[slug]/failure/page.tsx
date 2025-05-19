@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, XCircle } from "lucide-react"
@@ -12,6 +12,8 @@ interface FailurePageProps {
 }
 
 export default function FailurePage({ params }: FailurePageProps) {
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params as any) as { slug: string };
   const router = useRouter()
   const searchParams = useSearchParams()
   const errorCode = searchParams.get('error')
@@ -23,7 +25,7 @@ export default function FailurePage({ params }: FailurePageProps) {
     async function fetchProduct() {
       try {
         setLoading(true)
-        const response = await fetch(`/api/public/products/${params.slug}`)
+        const response = await fetch(`/api/public/products/${unwrappedParams.slug}`)
         
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`)
@@ -40,7 +42,7 @@ export default function FailurePage({ params }: FailurePageProps) {
     }
 
     fetchProduct()
-  }, [params.slug])
+  }, [unwrappedParams.slug])
 
   // Get error message based on error code
   const getErrorMessage = () => {
@@ -89,7 +91,7 @@ export default function FailurePage({ params }: FailurePageProps) {
           
           <div className="mb-8">
             <Link 
-              href={`/p/${product?.slug || params.slug}/checkout`}
+              href={`/p/${product?.slug || unwrappedParams.slug}/checkout`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition-colors"
             >
               Try Again
@@ -102,7 +104,7 @@ export default function FailurePage({ params }: FailurePageProps) {
             </p>
             
             <Link 
-              href={`/p/${product?.slug || params.slug}`}
+              href={`/p/${product?.slug || unwrappedParams.slug}`}
               className="text-black hover:underline"
             >
               Return to Product Page

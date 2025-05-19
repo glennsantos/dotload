@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -13,6 +13,8 @@ interface CheckoutPageProps {
 }
 
 export default function CheckoutPage({ params }: CheckoutPageProps) {
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params as any) as { slug: string };
   const router = useRouter()
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')
@@ -79,7 +81,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     async function fetchProduct() {
       try {
         setLoading(true)
-        const response = await fetch(`/api/public/products/${params.slug}`)
+        const response = await fetch(`/api/public/products/${unwrappedParams.slug}`)
         
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`)
@@ -107,7 +109,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
 
     fetchProduct()
-  }, [params.slug])
+  }, [unwrappedParams.slug])
 
   // Function to validate mobile number format
   const validateMobileNumber = (number: string): boolean => {
@@ -323,10 +325,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         console.log('Card payment successful:', paymentData);
         
         // For successful card payments, redirect to success page
-        router.push(`/p/${params.slug}/success?code=${purchaseData.accessCode}`);
+        router.push(`/p/${unwrappedParams.slug}/success?code=${purchaseData.accessCode}`);
       } else {
         // For other payment methods, redirect to success page
-        router.push(`/p/${params.slug}/success?code=${purchaseData.accessCode}`);
+        router.push(`/p/${unwrappedParams.slug}/success?code=${purchaseData.accessCode}`);
       }
     } catch (error) {
       console.error('Payment processing error:', error)
@@ -360,7 +362,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center">
-            <Link href={`/p/${params.slug}`} className="text-gray-500 hover:text-gray-700 flex items-center">
+            <Link href={`/p/${unwrappedParams.slug}`} className="text-gray-500 hover:text-gray-700 flex items-center">
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back to Product
             </Link>

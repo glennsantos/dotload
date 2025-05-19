@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import toast, { Toaster } from 'react-hot-toast';
 import Link from "next/link"
 import Image from "next/image"
@@ -126,6 +126,8 @@ const VariationItem = ({ variation, index, onUpdate, onDelete }: {
 };
 
 export default function ProductEditPage({ params }: { params: { id: string } }) {
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params as any) as { id: string };
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -179,7 +181,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
         
         const products = await response.json()
         const foundProduct = Array.isArray(products) ? 
-          products.find(p => p.id === params.id) : null
+          products.find(p => p.id === unwrappedParams.id) : null
         
         if (!foundProduct) {
           throw new Error('Product not found')
@@ -231,7 +233,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     }
 
     fetchProduct()
-  }, [params.id])
+  }, [unwrappedParams.id])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -253,7 +255,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      const response = await fetch(`/api/products/${params.id}`, {
+      const response = await fetch(`/api/products/${unwrappedParams.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -338,7 +340,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     setIsSavingVariation(true);
 
     try {
-      const response = await fetch(`/api/products/${params.id}/variations`, {
+      const response = await fetch(`/api/products/${unwrappedParams.id}/variations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -379,7 +381,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
   // Handle updating an existing variation
   const handleUpdateVariation = async (variationId: string, updatedData: {name: string, options: string[]}) => {
     try {
-      const response = await fetch(`/api/products/${params.id}/variations/${variationId}`, {
+      const response = await fetch(`/api/products/${unwrappedParams.id}/variations/${variationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -416,7 +418,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
     if (!deleteVariationConfirmation.id) return;
     
     try {
-      const response = await fetch(`/api/products/${params.id}/variations/${deleteVariationConfirmation.id}`, {
+      const response = await fetch(`/api/products/${unwrappedParams.id}/variations/${deleteVariationConfirmation.id}`, {
         method: 'DELETE',
       });
 
@@ -438,7 +440,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
   const handleDeleteProduct = async () => {
     try {
       setIsDeleting(true)
-      const response = await fetch(`/api/products/${params.id}`, {
+      const response = await fetch(`/api/products/${unwrappedParams.id}`, {
         method: 'DELETE',
       })
 
@@ -489,7 +491,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
             Products
           </Link>
           <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <Link href={`/products/${params.id}`} className="text-gray-600 hover:text-black">
+          <Link href={`/products/${unwrappedParams.id}`} className="text-gray-600 hover:text-black">
             {product.name}
           </Link>
           <ChevronRight size={16} className="mx-2 text-gray-400" />
@@ -499,7 +501,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
 
       <header className="p-6 border-b flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Link href={`/products/${params.id}`} className="text-gray-500 hover:text-black">
+          <Link href={`/products/${unwrappedParams.id}`} className="text-gray-500 hover:text-black">
             <ArrowLeft size={20} />
           </Link>
           <h1 className="text-2xl font-normal truncate">Edit {product.name}</h1>
@@ -650,7 +652,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                           formData.append('coverImage', e.target.files[0]);
                           
                           try {
-                            const response = await fetch(`/api/products/${params.id}/cover-image`, {
+                            const response = await fetch(`/api/products/${unwrappedParams.id}/cover-image`, {
                               method: 'POST',
                               body: formData,
                             });
@@ -860,7 +862,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                               onClick={async () => {
                                 if (confirm('Are you sure you want to delete this file?')) {
                                   try {
-                                    const response = await fetch(`/api/products/${params.id}/files/${file.id}`, {
+                                    const response = await fetch(`/api/products/${unwrappedParams.id}/files/${file.id}`, {
                                       method: 'DELETE',
                                     });
                                     
@@ -912,7 +914,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                             }
                             
                             try {
-                              const response = await fetch(`/api/products/${params.id}/files`, {
+                              const response = await fetch(`/api/products/${unwrappedParams.id}/files`, {
                                 method: 'POST',
                                 body: formData,
                               });
@@ -1136,7 +1138,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                             onClick={async () => {
                               try {
                                 // Delete discount code from database
-                                const response = await fetch(`/api/products/${params.id}/discount-codes`, {
+                                const response = await fetch(`/api/products/${unwrappedParams.id}/discount-codes`, {
                                   method: 'DELETE',
                                   headers: {
                                     'Content-Type': 'application/json',
@@ -1353,7 +1355,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                         }
                       }
                       
-                      const response = await fetch(`/api/products/${params.id}`, {
+                      const response = await fetch(`/api/products/${unwrappedParams.id}`, {
                         method: 'PUT',
                         headers: {
                           'Content-Type': 'application/json',
@@ -1362,7 +1364,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                           allowPayWhatYouWant: product.allowPayWhatYouWant,
                           offerCoupons: product.offerCoupons,
                           discountCodes: product.offerCoupons ? JSON.stringify(discountCodes) : null,
-                          productId: params.id // Ensure the discount codes are mapped to the right product
+                          productId: unwrappedParams.id // Ensure the discount codes are mapped to the right product
                         }),
                       });
                       
@@ -1568,7 +1570,7 @@ export default function ProductEditPage({ params }: { params: { id: string } }) 
                     // Refresh product data if save was successful
                     const fetchProduct = async () => {
                       try {
-                        const response = await fetch(`/api/products/${params.id}`);
+                        const response = await fetch(`/api/products/${unwrappedParams.id}`);
                         if (response.ok) {
                           const updatedProduct = await response.json();
                           setProduct(updatedProduct);

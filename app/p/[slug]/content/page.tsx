@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -13,6 +13,8 @@ interface ContentPageProps {
 }
 
 export default function ContentPage({ params }: ContentPageProps) {
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params as any) as { slug: string };
   const router = useRouter()
   const searchParams = useSearchParams()
   const accessCode = searchParams.get('code')
@@ -67,7 +69,7 @@ export default function ContentPage({ params }: ContentPageProps) {
         <div className="border rounded-md p-8 text-center max-w-md mx-auto">
           <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
           <p className="text-gray-600 mb-6">{error || 'Purchase not found or access code is invalid'}</p>
-          <Link href={`/p/${params.slug}`} className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
+          <Link href={`/p/${unwrappedParams.slug}`} className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
             <ArrowLeft size={18} /> Back to Product
           </Link>
         </div>
@@ -85,7 +87,7 @@ export default function ContentPage({ params }: ContentPageProps) {
           </div>
           <h2 className="text-xl font-medium mb-2">Payment Pending</h2>
           <p className="text-gray-600 mb-6">Your payment is still being processed. Please check back later.</p>
-          <Link href={`/p/${params.slug}`} className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
+          <Link href={`/p/${unwrappedParams.slug}`} className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
             <ArrowLeft size={18} /> Back to Product
           </Link>
         </div>
@@ -172,7 +174,7 @@ export default function ContentPage({ params }: ContentPageProps) {
               
               <div className="flex space-x-4">
                 <Link 
-                  href={`/p/${purchase?.product?.slug || params.slug}`}
+                  href={`/p/${purchase?.product?.slug || unwrappedParams.slug}`}
                   className="text-black hover:underline"
                 >
                   Return to Product Page
