@@ -7,7 +7,7 @@
 - [ ] Confirm that production payments are working
 
 ## Calculate Financials
-- [ ] Create napkin computation to determine revenue targets
+- [x] Create napkin computation to determine revenue targets
 - [ ] Assess costs for the service
 - [ ] Get initial funding for costs
  
