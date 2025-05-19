@@ -7,17 +7,17 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle, ArrowLeft, Download } from "lucide-react"
 
 interface SuccessPageProps {
-  params: {
-    slug: string
-  }
+  params: any
+  searchParams?: any
 }
 
-export default function SuccessPage({ params }: SuccessPageProps) {
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params as any) as { slug: string };
+export default function SuccessPage({ params, searchParams }: SuccessPageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { slug: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const accessCode = searchParams.get('code')
+  const searchParamsHook = useSearchParams()
+  const accessCode = searchParamsHook.get('code')
   
   const [purchase, setPurchase] = useState<any>(null)
   const [loading, setLoading] = useState(true)

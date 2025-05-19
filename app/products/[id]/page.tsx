@@ -8,9 +8,15 @@ import { ArrowLeft, Edit, BarChart2, Share2, ExternalLink, ChevronRight, Downloa
 import RichTextRenderer from "@/components/rich-text-renderer"
 import { use } from "react"
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params as any) as { id: string };
+interface ProductDetailPageProps {
+  params: any
+  searchParams?: any
+}
+
+export default function ProductDetailPage({ params, searchParams }: ProductDetailPageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { id: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
   const [activeTab, setActiveTab] = useState("product")
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)

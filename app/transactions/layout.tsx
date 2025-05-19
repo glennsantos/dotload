@@ -2,14 +2,13 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from "@/lib/prisma"
 
 export const metadata: Metadata = {
   title: 'Transactions | alaCarte',
   description: 'Track your income and payouts',
 };
 
-const prisma = new PrismaClient();
 
 export default async function LedgerLayout({
   children,

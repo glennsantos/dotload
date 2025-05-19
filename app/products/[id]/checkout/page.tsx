@@ -4,9 +4,15 @@ import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { use } from "react"
 
-export default function ProductCheckoutPage({ params }: { params: { id: string } }) {
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params as any) as { id: string };
+interface ProductCheckoutPageProps {
+  params: any
+  searchParams?: any
+}
+
+export default function ProductCheckoutPage({ params, searchParams }: ProductCheckoutPageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { id: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
   return (
     <div>
       <div className="bg-gray-50 py-2 px-6 border-b">

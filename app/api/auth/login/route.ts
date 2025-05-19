@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from "@/lib/prisma"
 
 // Enable more verbose logging
 const DEBUG = true;
@@ -13,7 +13,6 @@ const debugLog = (message: string, ...args: any[]) => {
   }
 };
 
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET!.trim(); // Ensure no whitespace
 
 export async function POST(req: NextRequest) {

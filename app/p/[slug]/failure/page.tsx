@@ -6,17 +6,17 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, XCircle } from "lucide-react"
 
 interface FailurePageProps {
-  params: {
-    slug: string
-  }
+  params: any
+  searchParams?: any
 }
 
-export default function FailurePage({ params }: FailurePageProps) {
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params as any) as { slug: string };
+export default function FailurePage({ params, searchParams }: FailurePageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { slug: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const errorCode = searchParams.get('error')
+  const searchParamsHook = useSearchParams()
+  const errorCode = searchParamsHook.get('error')
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

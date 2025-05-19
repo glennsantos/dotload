@@ -39,11 +39,7 @@ export async function POST(
     // Find the product by ID
     const existingProduct = await prisma.product.findUnique({
       where: {
-<<<<<<< Updated upstream
-        id: productId,
-=======
-        id: context.params.id,
->>>>>>> Stashed changes
+        id: productId
       }
     });
     
@@ -79,11 +75,7 @@ export async function POST(
     // Upload to Cloudinary
     const arrayBuffer = await coverImage.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-<<<<<<< Updated upstream
     const folder = `users/${userId}/products/${productId}/cover`;
-=======
-    const folder = `users/${userId}/products/${context.params.id}/cover`;
->>>>>>> Stashed changes
     
     const result = await uploadToCloudinary(buffer, {
       folder,
@@ -95,11 +87,7 @@ export async function POST(
     // Update the product with the new cover image path
     const updatedProduct = await prisma.product.update({
       where: {
-<<<<<<< Updated upstream
         id: productId
-=======
-        id: context.params.id
->>>>>>> Stashed changes
       },
       data: {
         coverImagePath

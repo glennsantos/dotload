@@ -4,9 +4,15 @@ import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 
-export default function ProductSharePage({ params }: { params: { id: string } }) {
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params as any) as { id: string };
+interface ProductSharePageProps {
+  params: any
+  searchParams?: any
+}
+
+export default function ProductSharePage({ params, searchParams }: ProductSharePageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { id: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

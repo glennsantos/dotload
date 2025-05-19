@@ -3,10 +3,14 @@ import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
+    // Extract the product ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const productsIndex = pathParts.indexOf('products');
+    const productId = pathParts[productsIndex + 1];
     // Authenticate the user
     const userId = await getAuthUserId();
     if (!userId) {
@@ -15,9 +19,6 @@ export async function POST(
         { status: 401 }
       );
     }
-
-    // Get the product ID from the URL parameters
-    const productId = params.id;
 
     // Check if the product exists and belongs to the user
     const product = await prisma.product.findUnique({

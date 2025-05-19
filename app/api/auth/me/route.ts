@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from "@/lib/prisma"
 
 // Enable debugging
 const DEBUG = true;
@@ -13,7 +13,6 @@ const debugLog = (message: string, ...args: any[]) => {
   }
 };
 
-const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,34 +48,55 @@ export async function GET(request: NextRequest) {
     // Verify token
     debugLog('Verifying token...');
     const JWT_SECRET = process.env.JWT_SECRET;
-    console.log('JWT_SECRET', JWT_SECRET)
+    
+    if (!JWT_SECRET) {
+      debugLog('JWT_SECRET is not defined');
+      return NextResponse.json(
+        { message: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+    
+    console.log('JWT_SECRET available');
     try {
-      const decoded = jwt.verify(tokenValue, JWT_SECRET) as { userId: string, email: string };
-      debugLog('Token verified, userId:', decoded.userId);
+      // First verify the token and then cast to the expected type
+      const decodedToken = jwt.verify(tokenValue, JWT_SECRET);
       
-      // Get user from database
-      debugLog('Fetching user from database...');
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          createdAt: true,
-          updatedAt: true
+      // Ensure the decoded token has the expected structure
+      if (typeof decodedToken === 'object' && decodedToken !== null && 'userId' in decodedToken && 'email' in decodedToken) {
+        const decoded = decodedToken as { userId: string, email: string };
+        debugLog('Token verified, userId:', decoded.userId);
+        
+        // Get user from database
+        debugLog('Fetching user from database...');
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        });
+        
+        if (!user) {
+          debugLog('User not found in database for id:', decoded.userId);
+          return NextResponse.json(
+            { message: 'User not found' },
+            { status: 404 }
+          );
         }
-      });
-      
-      if (!user) {
-        debugLog('User not found in database for id:', decoded.userId);
+        
+        debugLog('User found:', user);
+        return NextResponse.json({ user }, { status: 200 });
+      } else {
+        debugLog('Token structure invalid');
         return NextResponse.json(
-          { message: 'User not found' },
-          { status: 404 }
+          { message: 'Invalid token structure' },
+          { status: 401 }
         );
       }
-      
-      debugLog('User found:', user);
-      return NextResponse.json({ user }, { status: 200 });
     } catch (tokenError) {
       debugLog('Token verification failed:', tokenError);
       return NextResponse.json(
