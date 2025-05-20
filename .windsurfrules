@@ -25,3 +25,6 @@ EMAIL
 * change the email content sent to the buyer based on the status of the purchase. 
   * if pending, say so. 
   * once completed, send another email with the download link.
+
+CHECKOUT
+* if discount reduces amount to 0 or less, bypass payment and send the content to the buyer.
