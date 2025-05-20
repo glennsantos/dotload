@@ -23,15 +23,15 @@ import {
 } from "./components"
 
 interface CheckoutPageProps {
-  params: {
-    slug: string
-  }
+  params: any
+  searchParams?: any
 }
 
 export default function CheckoutPage({ params }: CheckoutPageProps) {
-  // Get the slug directly from params
-  // Next.js will handle the Promise unwrapping internally
-  const slug = params.slug;
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params) as { slug: string }
+  // Get the slug from unwrapped params
+  const slug = unwrappedParams.slug;
   const router = useRouter()
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')

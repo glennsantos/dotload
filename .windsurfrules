@@ -8,6 +8,7 @@
 * when you restart the server, also restart the app.
 * use `ssh -v alacarte-ec2` to connect to the server.
 * when changing things in remote servers, add whatever you did to the README.md 
+* Use pnpm instead of npm
  
 
 DEPLOY TODOS
