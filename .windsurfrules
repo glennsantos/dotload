@@ -9,6 +9,7 @@
 * use `ssh -v alacarte-ec2` to connect to the server.
 * when changing things in remote servers, add whatever you did to the README.md 
 * Use pnpm instead of npm
+* fixes that change the code in the remote EC2 should be done through the local git branch so it can be version controlled and we have the same code for both local and remote.
  
 
 DEPLOY TODOS

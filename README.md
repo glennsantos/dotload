@@ -1251,6 +1251,25 @@ To improve security management and reduce policy sprawl, we've consolidated mult
    - Added IP (158.62.27.85) to security group for SSH access (2025-05-13)
    - Added IP (158.62.26.202) to security group for SSH access (2025-05-17)
    - Restarted EC2 instance and verified SSH access (2025-05-17)
+   - Added IP (158.62.27.16) to security group for SSH access (2025-05-20)
+
+### 2025-05-20: Fixed Prisma Client Import for Prisma v6.7.0
+
+1. **Issue Identified**:
+   - Build errors with Prisma v6.7.0 due to incompatible import syntax
+   - Error: `Module '@prisma/client' has no exported member 'PrismaClient'`
+   - Discovered nested duplicate `alacarte` directory on EC2 instance causing conflicts
+
+2. **Changes Made**:
+   - Removed nested `/home/ec2-user/alacarte/alacarte` directory to eliminate duplicate code
+   - Cleared Next.js cache (`.next` directory) to ensure clean build
+   - Cleared node_modules cache to prevent stale dependencies
+   - Restarted the application with `pm2 restart all`
+
+3. **Root Cause**:
+   - Prisma v6.7.0 changed how the PrismaClient is exported and imported
+   - The nested directory contained old code using incompatible import syntax
+   - The duplicate directory was likely created during a previous deployment
 
 3. **Deployment Steps**:
    ```bash
