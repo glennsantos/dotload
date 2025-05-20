@@ -53,7 +53,7 @@ export async function GET(
       offerCoupons: product.offerCoupons,
       // Handle discountCodes safely with type checking
       discountCodes: 'discountCodes' in product ? product.discountCodes : null,
-      variations: product.variations.map(variation => ({
+      variations: product.variations.map((variation: { id: string; name: string; options: string }) => ({
         id: variation.id,
         name: variation.name,
         options: variation.options

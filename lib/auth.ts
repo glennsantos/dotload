@@ -13,7 +13,7 @@ export interface AuthUser {
 export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
     // Get token from cookies
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     
     if (!token) {
@@ -39,10 +39,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   }
 }
 
-export function getAuthUserId(): string | null {
+export async function getAuthUserId(): Promise<string | null> {
   try {
     // Get token from cookies
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
     
     if (!token) {

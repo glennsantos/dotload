@@ -1,20 +1,24 @@
-import { PrismaClient } from '@prisma/client';
+// For Prisma v6.7.0, we need to import the client differently
+import pkg from '@prisma/client'
 
-// Ensure a single Prisma client instance across the application
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-
-if (!globalForPrisma.prisma) {
-  globalForPrisma.prisma = new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-    // Add any test-specific configuration
-    ...(process.env.NODE_ENV === 'test' && {
-      log: ['query', 'info', 'warn', 'error'],
-    }),
-  });
+// Prevent multiple instances of Prisma Client in development
+declare global {
+  var prisma: any | undefined
 }
 
-export const prisma = globalForPrisma.prisma;
+// Create a Prisma client instance
+const createPrismaClient = () => {
+  // Handle both ESM and CommonJS module systems
+  const { PrismaClient } = pkg as any
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  })
+}
+
+// Export a single instance of Prisma Client
+export const prisma = global.prisma || createPrismaClient()
+
+// Set the prisma global in non-production environments
+if (process.env.NODE_ENV !== 'production') {
+  global.prisma = prisma
+}

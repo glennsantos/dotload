@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from "@/lib/prisma"
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { sendPasswordResetEmail } from '@/lib/email';
 
-const prisma = new PrismaClient();
 
 // Enable debugging
 const DEBUG = true;

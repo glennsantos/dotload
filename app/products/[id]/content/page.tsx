@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { ChevronRight, File, FileText, Image as ImageIcon, Video, Music, Archive, Download, ExternalLink, Upload, Loader2 } from "lucide-react"
 
@@ -23,7 +23,15 @@ function getFileIcon(mimetype: string) {
   }
 }
 
-export default function ProductContentPage({ params }: { params: { id: string } }) {
+interface ProductContentPageProps {
+  params: any
+  searchParams?: any
+}
+
+export default function ProductContentPage({ params, searchParams }: ProductContentPageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { id: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,7 +40,7 @@ export default function ProductContentPage({ params }: { params: { id: string } 
     async function fetchProduct() {
       try {
         setLoading(true)
-        const response = await fetch(`/api/products/${params.id}`)
+        const response = await fetch(`/api/products/${unwrappedParams.id}`)
         
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`)
@@ -50,7 +58,7 @@ export default function ProductContentPage({ params }: { params: { id: string } 
     }
 
     fetchProduct()
-  }, [params.id])
+  }, [unwrappedParams.id])
 
   return (
     <div>
@@ -60,7 +68,7 @@ export default function ProductContentPage({ params }: { params: { id: string } 
             Products
           </Link>
           <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <Link href={`/products/${params.id}`} className="text-gray-600 hover:text-black">
+          <Link href={`/products/${unwrappedParams.id}`} className="text-gray-600 hover:text-black">
             Product
           </Link>
           <ChevronRight size={16} className="mx-2 text-gray-400" />
@@ -89,7 +97,7 @@ export default function ProductContentPage({ params }: { params: { id: string } 
         ) : error ? (
           <div className="border rounded-md p-12 bg-white text-center">
             <p className="text-red-500 mb-4">{error}</p>
-            <Link href={`/products/${params.id}`} className="text-blue-500 hover:underline">
+            <Link href={`/products/${unwrappedParams.id}`} className="text-blue-500 hover:underline">
               Back to Product
             </Link>
           </div>
@@ -101,7 +109,7 @@ export default function ProductContentPage({ params }: { params: { id: string } 
                 <h2 className="text-xl font-medium mb-2">No Content Files</h2>
                 <p className="text-gray-600 mb-6">This product doesn't have any content files yet.</p>
                 <Link 
-                  href={`/products/${params.id}/upload`} 
+                  href={`/products/${unwrappedParams.id}/upload`} 
                   className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2"
                 >
                   <Upload size={18} /> Upload Content

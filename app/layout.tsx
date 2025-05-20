@@ -1,7 +1,7 @@
 import type React from "react"
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from "@/lib/prisma"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
@@ -31,7 +31,6 @@ async function getCurrentUser() {
     const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
     const decoded = jwt.verify(tokenValue, JWT_SECRET) as { userId: string, email: string };
 
-    const prisma = new PrismaClient();
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { id: true, name: true, email: true }

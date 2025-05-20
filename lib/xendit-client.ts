@@ -561,12 +561,14 @@ export async function createEWalletPaymentMethod({
   mobileNumber,
   successReturnUrl,
   failureReturnUrl,
+  country = 'PH', // Default to Philippines
 }: {
   customerId: string;
-  channelCode: string; // 'OVO', 'DANA', 'SHOPEEPAY', etc.
+  channelCode: string; // 'GCASH', 'GRABPAY', 'SHOPEEPAY', 'PAYMAYA', etc.
   mobileNumber: string;
   successReturnUrl: string;
   failureReturnUrl: string;
+  country?: string; // Country code required for some e-wallets like GRABPAY
 }) {
   try {
     console.log(`[Xendit] Creating eWallet payment method for customer: ${customerId}`);
@@ -580,17 +582,19 @@ export async function createEWalletPaymentMethod({
         'Accept': 'application/json'
       },
       body: JSON.stringify({
+        customer_id: customerId,
         type: 'EWALLET',
-        reusability: 'MULTIPLE_USE',
+        reusability: 'ONE_TIME_USE',
+        reference_id: `pm_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`,
+        country: country, // Add country parameter required for some e-wallets like GRABPAY
         ewallet: {
           channel_code: channelCode,
           channel_properties: {
-            mobile_number: mobileNumber,
             success_return_url: successReturnUrl,
-            failure_return_url: failureReturnUrl
+            failure_return_url: failureReturnUrl,
+            mobile_number: mobileNumber
           }
-        },
-        customer_id: customerId
+        }
       })
     });
     

@@ -2,8 +2,17 @@
 
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
+import { use } from "react"
 
-export default function ProductCheckoutPage({ params }: { params: { id: string } }) {
+interface ProductCheckoutPageProps {
+  params: any
+  searchParams?: any
+}
+
+export default function ProductCheckoutPage({ params, searchParams }: ProductCheckoutPageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { id: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
   return (
     <div>
       <div className="bg-gray-50 py-2 px-6 border-b">
@@ -12,7 +21,7 @@ export default function ProductCheckoutPage({ params }: { params: { id: string }
             Products
           </Link>
           <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <Link href={`/products/${params.id}`} className="text-gray-600 hover:text-black">
+          <Link href={`/products/${unwrappedParams.id}`} className="text-gray-600 hover:text-black">
             Product
           </Link>
           <ChevronRight size={16} className="mx-2 text-gray-400" />

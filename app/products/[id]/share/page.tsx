@@ -1,10 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 
-export default function ProductSharePage({ params }: { params: { id: string } }) {
+interface ProductSharePageProps {
+  params: any
+  searchParams?: any
+}
+
+export default function ProductSharePage({ params, searchParams }: ProductSharePageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { id: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -22,7 +30,7 @@ export default function ProductSharePage({ params }: { params: { id: string } })
         
         const products = await response.json()
         const foundProduct = Array.isArray(products) ? 
-          products.find(p => p.id === params.id) : null
+          products.find(p => p.id === unwrappedParams.id) : null
         
         if (!foundProduct) {
           throw new Error('Product not found')
@@ -39,7 +47,7 @@ export default function ProductSharePage({ params }: { params: { id: string } })
     }
 
     fetchProduct()
-  }, [params.id])
+  }, [unwrappedParams.id])
 
   if (loading) {
     return (
@@ -74,7 +82,7 @@ export default function ProductSharePage({ params }: { params: { id: string } })
             Products
           </Link>
           <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <Link href={`/products/${params.id}`} className="text-gray-600 hover:text-black">
+          <Link href={`/products/${unwrappedParams.id}`} className="text-gray-600 hover:text-black">
             Product
           </Link>
           <ChevronRight size={16} className="mx-2 text-gray-400" />
@@ -89,7 +97,7 @@ export default function ProductSharePage({ params }: { params: { id: string } })
             <div className="flex mb-4">
               <input
                 type="text"
-                value={`${window.location.origin}/p/${product.slug || params.id}`}
+                value={`${window.location.origin}/p/${product.slug || unwrappedParams.id}`}
                 readOnly
                 className="flex-1 p-3 border rounded-l-md bg-gray-100"
               />

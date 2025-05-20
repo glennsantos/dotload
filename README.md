@@ -654,7 +654,8 @@ To keep the application running after you disconnect from SSH, use PM2:
 npm install -g pm2
 
 # Start the application with PM2
-pm2 start npm --name "alacarte" -- run dev
+pm2 start pnpm --name "alacarte" -- run build
+pm2 start pnpm --name "alacarte-start" -- run start
 
 # Set PM2 to start on boot
 pm2 save
@@ -939,7 +940,10 @@ pnpm prisma migrate deploy
 
 ```bash
 cd ~/alacarte
-pm2 start npm --name "alacarte" -- run dev
+# Build the application
+pm2 start pnpm --name "alacarte" -- run build
+# Start the application
+pm2 start pnpm --name "alacarte-start" -- run start
 
 # Configure PM2 to start on boot
 pm2 save
@@ -1084,6 +1088,7 @@ pm2 logs alacarte
 
 # Restart application
 pm2 restart alacarte
+pm2 restart alacarte-start
 
 # Check if Prisma client is generated
 cd ~/alacarte && pnpm prisma generate
@@ -1114,7 +1119,7 @@ aws ec2 delete-key-pair --key-name alacarte-key
 To be able to update the code, you need to refresh the ssh keys of the server. Run these:
 
 ```bash
-cd /home/ec2-user/alacarte && eval "$(ssh-agent -s)" && ssh-add ~/.ssh/alacarte2025 && git pull && pm2 restart all --update-env
+cd /home/ec2-user/alacarte && eval "$(ssh-agent -s)" && ssh-add ~/.ssh/alacarte2025 && git pull && pnpm install && pm2 restart all --update-env
 ```
 
 ## Server Configuration Changes
@@ -1246,6 +1251,25 @@ To improve security management and reduce policy sprawl, we've consolidated mult
    - Added IP (158.62.27.85) to security group for SSH access (2025-05-13)
    - Added IP (158.62.26.202) to security group for SSH access (2025-05-17)
    - Restarted EC2 instance and verified SSH access (2025-05-17)
+   - Added IP (158.62.27.16) to security group for SSH access (2025-05-20)
+
+### 2025-05-20: Fixed Prisma Client Import for Prisma v6.7.0
+
+1. **Issue Identified**:
+   - Build errors with Prisma v6.7.0 due to incompatible import syntax
+   - Error: `Module '@prisma/client' has no exported member 'PrismaClient'`
+   - Discovered nested duplicate `alacarte` directory on EC2 instance causing conflicts
+
+2. **Changes Made**:
+   - Removed nested `/home/ec2-user/alacarte/alacarte` directory to eliminate duplicate code
+   - Cleared Next.js cache (`.next` directory) to ensure clean build
+   - Cleared node_modules cache to prevent stale dependencies
+   - Restarted the application with `pm2 restart all`
+
+3. **Root Cause**:
+   - Prisma v6.7.0 changed how the PrismaClient is exported and imported
+   - The nested directory contained old code using incompatible import syntax
+   - The duplicate directory was likely created during a previous deployment
 
 3. **Deployment Steps**:
    ```bash
@@ -1282,6 +1306,7 @@ To improve security management and reduce policy sprawl, we've consolidated mult
    # Restart the application
    pm2 restart app
    pm2 restart alacarte
+   pm2 restart alacarte-start
    ```
 
 ## Email Service Migration

@@ -8,6 +8,10 @@
 * when you restart the server, also restart the app.
 * use `ssh -v alacarte-ec2` to connect to the server.
 * when changing things in remote servers, add whatever you did to the README.md 
+* Use pnpm instead of npm
+* fixes that change the code in the remote EC2 should be done through the local git branch so it can be version controlled and we have the same code for both local and remote.
+* you hang when you use pm2 logs. make sure to have a timeout so you can continue work.
+  
  
 
 DEPLOY TODOS
@@ -24,3 +28,6 @@ EMAIL
 * change the email content sent to the buyer based on the status of the purchase. 
   * if pending, say so. 
   * once completed, send another email with the download link.
+
+CHECKOUT
+* if discount reduces amount to 0 or less, bypass payment and send the content to the buyer.

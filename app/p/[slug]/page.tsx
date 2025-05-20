@@ -1,17 +1,15 @@
 import { Metadata, ResolvingMetadata } from "next"
-import { PrismaClient, Product } from "@prisma/client"
 import ClientProductPage from "./client-page"
 import { notFound } from "next/navigation"
+import { prisma } from "@/lib/prisma"
 
 interface ProductPageProps {
-  params: {
-    slug: string
-  }
+  params: any
+  searchParams?: any
 }
 
 // Fetch product data for both metadata and page rendering
 async function getProduct(slug: string) {
-  const prisma = new PrismaClient()
   try {
     const product = await prisma.product.findFirst({
       where: { 
@@ -114,9 +112,16 @@ export async function generateMetadata(
   }
 }
 
-export default async function PublicProductPage({ params }: ProductPageProps) {
-  // Fetch product data
-  const product = await getProduct(params.slug)
+import { use } from "react"
+
+export default function PublicProductPage({ params, searchParams }: ProductPageProps) {
+  // Unwrap params and searchParams using React.use()
+  const unwrappedParams = use(params) as { slug: string }
+  const unwrappedSearchParams = searchParams ? use(searchParams) as { [key: string]: string | string[] | undefined } : {}
+  
+  // Fetch product data and unwrap the Promise using use()
+  const productPromise = getProduct(unwrappedParams.slug)
+  const product = use(productPromise)
   
   // If product not found, return 404 page
   if (!product) {
@@ -124,5 +129,5 @@ export default async function PublicProductPage({ params }: ProductPageProps) {
   }
   
   // Pass the product data to the client component
-  return <ClientProductPage product={product} slug={params.slug} />
+  return <ClientProductPage product={product} slug={unwrappedParams.slug} />
 }

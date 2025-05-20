@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from "@/lib/prisma"
 
-const prisma = new PrismaClient();
 
 type TransactionType = 'income' | 'payout' | 'fee';
 type TransactionStatus = 'completed' | 'pending' | 'failed';
