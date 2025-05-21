@@ -151,11 +151,11 @@ export async function POST(request: NextRequest) {
             referenceId,
             amount,
             currency,
-            country: channelCode === 'DANA' ? 'ID' : 'PH', // DANA is for Indonesia
+            country: 'PH',
             channelCode,
             successReturnUrl: successUrl,
             failureReturnUrl: failureUrl,
-            cancelReturnUrl: cancelUrl, // Add cancel URL
+            cancelReturnUrl: cancelUrl,
             customerInfo: {
               email: purchase.email,
               name: purchase.name || purchase.email,
@@ -198,6 +198,29 @@ export async function POST(request: NextRequest) {
               })
             }
           });
+          
+          // Update purchase status to pending
+          await updatePurchaseStatus(purchase.id, 'pending', paymentData.id);
+          
+          // Send pending payment email notification
+          try {
+            const productSlug = purchase.product.slug || purchase.product.id;
+            
+            await sendPurchaseConfirmationEmail(
+              purchase.email,
+              purchase.product.name,
+              purchase.accessCode,
+              productSlug,
+              purchase.amount,
+              purchase.currency,
+              'pending' // Indicate that this is a pending payment
+            );
+            
+            console.log(`[Xendit Payment] Pending payment notification email sent to ${purchase.email}`);
+          } catch (emailError) {
+            console.error('[Xendit Payment] Error sending pending payment notification email:', emailError);
+            // Continue processing even if email fails
+          }
           
           // Return the redirect URL to the client
           return NextResponse.json({

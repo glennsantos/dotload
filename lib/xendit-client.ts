@@ -965,6 +965,7 @@ export async function createOneTimePayment({
     
     console.log('[Xendit] Payment request payload:', JSON.stringify(requestBody, null, 2));
     
+    
     // Direct API call to create payment request
     const response = await fetch(`${XENDIT_API_URL}/payment_requests`, {
       method: 'POST',
@@ -986,9 +987,40 @@ export async function createOneTimePayment({
     console.log(`[Xendit] Payment request created with ID: ${paymentData.id}`);
     console.log('[Xendit] Payment response:', JSON.stringify(paymentData, null, 2));
     
+    
     return paymentData;
   } catch (error) {
     console.error('Error creating Xendit payment request:', error);
+    throw error;
+  }
+}
+
+// Check the status of a payment request
+export async function checkPaymentRequestStatus(paymentRequestId: string) {
+  try {
+    console.log(`[Xendit] Checking payment request status for ID: ${paymentRequestId}`);
+    
+    // Direct API call to check payment request status
+    const response = await fetch(`${XENDIT_API_URL}/payment_requests/${paymentRequestId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(process.env.XENDIT_SECRET_KEY + ':').toString('base64')}`,
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[Xendit] Payment request status check error:', errorData);
+      throw new Error(`Failed to check payment request status: ${response.status} ${response.statusText}`);
+    }
+    
+    const paymentData = await response.json();
+    console.log(`[Xendit] Payment request status for ID ${paymentRequestId}: ${paymentData.status}`);
+    
+    return paymentData;
+  } catch (error) {
+    console.error('Error checking Xendit payment request status:', error);
     throw error;
   }
 }

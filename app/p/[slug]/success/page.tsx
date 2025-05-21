@@ -22,6 +22,30 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
   const [purchase, setPurchase] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [paymentStatus, setPaymentStatus] = useState<string | null>(null)
+
+  // Function to check payment status using purchase ID
+  const checkPaymentStatus = async (purchaseId: string) => {
+    try {
+      console.log(`Checking payment status for purchase ID: ${purchaseId}`);
+      const response = await fetch(`/api/payments/status?purchaseId=${purchaseId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Error checking payment status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Payment status response:', data);
+      
+      if (data.status) {
+        setPaymentStatus(data.status);
+      }
+      return data;
+    } catch (err) {
+      console.error('Error checking payment status:', err);
+      return null;
+    }
+  };
 
   useEffect(() => {
     async function fetchPurchase() {
@@ -41,6 +65,19 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
         
         const data = await response.json()
         setPurchase(data)
+        
+        // Check payment status for pending purchases
+        if (data.status !== 'completed') {
+          console.log(`Purchase ${data.id} is not completed. Checking payment status...`);
+          await checkPaymentStatus(data.id);
+          
+          // Refresh the purchase data to get updated status
+          const refreshResponse = await fetch(`/api/purchases/access?code=${accessCode}`);
+          if (refreshResponse.ok) {
+            const refreshedData = await refreshResponse.json();
+            setPurchase(refreshedData);
+          }
+        }
       } catch (err) {
         console.error('Error fetching purchase:', err)
         setError('Failed to load purchase details. Please try again later.')
@@ -50,7 +87,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
     }
 
     fetchPurchase()
-  }, [accessCode])
+  }, [accessCode, searchParamsHook])
 
   if (loading) {
     return (
@@ -139,7 +176,12 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
           
           <div className="border-t pt-6">
             <p className="text-sm text-gray-500 mb-4">
-              A confirmation email has been sent to {purchase.email} with your purchase details.
+              {purchase.status === 'completed' 
+                ? `A confirmation email has been sent to ${purchase.email} with your purchase details.`
+                : purchase.status === 'pending'
+                  ? `Your payment is being processed. You will receive an email at ${purchase.email} once the payment is confirmed.`
+                  : `A confirmation email has been sent to ${purchase.email} with your purchase details.`
+              }
             </p>
             
             <Link 

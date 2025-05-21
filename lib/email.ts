@@ -138,48 +138,91 @@ export async function sendPurchaseConfirmationEmail(
   productSlug: string,
   amount: number,
   currency: string,
+  status: string = 'completed',
   name?: string | null
 ) {
   const baseUrl = `http://${process.env.DOMAIN}`;
   const buyerDashboardUrl = `${baseUrl}/buyer-dashboard?code=${accessCode}`;
+  const productUrl = `${baseUrl}/p/${productSlug}`;
 
-  const htmlBody = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #333;">Thank You for Your Purchase!</h2>
-      <p>Hello${name ? ` ${name}` : ''},</p>
-      <p>Thank you for purchasing <strong>${productName}</strong>. Your payment of <strong>${currency} ${amount.toFixed(2)}</strong> has been successfully processed.</p>
-      
-      <div style="margin: 30px 0;">
-        <p><strong>Access Your Content</strong></p>
-        <a href="${buyerDashboardUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-          Access Your Purchase
-        </a>
+  let subject = '';
+  let htmlBody = '';
+  let textBody = '';
+
+  // Different email content based on purchase status
+  if (status === 'pending') {
+    subject = `Your alaCarte Purchase: ${productName} (Payment Pending)`;
+    
+    htmlBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Thank You for Your Purchase!</h2>
+        <p>Hello${name ? ` ${name}` : ''},</p>
+        <p>Thank you for purchasing <strong>${productName}</strong>. Your payment of <strong>${currency} ${amount.toFixed(2)}</strong> is currently being processed.</p>
+        
+        <div style="margin: 30px 0; padding: 15px; background-color: #fff7e6; border-left: 4px solid #ffc107; border-radius: 4px;">
+          <p style="margin: 0;"><strong>Payment Status: Pending</strong></p>
+          <p style="margin-top: 10px;">We'll send you another email with access to your purchase once the payment is confirmed.</p>
+        </div>
+        
+        <p style="margin-top: 30px; color: #666; font-size: 14px;">If you have any questions, please contact our support team.</p>
       </div>
-      
-      <p>Or copy and paste this link in your browser:</p>
-      <p style="word-break: break-all; color: #666;">${buyerDashboardUrl}</p>
-      
-      <p style="margin-top: 30px; color: #666; font-size: 14px;">Keep this email for your records. The link above provides permanent access to your purchased content.</p>
-    </div>
-  `;
+    `;
 
-  const textBody = `
-    Thank You for Your Purchase!
+    textBody = `
+      Thank You for Your Purchase!
+      
+      Hello${name ? ` ${name}` : ''},
+      
+      Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} is currently being processed.
+      
+      Payment Status: Pending
+      
+      We'll send you another email with access to your purchase once the payment is confirmed.
+      
+      If you have any questions, please contact our support team.
+    `;
+  } else {
+    // Default completed status
+    subject = `Your alaCarte Purchase: ${productName}`;
     
-    Hello${name ? ` ${name}` : ''},
-    
-    Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} has been successfully processed.
-    
-    Access Your Content: ${buyerDashboardUrl}
-    
-    Keep this email for your records. The link above provides permanent access to your purchased content.
-  `;
+    htmlBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Thank You for Your Purchase!</h2>
+        <p>Hello${name ? ` ${name}` : ''},</p>
+        <p>Thank you for purchasing <strong>${productName}</strong>. Your payment of <strong>${currency} ${amount.toFixed(2)}</strong> has been successfully processed.</p>
+        
+        <div style="margin: 30px 0;">
+          <p><strong>Access Your Content</strong></p>
+          <a href="${buyerDashboardUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            Access Your Purchase
+          </a>
+        </div>
+        
+        <p>Or copy and paste this link in your browser:</p>
+        <p style="word-break: break-all; color: #666;">${buyerDashboardUrl}</p>
+        
+        <p style="margin-top: 30px; color: #666; font-size: 14px;">Keep this email for your records. The link above provides permanent access to your purchased content.</p>
+      </div>
+    `;
+
+    textBody = `
+      Thank You for Your Purchase!
+      
+      Hello${name ? ` ${name}` : ''},
+      
+      Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} has been successfully processed.
+      
+      Access Your Content: ${buyerDashboardUrl}
+      
+      Keep this email for your records. The link above provides permanent access to your purchased content.
+    `;
+  }
 
   const params = {
     Source: fromEmail,
     Destination: { ToAddresses: [to] },
     Message: {
-      Subject: { Data: `Your alaCarte Purchase: ${productName}` },
+      Subject: { Data: subject },
       Body: {
         Html: { Data: htmlBody },
         Text: { Data: textBody }

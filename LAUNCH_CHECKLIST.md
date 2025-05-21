@@ -1,10 +1,11 @@
 # alaCarte Launch Checklist
 
 ## Resolve Payment Issues
-- [ ] Get assistance from other people who have integrated with Xendit before
-- [ ] Troubleshoot Xendit production issues with card payments
-- [ ] Troubleshoot Xendit production issues with ewallet payments
-- [ ] Confirm that production payments are working
+- [x] Implement callback handling for payments
+- [x] Get assistance from other people who have integrated with Xendit before
+- [x] Troubleshoot Xendit production issues with card payments
+- [x] Troubleshoot Xendit production issues with ewallet payments
+- [x] Confirm that production payments are working
 
 ## Calculate Financials
 - [x] Create napkin computation to determine revenue targets

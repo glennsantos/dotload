@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updatePurchaseStatus, getPurchaseById } from '@/lib/purchase-utils';
+import { sendPurchaseConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,6 +51,28 @@ export async function POST(request: NextRequest) {
       const purchaseWithProduct = await getPurchaseById(purchaseId);
       
       console.log(`Payment for purchase ${purchaseId} completed successfully`);
+      
+      // Send purchase confirmation email with download link
+      if (purchaseWithProduct) {
+        try {
+          const productSlug = purchaseWithProduct.product.slug || purchaseWithProduct.product.id;
+          
+          await sendPurchaseConfirmationEmail(
+            purchaseWithProduct.email,
+            purchaseWithProduct.product.name,
+            purchaseWithProduct.accessCode,
+            productSlug,
+            purchaseWithProduct.amount,
+            purchaseWithProduct.currency,
+            'completed' // Indicate that this is a completed payment
+          );
+          
+          console.log(`Purchase confirmation email sent to ${purchaseWithProduct.email}`);
+        } catch (emailError) {
+          console.error('Error sending purchase confirmation email:', emailError);
+          // Continue processing even if email fails
+        }
+      }
       
       return NextResponse.json({ success: true, status: 'completed' });
       

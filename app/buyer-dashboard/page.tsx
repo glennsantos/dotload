@@ -48,67 +48,92 @@ export default function BuyerDashboardPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [showPaymentPendingModal, setShowPaymentPendingModal] = useState(false)
   const [pendingFile, setPendingFile] = useState<{name: string, status: string} | null>(null)
+  const [checkingPayments, setCheckingPayments] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0) // Used to force re-fetch
+
+  // Function to check pending payment statuses
+  const checkPendingPayments = async (purchaseList: Purchase[]) => {
+    if (!purchaseList || purchaseList.length === 0) return;
+    
+    // Filter for pending purchases
+    const pendingPurchases = purchaseList.filter(p => 
+      p.status === 'pending' || p.status === 'awaiting_capture'
+    );
+    
+    if (pendingPurchases.length === 0) {
+      console.log('No pending purchases to check');
+      return;
+    }
+    
+    setCheckingPayments(true);
+    
+    try {
+      console.log(`Checking status for ${pendingPurchases.length} pending purchases`);
+      
+      const pendingIds = pendingPurchases.map(p => p.id);
+      
+      const response = await fetch('/api/payments/check-pending', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          purchaseIds: pendingIds
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error checking pending payments: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('Payment check results:', result);
+      
+      // If any purchases were updated, refresh the data
+      if (result.updatedPurchases && result.updatedPurchases.length > 0) {
+        console.log(`${result.updatedPurchases.length} purchases were updated. Refreshing data...`);
+        setRefreshKey(prev => prev + 1); // Force a re-fetch
+      }
+    } catch (err) {
+      console.error('Error checking pending payments:', err);
+    } finally {
+      setCheckingPayments(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchPurchases() {
       try {
-        setLoading(true)
+        setLoading(true);
         
-        // If we have an access code, use it to fetch the specific purchase
-        if (accessCode) {
-          const response = await fetch(`/api/purchases/access?code=${accessCode}`)
-          
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status}`)
-          }
-          
-          const data = await response.json()
-          
-          // Only show the purchase if it's not failed
-          if (data.status !== 'failed') {
-            setPurchases([data])
-          } else {
-            setPurchases([])
-          }
-          
-          // Check if user exists or needs to be created
-          const userResponse = await fetch('/api/auth/me')
-          
-          if (userResponse.ok) {
-            const userData = await userResponse.json()
-            setUserDetails(userData.user)
-          } else {
-            // User not logged in or doesn't exist
-            setEmail(data.email || '')
-            setShowUserForm(true)
-          }
-        } else {
-          // If no access code, fetch all purchases for the logged-in user
-          const response = await fetch('/api/purchases')
-          
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status}`)
-          }
-          
-          const data = await response.json()
-          
-          // Filter out failed payments
-          const filteredPurchases = Array.isArray(data) 
-            ? data.filter(purchase => purchase.status !== 'failed')
-            : []
-            
-          setPurchases(filteredPurchases)
+        const response = await fetch('/api/purchases');
+        
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        // Filter out failed payments
+        const filteredPurchases = Array.isArray(data) 
+          ? data.filter(purchase => purchase.status !== 'failed')
+          : [];
+          
+        setPurchases(filteredPurchases);
+        
+        // Check payment status for pending purchases
+        await checkPendingPayments(filteredPurchases);
+        
       } catch (err) {
-        console.error('Error fetching purchases:', err)
-        setError('Failed to load purchase details. Please try again later.')
+        console.error('Error fetching purchases:', err);
+        setError('Failed to load purchase details. Please try again later.');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchPurchases()
-  }, [accessCode])
+    fetchPurchases();
+  }, [accessCode, refreshKey])
 
   const handleSubmitUserDetails = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -238,24 +263,6 @@ export default function BuyerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">alaCarte</h1>
-          {userDetails && (
-            <div className="flex items-center">
-              <span className="text-sm text-gray-600 mr-4">
-                {userDetails.name || userDetails.email}
-              </span>
-              <Link 
-                href="/settings" 
-                className="text-sm text-blue-600 hover:text-blue-500"
-              >
-                Settings
-              </Link>
-            </div>
-          )}
-        </div>
-      </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Purchases</h1>
