@@ -58,6 +58,7 @@ export default function CreditCardForm({
   onSuccess,
   onError
 }: CreditCardFormProps) {
+  console.log('[CreditCardForm] Received props - Email:', email, 'Phone:', phoneNumber);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isTokenizing, setIsTokenizing] = useState(false);
@@ -182,15 +183,61 @@ export default function CreditCardForm({
       setIsTokenizing(false);
       return;
     }
+
+    const formatPhoneNumber = (phone: string): string => {
+      const trimmedPhone = phone.trim();
+
+      // If it already starts with +, assume it's an attempt at E.164.
+      // Clean it to ensure it's `+` followed by digits only.
+      if (trimmedPhone.startsWith('+')) {
+        const digitsAfterPlus = trimmedPhone.substring(1).replace(/\D/g, '');
+        return `+${digitsAfterPlus}`;
+      }
+
+      // No '+', so process as a local or national number.
+      // Remove all non-digits.
+      const digits = trimmedPhone.replace(/\D/g, '');
+
+      // Priority 1: PH local mobile format starting with '09' (e.g., 09xxxxxxxxx)
+      if (digits.startsWith('09') && digits.length === 11) {
+        return `+63${digits.substring(1)}`;
+      }
+
+      // Priority 2: PH national mobile format (e.g., 9xxxxxxxxx, 10 digits)
+      if (digits.length === 10 && digits.startsWith('9')) {
+        return `+63${digits}`;
+      }
+
+      // Priority 3: Number starts with a country code (e.g., 63 for PH, 1 for US) but is missing the '+'
+      // This regex /^[1-9]\d{6,14}$/ checks if it starts with a non-zero digit
+      // (like a country code) and has a total length of 7-15 digits (typical for international numbers).
+      if (/^[1-9]\d{6,14}$/.test(digits)) {
+          return `+${digits}`;
+      }
+      
+      // Fallback: return cleaned digits. The E.164 regex check after this function will determine validity.
+      return digits; 
+    };
     
-    if (!cardholderEmail.trim() || !cardholderEmail.includes('@')) {
+    const formattedPhone = formatPhoneNumber(cardholderPhone);
+    
+    // Validate E.164 format
+    const e164Regex = /^\+[1-9]\d{1,14}$/;
+    if (!e164Regex.test(formattedPhone)) {
+      setError('Invalid phone number format. Please include country code (e.g., +63XXXXXXXXXX)');
+      setIsLoading(false);
+      setIsTokenizing(false);
+      return;
+    }
+    
+    if (!email.trim() || !email.includes('@')) {
       setError('Valid email is required');
       setIsLoading(false);
       setIsTokenizing(false);
       return;
     }
     
-    if (!cardholderPhone.trim()) {
+    if (!formattedPhone.trim()) {
       setError('Phone number is required');
       setIsLoading(false);
       setIsTokenizing(false);
@@ -204,34 +251,7 @@ export default function CreditCardForm({
     console.log('[CreditCardForm] Starting card tokenization with Xendit');
     // Create token with Xendit
     // Format phone number to E.164 format (e.g., +631234567890)
-    const formatPhoneNumber = (phone: string): string => {
-      // Remove all non-digit characters
-      const digits = phone.replace(/\D/g, '');
-      
-      // If it already starts with a country code, ensure it has a + prefix
-      if (digits.length > 10) {
-        return `+${digits}`;
-      }
-      
-      // For local PH numbers (starting with 0), replace 0 with +63
-      if (digits.startsWith('0')) {
-        return `+63${digits.substring(1)}`;
-      }
-      
-      // For numbers without country code, assume PH (+63)
-      return `+63${digits}`;
-    };
     
-    const formattedPhone = formatPhoneNumber(cardholderPhone);
-    
-    // Validate E.164 format
-    const e164Regex = /^\+[1-9]\d{1,14}$/;
-    if (!e164Regex.test(formattedPhone)) {
-      setError('Invalid phone number format. Please include country code (e.g., +63XXXXXXXXXX)');
-      setIsLoading(false);
-      setIsTokenizing(false);
-      return;
-    }
     
     // Prepare the card data for tokenization
     const cardData = {

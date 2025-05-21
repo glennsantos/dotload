@@ -6,6 +6,9 @@
 - [x] Troubleshoot Xendit production issues with card payments
 - [x] Troubleshoot Xendit production issues with ewallet payments
 - [x] Confirm that production payments are working
+- [ ] Fix Credit Card payment issues
+- [ ] Add debit card payment
+- [ ] Add QRPH
 
 ## Calculate Financials
 - [x] Create napkin computation to determine revenue targets

@@ -180,23 +180,26 @@ export default function CheckoutForm({
       
       {/* Use the new CreditCardForm when card payment is selected */}
       {paymentMethod === "card" && (
-        <CreditCardForm
-          purchaseId={product.id}
-          amount={calculateFinalPrice(product, appliedDiscount)}
-          currency={product.currency || 'PHP'}
-          email={email}
-          phoneNumber={mobileNumber}
-          onSuccess={(accessCode) => {
-            // Redirect to success page
-            // Use the current URL path to extract the slug
-            const pathParts = window.location.pathname.split('/');
-            const slug = pathParts[2]; // The slug is the third part of the path /p/[slug]/checkout
-            window.location.href = `/p/${slug}/success?code=${accessCode}`;
-          }}
-          onError={(message) => {
-            setPaymentError(message);
-          }}
-        />
+        <>
+          {console.log('[CheckoutForm] Passing to CreditCardForm - Email:', email, 'Mobile:', mobileNumber)}
+          <CreditCardForm
+            purchaseId={product.id}
+            amount={calculateFinalPrice(product, appliedDiscount)}
+            currency={product.currency || 'PHP'}
+            email={email}
+            phoneNumber={mobileNumber}
+            onSuccess={(accessCode) => {
+              // Redirect to success page
+              // Use the current URL path to extract the slug
+              const pathParts = window.location.pathname.split('/');
+              const slug = pathParts[2]; // The slug is the third part of the path /p/[slug]/checkout
+              window.location.href = `/p/${slug}/success?code=${accessCode}`;
+            }}
+            onError={(message) => {
+              setPaymentError(message);
+            }}
+          />
+        </>
       )}
       
       {/* Keep the old CardDetailsForm as a fallback, but hidden */}
