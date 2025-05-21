@@ -185,24 +185,28 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         selectedVariation: selectedVariation || null,
       });
       
-      // Process payment based on method
+      // Determine which payment method to use
       if (paymentMethod.startsWith('ewallet')) {
-        // Handle e-wallet payment with Xendit
+        // Process e-wallet payment with Xendit
+        console.log('Processing e-wallet payment with Xendit');
+        
+        // Extract the e-wallet type from the payment method (e.g., 'ewallet_gcash' -> 'GCASH')
+        const ewalletType = paymentMethod.split('_')[1].toUpperCase();
+        
         const paymentData = await processPayment({
           purchaseId: purchaseData.id,
-          paymentMethod,
+          paymentMethod: 'ewallet-onetime', // Use new one-time payment flow
+          channelCode: ewalletType,
           mobileNumber,
           amount: finalPrice,
-          currency: product.currency || 'PHP',
+          currency: product.currency || 'PHP'
         });
         
-        // Handle the redirect response from the API
-        if (paymentData.redirect && paymentData.redirectUrl) {
-          console.log(`Redirecting to: ${paymentData.redirectUrl}`);
-          // Use window.location.href for a full page redirect
-          window.location.href = paymentData.redirectUrl;
-        } else if (paymentData.requiresAction && paymentData.actionUrl) {
-          // Redirect to the authentication URL for account linking
+        console.log('E-wallet payment flow initiated:', paymentData);
+        
+        // Check for actionUrl (newer API) or redirectUrl (older API)
+        if (paymentData.actionUrl) {
+          // Redirect to the authentication URL for payment
           console.log('Redirecting to authentication URL:', paymentData.actionUrl);
           window.location.href = paymentData.actionUrl;
         } else if (paymentData.redirectUrl) {

@@ -8,7 +8,8 @@ import {
   createEWalletPaymentMethod, 
   createEWalletCharge, 
   createPayment,
-  processCardPayment
+  processCardPayment,
+  createOneTimePayment
 } from '@/lib/xendit-client';
 import { prisma } from '@/lib/prisma';
 
@@ -113,7 +114,132 @@ export async function POST(request: NextRequest) {
     const callbackUrl = `${baseUrl}/api/webhooks/xendit`;
     
     // Handle different payment methods
-    if (paymentMethod === 'ewallet-flow') {
+    if (paymentMethod === 'ewallet-onetime') {
+      // One-time payment flow using Xendit's payment_requests endpoint
+      console.log(`[Xendit Payment] Processing one-time e-wallet payment with channel code: ${channelCode}`);
+      
+      try {
+        // Create a transaction record
+        const transaction = await prisma.transaction.create({
+          data: {
+            amount,
+            currency: currency,
+            type: 'payment',
+            status: 'pending',
+            description: `${channelCode} payment for purchase ${purchase.id}`,
+            reference: purchase.id,
+            referenceType: 'Purchase',
+            metadata: JSON.stringify({
+              paymentMethod: 'ewallet',
+              channelCode: channelCode,
+              flowType: 'one-time',
+              mobileNumber: mobileNumber,
+              purchaseId: purchase.id
+            }),
+            userId: purchase.product.userId // Use the product's userId since purchase.userId might be null for guest purchases
+          }
+        });
+        
+        console.log(`[Xendit Payment] Transaction created with ID: ${transaction.id}`);
+        
+        try {
+          // Generate a unique reference ID for this payment
+          const referenceId = `purchase_${purchase.id}_${Date.now()}`;
+          
+          // Create the one-time payment request
+          const paymentData = await createOneTimePayment({
+            referenceId,
+            amount,
+            currency,
+            country: channelCode === 'DANA' ? 'ID' : 'PH', // DANA is for Indonesia
+            channelCode,
+            successReturnUrl: successUrl,
+            failureReturnUrl: failureUrl,
+            cancelReturnUrl: cancelUrl, // Add cancel URL
+            customerInfo: {
+              email: purchase.email,
+              name: purchase.name || purchase.email,
+              mobileNumber: mobileNumber
+            }
+          });
+          
+          console.log(`[Xendit Payment] One-time payment request created:`, paymentData);
+          
+          // Extract the redirect URL from the actions array
+          let redirectUrl = '';
+          
+          // The response will contain actions array with redirect URLs
+          if (paymentData.actions && Array.isArray(paymentData.actions)) {
+            const checkoutAction = paymentData.actions.find(
+              (action: any) => action.action === 'AUTH'
+            );
+            
+            if (checkoutAction && checkoutAction.url) {
+              redirectUrl = checkoutAction.url;
+            }
+          }
+          
+          if (!redirectUrl) {
+            throw new Error('No redirect URL found in payment response');
+          }
+          
+          // Update the transaction with payment request details
+          await prisma.transaction.update({
+            where: { id: transaction.id },
+            data: {
+              reference: paymentData.id,
+              metadata: JSON.stringify({
+                paymentMethod: 'ewallet',
+                channelCode: channelCode,
+                paymentId: paymentData.id,
+                referenceId: referenceId,
+                flowType: 'one-time',
+                mobileNumber: mobileNumber,
+              })
+            }
+          });
+          
+          // Return the redirect URL to the client
+          return NextResponse.json({
+            success: true,
+            actionUrl: redirectUrl,
+            paymentId: paymentData.id
+          });
+        } catch (paymentError) {
+          console.error('[Xendit Payment] One-time payment creation error:', paymentError);
+          
+          // Update transaction to failed status
+          await prisma.transaction.update({
+            where: { id: transaction.id },
+            data: {
+              status: 'FAILED',
+              metadata: JSON.stringify({
+                paymentMethod: 'ewallet',
+                channelCode: channelCode,
+                flowType: 'one-time',
+                error: paymentError instanceof Error ? paymentError.message : 'Unknown error'
+              })
+            }
+          });
+          
+          // Update purchase status to failed
+          await prisma.purchase.update({
+            where: { id: purchase.id },
+            data: {
+              status: 'failed'
+            }
+          });
+          
+          return NextResponse.json({ 
+            error: 'E-wallet payment creation failed', 
+            details: paymentError instanceof Error ? paymentError.message : 'Unknown error'
+          }, { status: 500 });
+        }
+      } catch (error) {
+        console.error('[Xendit Payment] Error creating transaction record for e-wallet payment:', error);
+        throw error;
+      }
+    } else if (paymentMethod === 'ewallet-flow') {
       console.log(`[Xendit Payment] Processing eWallet payment flow`);
       
       try {
@@ -687,18 +813,18 @@ export async function POST(request: NextRequest) {
       try {
         const transaction = await prisma.transaction.create({
           data: {
-            type: 'PURCHASE',
-            status: 'PENDING',
+            userId: purchase.product.userId,
             amount: amount,
             currency: currency,
-            description: `Card payment for ${purchase.product.name}`,
+            type: 'income',
+            status: 'pending',
+            description: `Card payment for purchase ${purchase.id}`,
             reference: purchase.id,
             referenceType: 'Purchase',
             metadata: JSON.stringify({
               paymentMethod: 'card',
               cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A'
-            }),
-            userId: purchase.product.userId
+            })
           }
         });
         

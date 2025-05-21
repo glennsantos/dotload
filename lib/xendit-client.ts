@@ -900,4 +900,97 @@ export async function createEWalletPayment({
   }
 }
 
+// Create a one-time payment request (modern Xendit API approach)
+export async function createOneTimePayment({
+  referenceId,
+  amount,
+  currency = 'PHP',
+  country = 'PH',
+  channelCode,
+  successReturnUrl,
+  failureReturnUrl,
+  cancelReturnUrl,
+  customerInfo,
+}: {
+  referenceId: string;
+  amount: number;
+  currency?: string;
+  country?: string;
+  channelCode: string; // 'GCASH', 'GRABPAY', 'SHOPEEPAY', 'DANA', etc.
+  successReturnUrl: string;
+  failureReturnUrl: string;
+  cancelReturnUrl: string;
+  customerInfo?: {
+    email?: string;
+    name?: string;
+    mobileNumber?: string;
+  };
+}) {
+  try {
+    console.log(`[Xendit] Creating one-time payment request for ${channelCode}`);
+    
+    // Build request body
+    const requestBody: any = {
+      reference_id: referenceId,
+      amount,
+      currency,
+      country,
+      payment_method: {
+        type: 'EWALLET',
+        ewallet: {
+          channel_code: channelCode,
+          channel_properties: {
+            success_return_url: successReturnUrl,
+            failure_return_url: failureReturnUrl,
+            cancel_return_url: failureReturnUrl // Use the same URL for cancellation as failure
+          }
+        },
+        reusability: 'ONE_TIME_USE',
+        country
+      }
+    };
+    
+    // Add customer info if provided
+    if (customerInfo) {
+      requestBody.customer = {
+        reference_id: customerInfo.email + '_' + referenceId,
+        type: 'INDIVIDUAL',
+        individual_detail: {
+          given_names: customerInfo.name,
+        },
+        email: customerInfo.email,
+        mobile_number: customerInfo.mobileNumber
+      };
+    }
+    
+    console.log('[Xendit] Payment request payload:', JSON.stringify(requestBody, null, 2));
+    
+    // Direct API call to create payment request
+    const response = await fetch(`${XENDIT_API_URL}/payment_requests`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${Buffer.from(process.env.XENDIT_SECRET_KEY + ':').toString('base64')}`,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[Xendit] Payment request creation error:', errorData);
+      throw new Error(`Failed to create payment request: ${response.status} ${response.statusText}`);
+    }
+    
+    const paymentData = await response.json();
+    console.log(`[Xendit] Payment request created with ID: ${paymentData.id}`);
+    console.log('[Xendit] Payment response:', JSON.stringify(paymentData, null, 2));
+    
+    return paymentData;
+  } catch (error) {
+    console.error('Error creating Xendit payment request:', error);
+    throw error;
+  }
+}
+
 export default xenditClient;
