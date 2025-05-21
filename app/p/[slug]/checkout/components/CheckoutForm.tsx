@@ -1,8 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Tag } from "lucide-react";
 import { Discount, Product } from "./types";
 import PaymentMethodSelector from "./PaymentMethodSelector";
 import CardDetailsForm from "./CardDetailsForm";
+import CreditCardForm from "@/components/payment/CreditCardForm";
 import { calculateFinalPrice, validateDiscountCode } from "./utils";
 
 interface CheckoutFormProps {
@@ -73,8 +74,18 @@ export default function CheckoutForm({
     setPaymentError(result.error);
   };
 
+  // Determine if we should use a form element based on payment method
+  // For card payments, we don't need the outer form since CreditCardForm has its own form
+  const FormWrapper = paymentMethod === "card" ? React.Fragment : "form";
+  
+  // Prepare props for the form element if needed
+  const formProps = paymentMethod === "card" ? {} : {
+    onSubmit,
+    className: "bg-white shadow-sm rounded-lg p-6"
+  };
+  
   return (
-    <form onSubmit={onSubmit} className="bg-white shadow-sm rounded-lg p-6">
+    <FormWrapper {...formProps}>
       {/* Email field */}
       <div className="mb-6">
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -162,13 +173,34 @@ export default function CheckoutForm({
       </div>
       
       {/* Payment Method Selector */}
-      <PaymentMethodSelector 
+      <PaymentMethodSelector
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
       />
       
-      {/* Card Details Form (conditionally rendered) */}
+      {/* Use the new CreditCardForm when card payment is selected */}
       {paymentMethod === "card" && (
+        <CreditCardForm
+          purchaseId={product.id}
+          amount={calculateFinalPrice(product, appliedDiscount)}
+          currency={product.currency || 'PHP'}
+          email={email}
+          phoneNumber={mobileNumber}
+          onSuccess={(accessCode) => {
+            // Redirect to success page
+            // Use the current URL path to extract the slug
+            const pathParts = window.location.pathname.split('/');
+            const slug = pathParts[2]; // The slug is the third part of the path /p/[slug]/checkout
+            window.location.href = `/p/${slug}/success?code=${accessCode}`;
+          }}
+          onError={(message) => {
+            setPaymentError(message);
+          }}
+        />
+      )}
+      
+      {/* Keep the old CardDetailsForm as a fallback, but hidden */}
+      {paymentMethod === "card" && false && (
         <CardDetailsForm
           cardName={cardName}
           setCardName={setCardName}
@@ -188,21 +220,23 @@ export default function CheckoutForm({
         </div>
       )}
       
-      {/* Submit button */}
-      <button
-        type="submit"
-        className="w-full bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition-colors"
-        disabled={processingPayment}
-      >
-        {processingPayment ? (
-          <div className="flex items-center justify-center">
-            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-            <span className="ml-2">Processing...</span>
-          </div>
-        ) : (
-          `Pay ${product.currency} ${calculateFinalPrice(product, appliedDiscount).toFixed(2)}`
-        )}
-      </button>
-    </form>
+      {/* Submit button - only show for non-card payment methods */}
+      {paymentMethod !== "card" && (
+        <button
+          type="submit"
+          className="w-full bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition-colors"
+          disabled={processingPayment}
+        >
+          {processingPayment ? (
+            <div className="flex items-center justify-center">
+              <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+              <span className="ml-2">Processing...</span>
+            </div>
+          ) : (
+            `Pay ${product.currency} ${calculateFinalPrice(product, appliedDiscount).toFixed(2)}`
+          )}
+        </button>
+      )}
+    </FormWrapper>
   );
 }

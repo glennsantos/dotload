@@ -906,17 +906,22 @@ export async function createOneTimePayment({
   amount,
   currency = 'PHP',
   country = 'PH',
+  paymentMethodType = 'EWALLET',
   channelCode,
   successReturnUrl,
   failureReturnUrl,
   cancelReturnUrl,
   customerInfo,
+  cardInfo,
+  skipThreeDSecure = false,
+  cardOnFileType,
 }: {
   referenceId: string;
   amount: number;
   currency?: string;
   country?: string;
-  channelCode: string; // 'GCASH', 'GRABPAY', 'SHOPEEPAY', 'DANA', etc.
+  paymentMethodType?: 'EWALLET' | 'CARD' | 'DIRECT_DEBIT' | 'OVER_THE_COUNTER' | 'VIRTUAL_ACCOUNT' | 'QR_CODE';
+  channelCode?: string; // 'GCASH', 'GRABPAY', 'SHOPEEPAY', 'DANA', etc.
   successReturnUrl: string;
   failureReturnUrl: string;
   cancelReturnUrl: string;
@@ -925,9 +930,19 @@ export async function createOneTimePayment({
     name?: string;
     mobileNumber?: string;
   };
+  cardInfo?: {
+    cardNumber: string;
+    expiryMonth: string;
+    expiryYear: string;
+    cardholderName: string;
+    cardholderEmail: string;
+    cardholderPhoneNumber: string;
+  };
+  skipThreeDSecure?: boolean;
+  cardOnFileType?: 'CUSTOMER_UNSCHEDULED' | 'MERCHANT_UNSCHEDULED' | 'RECURRING';
 }) {
   try {
-    console.log(`[Xendit] Creating one-time payment request for ${channelCode}`);
+    console.log(`[Xendit] Creating one-time payment request for ${paymentMethodType} ${channelCode || ''}`);
     
     // Build request body
     const requestBody: any = {
@@ -936,19 +951,49 @@ export async function createOneTimePayment({
       currency,
       country,
       payment_method: {
-        type: 'EWALLET',
-        ewallet: {
-          channel_code: channelCode,
-          channel_properties: {
-            success_return_url: successReturnUrl,
-            failure_return_url: failureReturnUrl,
-            cancel_return_url: cancelReturnUrl
-          }
-        },
+        type: paymentMethodType,
         reusability: 'ONE_TIME_USE',
         country
       }
     };
+    
+    // Configure payment method based on type
+    if (paymentMethodType === 'EWALLET' && channelCode) {
+      requestBody.payment_method.ewallet = {
+        channel_code: channelCode,
+        channel_properties: {
+          success_return_url: successReturnUrl,
+          failure_return_url: failureReturnUrl,
+          cancel_return_url: cancelReturnUrl
+        }
+      };
+    } else if (paymentMethodType === 'CARD' && cardInfo) {
+      // Configure card payment method
+      requestBody.payment_method.card = {
+        channel_properties: {
+          success_return_url: successReturnUrl,
+          failure_return_url: failureReturnUrl
+        },
+        card_information: {
+          card_number: cardInfo.cardNumber,
+          expiry_month: cardInfo.expiryMonth,
+          expiry_year: cardInfo.expiryYear,
+          cardholder_name: cardInfo.cardholderName,
+          cardholder_email: cardInfo.cardholderEmail,
+          cardholder_phone_number: cardInfo.cardholderPhoneNumber
+        }
+      };
+      
+      // Add 3DS configuration if specified
+      if (skipThreeDSecure) {
+        requestBody.payment_method.card.channel_properties.skip_three_d_secure = true;
+      }
+      
+      // Add card-on-file type if specified
+      if (cardOnFileType) {
+        requestBody.payment_method.card.channel_properties.cardonfile_type = cardOnFileType;
+      }
+    }
     
     // Add customer info if provided
     if (customerInfo) {
@@ -964,7 +1009,6 @@ export async function createOneTimePayment({
     }
     
     console.log('[Xendit] Payment request payload:', JSON.stringify(requestBody, null, 2));
-    
     
     // Direct API call to create payment request
     const response = await fetch(`${XENDIT_API_URL}/payment_requests`, {
@@ -986,7 +1030,6 @@ export async function createOneTimePayment({
     const paymentData = await response.json();
     console.log(`[Xendit] Payment request created with ID: ${paymentData.id}`);
     console.log('[Xendit] Payment response:', JSON.stringify(paymentData, null, 2));
-    
     
     return paymentData;
   } catch (error) {
