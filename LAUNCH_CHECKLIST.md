@@ -18,6 +18,7 @@
 ## Site Setup
 - [ ] Attach domain to dev server
 - [ ] Create SSL cert for dev server via Letsencrypt.
+- [ ] clean up front end console.logs
 
 ## Perform QA Testing
 - [ ] Get QA assistance for the rest of the testing
