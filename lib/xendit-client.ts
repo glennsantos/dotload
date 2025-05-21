@@ -942,7 +942,7 @@ export async function createOneTimePayment({
           channel_properties: {
             success_return_url: successReturnUrl,
             failure_return_url: failureReturnUrl,
-            cancel_return_url: failureReturnUrl // Use the same URL for cancellation as failure
+            cancel_return_url: cancelReturnUrl
           }
         },
         reusability: 'ONE_TIME_USE',
