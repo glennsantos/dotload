@@ -52,6 +52,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [discountCode, setDiscountCode] = useState("")
   const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null)
   const [selectedVariation, setSelectedVariation] = useState<string>("") // Store selected variation
+  const [createdPurchaseId, setCreatedPurchaseId] = useState<string | null>(null);
 
   // Fetch user data to prepopulate email
   useEffect(() => {
@@ -184,6 +185,20 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         discountAmount: appliedDiscount ? (product.price - finalPrice) : 0,
         selectedVariation: selectedVariation || null,
       });
+      
+      console.log('Purchase record created:', purchaseData);
+
+      // Check if the purchase was successful
+      if (!purchaseData || !purchaseData.id) {
+        throw new Error('Failed to create purchase record or missing purchase ID.');
+      }
+      setCreatedPurchaseId(purchaseData.id);
+
+      // Bypass payment if final price is 0 or less
+      if (finalPrice <= 0) {
+        router.push(`/p/${slug}/success?code=${purchaseData.accessCode}`);
+        return;
+      }
       
       // Determine which payment method to use
       if (paymentMethod.startsWith('ewallet')) {

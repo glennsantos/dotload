@@ -218,8 +218,8 @@ export default function CreditCardForm({
       // Fallback: return cleaned digits. The E.164 regex check after this function will determine validity.
       return digits; 
     };
-    
-    const formattedPhone = formatPhoneNumber(cardholderPhone);
+
+    const formattedPhone = formatPhoneNumber(phoneNumber);
     
     // Validate E.164 format
     const e164Regex = /^\+[1-9]\d{1,14}$/;
