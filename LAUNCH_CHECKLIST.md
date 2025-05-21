@@ -1,17 +1,8 @@
 # alaCarte Launch Checklist
 
 ## Resolve Payment Issues
-- [x] Implement callback handling for payments
-- [x] Get assistance from other people who have integrated with Xendit before
-- [x] Troubleshoot Xendit production issues with card payments
-- [x] Troubleshoot Xendit production issues with ewallet payments
-- [x] Confirm that production payments are working
-- [ ] Add debit card payment
-- [ ] Add QRPH
 - [ ] Fix TOKEN_NOT_FOUND_ERROR in Credit card payment
 
-## Buyer Dashboard
-- [ ] once the user creates an account in buyer dashboard, show them all their purchases in reverse chronological order (not just the latest one or the one accessed via the code) 
 
 ## Calculate Financials
 - [x] Create napkin computation to determine revenue targets
