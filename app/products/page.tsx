@@ -6,9 +6,11 @@ import { Plus, Search } from "lucide-react"
 import ProductsList from "./components/ProductsList"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useIsMobile } from "hooks/use-mobile"
 
 export default function ProductsPage() {
   const router = useRouter()
+  const isMobile = useIsMobile()
   
   // Check authentication on page load
   useEffect(() => {
@@ -42,8 +44,9 @@ export default function ProductsPage() {
               className="pl-10 pr-4 py-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-black"
             />
           </div>
-          <Link href="/products/new" className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-md flex items-center gap-2">
-            <Plus size={18} /> New product
+          <Link href="/products/new" className="sm:px-4 px-2 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-md flex items-center gap-2">
+            <Plus size={18} />
+            {!isMobile && " New product"}
           </Link>
         </div>
       </div>
