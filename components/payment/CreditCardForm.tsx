@@ -58,7 +58,6 @@ export default function CreditCardForm({
   onSuccess,
   onError
 }: CreditCardFormProps) {
-  console.log('[CreditCardForm] Received props - Email:', email, 'Phone:', phoneNumber);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isTokenizing, setIsTokenizing] = useState(false);
