@@ -1,4 +1,4 @@
-import { CreditCard, Smartphone, QrCode, Wallet } from "lucide-react";
+import { CreditCard, Smartphone, QrCode, Wallet, CreditCard as DebitCard } from "lucide-react";
 
 interface PaymentMethodSelectorProps {
   paymentMethod: string;
@@ -65,6 +65,33 @@ export default function PaymentMethodSelector({
             <p className="text-xs text-gray-500">Pay with Maya</p>
           </div>
         </div>
+        
+        {/* Direct Debit Payment Options */}
+        <div 
+          className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'direct_debit_bpi' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+          onClick={() => setPaymentMethod('direct_debit_bpi')}
+        >
+          <div className="flex-shrink-0 mr-3">
+            <DebitCard className="h-6 w-6 text-gray-600" />
+          </div>
+          <div>
+            <p className="font-medium">BPI Direct Debit</p>
+            <p className="text-xs text-gray-500">Pay with BPI Debit</p>
+          </div>
+        </div>
+        
+        <div 
+          className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'direct_debit_ubp' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+          onClick={() => setPaymentMethod('direct_debit_ubp')}
+        >
+          <div className="flex-shrink-0 mr-3">
+            <DebitCard className="h-6 w-6 text-gray-600" />
+          </div>
+          <div>
+            <p className="font-medium">UnionBank Direct Debit</p>
+            <p className="text-xs text-gray-500">Pay with UnionBank Debit</p>
+          </div>
+        </div>
       </div>
       
       {/* Payment method specific instructions */}
@@ -75,6 +102,8 @@ export default function PaymentMethodSelector({
               paymentMethod.includes('grabpay') ? "GrabPay" : 
               paymentMethod.includes('shopeepay') ? "ShopeePay" : 
               paymentMethod.includes('paymaya') ? "Maya" : 
+              paymentMethod.includes('bpi') ? "BPI Direct Debit" :
+              paymentMethod.includes('ubp') ? "UnionBank Direct Debit" :
               paymentMethod}.
           </p>
         </div>

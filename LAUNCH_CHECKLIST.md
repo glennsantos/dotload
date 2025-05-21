@@ -6,9 +6,9 @@
 - [x] Troubleshoot Xendit production issues with card payments
 - [x] Troubleshoot Xendit production issues with ewallet payments
 - [x] Confirm that production payments are working
-- [ ] Fix Credit Card payment issues
 - [ ] Add debit card payment
 - [ ] Add QRPH
+- [ ] Fix TOKEN_NOT_FOUND_ERROR in Credit card payment
 
 ## Buyer Dashboard
 - [ ] once the user creates an account in buyer dashboard, show them all their purchases in reverse chronological order (not just the latest one or the one accessed via the code) 

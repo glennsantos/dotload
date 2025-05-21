@@ -65,7 +65,15 @@ export async function createPurchase(purchaseData: any) {
  * @returns Payment processing result
  */
 export async function processPayment(paymentData: any) {
-  const response = await fetch("/api/payments/xendit", {
+  // Determine the appropriate endpoint based on payment method
+  let endpoint = "/api/payments/xendit";
+  
+  // If it's a direct debit payment, use the direct-debit endpoint
+  if (paymentData.paymentMethod && paymentData.paymentMethod.startsWith('direct_debit')) {
+    endpoint = "/api/payments/xendit/direct-debit";
+  }
+  
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

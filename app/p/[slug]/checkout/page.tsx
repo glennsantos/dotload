@@ -235,6 +235,41 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         } else {
           throw new Error('No redirect URL provided for payment');
         }
+      } else if (paymentMethod.startsWith('direct_debit')) {
+        // Process direct debit payment with Xendit
+        console.log('Processing direct debit payment with Xendit');
+        
+        // Extract the direct debit bank code from the payment method (e.g., 'direct_debit_bpi' -> 'BPI')
+        const bankCode = paymentMethod.split('_')[2].toUpperCase();
+        
+        const paymentData = await processPayment({
+          purchaseId: purchaseData.id,
+          paymentMethod,
+          channelCode: bankCode,
+          mobileNumber,
+          email,
+          amount: finalPrice,
+          currency: product.currency || 'PHP'
+        });
+        
+        console.log('Direct debit payment flow initiated:', paymentData);
+        
+        // Check for actionUrl (newer API) or redirectUrl (older API)
+        if (paymentData.actionUrl) {
+          // Redirect to the authentication URL for payment
+          console.log('Redirecting to authentication URL:', paymentData.actionUrl);
+          window.location.href = paymentData.actionUrl;
+        } else if (paymentData.redirectUrl) {
+          // For backward compatibility
+          console.log('Redirecting to payment gateway:', paymentData.redirectUrl);
+          window.location.href = paymentData.redirectUrl;
+        } else if (paymentData.checkoutUrl) {
+          // Legacy support for checkoutUrl
+          console.log('Redirecting to checkout URL:', paymentData.checkoutUrl);
+          window.location.href = paymentData.checkoutUrl;
+        } else {
+          throw new Error('No redirect URL provided for payment');
+        }
       } else if (paymentMethod === "card") {
         // Process card payment with Xendit
         console.log('Processing card payment with Xendit');

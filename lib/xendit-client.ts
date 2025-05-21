@@ -913,6 +913,7 @@ export async function createOneTimePayment({
   cancelReturnUrl,
   customerInfo,
   cardInfo,
+  directDebitInfo,
   skipThreeDSecure = false,
   cardOnFileType,
 }: {
@@ -921,7 +922,7 @@ export async function createOneTimePayment({
   currency?: string;
   country?: string;
   paymentMethodType?: 'EWALLET' | 'CARD' | 'DIRECT_DEBIT' | 'OVER_THE_COUNTER' | 'VIRTUAL_ACCOUNT' | 'QR_CODE';
-  channelCode?: string; // 'GCASH', 'GRABPAY', 'SHOPEEPAY', 'DANA', etc.
+  channelCode?: string; // 'GCASH', 'GRABPAY', 'SHOPEEPAY', 'DANA', 'BPI', 'UBP', etc.
   successReturnUrl: string;
   failureReturnUrl: string;
   cancelReturnUrl: string;
@@ -937,6 +938,14 @@ export async function createOneTimePayment({
     cardholderName: string;
     cardholderEmail: string;
     cardholderPhoneNumber: string;
+  };
+  directDebitInfo?: {
+    channelCode?: string; // 'BPI', 'UBP', 'BRI', 'MANDIRI', etc.
+    mobileNumber?: string;
+    cardLastFour?: string;
+    cardExpiry?: string;
+    email?: string;
+    identityDocumentNumber?: string;
   };
   skipThreeDSecure?: boolean;
   cardOnFileType?: 'CUSTOMER_UNSCHEDULED' | 'MERCHANT_UNSCHEDULED' | 'RECURRING';
@@ -992,6 +1001,46 @@ export async function createOneTimePayment({
       // Add card-on-file type if specified
       if (cardOnFileType) {
         requestBody.payment_method.card.channel_properties.cardonfile_type = cardOnFileType;
+      }
+    } else if (paymentMethodType === 'DIRECT_DEBIT' && channelCode) {
+      // Configure direct debit payment method
+      requestBody.payment_method.direct_debit = {
+        channel_code: channelCode,
+        channel_properties: {}
+      };
+      
+      // Set default properties for direct debit
+      requestBody.payment_method.direct_debit.channel_properties = {
+        success_return_url: successReturnUrl,
+        failure_return_url: failureReturnUrl
+      };
+      
+      // Add additional channel-specific properties if directDebitInfo is provided
+      const debitInfo = directDebitInfo || {};
+      
+      // For BRI, we need mobile number, card last four, and email
+      if (channelCode === 'BRI' && debitInfo.mobileNumber && debitInfo.cardLastFour && debitInfo.email) {
+        requestBody.payment_method.direct_debit.channel_properties.mobile_number = debitInfo.mobileNumber;
+        requestBody.payment_method.direct_debit.channel_properties.card_last_four = debitInfo.cardLastFour;
+        requestBody.payment_method.direct_debit.channel_properties.email = debitInfo.email;
+        
+        // Add card expiry if provided
+        if (debitInfo.cardExpiry) {
+          requestBody.payment_method.direct_debit.channel_properties.card_expiry = debitInfo.cardExpiry;
+        }
+      }
+      
+      // For SCB and BBL, we need mobile number
+      if ((channelCode === 'SCB' || channelCode === 'BBL') && debitInfo.mobileNumber) {
+        requestBody.payment_method.direct_debit.channel_properties.mobile_number = debitInfo.mobileNumber;
+      }
+      
+      // For KTB and BAY, we need mobile number and identity document number
+      if ((channelCode === 'KTB' || channelCode === 'BAY') && 
+          debitInfo.mobileNumber && 
+          debitInfo.identityDocumentNumber) {
+        requestBody.payment_method.direct_debit.channel_properties.mobile_number = debitInfo.mobileNumber;
+        requestBody.payment_method.direct_debit.channel_properties.identity_document_number = debitInfo.identityDocumentNumber;
       }
     }
     
