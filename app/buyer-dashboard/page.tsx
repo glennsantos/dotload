@@ -64,23 +64,46 @@ export default function BuyerDashboardPage() {
           
           const data = await response.json()
           
-          // Only show the purchase if it's not failed
-          if (data.status !== 'failed') {
-            setPurchases([data])
-          } else {
-            setPurchases([])
-          }
-          
           // Check if user exists or needs to be created
           const userResponse = await fetch('/api/auth/me')
           
           if (userResponse.ok) {
             const userData = await userResponse.json()
             setUserDetails(userData.user)
+            
+            // After confirming user is logged in, fetch ALL their purchases
+            const allPurchasesResponse = await fetch('/api/purchases')
+            
+            if (allPurchasesResponse.ok) {
+              const allPurchasesData = await allPurchasesResponse.json()
+              
+              // Filter out failed payments and sort by createdAt in descending order
+              const filteredPurchases = Array.isArray(allPurchasesData) 
+                ? allPurchasesData
+                  .filter(purchase => purchase.status !== 'failed')
+                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                : []
+                
+              setPurchases(filteredPurchases)
+            } else {
+              // If we can't fetch all purchases, just show the one from the access code
+              if (data.status !== 'failed') {
+                setPurchases([data])
+              } else {
+                setPurchases([])
+              }
+            }
           } else {
             // User not logged in or doesn't exist
             setEmail(data.email || '')
             setShowUserForm(true)
+            
+            // Only show the purchase from the access code if it's not failed
+            if (data.status !== 'failed') {
+              setPurchases([data])
+            } else {
+              setPurchases([])
+            }
           }
         } else {
           // If no access code, fetch all purchases for the logged-in user
@@ -92,9 +115,11 @@ export default function BuyerDashboardPage() {
           
           const data = await response.json()
           
-          // Filter out failed payments
+          // Filter out failed payments and sort by createdAt in descending order
           const filteredPurchases = Array.isArray(data) 
-            ? data.filter(purchase => purchase.status !== 'failed')
+            ? data
+              .filter(purchase => purchase.status !== 'failed')
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             : []
             
           setPurchases(filteredPurchases)
@@ -242,15 +267,13 @@ export default function BuyerDashboardPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Purchases</h1>
         
         {purchases.length === 0 ? (
-          <div className="bg-white shadow-sm rounded-lg p-8 text-center">
-            <div className="flex justify-center mb-6">
-              <ShoppingBag size={64} className="text-gray-300" />
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <ShoppingBag size={48} className="mx-auto" />
             </div>
-            <h2 className="text-xl font-medium mb-4">You don't have any purchases yet</h2>
-            <p className="text-gray-600 mb-6">
-              When you buy products on alaCarte, they will appear here for easy access.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <h2 className="text-2xl font-bold mb-2">No Purchases Found</h2>
+            <p className="text-gray-600">You don't have any purchases yet.</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
               <Link 
                 href="/products" 
                 className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center justify-center gap-2"
@@ -269,6 +292,22 @@ export default function BuyerDashboardPage() {
           <div className="space-y-8">
             {purchases.map((purchase) => (
               <div key={purchase.id} className="bg-white shadow-sm rounded-lg overflow-hidden">
+                <div className="border-b border-gray-100 px-6 py-3 flex justify-between items-center">
+                  <div className="text-sm text-gray-500">
+                    {new Date(purchase.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                  <div className="flex items-center">
+                    <span className={`px-2 py-1 text-xs rounded-full ${purchase.status === 'completed' || purchase.status === 'succeeded' ? 'bg-green-100 text-green-800' : purchase.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {purchase.status.charAt(0).toUpperCase() + purchase.status.slice(1)}
+                    </span>
+                  </div>
+                </div>
                 <div className="p-6 flex flex-col md:flex-row gap-6">
                   <div className="w-full md:w-1/4">
                     <div className="aspect-video relative rounded-md overflow-hidden">
