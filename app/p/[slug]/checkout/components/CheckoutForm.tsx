@@ -181,7 +181,6 @@ export default function CheckoutForm({
       {/* Use the new CreditCardForm when card payment is selected */}
       {paymentMethod === "card" && (
         <>
-          {console.log('[CheckoutForm] Passing to CreditCardForm - Email:', email, 'Mobile:', mobileNumber)}
           <CreditCardForm
             purchaseId={product.id}
             amount={calculateFinalPrice(product, appliedDiscount)}
