@@ -65,19 +65,6 @@ export default function PaymentMethodSelector({
             <p className="text-xs text-gray-500">Pay with Maya</p>
           </div>
         </div>
-
-        <div 
-          className={`border rounded-md p-4 flex items-center cursor-pointer ${paymentMethod === 'ewallet_shopee' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
-          onClick={() => setPaymentMethod('ewallet_shopee')}
-        >
-          <div className="flex-shrink-0 mr-3">
-            <QrCode className="h-6 w-6 text-gray-600" />
-          </div>
-          <div>
-            <p className="font-medium">Shopee</p>
-            <p className="text-xs text-gray-500">Pay with Shopee</p>
-          </div>
-        </div>
       </div>
       
       {/* Payment method specific instructions */}
