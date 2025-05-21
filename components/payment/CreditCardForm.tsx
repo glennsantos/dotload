@@ -263,7 +263,7 @@ export default function CreditCardForm({
       is_multiple_use: false,
       external_id: externalId,
       should_authenticate: true,
-      card_holder_email: cardholderEmail,
+      card_holder_email: email,
       card_holder_first_name: cardholderName.split(' ')[0],
       card_holder_last_name: cardholderName.split(' ').slice(1).join(' ') || cardholderName.split(' ')[0],
       card_holder_phone_number: formattedPhone
