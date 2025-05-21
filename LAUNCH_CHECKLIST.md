@@ -10,6 +10,9 @@
 - [ ] Add debit card payment
 - [ ] Add QRPH
 
+## Buyer Dashboard
+- [ ] once the user creates an account in buyer dashboard, show them all their purchases in reverse chronological order (not just the latest one or the one accessed via the code) 
+
 ## Calculate Financials
 - [x] Create napkin computation to determine revenue targets
 - [ ] Assess costs for the service

@@ -730,7 +730,7 @@ export async function chargeCard({
   externalId: string;
   amount: number;
   currency?: string;
-  cardCvn: string;
+  cardCvn?: string; // Make cardCvn optional for already authenticated tokens
   descriptor?: string;
   metadata?: Record<string, any>;
 }) {
@@ -750,7 +750,7 @@ export async function chargeCard({
         external_id: externalId,
         amount,
         currency,
-        card_cvn: cardCvn,
+        ...(cardCvn ? { card_cvn: cardCvn } : {}),  // Only include card_cvn if provided
         capture: true,
         descriptor,
         metadata

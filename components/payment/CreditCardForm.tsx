@@ -331,11 +331,37 @@ export default function CreditCardForm({
   const processPayment = async (tokenId: string) => {
     try {
       console.log(`[CreditCardForm] Processing payment with token: ${tokenId}`);
-      console.log('[CreditCardForm] Purchase ID:', purchaseId);
       console.log('[CreditCardForm] Amount:', amount, currency);
       setIsLoading(true);
       setIsTokenizing(false);
       
+      // First, create a purchase record
+      console.log('[CreditCardForm] Creating purchase record...');
+      const createPurchaseResponse = await fetch("/api/purchases", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: purchaseId, // Using the product ID passed as purchaseId prop
+          email: email,
+          mobileNumber: phoneNumber,
+          amount: amount,
+          currency: currency,
+          paymentMethod: 'card',
+        }),
+      });
+      
+      if (!createPurchaseResponse.ok) {
+        const errorData = await createPurchaseResponse.json();
+        console.error('[CreditCardForm] Failed to create purchase:', errorData);
+        throw new Error(errorData.error || errorData.details || 'Failed to create purchase record');
+      }
+      
+      const purchaseData = await createPurchaseResponse.json();
+      console.log('[CreditCardForm] Purchase created successfully:', purchaseData);
+      
+      // Now process the payment with the newly created purchase ID
       console.log('[CreditCardForm] Sending token to backend for processing');
       const response = await fetch('/api/payments/xendit/card', {
         method: 'POST',
@@ -343,7 +369,7 @@ export default function CreditCardForm({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          purchaseId,
+          purchaseId: purchaseData.id, // Use the ID from the newly created purchase
           tokenId,
           amount,
           currency

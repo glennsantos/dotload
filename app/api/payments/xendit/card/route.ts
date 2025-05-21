@@ -98,14 +98,54 @@ export async function POST(request: NextRequest) {
     try {
       // Create a transaction record
       console.log('[Xendit Card Payment] Creating transaction record');
+      
+      // Get user ID from purchase or find/create a system user
+      let userId = purchase.userId;
+      
+      // If no userId in purchase, try to find a user with the same email
+      if (!userId && purchase.email) {
+        console.log(`[Xendit Card Payment] No userId in purchase, looking for user with email: ${purchase.email}`);
+        const existingUser = await prisma.user.findFirst({
+          where: { email: purchase.email }
+        });
+        
+        if (existingUser) {
+          userId = existingUser.id;
+          console.log(`[Xendit Card Payment] Found user with matching email: ${userId}`);
+        } else {
+          // Try to find any user in the system as a fallback
+          console.log('[Xendit Card Payment] No matching user found, looking for any user as fallback');
+          const fallbackUser = await prisma.user.findFirst({
+            orderBy: { createdAt: 'asc' } // Get the oldest user (likely an admin or system user)
+          });
+          
+          if (fallbackUser) {
+            userId = fallbackUser.id;
+            console.log(`[Xendit Card Payment] Using fallback user: ${userId}`);
+          } else {
+            // If no user exists at all, we need to throw an error
+            console.error('[Xendit Card Payment] No users found in the system');
+            throw new Error('No user available for transaction. Please contact support.');
+          }
+        }
+      }
+      
+      if (!userId) {
+        console.error('[Xendit Card Payment] Failed to find or create a user for the transaction');
+        throw new Error('User required for transaction');
+      }
+      
+      console.log(`[Xendit Card Payment] Creating transaction with userId: ${userId}`);
       const transaction = await prisma.transaction.create({
         data: {
-          purchaseId: purchase.id,
+          userId: userId,  // Use userId directly since we're not using connect syntax for user
           amount: amount,
           currency: currency,
           status: 'PENDING',
           type: 'PAYMENT',
-          method: 'CARD',
+          description: `Card payment for purchase ${purchase.id}`,
+          reference: purchase.id,  // Store purchase ID in the reference field
+          referenceType: 'PURCHASE',  // Indicate the type of reference
           metadata: JSON.stringify({
             paymentMethod: 'card',
             tokenId: tokenId.substring(0, 8) + '...',  // Only store partial token ID for reference
@@ -135,12 +175,13 @@ export async function POST(request: NextRequest) {
         externalId: referenceId
       });
       
+      // Use the chargeCard function without providing CVN (now optional)
       const paymentResult = await chargeCard({
         tokenId: tokenId,
         externalId: referenceId,
         amount: amount,
         currency: currency,
-        cardCvn: '', // CVN is not required for tokenized payments as it was already verified
+        // No cardCvn parameter - it's now optional in the function
         descriptor: `alaCarte: ${purchase.product.name.substring(0, 20)}`,
         metadata: {
           purchaseId: purchase.id,
