@@ -1,7 +1,7 @@
 # alaCarte Launch Checklist
 
 ## Resolve Payment Issues
-- [ ] Fix TOKEN_NOT_FOUND_ERROR in Credit card payment
+- [ ] Fix TOKEN_NOT_FOUND_ERROR in Credit card payment for prod
 
 ## Calculate Financials
 - [x] Create napkin computation to determine revenue targets
