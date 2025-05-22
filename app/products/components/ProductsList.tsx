@@ -124,7 +124,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
   return (
     <div className="space-y-8">
       {/* Dashboard Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {dashboardCards.map((card, index) => (
           <div key={index} className="border rounded-md p-4">
             <div className="flex items-center justify-between mb-2">
@@ -143,17 +143,18 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
 
       {/* Products Table */}
       <div className="border rounded-md overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b bg-white">
-              <th className="text-left py-3 px-4 font-normal text-sm">Name</th>
-              <th className="text-right py-3 px-4 font-normal text-sm">Sales</th>
-              <th className="text-right py-3 px-4 font-normal text-sm">Revenue</th>
-              <th className="text-right py-3 px-4 font-normal text-sm">Price</th>
-              <th className="text-right py-3 px-4 font-normal text-sm">Status</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b bg-white">
+                <th className="text-left py-3 px-4 font-normal text-sm" style={{ minWidth: '250px' }}>Name</th>
+                <th className="text-right py-3 px-4 font-normal text-sm" style={{ minWidth: '80px' }}>Sales</th>
+                <th className="text-right py-3 px-4 font-normal text-sm" style={{ minWidth: '100px' }}>Revenue</th>
+                <th className="text-right py-3 px-4 font-normal text-sm" style={{ minWidth: '80px' }}>Price</th>
+                <th className="text-right py-3 px-4 font-normal text-sm" style={{ minWidth: '100px' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
             {products.map((product) => (
               <tr key={product.id} className="border-b hover:bg-gray-50">
                 <td className="py-3 px-4">
@@ -198,6 +199,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )
