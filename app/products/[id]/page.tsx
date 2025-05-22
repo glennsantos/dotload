@@ -93,42 +93,42 @@ export default function ProductDetailPage({ params, searchParams }: ProductDetai
         </div>
       </div>
 
-      <header className="p-6 border-b flex justify-between items-center">
+      <header className="p-4 sm:p-6 border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <Link href="/products" className="text-gray-500 hover:text-black">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-2xl font-normal truncate">{product.name}</h1>
+          <h1 className="text-xl sm:text-2xl font-normal truncate">{product.name}</h1>
         </div>
-        <div className="flex gap-2">
-          <Link href={`/products/${unwrappedParams.id}/edit`} className="px-4 py-2 border rounded-md flex items-center gap-2">
-            <Edit size={18} /> Edit
+        <div className="flex gap-2 self-end sm:self-auto">
+          <Link href={`/products/${unwrappedParams.id}/edit`} className="px-3 sm:px-4 py-2 border rounded-md flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
+            <Edit size={16} className="sm:size-18" /> Edit
           </Link>
           <button 
-            className="px-4 py-2 bg-black text-white rounded-md flex items-center gap-2"
+            className="px-3 sm:px-4 py-2 bg-black text-white rounded-md flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
             onClick={() => setActiveTab("share")}
           >
-            <Share2 size={18} /> Share
+            <Share2 size={16} className="sm:size-18" /> Share
           </button>
         </div>
       </header>
 
       <div className="border-b">
-        <div className="flex flex-wrap">
+        <div className="flex overflow-x-auto scrollbar-hide">
           <button
-            className={`px-6 py-3 ${activeTab === "product" ? "border-b-2 border-black" : ""}`}
+            className={`px-4 sm:px-6 py-3 whitespace-nowrap ${activeTab === "product" ? "border-b-2 border-black" : ""}`}
             onClick={() => setActiveTab("product")}
           >
             Product
           </button>
           <button
-            className={`px-6 py-3 ${activeTab === "share" ? "border-b-2 border-black" : ""}`}
+            className={`px-4 sm:px-6 py-3 whitespace-nowrap ${activeTab === "share" ? "border-b-2 border-black" : ""}`}
             onClick={() => setActiveTab("share")}
           >
             Share
           </button>
           <button
-            className={`px-6 py-3 ${activeTab === "analytics" ? "border-b-2 border-black" : ""}`}
+            className={`px-4 sm:px-6 py-3 whitespace-nowrap ${activeTab === "analytics" ? "border-b-2 border-black" : ""}`}
             onClick={() => setActiveTab("analytics")}
           >
             Analytics
@@ -136,7 +136,7 @@ export default function ProductDetailPage({ params, searchParams }: ProductDetai
         </div>
       </div>
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         {activeTab === "product" && (
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
@@ -241,7 +241,7 @@ export default function ProductDetailPage({ params, searchParams }: ProductDetai
                   <div className="mb-4">
                     <div className="font-medium mb-2">Social Media</div>
                     <p className="text-sm text-gray-600 mb-4">Share your product on social media</p>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button 
                           onClick={() => window.open(`https://x.com/intent/tweet?url=${encodeURIComponent(productUrl)}&text=${encodeURIComponent(`Check out ${product.name}`)}`, '_blank')} 
                           className="px-4 py-2 bg-black text-white rounded-md"
