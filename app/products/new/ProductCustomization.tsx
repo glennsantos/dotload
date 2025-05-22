@@ -56,20 +56,31 @@ export default function ProductCustomization({
 
   return (
     <div>
-      <header className="p-6 border-b flex justify-between items-center">
-        <h1 className="text-3xl font-normal truncate">
-          {productData.name || "New Product"}
-        </h1>
-        <div className="flex gap-2">
-          <button onClick={onBack} className="px-4 py-2 border rounded-md flex items-center gap-2">
-            <ChevronLeft size={18} /> Back
-          </button>
-          <button onClick={onCancel} className="px-4 py-2 border rounded-md flex items-center gap-2">
-            <X size={18} /> Cancel
-          </button>
-          <button onClick={onNext} className="px-4 py-2 bg-black text-white rounded-md">
-            Save and continue
-          </button>
+      <header className="p-6 border-b">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-3xl font-normal truncate">
+            {productData.name || "New Product"}
+          </h1>
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+            <button 
+              onClick={onBack} 
+              className="w-full sm:w-auto px-4 py-2 border rounded-md flex items-center justify-center gap-2"
+            >
+              <ChevronLeft size={18} /> Back
+            </button>
+            <button 
+              onClick={onCancel} 
+              className="w-full sm:w-auto px-4 py-2 border rounded-md flex items-center justify-center gap-2"
+            >
+              <X size={18} /> Cancel
+            </button>
+            <button 
+              onClick={onNext} 
+              className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-md"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </header>
 

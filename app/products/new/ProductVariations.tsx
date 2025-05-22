@@ -71,17 +71,25 @@ export default function ProductVariations({
         </div>
       </div>
 
-      <header className="p-6 border-b flex justify-between items-center">
-        <h1 className="text-3xl font-normal truncate">
-          {productData.name || "Solo Travel to Japan in Your 20s: A Comprehensive Guide"}
-        </h1>
-        <div className="flex gap-2">
-          <button onClick={onCancel} className="px-4 py-2 border rounded-md flex items-center gap-2">
-            <X size={18} /> Cancel
-          </button>
-          <button onClick={handleSave} className="px-4 py-2 bg-black text-white rounded-md">
-            Save and continue
-          </button>
+      <header className="p-6 border-b">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-3xl font-normal truncate">
+            {productData.name || "Solo Travel to Japan in Your 20s: A Comprehensive Guide"}
+          </h1>
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+            <button 
+              onClick={onCancel} 
+              className="w-full sm:w-auto px-4 py-2 border rounded-md flex items-center justify-center gap-2"
+            >
+              <X size={18} /> Cancel
+            </button>
+            <button 
+              onClick={handleSave} 
+              className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-md"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </header>
 

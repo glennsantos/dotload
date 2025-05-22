@@ -21,7 +21,7 @@ interface ProductVariation {
   productId: string
 }
 
-interface Product {
+export interface Product {
   id: string
   name: string
   slug: string
@@ -37,8 +37,12 @@ interface Product {
   variations: ProductVariation[]
 }
 
-export default function ProductsList() {
-  const [products, setProducts] = useState<Product[]>([])
+interface ProductsListProps {
+  products: Product[]
+  onProductsChange: (products: Product[]) => void
+}
+
+export default function ProductsList({ products, onProductsChange }: ProductsListProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -54,12 +58,12 @@ export default function ProductsList() {
           return
         }
         
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`)
+        if (response.ok) {
+          const data = await response.json()
+          onProductsChange(data)
+        } else {
+          setError('Failed to fetch products')
         }
-        
-        const data = await response.json()
-        setProducts(Array.isArray(data) ? data : [])
       } catch (err) {
         console.error('Error fetching products:', err)
         setError('Failed to load products. Please try again later.')
@@ -69,7 +73,7 @@ export default function ProductsList() {
     }
 
     fetchProducts()
-  }, [])
+  }, [onProductsChange])
 
   if (loading) {
     return (

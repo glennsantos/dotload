@@ -198,15 +198,23 @@ export default function NewProduct() {
       {step === 1 && (
         <div>
 
-          <header className="p-6 border-b flex justify-between items-center">
-            <h1 className="text-3xl font-normal">Publish your first product</h1>
-            <div className="flex gap-2">
-              <button onClick={handleCancel} className="px-4 py-2 border rounded-md flex items-center gap-2">
-                <X size={18} /> Cancel
-              </button>
-              <button onClick={handleNext} className="px-4 py-2 bg-black text-white rounded-md">
-                Save and Continue
-              </button>
+          <header className="p-6 border-b">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h1 className="text-3xl font-normal">Publish your first product</h1>
+              <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+                <button 
+                  onClick={handleCancel} 
+                  className="w-full sm:w-auto px-4 py-2 border rounded-md flex items-center justify-center gap-2"
+                >
+                  <X size={18} /> Cancel
+                </button>
+                <button 
+                  onClick={handleNext} 
+                  className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-md"
+                >
+                  Continue
+                </button>
+              </div>
             </div>
           </header>
 
