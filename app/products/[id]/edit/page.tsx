@@ -491,26 +491,12 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
 
   return (
     <div>
-      <div className="bg-gray-50 py-2 px-6 border-b">
-        <div className="flex items-center text-sm">
-          <Link href="/products" className="text-gray-600 hover:text-black">
-            Products
-          </Link>
-          <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <Link href={`/products/${unwrappedParams.id}`} className="text-gray-600 hover:text-black">
-            {product.name}
-          </Link>
-          <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <span className="font-medium">Edit</span>
-        </div>
-      </div>
-
-      <header className="p-6 border-b flex justify-between items-center">
+      <header className="p-4 sm:p-6 border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <Link href={`/products/${unwrappedParams.id}`} className="text-gray-500 hover:text-black">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-2xl font-normal truncate">Edit {product.name}</h1>
+          <h1 className="text-xl sm:text-2xl font-normal truncate">Edit {product.name}</h1>
         </div>
         <div className="flex gap-2">
           <button 
@@ -522,7 +508,7 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
         </div>
       </header>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="flex border-b mb-6">
           <button
             className={`px-6 py-3 ${activeTab === "details" ? "border-b-2 border-black" : ""}`}

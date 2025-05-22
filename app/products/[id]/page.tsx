@@ -83,16 +83,6 @@ export default function ProductDetailPage({ params, searchParams }: ProductDetai
   
   return (
     <div>
-      <div className="bg-gray-50 py-2 px-6 border-b">
-        <div className="flex items-center text-sm">
-          <Link href="/products" className="text-gray-600 hover:text-black">
-            Products
-          </Link>
-          <ChevronRight size={16} className="mx-2 text-gray-400" />
-          <span className="font-medium">{product.name}</span>
-        </div>
-      </div>
-
       <header className="p-4 sm:p-6 border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <Link href="/products" className="text-gray-500 hover:text-black">
