@@ -41,7 +41,7 @@ export default function ProductsPage() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-normal">Products</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Products</h1>
         <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
           <div className="relative w-full sm:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

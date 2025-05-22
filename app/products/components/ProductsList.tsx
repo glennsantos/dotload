@@ -131,7 +131,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
               <span className="text-sm text-gray-600">{card.title}</span>
               {card.info && <Info size={16} className="text-gray-400" />}
             </div>
-            <div className="text-3xl font-normal">{card.value}</div>
+            <div className="text-3xl font-bold">{card.value}</div>
           </div>
         ))}
       </div>

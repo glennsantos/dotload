@@ -216,17 +216,11 @@ export default function TransactionsPage() {
       ) : (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Seller Transactions</h1>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Transactions</h1>
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>Total Income</CardTitle>
@@ -245,6 +239,14 @@ export default function TransactionsPage() {
             </Card>
             <Card>
               <CardHeader>
+                <CardTitle>Current Balance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{formatCurrency(summary.currentBalance)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
                 <CardTitle>Available Balance</CardTitle>
               </CardHeader>
               <CardContent>
@@ -255,20 +257,12 @@ export default function TransactionsPage() {
                     variant="outline" 
                     size="sm" 
                     onClick={() => router.push('/payout')}
-                    className="w-full"
+                    className="w-full whitespace-normal py-6"
                   >
                     <Wallet className="h-4 w-4 mr-2" /> Request Payout
                   </Button>
                 </div>
                 )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Current Balance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{formatCurrency(summary.currentBalance)}</p>
               </CardContent>
             </Card>
           </div>
@@ -300,35 +294,37 @@ export default function TransactionsPage() {
                   No transactions found
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {filteredTransactions.map((transaction) => (
-                    <div key={transaction.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-medium">{transaction.description}</h3>
-                            <Badge className={getTypeBadgeColor(transaction.type)}>
-                              {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
-                            </Badge>
-                            <Badge className={getStatusBadgeColor(transaction.status)}>
-                              {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(transaction.createdAt)}
-                          </p>
-                          {transaction.reference && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Reference: {transaction.reference} ({transaction.referenceType})
+                <div className="overflow-x-auto">
+                  <div className="space-y-4 min-w-[600px]">
+                    {filteredTransactions.map((transaction) => (
+                      <div key={transaction.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="min-w-0 flex-1 pr-4">
+                            <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+                              <h3 className="font-medium truncate">{transaction.description}</h3>
+                              <Badge className={getTypeBadgeColor(transaction.type)}>
+                                {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                              </Badge>
+                              <Badge className={getStatusBadgeColor(transaction.status)}>
+                                {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {formatDate(transaction.createdAt)}
                             </p>
-                          )}
-                        </div>
-                        <div className={`text-lg font-semibold ${getAmountColor(transaction.type)}`}>
-                          {getAmountPrefix(transaction.type)}{formatCurrency(transaction.amount, transaction.currency)}
+                            {transaction.reference && (
+                              <p className="text-xs text-muted-foreground mt-1 truncate">
+                                Reference: {transaction.reference} ({transaction.referenceType})
+                              </p>
+                            )}
+                          </div>
+                          <div className={`text-lg font-semibold whitespace-nowrap ${getAmountColor(transaction.type)}`}>
+                            {getAmountPrefix(transaction.type)}{formatCurrency(transaction.amount, transaction.currency)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>
