@@ -3,7 +3,6 @@
 ## Resolve Payment Issues
 - [ ] Fix TOKEN_NOT_FOUND_ERROR in Credit card payment
 
-
 ## Calculate Financials
 - [x] Create napkin computation to determine revenue targets
 - [ ] Assess costs for the service
@@ -12,6 +11,8 @@
 ## Site Setup
 - [ ] Attach domain to dev server
 - [ ] Create SSL cert for dev server via Letsencrypt.
+- [ ] Convert SES to prod setup
+- [ ] Change from email for alacart in .env files
 - [ ] clean up front end console.logs
 
 ## Perform QA Testing
