@@ -46,22 +46,16 @@ export default function PaymentOptions({
     <div>
 
       <header className="p-6 border-b">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex justify-between items-center">
           <h1 className="text-3xl font-normal truncate">
             {productData.name || "New Product"}
           </h1>
-          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+          <div className="hidden sm:flex gap-2">
             <button 
               onClick={onBack} 
-              className="w-full sm:w-auto px-4 py-2 border rounded-md flex items-center justify-center gap-2"
+              className="px-4 py-2 border rounded-md flex items-center gap-2"
             >
               <ChevronLeft size={18} /> Back
-            </button>
-            <button 
-              onClick={onCancel} 
-              className="w-full sm:w-auto px-4 py-2 border rounded-md flex items-center justify-center gap-2"
-            >
-              <X size={18} /> Cancel
             </button>
             <button 
               onClick={() => {
@@ -80,11 +74,46 @@ export default function PaymentOptions({
                 }
                 onNext();
               }} 
-              className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-md"
+              className="px-4 py-2 bg-black text-white rounded-md"
             >
               Continue
             </button>
           </div>
+        </div>
+        <div className="flex sm:hidden justify-between items-center mt-4">
+          <button 
+            onClick={onBack} 
+            className="px-4 py-2 border rounded-md flex items-center gap-2 w-full"
+          >
+            <ChevronLeft size={18} /> Back
+          </button>
+          <button 
+            onClick={onCancel} 
+            className="px-4 py-2 border rounded-md flex items-center gap-2 w-full"
+          >
+            <X size={18} /> Cancel
+          </button>
+          <button 
+            onClick={() => {
+              // Ensure discount codes are saved in the product data
+              if (productData.paymentOptions?.offerCoupons) {
+                setProductData({
+                  ...productData,
+                  discountCodes: discountCodes
+                });
+              } else {
+                // If coupons are disabled, clear any existing discount codes
+                setProductData({
+                  ...productData,
+                  discountCodes: []
+                });
+              }
+              onNext();
+            }} 
+            className="px-4 py-2 bg-black text-white rounded-md w-full"
+          >
+            Continue
+          </button>
         </div>
       </header>
 
@@ -402,6 +431,47 @@ export default function PaymentOptions({
               )}
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* Mobile buttons - only visible on small screens */}
+      <div className="sm:hidden p-4 border-t fixed bottom-0 left-0 right-0 bg-white">
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <button 
+              onClick={onBack} 
+              className="w-full px-4 py-3 border rounded-md flex items-center justify-center gap-2"
+            >
+              <ChevronLeft size={18} /> Back
+            </button>
+            <button 
+              onClick={onCancel} 
+              className="w-full px-4 py-3 border rounded-md flex items-center justify-center gap-2"
+            >
+              <X size={18} /> Cancel
+            </button>
+          </div>
+          <button 
+            onClick={() => {
+              // Ensure discount codes are saved in the product data
+              if (productData.paymentOptions?.offerCoupons) {
+                setProductData({
+                  ...productData,
+                  discountCodes: discountCodes
+                });
+              } else {
+                // If coupons are disabled, clear any existing discount codes
+                setProductData({
+                  ...productData,
+                  discountCodes: []
+                });
+              }
+              onNext();
+            }} 
+            className="w-full px-4 py-3 bg-black text-white rounded-md"
+          >
+            Continue
+          </button>
         </div>
       </div>
     </div>

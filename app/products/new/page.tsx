@@ -62,8 +62,53 @@ export default function NewProduct() {
     setProductData({ ...productData, type })
   }
 
+  const [isPriceFocused, setIsPriceFocused] = useState(false)
+  const [priceInput, setPriceInput] = useState<string | number>('')
+
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProductData({ ...productData, price: parseFloat(e.target.value) || 0 })
+    const value = e.target.value
+    // Update the input value for display
+    setPriceInput(value)
+    
+    // Only update the form data if it's a valid number
+    if (value === '') {
+      setProductData({ ...productData, price: 0 })
+    } else {
+      const numValue = parseFloat(value)
+      if (!isNaN(numValue) && numValue >= 0) {
+        setProductData({ ...productData, price: numValue })
+      }
+    }
+  }
+
+  const handlePriceFocus = () => {
+    setIsPriceFocused(true)
+    // Clear the input when focused if the value is 0
+    if (productData.price === 0) {
+      setPriceInput('')
+    } else {
+      setPriceInput(productData.price.toString())
+    }
+  }
+
+  const handlePriceBlur = () => {
+    setIsPriceFocused(false)
+    // If input is empty after blur, set it back to 0
+    if (priceInput === '') {
+      setProductData({ ...productData, price: 0 })
+      setPriceInput('0')
+    } else {
+      // Ensure we have a valid number
+      const numValue = parseFloat(priceInput.toString())
+      if (!isNaN(numValue) && numValue >= 0) {
+        setProductData({ ...productData, price: numValue })
+        setPriceInput(numValue.toString())
+      } else {
+        // Fallback to 0 if invalid
+        setProductData({ ...productData, price: 0 })
+        setPriceInput('0')
+      }
+    }
   }
 
   const handleSubmit = async () => {
@@ -199,18 +244,12 @@ export default function NewProduct() {
         <div>
 
           <header className="p-6 border-b">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex justify-between items-center">
               <h1 className="text-3xl font-normal">Publish your first product</h1>
-              <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
-                <button 
-                  onClick={handleCancel} 
-                  className="w-full sm:w-auto px-4 py-2 border rounded-md flex items-center justify-center gap-2"
-                >
-                  <X size={18} /> Cancel
-                </button>
+              <div className="hidden sm:flex gap-2">
                 <button 
                   onClick={handleNext} 
-                  className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-md"
+                  className="px-4 py-2 bg-black text-white rounded-md"
                 >
                   Continue
                 </button>
@@ -253,9 +292,11 @@ export default function NewProduct() {
                     </span>
                     <input
                       type="number"
-                      value={productData.price}
+                      value={priceInput}
                       onChange={handlePriceChange}
-                      className="w-full p-3 border rounded-r-md"
+                      onFocus={handlePriceFocus}
+                      onBlur={handlePriceBlur}
+                      className="w-full p-3 border rounded-r-md [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       placeholder="0.00"
                       min="0"
                       step="0.01"
@@ -297,15 +338,6 @@ export default function NewProduct() {
               </div>
               
               <div className="flex justify-end">
-                <button
-                  onClick={handleNext}
-                  disabled={!productData.type}
-                  className={`px-6 py-3 rounded-md flex items-center gap-2 ${
-                    productData.type ? "bg-black text-white" : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  Next <ChevronRight size={18} />
-                </button>
               </div>
             </div>
           </div>
@@ -437,6 +469,26 @@ export default function NewProduct() {
           </div>
         </div>
       )}
+      
+      {/* Mobile buttons - only visible on small screens */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+        <div className="grid grid-cols-2 gap-2">
+          {step > 1 && (
+            <button 
+              onClick={handleBack} 
+              className="w-full px-4 py-3 border rounded-md flex items-center justify-center gap-2"
+            >
+              <ChevronLeft size={18} /> Back
+            </button>
+          )}
+          <button 
+            onClick={handleNext} 
+            className={`px-4 py-3 rounded-md ${step === 1 ? 'w-full col-span-2' : 'w-full'} bg-black text-white`}
+          >
+            {step === 3 ? 'Publish' : 'Next'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

@@ -72,20 +72,14 @@ export default function ProductVariations({
       </div>
 
       <header className="p-6 border-b">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex justify-between items-center">
           <h1 className="text-3xl font-normal truncate">
             {productData.name || "Solo Travel to Japan in Your 20s: A Comprehensive Guide"}
           </h1>
-          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
-            <button 
-              onClick={onCancel} 
-              className="w-full sm:w-auto px-4 py-2 border rounded-md flex items-center justify-center gap-2"
-            >
-              <X size={18} /> Cancel
-            </button>
+          <div className="hidden sm:flex gap-2">
             <button 
               onClick={handleSave} 
-              className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-md"
+              className="px-4 py-2 bg-black text-white rounded-md"
             >
               Continue
             </button>
@@ -212,6 +206,24 @@ export default function ProductVariations({
             </div>
           </div>
         )}
+      </div>
+      
+      {/* Mobile buttons - only visible on small screens */}
+      <div className="sm:hidden p-4 border-t fixed bottom-0 left-0 right-0 bg-white">
+        <div className="flex flex-col gap-2">
+          <button 
+            onClick={onCancel} 
+            className="w-full px-4 py-3 border rounded-md flex items-center justify-center gap-2"
+          >
+            <X size={18} /> Cancel
+          </button>
+          <button 
+            onClick={handleSave} 
+            className="w-full px-4 py-3 bg-black text-white rounded-md"
+          >
+            Continue
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -120,12 +120,9 @@ export default function ContentUpload({
         <h1 className="text-3xl font-normal truncate">
           {productData.name || "New Product"}
         </h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 sm:hidden">
           <button onClick={onBack} className="px-4 py-2 border rounded-md flex items-center gap-2">
             <ChevronLeft size={18} /> Back
-          </button>
-          <button onClick={onCancel} className="px-4 py-2 border rounded-md flex items-center gap-2">
-            <X size={18} /> Cancel
           </button>
           <button
             onClick={handleSubmit}
@@ -133,7 +130,7 @@ export default function ContentUpload({
             className="px-4 py-2 bg-black text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSubmitting && <Loader2 size={18} className="animate-spin" />}
-            {uploadSuccess ? 'Content Added!' : 'Continue'}
+            {uploadSuccess ? 'Content Added!' : 'Publish'}
           </button>
         </div>
       </header>
