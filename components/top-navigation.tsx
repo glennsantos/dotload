@@ -178,13 +178,8 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
           <Link href="/products" className="hover:text-gray-300">
             Products
           </Link>
-          {user && hasPurchases && (
-            <Link href="/buyer-dashboard" className="hover:text-gray-300">
-              Buyer Dashboard
-            </Link>
-          )}
           {user && (
-            <Link href="/purchases" className="hover:text-gray-300">
+            <Link href="/buyer-dashboard" className="hover:text-gray-300">
               Purchases
             </Link>
           )}
