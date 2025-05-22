@@ -165,7 +165,7 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
       </main>
       
       {/* Mobile fixed Add to Cart button */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 flex items-center justify-between">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 flex items-center justify-between pb-8">
         <div>
           <p className="font-bold text-xl">{product.currency} {product.price.toFixed(2)}</p>
         </div>

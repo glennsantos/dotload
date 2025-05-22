@@ -35,7 +35,7 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write something...' }:
   }
 
   return (
-    <div className="border rounded-md overflow-hidden">
+    <div className="rounded-md overflow-hidden">
       <Editor
         value={editorContent}
         onEditorChange={(newContent) => {

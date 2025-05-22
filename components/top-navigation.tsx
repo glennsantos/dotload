@@ -246,9 +246,6 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
               <User size={20} />
             </Link>
           )}
-          <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
       </div>
 
