@@ -145,8 +145,6 @@ export async function GET(request: NextRequest) {
 
     const pendingBalance = totalPendingIncome - totalPendingPayouts - totalPendingFees + totalPendingPurchases + totalPendingPayments;
 
-    console.log("pendingBalance", pendingBalance);
-
     const availableBalance = currentBalance + pendingBalance;
 
     return NextResponse.json({

@@ -108,9 +108,27 @@ export async function POST(request: NextRequest) {
       AND (status = 'completed' OR status = 'pending')
     `;
     const totalFees = Number((totalFeesResult as any)[0].sum);
+    
+    // Get purchase transactions (these are expenses for the user)
+    const totalPurchasesResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'purchase'
+      AND (status = 'completed' OR status = 'pending')
+    `;
+    const totalPurchases = Number((totalPurchasesResult as any)[0].sum);
+    
+    // Get payment transactions (these are income for the seller)
+    const totalPaymentsResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'payment'
+      AND (status = 'completed' OR status = 'pending')
+    `;
+    const totalPayments = Number((totalPaymentsResult as any)[0].sum);
 
-    // Calculate available balance
-    const availableBalance = totalIncome - totalPayouts - totalFees;
+    // Calculate available balance including all transaction types
+    const availableBalance = totalIncome - totalPayouts - totalFees + totalPurchases + totalPayments;
 
     // Check if user has enough balance
     if (amount > availableBalance) {
@@ -146,7 +164,7 @@ export async function POST(request: NextRequest) {
       description: `Payout for ${user.name || user.email}`,
       receipt_notification: {
         email_to: [user.email],
-        email_cc: ['admin@alacarte.com']
+        email_cc: ['alacart@memokitchen.com']
       }
     };
     
