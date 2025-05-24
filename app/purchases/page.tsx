@@ -224,27 +224,8 @@ export default function PurchasesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">alaCarte</h1>
-          {userDetails && (
-            <div className="flex items-center">
-              <span className="text-sm text-gray-600 mr-4">
-                {userDetails.name || userDetails.email}
-              </span>
-              <Link 
-                href="/settings" 
-                className="text-sm text-blue-600 hover:text-blue-500"
-              >
-                Settings
-              </Link>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Purchases</h1>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-4 py-2">
+        <h1 className="text-3xl font-bold text-gray-900 my-4">Purchases</h1>
         
         {purchases.length === 0 ? (
           <div className="bg-white shadow-sm rounded-lg p-8 text-center">
