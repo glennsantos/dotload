@@ -462,22 +462,19 @@ export default function CreditCardForm({
   };
   
   return (
-    <div className="w-full max-w-md mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>Credit Card Payment</CardTitle>
-          <CardDescription>
-            Enter your card details to complete the purchase
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="w-full">
+      <h3 className="text-lg font-medium mb-1">Credit Card Payment</h3>
+      <p className="text-sm text-gray-500 mb-4">
+        Enter your card details to complete the purchase
+      </p>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="cardNumber">Card Number</Label>
               <Input
@@ -566,8 +563,6 @@ export default function CreditCardForm({
               )}
             </Button>
           </form>
-        </CardContent>
-      </Card>
       
       {/* 3DS Authentication Modal */}
       {showThreeDSFrame && (

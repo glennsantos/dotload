@@ -59,15 +59,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     async function loadUserData() {
       try {
         const userData = await fetchUserData();
-        if (userData && userData.email) {
-          setUser(userData);
-          setEmail(userData.email);
-          
-          // Force update the email input field by directly setting its value
-          const emailInput = document.getElementById('email') as HTMLInputElement;
-          if (emailInput) {
-            emailInput.value = userData.email;
-          }
+        if (userData && userData.user && userData.user.email) {
+          setUser(userData.user);
+          setEmail(userData.user.email);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -77,14 +71,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     loadUserData();
   }, [])
 
-  // This effect runs whenever the email state changes
-  useEffect(() => {
-    // Ensure the email input field is updated when the email state changes
-    const emailInput = document.getElementById('email') as HTMLInputElement
-    if (emailInput && emailInput.value !== email) {
-      emailInput.value = email
-    }
-  }, [email])  // This effect depends on the email state
+  // We don't need this effect anymore as React will handle the value binding
 
   useEffect(() => {
     async function loadProduct() {

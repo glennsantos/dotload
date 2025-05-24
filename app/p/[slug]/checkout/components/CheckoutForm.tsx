@@ -180,7 +180,7 @@ export default function CheckoutForm({
       
       {/* Use the new CreditCardForm when card payment is selected */}
       {paymentMethod === "card" && (
-        <>
+        <div className="mb-6 p-4 bg-white rounded-md border border-gray-300">
           <CreditCardForm
             purchaseId={product.id}
             amount={calculateFinalPrice(product, appliedDiscount)}
@@ -198,7 +198,7 @@ export default function CheckoutForm({
               setPaymentError(message);
             }}
           />
-        </>
+        </div>
       )}
       
       {/* Keep the old CardDetailsForm as a fallback, but hidden */}
