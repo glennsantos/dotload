@@ -162,10 +162,20 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                     <div className="w-12 h-12 relative overflow-hidden rounded">
                       {product.coverImagePath ? (
                         <Image 
-                          src={product.coverImagePath.startsWith('http') ? product.coverImagePath : `/${product.coverImagePath}`} 
+                          src={
+                            // Handle URLs that start with http:// or https://
+                            product.coverImagePath.startsWith('http') ? product.coverImagePath :
+                            // Handle protocol-relative URLs that start with //
+                            product.coverImagePath.startsWith('//') ? `https:${product.coverImagePath}` :
+                            // Handle absolute paths that start with /
+                            product.coverImagePath.startsWith('/') ? product.coverImagePath :
+                            // Handle relative paths by adding a leading /
+                            `/${product.coverImagePath}`
+                          } 
                           alt={product.name} 
                           fill 
                           className="object-cover"
+                          unoptimized={!product.coverImagePath.startsWith('http')}
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">

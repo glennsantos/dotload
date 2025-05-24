@@ -116,70 +116,105 @@ export default function NewProduct() {
       setIsSubmitting(true);
       console.log('Submitting product data:', productData);
       
-      // Prepare form data
-      const formData = new FormData();
+      // Step 1: Create the product with basic information
+      // Prepare form data for product creation
+      const productFormData = new FormData();
       
       // Add basic product details
-      formData.append('name', productData.name);
-      formData.append('type', productData.type);
-      formData.append('price', typeof productData.price === 'number' ? productData.price.toString() : productData.price);
-      formData.append('description', productData.description || '');
-      formData.append('slug', productData.slug || '');
+      productFormData.append('name', productData.name);
+      productFormData.append('type', productData.type);
+      productFormData.append('price', typeof productData.price === 'number' ? productData.price.toString() : productData.price);
+      productFormData.append('description', productData.description || '');
+      productFormData.append('slug', productData.slug || '');
       
       // Add payment options - convert to string first
       const paymentOptionsString = JSON.stringify(productData.paymentOptions || {});
       console.log('Payment options string:', paymentOptionsString);
-      formData.append('paymentOptions', paymentOptionsString);
+      productFormData.append('paymentOptions', paymentOptionsString);
       
       // Add discount codes if enabled
       if (productData.paymentOptions.offerCoupons) {
-        formData.append('discountCodes', JSON.stringify(productData.discountCodes));
+        productFormData.append('discountCodes', JSON.stringify(productData.discountCodes));
       }
       
-      // Add files if any
+      // Add cover image if any
       if (productData.coverImage) {
-        formData.append('coverImage', productData.coverImage);
-      }
-      
-      // Add content files if any
-      if (productData.contentFiles && productData.contentFiles.length > 0) {
-        console.log(`Adding ${productData.contentFiles.length} content files to form data`);
-        productData.contentFiles.forEach((file: File, index: number) => {
-          // Use the correct field name that the API expects
-          formData.append('contentFiles', file);
-          console.log(`Added content file: ${file.name} (${file.size} bytes)`);
-        });
+        productFormData.append('coverImage', productData.coverImage);
       }
       
       // Add content links if any
       if (productData.contentLinks && productData.contentLinks.length > 0) {
-        formData.append('contentLinks', JSON.stringify(productData.contentLinks));
+        productFormData.append('contentLinks', JSON.stringify(productData.contentLinks));
       }
 
       // Log form data for debugging
-      console.log('Form data entries:');
-      for (let pair of formData.entries()) {
+      console.log('Product form data entries:');
+      for (let pair of productFormData.entries()) {
         console.log(pair[0], pair[1]);
       }
 
-      // Submit to backend using Next.js API route
-      const response = await fetch('/api/products', {
+      // Submit product to backend using Next.js API route
+      console.log('Creating product...');
+      const productResponse = await fetch('/api/products', {
         method: 'POST',
-        body: formData,
+        body: productFormData,
         credentials: 'include' // Add this to ensure cookies are sent
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!productResponse.ok) {
+        const errorData = await productResponse.json();
         throw new Error(errorData.details || 'Failed to create product');
       }
 
-      const result = await response.json();
-      console.log('Product created:', result);
+      const productResult = await productResponse.json();
+      console.log('Product created:', productResult);
+      
+      // Step 2: Upload content files using the dedicated files endpoint
+      if (productData.contentFiles && productData.contentFiles.length > 0 && productResult.product?.id) {
+        console.log(`Uploading ${productData.contentFiles.length} content files to /api/products/${productResult.product.id}/files`);
+        
+        // Prepare form data for file upload
+        const filesFormData = new FormData();
+        
+        // Add all content files to the files form data
+        productData.contentFiles.forEach((file: File) => {
+          filesFormData.append('files', file);
+          console.log(`Added file for upload: ${file.name} (${file.size} bytes)`);
+        });
+        
+        // Upload files to the dedicated endpoint
+        try {
+          const filesResponse = await fetch(`/api/products/${productResult.product.id}/files`, {
+            method: 'POST',
+            body: filesFormData,
+            credentials: 'include'
+          });
+          
+          if (!filesResponse.ok) {
+            const filesErrorData = await filesResponse.json();
+            console.error('Error uploading files:', filesErrorData);
+            // Don't throw here, we already have the product created
+          } else {
+            const filesResult = await filesResponse.json();
+            console.log('Files uploaded successfully:', filesResult);
+            
+            // Update the product in state with the uploaded files
+            if (filesResult.files && filesResult.files.length > 0) {
+              productResult.product.files = [
+                ...productResult.product.files || [],
+                ...filesResult.files
+              ];
+            }
+          }
+        } catch (filesError) {
+          console.error('Error uploading files:', filesError);
+          // Don't throw here, we already have the product created
+        }
+      }
       
       // Set the created product in state for the share page
-      if (result.product) {
-        setCreatedProduct(result.product);
+      if (productResult.product) {
+        setCreatedProduct(productResult.product);
         setStep(totalSteps + 1); // Move to share page
       }
       setIsSubmitting(false);
@@ -304,39 +339,40 @@ export default function NewProduct() {
                   </div>
                 </div>
               </div>
-
-              <h2 className="text-xl font-medium mb-4">Product Type</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <ProductTypeCard
-                  icon="📱"
-                  title="Digital Product"
-                  description="Software, templates, or other digital downloads"
-                  selected={productData.type === "digital_product"}
-                  onClick={() => handleTypeSelect("digital_product")}
-                />
-                <ProductTypeCard
-                  icon="📚"
-                  title="eBook"
-                  description="Digital books, guides, or PDFs"
-                  selected={productData.type === "ebook"}
-                  onClick={() => handleTypeSelect("ebook")}
-                />
-                <ProductTypeCard
-                  icon="🎧"
-                  title="Audiobook"
-                  description="Audio content or podcasts"
-                  selected={productData.type === "audiobook"}
-                  onClick={() => handleTypeSelect("audiobook")}
-                />
-                <ProductTypeCard
-                  icon="🎓"
-                  title="Course"
-                  description="Educational content or tutorials"
-                  selected={productData.type === "course"}
-                  onClick={() => handleTypeSelect("course")}
-                />
-              </div>
               
+              <div>
+                <label className="block mb-2 font-medium">Product Type</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  <ProductTypeCard
+                    icon="📱"
+                    title="Digital Product"
+                    description="Software, templates, or other digital downloads"
+                    selected={productData.type === "digital_product"}
+                    onClick={() => handleTypeSelect("digital_product")}
+                  />
+                  <ProductTypeCard
+                    icon="📚"
+                    title="eBook"
+                    description="Digital books, guides, or PDFs"
+                    selected={productData.type === "ebook"}
+                    onClick={() => handleTypeSelect("ebook")}
+                  />
+                  <ProductTypeCard
+                    icon="🎧"
+                    title="Audiobook"
+                    description="Audio content or podcasts"
+                    selected={productData.type === "audiobook"}
+                    onClick={() => handleTypeSelect("audiobook")}
+                  />
+                  <ProductTypeCard
+                    icon="🎓"
+                    title="Course"
+                    description="Educational content or tutorials"
+                    selected={productData.type === "course"}
+                    onClick={() => handleTypeSelect("course")}
+                  />
+                </div>
+              </div>              
               <div className="flex justify-end">
               </div>
             </div>

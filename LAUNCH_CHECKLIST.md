@@ -29,6 +29,11 @@
 - [ ] Execute final smoke testing
 - [ ] Get agreement when to launch
 
+## Ratings for sellers
+
+## Allowed file types
+- [ ] .csv, .pdf, .doc, .docx, .png, .jpg, .jpeg, .gif, .webp, .mp4, .mp3, .wav, .zip, .rar, .7z
+
 ## Craft GTM
 
 - [ ] Determine marketing activities to execute

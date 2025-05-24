@@ -1079,6 +1079,10 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                                 code: {...editingDiscount.code, startDate: e.target.value}
                               })}
                               className="w-full p-2 border rounded"
+                              pattern="\d{4}-\d{2}-\d{2}"
+                              placeholder="YYYY-MM-DD"
+                              onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
+                              onTouchEnd={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                             />
                           </div>
                           <div>
@@ -1091,6 +1095,10 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                                 code: {...editingDiscount.code, endDate: e.target.value}
                               })}
                               className="w-full p-2 border rounded"
+                              pattern="\d{4}-\d{2}-\d{2}"
+                              placeholder="YYYY-MM-DD"
+                              onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
+                              onTouchEnd={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                             />
                           </div>
                         </div>
@@ -1286,6 +1294,10 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                             value={newDiscountCode.startDate}
                             onChange={(e) => setNewDiscountCode({...newDiscountCode, startDate: e.target.value})}
                             className="w-full p-2 border rounded"
+                            pattern="\d{4}-\d{2}-\d{2}"
+                            placeholder="YYYY-MM-DD"
+                            onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
+                            onTouchEnd={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                           />
                         </div>
                         <div>
@@ -1295,6 +1307,10 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                             value={newDiscountCode.endDate}
                             onChange={(e) => setNewDiscountCode({...newDiscountCode, endDate: e.target.value})}
                             className="w-full p-2 border rounded"
+                            pattern="\d{4}-\d{2}-\d{2}"
+                            placeholder="YYYY-MM-DD"
+                            onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
+                            onTouchEnd={(e) => (e.currentTarget as HTMLInputElement).showPicker()}
                           />
                         </div>
                       </div>

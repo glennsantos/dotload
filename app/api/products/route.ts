@@ -11,22 +11,16 @@ import { generateUniqueSlug } from '@/lib/slug-utils';
 
 // Function removed - using Cloudinary exclusively
 
-// Process uploaded files - using Cloudinary exclusively
+// Process uploaded files - cover image only, content files handled separately
 async function processFiles(formData: FormData, userId: string, productId: string) {
   const coverImage = formData.get('coverImage') as File | null;
-  const contentFiles = formData.getAll('contentFiles') as File[];
   
   console.log(`Processing files for product ${productId}:`);
   console.log(`- Cover image: ${coverImage ? coverImage.name : 'None'}`);
-  console.log(`- Content files: ${contentFiles.length} files`);
-  contentFiles.forEach((file, index) => {
-    console.log(`  ${index + 1}. ${file.name} (${file.size} bytes)`);
-  });
   
-  const processedFiles = [];
   let coverImagePath = null;
   
-  // Process cover image if exists
+  // Process cover image if exists - using Cloudinary
   if (coverImage) {
     // Upload to Cloudinary
     const arrayBuffer = await coverImage.arrayBuffer();
@@ -39,45 +33,13 @@ async function processFiles(formData: FormData, userId: string, productId: strin
     }) as any;
     
     coverImagePath = result.secure_url;
-    console.log(`Cover image uploaded to: ${coverImagePath}`);
+    console.log(`Cover image uploaded to Cloudinary: ${coverImagePath}`);
   }
   
-  // Process content files
-  if (contentFiles.length > 0) {
-    console.log(`Processing ${contentFiles.length} content files...`);
-    
-    for (const file of contentFiles) {
-      try {
-        // Upload to Cloudinary
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const folder = `users/${userId}/products/${productId}/content`;
-        
-        console.log(`Uploading ${file.name} (${file.size} bytes) to Cloudinary...`);
-        
-        const result = await uploadToCloudinary(buffer, {
-          folder,
-          public_id: `${file.name.split('.')[0]}-${Date.now()}`,
-          resource_type: 'auto', // Let Cloudinary detect the resource type
-        }) as any;
-        
-        console.log(`File ${file.name} uploaded successfully to: ${result.secure_url}`);
-        
-        processedFiles.push({
-          filename: file.name,
-          path: result.secure_url,
-          mimetype: file.type
-          // Removed size field as it's not in the Prisma schema
-        });
-      } catch (error) {
-        console.error(`Error uploading file ${file.name}:`, error);
-        throw new Error(`Failed to upload file ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
-  }
+  // Content files are now handled separately via the /api/products/[id]/files endpoint
+  // which uses the local uploads folder
   
-  console.log(`Processed ${processedFiles.length} files successfully`);
-  return { coverImagePath, processedFiles };
+  return { coverImagePath, processedFiles: [] };
 }
 
 export async function POST(request: NextRequest) {
@@ -257,16 +219,15 @@ export async function POST(request: NextRequest) {
         variations: parsedVariations.length > 0 ? {
           create: parsedVariations
         } : undefined,
-        files: {
+        files: contentLinks.length > 0 ? {
           create: [
-            ...processedFiles,
             ...contentLinks.map((link: string) => ({
               filename: link.split('/').pop() || 'external-link',
               path: link,
               mimetype: 'text/url'
             }))
           ]
-        }
+        } : undefined
       },
       include: {
         variations: true,

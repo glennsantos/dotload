@@ -29,6 +29,17 @@ export async function uploadToCloudinary(
   });
 }
 
+// Helper function to get file extension based on resource type
+function getExtensionFromResourceType(resourceType?: 'image' | 'video' | 'auto' | 'raw'): string {
+  switch(resourceType) {
+    case 'image': return '.jpg';
+    case 'video': return '.mp4';
+    case 'raw': return '';
+    case 'auto':
+    default: return '';
+  }
+}
+
 export async function uploadFromUrl(
   url: string,
   options: {
