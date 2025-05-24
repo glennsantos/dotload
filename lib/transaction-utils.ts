@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 
 
-type TransactionType = 'income' | 'payout' | 'fee';
+type TransactionType = 'income' | 'payout' | 'fee' | 'purchase' | 'payment';
 type TransactionStatus = 'completed' | 'pending' | 'failed';
 
 interface CreateTransactionParams {
@@ -60,7 +60,7 @@ export async function createPurchaseTransaction(
     userId: buyerId,
     amount: -amount, // Negative amount for purchase
     currency,
-    type: 'income',
+    type: 'purchase', // Changed from 'income' to 'purchase' for correct categorization
     status: 'completed',
     description: `Purchase of ${productName}`,
     reference: purchaseId,
@@ -145,6 +145,7 @@ export async function updateTransactionStatus(
  */
 export async function getUserBalance(userId: string) {
   // Calculate summary statistics using raw SQL queries
+  // For completed transactions (current balance)
   const totalIncomeResult = await prisma.$queryRaw`
     SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
     WHERE "userId" = ${userId}
@@ -168,14 +169,91 @@ export async function getUserBalance(userId: string) {
     AND status = 'completed'
   `;
   const totalFees = Number((totalFeesResult as any)[0].sum);
+  
+  // Get purchase transactions (these are expenses for the user)
+  const totalPurchasesResult = await prisma.$queryRaw`
+    SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+    WHERE "userId" = ${userId}
+    AND type = 'purchase'
+    AND status = 'completed'
+  `;
+  const totalPurchases = Number((totalPurchasesResult as any)[0].sum);
+  
+  // Get payment transactions (these are income for the seller)
+  const totalPaymentsResult = await prisma.$queryRaw`
+    SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+    WHERE "userId" = ${userId}
+    AND type = 'payment'
+    AND status = 'completed'
+  `;
+  const totalPayments = Number((totalPaymentsResult as any)[0].sum);
 
-  // Calculate current balance
-  const currentBalance = totalIncome - totalPayouts - totalFees;
+  // Calculate current balance (completed transactions only)
+  // Include purchases and payments in the calculation
+  const currentBalance = totalIncome - totalPayouts - totalFees + totalPurchases + totalPayments;
+  
+  // For pending transactions (to calculate available balance)
+  const pendingIncomeResult = await prisma.$queryRaw`
+    SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+    WHERE "userId" = ${userId}
+    AND type = 'income'
+    AND status = 'pending'
+  `;
+  const pendingIncome = Number((pendingIncomeResult as any)[0].sum);
+
+  const pendingPayoutsResult = await prisma.$queryRaw`
+    SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+    WHERE "userId" = ${userId}
+    AND type = 'payout'
+    AND status = 'pending'
+  `;
+  const pendingPayouts = Number((pendingPayoutsResult as any)[0].sum);
+
+  const pendingFeesResult = await prisma.$queryRaw`
+    SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+    WHERE "userId" = ${userId}
+    AND type = 'fee'
+    AND status = 'pending'
+  `;
+  const pendingFees = Number((pendingFeesResult as any)[0].sum);
+  
+  // Get pending purchase transactions
+  const pendingPurchasesResult = await prisma.$queryRaw`
+    SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+    WHERE "userId" = ${userId}
+    AND type = 'purchase'
+    AND status = 'pending'
+  `;
+  const pendingPurchases = Number((pendingPurchasesResult as any)[0].sum);
+  
+  // Get pending payment transactions
+  const pendingPaymentsResult = await prisma.$queryRaw`
+    SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+    WHERE "userId" = ${userId}
+    AND type = 'payment'
+    AND status = 'pending'
+  `;
+  const pendingPayments = Number((pendingPaymentsResult as any)[0].sum);
+
+  // Calculate pending balance
+  const pendingBalance = pendingIncome - pendingPayouts - pendingFees + pendingPurchases + pendingPayments;
+  
+  // Calculate available balance (current + pending)
+  const availableBalance = currentBalance + pendingBalance;
 
   return {
     totalIncome,
     totalPayouts,
     totalFees,
+    totalPurchases,
+    totalPayments,
     currentBalance,
+    pendingIncome,
+    pendingPayouts,
+    pendingFees,
+    pendingPurchases,
+    pendingPayments,
+    pendingBalance,
+    availableBalance,
   };
 }

@@ -99,7 +99,7 @@ export default function ProductSharePage({ params, searchParams }: ProductShareP
                 type="text"
                 value={`${window.location.origin}/p/${product.slug || unwrappedParams.id}`}
                 readOnly
-                className="flex-1 p-3 border rounded-l-md bg-gray-100"
+                className="flex-1 p-1 border rounded-l-md bg-gray-100"
               />
               <button 
                 onClick={() => {

@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
     const transactions = await prisma.$queryRaw`
       SELECT * FROM "Transaction"
       WHERE "userId" = ${user.id}
-      AND type != 'PURCHASE'
       ORDER BY "createdAt" DESC
       LIMIT ${limit} OFFSET ${skip}
     `;
@@ -52,7 +51,6 @@ export async function GET(request: NextRequest) {
     const totalCountResult = await prisma.$queryRaw`
       SELECT COUNT(*) as count FROM "Transaction"
       WHERE "userId" = ${user.id}
-      AND type != 'PURCHASE'
     `;
     const totalCount = Number((totalCountResult as any)[0].count);
 
@@ -81,10 +79,27 @@ export async function GET(request: NextRequest) {
     `;
     const totalFees = Number((totalFeesResult as any)[0].sum);
 
+    // Get purchase transactions (these are expenses for the user)
+    const totalPurchasesResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'purchase'
+      AND status = 'completed'
+    `;
+    const totalPurchases = Number((totalPurchasesResult as any)[0].sum);
+    
+    // Get payment transactions (these are income for the seller)
+    const totalPaymentsResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'payment'
+      AND status = 'completed'
+    `;
+    const totalPayments = Number((totalPaymentsResult as any)[0].sum);
+    
     // Calculate current balance
-    // Ensure we're properly deducting both payouts and fees from the total income
-    // This fixes the balance computation that wasn't deducting correctly
-    const currentBalance = totalIncome - totalPayouts - totalFees;
+    // Include purchases and payments in the calculation
+    const currentBalance = totalIncome - totalPayouts - totalFees + totalPurchases + totalPayments;
 
     const totalPendingIncomeResult = await prisma.$queryRaw`
       SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
@@ -109,8 +124,28 @@ export async function GET(request: NextRequest) {
       AND status = 'pending'
     `;
     const totalPendingFees = Number((totalPendingFeesResult as any)[0].sum);
+    
+    // Get pending purchase transactions
+    const totalPendingPurchasesResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'purchase'
+      AND status = 'pending'
+    `;
+    const totalPendingPurchases = Number((totalPendingPurchasesResult as any)[0].sum);
+    
+    // Get pending payment transactions
+    const totalPendingPaymentsResult = await prisma.$queryRaw`
+      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
+      WHERE "userId" = ${user.id}
+      AND type = 'payment'
+      AND status = 'pending'
+    `;
+    const totalPendingPayments = Number((totalPendingPaymentsResult as any)[0].sum);
 
-    const pendingBalance = totalPendingIncome - totalPendingPayouts - totalPendingFees;
+    const pendingBalance = totalPendingIncome - totalPendingPayouts - totalPendingFees + totalPendingPurchases + totalPendingPayments;
+
+    console.log("pendingBalance", pendingBalance);
 
     const availableBalance = currentBalance + pendingBalance;
 
@@ -126,12 +161,17 @@ export async function GET(request: NextRequest) {
         totalIncome,
         totalPayouts,
         totalFees,
+        totalPurchases,
+        totalPayments,
         currentBalance,
         totalPendingIncome,
         totalPendingPayouts,
         totalPendingFees,
-        availableBalance,
-      },
+        totalPendingPurchases,
+        totalPendingPayments,
+        pendingBalance,
+        availableBalance
+      }
     });
   } catch (error) {
     // More detailed error logging

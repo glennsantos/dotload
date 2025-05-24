@@ -11,12 +11,14 @@ export default function ContentUpload({
   onNext,
   onBack,
   onCancel,
+  isPublished = false,
 }: {
   productData: any
   setProductData: (data: any) => void
   onNext: () => void
   onBack: () => void
   onCancel: () => void
+  isPublished?: boolean
 }) {
   const router = useRouter()
   const [files, setFiles] = useState<File[]>([])
@@ -120,19 +122,21 @@ export default function ContentUpload({
         <h1 className="text-3xl font-normal truncate">
           {productData.name || "New Product"}
         </h1>
-        <div className="flex gap-2 hidden sm:flex">
-          <button onClick={onBack} className="px-4 py-2 border rounded-md flex items-center gap-2">
-            <ChevronLeft size={18} /> Back
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting || uploadSuccess}
-            className="px-4 py-2 bg-black text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {isSubmitting && <Loader2 size={18} className="animate-spin" />}
-            {uploadSuccess ? 'Content Added!' : 'Publish'}
-          </button>
-        </div>
+        {!isPublished && (
+          <div className="flex gap-2 hidden sm:flex">
+            <button onClick={onBack} className="px-4 py-2 border rounded-md flex items-center gap-2">
+              <ChevronLeft size={18} /> Back
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || uploadSuccess}
+              className="px-4 py-2 bg-black text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSubmitting && <Loader2 size={18} className="animate-spin" />}
+              {uploadSuccess ? 'Content Added!' : 'Publish'}
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="p-6 max-w-7xl mx-auto">

@@ -396,6 +396,7 @@ export default function NewProduct() {
           onNext={handleSubmit}
           onBack={() => setStep(2)}
           onCancel={handleCancel}
+          isPublished={!!createdProduct}
         />
       )}
       {/* Step 5 removed as requested */}
@@ -406,11 +407,6 @@ export default function NewProduct() {
             <h1 className="text-3xl font-normal truncate">
               {createdProduct.name}
             </h1>
-            <div className="flex gap-2">
-              <Link href="/products" className="px-4 py-2 bg-black text-white rounded-md">
-                Go to Products
-              </Link>
-            </div>
           </header>
           
           <div className="p-6 max-w-7xl mx-auto">
@@ -424,7 +420,7 @@ export default function NewProduct() {
                     type="text"
                     value={`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`}
                     readOnly
-                    className="flex-1 p-3 border rounded-l-md bg-gray-100"
+                    className="flex-1 p-1 border rounded-l-md bg-gray-100"
                   />
                   <button 
                     onClick={() => {
@@ -507,24 +503,26 @@ export default function NewProduct() {
       )}
       
       {/* Mobile buttons - only visible on small screens */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4">
-        <div className="grid grid-cols-2 gap-2">
-          {step > 1 && (
+      {!createdProduct && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+          <div className="grid grid-cols-2 gap-2">
+            {step > 1 && (
+              <button 
+                onClick={handleBack} 
+                className="w-full px-4 py-3 border rounded-md flex items-center justify-center gap-2"
+              >
+                <ChevronLeft size={18} /> Back
+              </button>
+            )}
             <button 
-              onClick={handleBack} 
-              className="w-full px-4 py-3 border rounded-md flex items-center justify-center gap-2"
+              onClick={handleNext} 
+              className={`px-4 py-3 rounded-md ${step === 1 ? 'w-full col-span-2' : 'w-full'} bg-black text-white`}
             >
-              <ChevronLeft size={18} /> Back
+              {step === 3 ? 'Publish' : 'Next'}
             </button>
-          )}
-          <button 
-            onClick={handleNext} 
-            className={`px-4 py-3 rounded-md ${step === 1 ? 'w-full col-span-2' : 'w-full'} bg-black text-white`}
-          >
-            {step === 3 ? 'Publish' : 'Next'}
-          </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

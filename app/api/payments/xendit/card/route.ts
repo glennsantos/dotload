@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
           amount: amount,
           currency: currency,
           status: 'PENDING',
-          type: 'PAYMENT',
+          type: 'payment',
           description: `Card payment for purchase ${purchase.id}`,
           reference: purchase.id,  // Store purchase ID in the reference field
           referenceType: 'PURCHASE',  // Indicate the type of reference
