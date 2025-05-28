@@ -14,7 +14,9 @@
 - [x] Update the modal styling to match
 
 ## User setup
-- [ ] Allow saving of branding elements in the database (logo, header image)
+- [x] Allow saving of branding elements in the database (logo, header image)
+- [ ] fix user settings page to be same as the one in lovable
+  - [ ] also needs a back to dashboard button
 - [ ] add seller plans placeholder : see setting > billings
 
 ## Create product
@@ -44,8 +46,14 @@
 - [x] check domain if connected
 - [x] Change from email for alacart in .env files
 - [x] Change other emails as needed
-- [ ] check SES if connected
-- [ ] clean up front end console.logs
+- [ ] test if SES is connected
+- [ ] clean up front end console.logs for prod
+
+## Deploy to Dev
+- [ ] Update code
+- [ ] Update database
+- [ ] Update environment variables
+
 
 ## Perform QA Testing
 - [ ] Get QA assistance for the rest of the testing

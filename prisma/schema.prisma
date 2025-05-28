@@ -18,6 +18,13 @@ model User {
   emailVerified           Boolean        @default(false)
   verificationToken       String?        @unique
   verificationTokenExpiry DateTime?
+  
+  // Store branding fields
+  storeName               String?
+  storeDescription        String?
+  storeLogoPath           String?
+  storeHeaderPath         String?
+  
   passwordReset           PasswordReset?
   payouts                 Payout[]
   products                Product[]
