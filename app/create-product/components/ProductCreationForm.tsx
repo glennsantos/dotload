@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Plus } from 'lucide-react'
 import ProductTypeSelection from './ProductTypeSelection'
 import ProductInformation from './ProductInformation'
 import ProductFiles from './ProductFiles'
 import ProductPreview from './ProductPreview'
-import StepNavigation from './StepNavigation'
+import ProductAdvancedOptions from './ProductAdvancedOptions'
 
 // Define the Product type
 export type Product = {
@@ -49,7 +49,7 @@ export type Product = {
 
 export default function ProductCreationForm() {
   const router = useRouter()
-  const [step, setStep] = useState(1)
+  const [activeTab, setActiveTab] = useState('setup') // 'setup' or 'advanced'
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null)
   
@@ -88,23 +88,9 @@ export default function ProductCreationForm() {
     }
   })
 
-  // Calculate total steps
-  const totalSteps = 3
-
-  // Handle next step
-  const handleNext = () => {
-    if (step < totalSteps) {
-      setStep(step + 1)
-    } else if (step === totalSteps) {
-      handleSubmit()
-    }
-  }
-
-  // Handle back step
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1)
-    }
+  // Handle tab switching
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
   }
 
   // Handle cancel
@@ -222,37 +208,32 @@ export default function ProductCreationForm() {
 
   return (
     <div className="min-h-screen">
-      {/* Step indicator */}
+      {/* Header with back button */}
       <div className="bg-gray-50 py-3 px-6 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center text-sm">
-            <Link href="/products" className="text-gray-600 hover:text-black">
-              Products
+            <Link href="/dashboard" className="text-gray-600 hover:text-black flex items-center">
+              <ChevronLeft size={16} className="mr-1" />
+              Back to Dashboard
             </Link>
-            <ChevronRight size={16} className="mx-2 text-gray-400" />
-            <span className="font-medium">New Product</span>
           </div>
-          {step <= totalSteps && (
-            <div className="text-sm text-gray-600">
-              Step {step} of {totalSteps}
-            </div>
-          )}
+          <button 
+            className="px-4 py-1 bg-emerald-500 text-white text-sm rounded-full"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Publishing...' : 'Publish'}
+          </button>
         </div>
       </div>
 
-      {/* Step 1: Product Type and Basic Information */}
-      {step === 1 && (
+      {!createdProduct ? (
         <div>
           <header className="p-6 border-b">
             <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-normal">Publish your first product</h1>
-              <div className="hidden sm:flex gap-2">
-                <button 
-                  onClick={handleNext} 
-                  className="px-4 py-2 bg-black text-white rounded-md"
-                >
-                  Next
-                </button>
+              <div>
+                <h1 className="text-2xl font-normal">Create Product</h1>
+                <p className="text-sm text-gray-500">Build your checkout page</p>
               </div>
             </div>
           </header>
@@ -260,16 +241,68 @@ export default function ProductCreationForm() {
           <div className="p-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* Left side - Product Setup */}
             <div className="md:col-span-7">
-              <div className="mb-8">
-                <ProductInformation 
+              {/* Tabs */}
+              <div className="mb-6">
+                <div className="grid grid-cols-2 gap-0">
+                  <button 
+                    className={`py-2 px-4 text-center ${activeTab === 'setup' ? 'bg-emerald-100 text-emerald-700 font-medium rounded-t-md' : 'bg-gray-50 text-gray-500'}`}
+                    onClick={() => handleTabChange('setup')}
+                  >
+                    Product Setup
+                  </button>
+                  <button 
+                    className={`py-2 px-4 text-center ${activeTab === 'advanced' ? 'bg-emerald-100 text-emerald-700 font-medium rounded-t-md' : 'bg-gray-50 text-gray-500'}`}
+                    onClick={() => handleTabChange('advanced')}
+                  >
+                    Advanced Options
+                  </button>
+                </div>
+              </div>
+              
+              {/* Tab Content */}
+              {activeTab === 'setup' && (
+                <div>
+                  <ProductTypeSelection 
+                    productData={productData} 
+                    setProductData={setProductData} 
+                  />
+                  
+                  <ProductInformation 
+                    productData={productData} 
+                    setProductData={setProductData} 
+                  />
+                  
+                  {productData.type === 'digital_product' && (
+                    <ProductFiles 
+                      productData={productData} 
+                      setProductData={setProductData} 
+                    />
+                  )}
+                </div>
+              )}
+              
+              {activeTab === 'advanced' && (
+                <ProductAdvancedOptions 
                   productData={productData} 
                   setProductData={setProductData} 
                 />
-                
-                <ProductTypeSelection 
-                  productData={productData} 
-                  setProductData={setProductData} 
-                />
+              )}
+              
+              {/* Form Actions */}
+              <div className="flex justify-between mt-8">
+                <button 
+                  onClick={() => router.push('/products')} 
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSubmit} 
+                  className="px-4 py-2 bg-emerald-500 text-white rounded-md"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Creating Product...' : 'Create Product'}
+                </button>
               </div>
             </div>
             
@@ -279,92 +312,7 @@ export default function ProductCreationForm() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Step 2: Product Customization */}
-      {step === 2 && (
-        <div className="p-6">
-          <h2 className="text-xl font-medium mb-4">Product Customization</h2>
-          <p className="text-gray-600 mb-6">Customize your product settings and options.</p>
-          
-          <div className="max-w-3xl mx-auto">
-            {/* This will be implemented in a separate component */}
-            <div className="border rounded-md p-4 mb-6">
-              <h3 className="font-medium mb-3">Download Settings</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Download Limit</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={productData.downloadSettings.downloadLimit}
-                    onChange={(e) => setProductData({
-                      ...productData,
-                      downloadSettings: {
-                        ...productData.downloadSettings,
-                        downloadLimit: parseInt(e.target.value) || 1
-                      }
-                    })}
-                    className="w-full p-2 border rounded-md"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Number of times customers can download the files</p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Link Expiration (days)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={productData.downloadSettings.linkExpiration}
-                    onChange={(e) => setProductData({
-                      ...productData,
-                      downloadSettings: {
-                        ...productData.downloadSettings,
-                        linkExpiration: parseInt(e.target.value) || 30
-                      }
-                    })}
-                    className="w-full p-2 border rounded-md"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Number of days before the download link expires</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <StepNavigation 
-            onBack={handleBack} 
-            onNext={handleNext} 
-            currentStep={step} 
-            totalSteps={totalSteps} 
-          />
-        </div>
-      )}
-
-      {/* Step 3: Content Upload */}
-      {step === 3 && (
-        <div className="p-6">
-          <h2 className="text-xl font-medium mb-4">Content Upload</h2>
-          <p className="text-gray-600 mb-6">Upload your product content and files.</p>
-          
-          <div className="max-w-3xl mx-auto">
-            <ProductFiles 
-              productData={productData} 
-              setProductData={setProductData} 
-            />
-          </div>
-          
-          <StepNavigation 
-            onBack={handleBack} 
-            onNext={handleSubmit} 
-            currentStep={step} 
-            totalSteps={totalSteps} 
-            isSubmitting={isSubmitting}
-          />
-        </div>
-      )}
-
-      {/* Success step */}
-      {step > totalSteps && createdProduct && (
+      ) : (
         <div>
           <header className="p-6 border-b flex justify-between items-center">
             <h1 className="text-3xl font-normal truncate">
@@ -415,25 +363,16 @@ export default function ProductCreationForm() {
         </div>
       )}
 
-      {/* Mobile buttons - only visible on small screens */}
-      {!createdProduct && step < totalSteps && (
+      {/* Mobile submit button - only visible on small screens */}
+      {!createdProduct && (
         <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4">
-          <div className="grid grid-cols-2 gap-2">
-            {step > 1 && (
-              <button 
-                onClick={handleBack} 
-                className="w-full px-4 py-3 border rounded-md flex items-center justify-center gap-2"
-              >
-                Back
-              </button>
-            )}
-            <button 
-              onClick={handleNext} 
-              className={`px-4 py-3 rounded-md ${step === 1 ? 'w-full col-span-2' : 'w-full'} bg-black text-white`}
-            >
-              {step === totalSteps ? 'Publish' : 'Next'}
-            </button>
-          </div>
+          <button 
+            onClick={handleSubmit} 
+            className="w-full px-4 py-3 rounded-md bg-emerald-500 text-white flex items-center justify-center"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating Product...' : 'Create Product'}
+          </button>
         </div>
       )}
     </div>

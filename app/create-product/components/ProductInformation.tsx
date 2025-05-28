@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Product } from './ProductCreationForm'
 import { Upload, X } from 'lucide-react'
+import RichTextEditor from '@/components/rich-text-editor'
 
 type ProductInformationProps = {
   productData: Product
@@ -91,13 +92,11 @@ export default function ProductInformation({
         {/* Description */}
         <div>
           <label className="block mb-2 text-sm">Description</label>
-          <textarea
-            name="description"
-            value={productData.description}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded-md h-24"
+          <RichTextEditor
+            value={productData.description || ''}
+            onChange={(value) => setProductData({ ...productData, description: value })}
             placeholder="Describe your product..."
-          ></textarea>
+          />
         </div>
         
         {/* Custom URL */}
