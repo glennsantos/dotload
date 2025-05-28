@@ -12,6 +12,24 @@
 * you hang when you use pm2 logs. make sure to have a timeout so you can continue work.
 * for large files that you need to analyze, break it down into smaller chunks.
 
+Each task should:
+- Be incredibly small + testable
+- Have a clear start + end
+- Focus on one concern
+I’ll be passing this off to an engineering LLM that will be told to complete one task at a time, allowing me to test in between
+- Write the absolute minimum code required
+- No sweeping changes
+- No unrelated edits - focus on just the task you're on
+- Make code precise, modular, testable
+- Don’t break existing functionality
+- If I need to do anything (e.g. Supabase/AWS config), tell me clearly 
+
+Do not make any changes,
+until you have 95% confidence
+that you know what to build
+ask me follow up questions
+until you have that confidence
+
 
 ## Development Rules and Lessons Learned
 

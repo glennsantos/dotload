@@ -3,15 +3,15 @@
 ## Resolve Issues
 - [x] fix Request Payout button
 - [ ] See issues in Github for more
-- [?] Fix user being auto logged out
+- [x] Fix user being auto logged out
 
 ## UI Redesign v0.1
-- [ ] Understand the styling of /home/aryeh/dev/alacart.store
-- [ ] Update the fonts to match the fonts used there
-- [ ] Update the button styling to match
-- [ ] Update the card styling to match
-- [ ] Update the input styling to match
-- [ ] Update the modal styling to match
+- [x] Understand the styling of /home/aryeh/dev/alacart.store
+- [x] Update the fonts to match the fonts used there
+- [x] Update the button styling to match
+- [x] Update the card styling to match
+- [x] Update the input styling to match
+- [x] Update the modal styling to match
 
 ## User setup
 - [ ] Allow saving of branding elements in the database (logo, header image)
@@ -25,6 +25,10 @@
   - [ ] consolidate the inputs into one screen
   - [ ] update product types: digital and physical product
 - [ ] add support for other currencies 
+
+## Checkout
+- [ ] add support for other currencies 
+
 
 ## Site Setup
 - [x] Attach domain to dev server
