@@ -108,7 +108,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
       <div className="border border-stone-200 rounded-lg shadow-sm p-8 text-center">
         <h2 className="text-xl font-medium mb-2 text-stone-800">You don't have any products yet</h2>
         <p className="text-stone-600 mb-6">Create your first product to start selling</p>
-        <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-md inline-flex items-center gap-2">
+        <Button asChild className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light">
           <Link href="/products/new">
             <Plus size={18} /> Create Product
           </Link>
@@ -192,7 +192,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                     </div>
                   </Link>
                 </td>
-                <td className="py-3 px-4 text-right">${product.price.toFixed(2)}+</td>
+                <td className="py-3 px-4 text-right">₱{product.price.toFixed(2)}+</td>
                 <td className="py-3 px-4 text-right">
                   <div className="flex items-center justify-end">
                     <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>

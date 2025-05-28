@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Settings, LogOut, Users, Mail, Phone, Calendar, DollarSign, ShoppingBag, Search } from 'lucide-react';
+import { Settings, LogOut, Users, Mail, Phone, Calendar, DollarSign, ShoppingBag, Search, LucideBanknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
@@ -134,22 +134,22 @@ export default function CustomersPage() {
       title: "Total Customers", 
       value: String(customers.length), 
       subtitle: "All time customers",
-      icon: <Users className="h-5 w-5 text-blue-600" />,
-      iconClassName: "bg-blue-100"
+      icon: <Users className="h-5 w-5 text-emerald-600" />,
+      iconClassName: "bg-emerald-100"
     },
     { 
       title: "Total Revenue", 
       value: formatCurrency(totalRevenue), 
       subtitle: "From all customers",
-      icon: <DollarSign className="h-5 w-5 text-emerald-600" />,
+      icon: <LucideBanknote className="h-5 w-5 text-emerald-600" />,
       iconClassName: "bg-emerald-100"
     },
     { 
       title: "Avg. Purchase Value", 
       value: formatCurrency(customers.length ? totalRevenue / customers.length : 0), 
       subtitle: "Per customer",
-      icon: <ShoppingBag className="h-5 w-5 text-purple-600" />,
-      iconClassName: "bg-purple-100"
+      icon: <ShoppingBag className="h-5 w-5 text-emerald-600" />,
+      iconClassName: "bg-emerald-100"
     }
   ];
 
@@ -213,8 +213,8 @@ export default function CustomersPage() {
                   <Users className="mx-auto h-12 w-12 text-stone-300 mb-4" />
                   <p className="text-lg font-medium mb-2">No customers yet</p>
                   <p className="text-sm mb-6">Your customer information will appear here once you make sales</p>
-                  <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
-                    <Link href="/products/new">Create a product</Link>
+                  <Button asChild className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light">
+                    <Link href="/products/new">+ Create a product</Link>
                   </Button>
                 </div>
               ) : (

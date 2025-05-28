@@ -238,12 +238,6 @@ export default function PurchasesPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
-                href="/products" 
-                className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center justify-center gap-2"
-              >
-                Browse Products
-              </Link>
-              <Link 
                 href="/" 
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md inline-flex items-center justify-center gap-2 hover:bg-gray-50"
               >

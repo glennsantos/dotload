@@ -239,15 +239,15 @@ export default function PromosPage() {
       title: "Total Redemptions", 
       value: String(discountCodes.reduce((sum, code) => sum + code.usedCount, 0)), 
       subtitle: "Times codes were used",
-      icon: <Check className="h-5 w-5 text-blue-600" />,
+      icon: <Check className="h-5 w-5 text-emerald-600" />,
       iconClassName: "bg-blue-100"
     },
     { 
       title: "Product-Specific", 
       value: String(discountCodes.filter(code => code.productId !== null).length), 
       subtitle: "Codes for specific products",
-      icon: <Percent className="h-5 w-5 text-purple-600" />,
-      iconClassName: "bg-purple-100"
+      icon: <Percent className="h-5 w-5 text-emerald-600" />,
+      iconClassName: "bg-emerald-100"
     }
   ];
 
@@ -292,7 +292,7 @@ export default function PromosPage() {
                 <CardTitle className="text-xl font-medium text-stone-800">Your Discount Codes</CardTitle>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light">
                       <Plus className="h-4 w-4 mr-2" /> Create Code
                     </Button>
                   </DialogTrigger>
@@ -415,9 +415,9 @@ export default function PromosPage() {
                   <p className="text-sm mb-6">Create your first discount code to boost sales</p>
                   <Button 
                     onClick={() => setIsDialogOpen(true)}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light"
                   >
-                    Create Code
+                    + Create Code
                   </Button>
                 </div>
               ) : (

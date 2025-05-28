@@ -195,9 +195,9 @@ export default function PurchasesPage() {
             <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <CardTitle className="text-xl font-medium text-stone-800">Your Purchases</CardTitle>
-                <CardDescription>View all products you've purchased</CardDescription>
+                <CardDescription>Showing {filteredPurchases.length} of {pagination.total} purchases</CardDescription>
               </div>
-              <div className="w-full sm:w-auto">
+              <div className="w-full sm:w-auto ml-auto">
                 <Select value={filter} onValueChange={handleFilterChange}>
                   <SelectTrigger className="w-full sm:w-[180px] border-stone-300 rounded-lg">
                     <SelectValue placeholder="Filter by status" />
@@ -210,9 +210,6 @@ export default function PurchasesPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <CardDescription>
-                Showing {filteredPurchases.length} of {pagination.total} purchases
-              </CardDescription>
             </CardHeader>
             <CardContent>
               {filteredPurchases.length === 0 ? (
@@ -220,9 +217,6 @@ export default function PurchasesPage() {
                   <ShoppingBag className="mx-auto h-12 w-12 text-stone-300 mb-4" />
                   <p className="text-lg font-medium mb-2">No purchases yet</p>
                   <p className="text-sm mb-6">You haven't made any purchases yet.</p>
-                  <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
-                    <Link href="/products">Browse products</Link>
-                  </Button>
                 </div>
               ) : (
                 <div className="overflow-x-auto">

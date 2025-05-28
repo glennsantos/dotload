@@ -111,12 +111,6 @@ export default function LoginPage() {
           <CardTitle className="text-stone-800">Welcome Back</CardTitle>
           <CardDescription className="text-stone-600 font-light">
             Log in to access your alaCart products
-            {callbackUrl !== '/dashboard' && (
-              <div className="mt-2 text-xs flex items-center text-stone-500 font-light">
-                <span>You'll be redirected to: </span>
-                <span className="ml-1 font-medium truncate">{decodeURI(callbackUrl)}</span>
-              </div>
-            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
