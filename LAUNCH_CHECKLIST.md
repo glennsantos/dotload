@@ -1,21 +1,20 @@
 # alaCarte Launch Checklist
 
 ## Resolve Issues
-- [ ] Fix TOKEN_NOT_FOUND_ERROR in Credit card payment for prod
+- [ ] fix Request Payout button
 - [ ] See issues in Github for more
 
-## from Marco
-- [ ] Need CSS used for this and description of the style
-- [ ] Currency should be removed since only PHP
+## UI Redesign v0.1
+
+### Register
+- [ ] Is the store setup required on sign up? Can we remove this from the MVP?
+  - [ ] What is the relationship of store to user account?
+
+### Create Product
 - [ ] Why not wizard for create product?
-- [ ] Does it need a store?
+- [ ] Currency should be removed since only PHP
 - [ ] What is the plan for? And payment method?
 
-## Calculate Financials
-- [x] Create napkin computation to determine revenue targets
-- [ ] Assess costs for the service
-- [ ] Get initial funding for costs
- 
 ## Site Setup
 - [ ] Attach domain to dev server
 - [ ] Create SSL cert for dev server via Letsencrypt.
@@ -43,6 +42,13 @@
 - [ ] Get funds for those activities
 - [ ] Execute those activities with a marketing person
 
+## Calculate Financials
+- [x] Create napkin computation to determine revenue targets
+- [ ] Assess costs for the service
+- [ ] Get initial funding for costs
+
+# POST LAUNCH ITEMS
+
 ## Support
 - [ ] Determine who will handle support issues 
 - [ ] Make rough support strategy that is lightweight but also addresses the highest priority issues
@@ -57,6 +63,6 @@
 
 ## Security
 - [x] Ensure all environment variables are properly set in production
-- [ ] Confirm security groups are properly configured
-- [ ] Review permissions for S3 buckets and other AWS resources
+- [x] Confirm security groups are properly configured
+- [x] Review permissions for S3 buckets and other AWS resources
 - [ ] Set up automated database backups
