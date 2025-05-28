@@ -2,6 +2,99 @@
 
 reference repo: /home/aryeh/dev/alacart.store
 
+## Create Product Page Redesign
+
+1. **Implement Product Type Selection UI** ✅
+   - Task ID: 6.1
+   - Description: Update the product type selection UI with Digital Product and Physical Product options as shown in the design.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify the product type selection UI matches the design and correctly updates the product type.
+
+2. **Implement Product Information Form** ✅
+   - Task ID: 6.2
+   - Description: Update the product information form with name, description, custom URL, and price fields as shown in the design.
+   - Dependencies: 6.1
+   - Priority: High
+   - Test Strategy: Verify all form fields work correctly and validate input.
+
+3. **Implement Thumbnail & Previews Section** ✅
+   - Task ID: 6.3
+   - Description: Create the thumbnail upload section with preview functionality.
+   - Dependencies: 6.2
+   - Priority: High
+   - Test Strategy: Test image upload and preview functionality.
+
+4. **Implement Digital Files Upload Section** ✅
+   - Task ID: 6.4
+   - Description: Create the digital files upload section with file selection and preview.
+   - Dependencies: 6.3
+   - Priority: High
+   - Test Strategy: Test file upload functionality and verify file size limits.
+
+5. **Implement Advanced Options Tab** ✅
+   - Task ID: 6.5
+   - Description: Create the Advanced Options tab with download settings, what's included section, course curriculum, product badges, and trust indicators.
+   - Dependencies: 6.4
+   - Priority: High
+   - Test Strategy: Verify all advanced options work correctly and save to the database.
+
+6. **Implement Product Preview Panel** ✅
+   - Task ID: 6.6
+   - Description: Create the product preview panel that updates in real-time as the user enters information.
+   - Dependencies: 6.2, 6.3
+   - Priority: High
+   - Test Strategy: Verify the preview updates correctly as user enters information.
+
+7. **Update API to Handle New Product Fields** 
+   - Task ID: 6.7
+   - Description: Update the product creation API to handle the new fields from the form (download limits, badges, trust indicators, etc.).
+   - Dependencies: 6.5
+   - Priority: High
+   - Test Strategy: Test API with various product configurations and verify data is saved correctly.
+
+8. **Update Database Schema for New Product Fields** 
+   - Task ID: 6.8
+   - Description: Add new columns to the Product table for download settings, badges, and trust indicators.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify the database schema changes and test with sample data.
+
+9. **Implement Form Validation** 
+   - Task ID: 6.9
+   - Description: Add client-side validation for all form fields with appropriate error messages.
+   - Dependencies: 6.2, 6.5
+   - Priority: Medium
+   - Test Strategy: Test form validation with various input scenarios.
+
+10. **Set Default Currency to PHP** ✅
+    - Task ID: 6.10
+    - Description: Ensure the default currency is set to PHP in the currency dropdown.
+    - Dependencies: 6.2
+    - Priority: Medium
+    - Test Strategy: Verify PHP is the default selected currency.
+
+11. **Implement Responsive Design** ✅
+    - Task ID: 6.11
+    - Description: Ensure the create product page is responsive across all device sizes.
+    - Dependencies: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6
+    - Priority: Medium
+    - Test Strategy: Test the page on various device sizes and verify UI adapts correctly.
+
+12. **Implement Create Product Button Functionality** ✅
+    - Task ID: 6.12
+    - Description: Update the create product button to submit the form and handle loading states.
+    - Dependencies: 6.7, 6.9
+    - Priority: High
+    - Test Strategy: Test product creation flow end-to-end.
+
+13. **Implement Cancel Button Functionality** ✅
+    - Task ID: 6.13
+    - Description: Update the cancel button to discard changes and return to products page.
+    - Dependencies: None
+    - Priority: Low
+    - Test Strategy: Verify cancel functionality works correctly.
+
 
 ## Auth Pages
 

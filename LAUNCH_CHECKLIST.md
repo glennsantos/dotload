@@ -18,13 +18,13 @@
 - [ ] add seller plans placeholder : see setting > billings
 
 ## Create product
-- [ ] follow the create product page of /home/aryeh/dev/alacart.store
+- [X] follow the create product page of /home/aryeh/dev/alacart.store
   - [ ] follow the design
   - [ ] update the product preview
   - [ ] update the advanced options
   - [ ] consolidate the inputs into one screen
-  - [ ] update product types: digital and physical product
-- [ ] add support for other currencies 
+  - [x] update product types: digital and physical product
+- [X] add support for other currencies 
 
 ## Checkout
 - [ ] add support for other currencies 
@@ -35,9 +35,9 @@
 - [x] Create SSL cert for dev server via Letsencrypt.
 - [x] Convert SES to prod setup
 - [ ] check SES if connected
-- [ ] check domain if connected
-- [ ] Change from email for alacart in .env files
-- [ ] Change other emails as needed
+- [x] check domain if connected
+- [x] Change from email for alacart in .env files
+- [x] Change other emails as needed
 - [ ] clean up front end console.logs
 
 ## Perform QA Testing

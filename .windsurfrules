@@ -11,6 +11,7 @@
 * fixes that change the code in the remote EC2 should be done through the local git branch so it can be version controlled and we have the same code for both local and remote.
 * you hang when you use pm2 logs. make sure to have a timeout so you can continue work.
 * for large files that you need to analyze, break it down into smaller chunks.
+* if the file is greater than 200 lines, break it down into smaller components
 
 Each task should:
 - Be incredibly small + testable

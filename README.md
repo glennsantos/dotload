@@ -1371,7 +1371,7 @@ The email service implementation has been migrated from Nodemailer/Mailtrap to A
    AWS_REGION=ap-southeast-1
    AWS_ACCESS_KEY_ID=your_access_key_id
    AWS_SECRET_ACCESS_KEY=your_secret_access_key
-   EMAIL_FROM=no-reply@alacarte.app
+   EMAIL_FROM=noreply@alacart.store
    ```
 
 7. **For Production Use**:
