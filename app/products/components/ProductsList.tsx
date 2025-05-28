@@ -145,8 +145,13 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
   return (
     <div className="space-y-8">
       {/* Products Header */}
-      <div>
-        <h2 className="text-xl font-medium text-stone-800 mb-4">Your Products</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-medium text-stone-800">Your Products</h2>
+        <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center gap-2">
+          <Link href="/products/new">
+            <Plus size={16} /> Create Product
+          </Link>
+        </Button>
       </div>
 
       {/* Products Table */}
@@ -206,11 +211,6 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                 </td>
               </tr>
             ))}
-            <tr className="bg-stone-50">
-              <td colSpan={2} className="py-3 px-4 font-medium text-stone-700">Totals</td>
-              <td className="py-3 px-4 text-right text-stone-700">$0</td>
-              <td colSpan={2}></td>
-            </tr>
           </tbody>
         </table>
         </div>

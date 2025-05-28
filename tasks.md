@@ -243,3 +243,24 @@ reference repo: /home/aryeh/dev/alacart.store
    - Dependencies: None
    - Priority: Medium
    - Test Strategy: Check button styling consistency across all pages.
+
+4. **Add Purchases Menu and Page** ✅
+   - Task ID: 5.4
+   - Description: Add a Purchases menu item to the dashboard tabs and create a purchases page to display the user's purchases.
+   - Dependencies: None
+   - Priority: Medium
+   - Test Strategy: Verify the purchases page displays user purchases correctly with pagination.
+
+5. **Improve Products Page UI** ✅
+   - Task ID: 5.5
+   - Description: Remove search bar from products page and move create product button to same row as Your Products heading.
+   - Dependencies: None
+   - Priority: Medium
+   - Test Strategy: Verify the products page layout is improved and more intuitive.
+
+6. **Hide Advanced Tabs for New Users** ✅
+   - Task ID: 5.6
+   - Description: Hide sales, promos, and customers tabs when the user has no products yet.
+   - Dependencies: None
+   - Priority: Medium
+   - Test Strategy: Verify that only Overview, Products, and Purchases tabs are visible for new users.

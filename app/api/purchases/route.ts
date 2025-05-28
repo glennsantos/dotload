@@ -17,26 +17,77 @@ export async function GET(request: NextRequest) {
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
     const decoded = jwt.verify(token, jwtSecret) as { userId: string, email: string };
 
-    // Get user's purchases
+    // Get pagination parameters from query string
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
+    const status = searchParams.get('status') || undefined;
+
+    // Build the where clause
+    const where: any = {
+      email: decoded.email
+    };
+
+    // Add status filter if provided
+    if (status && status !== 'all') {
+      where.status = status;
+    }
+
+    // Get total count for pagination
+    const totalCount = await prisma.purchase.count({ where });
+
+    // Get user's purchases with pagination
     const purchases = await prisma.purchase.findMany({
-      where: {
-        email: decoded.email
-      },
+      where,
       orderBy: {
         createdAt: 'desc',
       },
       include: {
         product: {
-          include: {
-            files: true
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true
           }
         }
-      }
+      },
+      skip,
+      take: limit
     });
 
-    return NextResponse.json(purchases);
+    return NextResponse.json({
+      purchases,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      }
+    });
   } catch (error) {
     console.error('Error fetching user purchases:', error);
+    
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Handle specific JWT errors
+      if (error.name === 'JsonWebTokenError') {
+        return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
+      }
+      
+      // Handle specific database errors
+      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        return NextResponse.json(
+          { error: 'Database table does not exist. Please run migrations.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch purchase information' },
       { status: 500 }
