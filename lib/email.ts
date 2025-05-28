@@ -10,7 +10,7 @@ const sesClient = new SESClient({
 });
 
 // Email sender address
-const fromEmail = process.env.EMAIL_FROM || 'alaCart <no-reply@alacart.store>';
+const fromEmail = process.env.EMAIL_FROM || 'alaCart <noreply@alacart.store>';
 
 // Send verification email
 export async function sendVerificationEmail(
