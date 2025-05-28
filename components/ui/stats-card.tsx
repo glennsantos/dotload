@@ -24,7 +24,7 @@ export function StatsCard({
     <div className={cn("bg-white rounded-lg p-6 border border-stone-200 shadow-sm", className)}>
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-sm font-medium text-stone-600">{title}</h3>
+          <h3 className="text-sm font-light text-stone-600">{title}</h3>
           <p className="text-2xl font-semibold mt-1">{value}</p>
           {subtitle && <p className="text-xs text-stone-500 mt-1">{subtitle}</p>}
         </div>

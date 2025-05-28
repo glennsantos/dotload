@@ -144,16 +144,6 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
 
   return (
     <div className="space-y-8">
-      {/* Products Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-medium text-stone-800">Your Products</h2>
-        <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center gap-2">
-          <Link href="/products/new">
-            <Plus size={16} /> Create Product
-          </Link>
-        </Button>
-      </div>
-
       {/* Products Table */}
       <div className="border border-stone-200 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">

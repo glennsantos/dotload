@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, DollarSign, RefreshCw, Download } from "lucide-react"
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
 export default function PayoutsPage() {
   const [balance, setBalance] = useState({
@@ -14,6 +15,7 @@ export default function PayoutsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showRequestForm, setShowRequestForm] = useState(false)
+  const [userName, setUserName] = useState("User"); // Add userName state
   
   // Form state
   const [amount, setAmount] = useState("")
@@ -40,6 +42,21 @@ export default function PayoutsPage() {
 
   useEffect(() => {
     fetchPayoutData()
+    // Fetch user data for DashboardHeader
+    const fetchUserData = async () => {
+      try {
+        const authResponse = await fetch('/api/auth/me');
+        if (authResponse.ok) {
+          const userData = await authResponse.json();
+          if (userData.user && userData.user.name) {
+            setUserName(userData.user.name);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+      }
+    };
+    fetchUserData();
   }, [])
 
   const fetchPayoutData = async () => {
@@ -186,38 +203,9 @@ export default function PayoutsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-gray-500 hover:text-black">
-            <ArrowLeft size={20} />
-          </Link>
-          <h1 className="text-2xl font-medium">Payouts</h1>
-        </div>
-        
-        <div className="flex gap-2">
-          <button
-            onClick={fetchPayoutData}
-            className="px-4 py-2 border rounded-md flex items-center gap-2 hover:bg-gray-50"
-          >
-            <RefreshCw size={18} /> Refresh
-          </button>
-          
-          <button
-            onClick={() => setShowRequestForm(!showRequestForm)}
-            className="px-4 py-2 bg-black text-white rounded-md flex items-center gap-2"
-          >
-            <DollarSign size={18} /> Request Payout
-          </button>
-        </div>
-      </div>
+      <DashboardHeader userName={userName} />
       
-      {formSuccess && (
-        <div className="mb-6 p-4 bg-green-50 rounded-md text-green-600">
-          {formSuccess}
-        </div>
-      )}
-      
-      {/* Balance summary */}
+      {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white shadow-sm rounded-lg p-6">
           <h2 className="text-sm text-gray-500 mb-1">Total Earnings</h2>

@@ -1,10 +1,11 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Package, TrendingUp, DollarSign, Plus, Settings, LogOut, Users, ShoppingCart, ArrowRight } from "lucide-react"
+import { Package, TrendingUp, DollarSign, Plus, Settings, LogOut, Users, ShoppingCart, ArrowRight, LucideBanknote } from "lucide-react"
 import { DashboardTabs } from "@/components/ui/dashboard-tabs"
 import { StatsCard } from "@/components/ui/stats-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { cookies } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import jwt from "jsonwebtoken"
@@ -128,43 +129,7 @@ export default async function Dashboard() {
   
   return (
     <div className="max-w-7xl mx-auto p-6">
-      {/* Dashboard Header with Welcome Message and Action Buttons */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-800">Dashboard</h1>
-          <p className="text-stone-600 font-light">Welcome back, {userName}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button 
-            asChild
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-md flex items-center gap-2"
-          >
-            <Link href="/products/new">
-              <Plus size={16} /> Create Product
-            </Link>
-          </Button>
-          <Button 
-            asChild
-            variant="outline"
-            className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-md"
-          >
-            <Link href="/settings">
-              <Settings size={16} />
-              <span className="sr-only md:not-sr-only md:ml-2">Settings</span>
-            </Link>
-          </Button>
-          <Button 
-            asChild
-            variant="outline"
-            className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-md"
-          >
-            <Link href="/api/auth/logout">
-              <LogOut size={16} />
-              <span className="sr-only md:not-sr-only md:ml-2">Logout</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <DashboardHeader userName={userName} />
 
       {/* Horizontal Tab Menu */}
       <div className="mb-8">
@@ -185,24 +150,24 @@ export default async function Dashboard() {
           title="Total Sales"
           value={stats.salesCount.toString()}
           subtitle="Completed orders"
-          icon={<ShoppingCart className="h-5 w-5 text-blue-600" />}
-          iconClassName="bg-blue-100"
+          icon={<TrendingUp className="h-5 w-5 text-emerald-600" />}
+          iconClassName="bg-emerald-100"
         />
         
         <StatsCard
           title="Total Revenue"
           value={formatCurrency(stats.totalRevenue)}
           subtitle="Total earnings"
-          icon={<DollarSign className="h-5 w-5 text-green-600" />}
-          iconClassName="bg-green-100"
+          icon={<LucideBanknote className="h-5 w-5 text-emerald-600" />}
+          iconClassName="bg-emerald-100"
         />
         
         <StatsCard
           title="Customers"
           value={stats.customerCount.toString()}
           subtitle="Unique customers"
-          icon={<Users className="h-5 w-5 text-purple-600" />}
-          iconClassName="bg-purple-100"
+          icon={<Users className="h-5 w-5 text-emerald-600" />}
+          iconClassName="bg-emerald-100"
         />
       </div>
 

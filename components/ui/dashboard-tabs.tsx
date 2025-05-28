@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, ShoppingCart, Package, Tag, Users, ShoppingBag } from "lucide-react"
+import { BarChart3, ShoppingCart, Package, Tag, Users, ShoppingBag, Percent } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface TabItem {
@@ -43,7 +43,7 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
     },
     {
       label: "Promos",
-      icon: <Tag className="h-4 w-4" />,
+      icon: <Percent className="h-4 w-4" />,
       href: "/dashboard/promos"
     },
     {
@@ -68,7 +68,7 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
               key={tab.label}
               href={tab.href}
               className={cn(
-                "flex flex-1 justify-center items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-lg",
+                "flex flex-1 justify-center items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors rounded-lg",
                 isActive 
                   ? "bg-emerald-100 text-emerald-600" 
                   : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"

@@ -8,6 +8,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardTabs } from "@/components/ui/dashboard-tabs"
 import { Button } from "@/components/ui/button"
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
 export default function ProductsPage() {
   const router = useRouter()
@@ -51,35 +52,7 @@ export default function ProductsPage() {
   }, [router])
   return (
     <div className="max-w-7xl mx-auto p-6">
-      {/* Dashboard Header with Welcome Message and Action Buttons */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-800">Dashboard</h1>
-          <p className="text-stone-600 font-light">Welcome back, {userName}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button 
-            asChild
-            variant="outline"
-            className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-md"
-          >
-            <Link href="/settings">
-              <Settings size={16} />
-              <span className="sr-only md:not-sr-only md:ml-2">Settings</span>
-            </Link>
-          </Button>
-          <Button 
-            asChild
-            variant="outline"
-            className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-md"
-          >
-            <Link href="/api/auth/logout">
-              <LogOut size={16} />
-              <span className="sr-only md:not-sr-only md:ml-2">Logout</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <DashboardHeader userName={userName} />
       
       {/* Horizontal Tab Menu */}
       <div className="mb-8">

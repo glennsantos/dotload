@@ -9,7 +9,7 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-stone-200 py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="font-bold text-xl text-emerald-600">ALACART</div>
+          <Image src="/logo.png" alt="Alacart Logo" width={120} height={32} />
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-stone-700 hover:text-emerald-600 text-sm font-medium">
               Sign In
@@ -25,9 +25,9 @@ export default function Home() {
       <section className="py-20 text-center">
         <div className="container mx-auto px-4">
           <h1 className="text-5xl lg:text-6xl font-light text-stone-900 mb-8 leading-tight">
-            Create Professional
+          <span className="block font-light">Create Professional</span>
             <div className="block font-medium">Checkout Pages</div>
-            <span class="block font-light">in Minutes</span>
+            <span className="block font-light">in Minutes</span>
           </h1>
           <p className="max-w-2xl mx-auto text-stone-600 mb-10">
             The fastest way to sell digital and physical products online. Build stunning,
@@ -98,7 +98,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-8 border-t border-stone-200 text-center text-stone-500 text-sm">
         <div className="container mx-auto px-4">
-          <p>©  {new Date().getFullYear()} Alacart. Built for creators, by creators.</p>
+          <p>  {new Date().getFullYear()} Alacart. Built for creators, by creators.</p>
         </div>
       </footer>
     </div>
