@@ -35,17 +35,20 @@
 - [x] in advanced options, add product variants, advanced inventory, etc (see image)
 - [x] product description should be formatted html
 
+## Product Page
+- [ ] Match the design of the product page with the one in the preview
+
 ## Checkout
 - [ ] add support for other currencies 
 
 
 ## Site Setup
 - [x] Attach domain to dev server
-- [x] Create SSL cert for dev server via Letsencrypt.
 - [x] Convert SES to prod setup
 - [x] check domain if connected
 - [x] Change from email for alacart in .env files
 - [x] Change other emails as needed
+- [ ] Create SSL cert for dev server via Letsencrypt.
 - [ ] test if SES is connected
 - [ ] clean up front end console.logs for prod
 

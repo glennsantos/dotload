@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
+// Get domain from environment variables
+const DOMAIN = process.env.DOMAIN || 'localhost:3000';
+const BASE_URL = DOMAIN.startsWith('http') ? DOMAIN : `http://${DOMAIN}`;
+
 // Handle GET requests for direct link access (e.g., <a href="/api/auth/logout">Logout</a>)
 export async function GET(request: NextRequest) {
   try {
+    console.log(`Using domain for redirect: ${BASE_URL}`);
+    
     // Create a response that will clear the token cookie and redirect to login
-    const response = NextResponse.redirect(new URL('/login', request.url));
+    // Use the BASE_URL from environment variables instead of request.url
+    const response = NextResponse.redirect(`${BASE_URL}/login`);
 
     // Clear the token cookie
     response.cookies.set('token', '', {
@@ -17,16 +24,19 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Logout error:', error);
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(`${BASE_URL}/login`);
   }
 }
 
 // Handle POST requests for programmatic logout
 export async function POST(request: NextRequest) {
   try {
+    console.log(`Using domain for redirect: ${BASE_URL}`);
+    
     // Create a response that will clear the token cookie
     const response = NextResponse.json({ 
-      message: 'Logged out successfully' 
+      message: 'Logged out successfully',
+      redirectUrl: `${BASE_URL}/login` // Include the redirect URL in the response
     }, { status: 200 });
 
     // Clear the token cookie

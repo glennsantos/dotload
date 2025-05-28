@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Upload, X, Link as LinkIcon, File, Plus, ChevronLeft, Loader2, Check } from "lucide-react"
+import { Upload, X, Link as LinkIcon, File, Plus, ChevronLeft, Loader2, Check, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -41,6 +41,27 @@ export default function ContentUpload({
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
+      
+      // Check for allowed file types
+      const allowedExtensions = [
+        '.csv', '.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg', '.gif', '.webp',
+        '.mp4', '.mp3', '.wav', '.zip', '.rar', '.7z', '.xls', '.xlsx', '.md',
+        '.epub', '.mobi', '.pptx', '.txt', '.svg', '.ai', '.eps', '.psd',
+        '.aac', '.flac', '.m4b', '.mov', '.avi', '.mkv', '.webm', '.cube',
+        '.look', '.xmp', '.html', '.woff', '.woff2', '.ttf', '.otf', '.notion'
+      ]
+      
+      // Check if any files have invalid extensions
+      const invalidFiles = newFiles.filter(file => {
+        const extension = '.' + file.name.split('.').pop()?.toLowerCase()
+        return !allowedExtensions.includes(extension)
+      })
+      
+      if (invalidFiles.length > 0) {
+        setError(`Invalid file type(s): ${invalidFiles.map(f => f.name).join(', ')}. Please upload only allowed file types.`)
+        return
+      }
+      
       setFiles([...files, ...newFiles])
       setError(null)
       
@@ -146,9 +167,12 @@ export default function ContentUpload({
         </p>
 
         {error && (
-          <div className="bg-red-50 text-red-700 p-4 mb-6 rounded-md flex items-center">
-            <X size={16} className="mr-2 flex-shrink-0" />
-            <span>{error}</span>
+          <div className="bg-red-50 text-red-700 p-4 mb-6 rounded-md flex items-start">
+            <AlertCircle size={16} className="mr-2 flex-shrink-0 mt-1" />
+            <div>
+              <p className="font-medium">Error</p>
+              <p>{error}</p>
+            </div>
           </div>
         )}
 
@@ -170,6 +194,7 @@ export default function ContentUpload({
                 className="hidden"
                 id="content-upload"
                 disabled={isSubmitting || uploadSuccess}
+                accept=".csv,.pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.mp4,.mp3,.wav,.zip,.rar,.7z,.xls,.xlsx,.md,.epub,.mobi,.pptx,.txt,.svg,.ai,.eps,.psd,.aac,.flac,.m4b,.mov,.avi,.mkv,.webm,.cube,.look,.xmp,.html,.woff,.woff2,.ttf,.otf,.notion"
               />
               <label
                 htmlFor="content-upload"
@@ -179,6 +204,9 @@ export default function ContentUpload({
               </label>
               <p className="text-sm text-gray-500 mt-2">
                 or drag and drop files here
+              </p>
+              <p className="text-xs text-gray-500 mt-2">
+                Allowed file types: CSV, PDF, DOC, DOCX, PNG, JPG, JPEG, GIF, WEBP, MP4, MP3, WAV, ZIP, RAR, 7Z, XLS, XLSX, MD, EPUB, MOBI, PPTX, TXT, SVG, AI, EPS, PSD, AAC, FLAC, and more
               </p>
             </div>
 
@@ -213,18 +241,16 @@ export default function ContentUpload({
             Digital content are files that customers will receive after purchasing your product. These can include:
           </p>
           <ul className="list-disc pl-5 text-gray-600 mb-3 space-y-1">
-            <li>PDF documents</li>
-            <li>Excel files</li>
-            <li>CSV files</li>
-            <li>Word documents</li>
-            <li>Powerpoint presentations</li>
-            <li>Images</li>
-            <li>Videos</li>
-            <li>eBooks</li>
-            <li>Software applications</li>
-            <li>Audio or video files</li>
-            <li>Design templates</li>
-            <li>Source code</li>
+            <li>Documents: PDF, DOC, DOCX, TXT, MD</li>
+            <li>Spreadsheets: XLS, XLSX, CSV</li>
+            <li>Presentations: PPT, PPTX</li>
+            <li>Images: PNG, JPG, JPEG, GIF, WEBP, SVG, AI, EPS, PSD</li>
+            <li>Videos: MP4, MOV, AVI, MKV, WEBM</li>
+            <li>Audio: MP3, WAV, AAC, FLAC, M4B</li>
+            <li>eBooks: EPUB, MOBI</li>
+            <li>Archives: ZIP, RAR, 7Z</li>
+            <li>Fonts: WOFF, WOFF2, TTF, OTF</li>
+            <li>Other: HTML, XMP, CUBE, LOOK, NOTION</li>
           </ul>
           <p className="text-gray-600">
             The files you upload will be securely stored and only made available to customers after they complete their purchase.

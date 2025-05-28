@@ -26,6 +26,10 @@ const AUTH_ONLY_ROUTES = [
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const pathname = request.nextUrl.pathname;
+  
+  // Debug logging
+  console.log(`Middleware processing path: ${pathname}`);
+  console.log(`Token exists: ${!!token}`);
 
   // No longer redirecting dashboard to products page
   // Dashboard now shows its own content
@@ -45,43 +49,61 @@ export function middleware(request: NextRequest) {
   // Verify token
   try {
     // Log token details for debugging
-    console.log('Middleware JWT Secret:', JWT_SECRET);
-    console.log('Middleware Token Value:', token);
+    console.log('Middleware JWT Secret length:', JWT_SECRET?.length);
+    console.log('Middleware Token exists:', !!token);
     console.log('Middleware Token Length:', token?.length);
     
+    if (!token) {
+      throw new Error('No token provided');
+    }
+    
     // Decode the token to get user information
-    const decoded = verify(token, JWT_SECRET, {
-      algorithms: ['HS256'], // Specify the expected algorithm
-      maxAge: '7d' // Match the token expiration from login route
-    }) as JwtPayload & { userId: string; email: string; emailVerified?: boolean };
-    
-    // Additional validation
-    if (!decoded.userId || !decoded.email) {
-      console.error('Invalid token payload');
-      return NextResponse.redirect(new URL('/login', request.url));
+    // Use a try-catch block specifically for the verification to handle errors gracefully
+    try {
+      const decoded = verify(token, JWT_SECRET, {
+        algorithms: ['HS256'], // Specify the expected algorithm
+        maxAge: '7d' // Match the token expiration from login route
+      }) as JwtPayload & { userId: string; email: string; emailVerified?: boolean };
+      
+      // Additional validation
+      if (!decoded.userId || !decoded.email) {
+        console.error('Invalid token payload');
+        throw new Error('Invalid token payload');
+      }
+      
+      // Log decoded token details
+      console.log('Middleware Decoded Token:', {
+        userId: decoded.userId,
+        email: decoded.email,
+        iat: decoded.iat,
+        exp: decoded.exp
+      });
+      
+      // Check if the route requires email verification
+      const requiresVerification = !AUTH_ONLY_ROUTES.some(route => pathname === route || pathname.startsWith(route));
+      
+      // If email verification is required but the user's email is not verified
+      if (requiresVerification && decoded.emailVerified === false) {
+        // Redirect to email verification page
+        return NextResponse.redirect(new URL('/verify-email', request.url));
+      }
+      
+      // Token is valid, proceed with the request
+      return NextResponse.next();
+    } catch (verifyError) {
+      console.error('Token verification error:', verifyError);
+      throw verifyError; // Re-throw to be caught by the outer catch block
     }
-    
-    // Log decoded token details
-    console.log('Middleware Decoded Token:', {
-      userId: decoded.userId,
-      email: decoded.email,
-      iat: decoded.iat,
-      exp: decoded.exp
-    });
-    
-    // Check if the route requires email verification
-    const requiresVerification = !AUTH_ONLY_ROUTES.some(route => pathname === route || pathname.startsWith(route));
-    
-    // If email verification is required but the user's email is not verified
-    if (requiresVerification && decoded.emailVerified === false) {
-      // Redirect to email verification page
-      return NextResponse.redirect(new URL('/verify-email', request.url));
-    }
-    
-    return NextResponse.next();
   } catch (error) {
     // Invalid token, redirect to login
-    const url = new URL('/login', request.url);
+    console.error('Middleware auth error:', error instanceof Error ? error.message : 'Unknown error');
+    
+    // Get the domain from environment variables for consistent redirection
+    const DOMAIN = process.env.DOMAIN || 'localhost:3000';
+    const BASE_URL = DOMAIN.startsWith('http') ? DOMAIN : `http://${DOMAIN}`;
+    
+    // Use BASE_URL for redirection to ensure consistent domain
+    const url = new URL('/login', BASE_URL);
     url.searchParams.set('callbackUrl', encodeURI(request.nextUrl.pathname));
     return NextResponse.redirect(url);
   }

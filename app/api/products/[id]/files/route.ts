@@ -4,7 +4,7 @@ import { getAuthUserId } from '@/lib/auth-utils';
 import fs from 'fs';
 import path from 'path';
 import { writeFile } from 'fs/promises';
-import { UPLOADS_DIR, ensureUploadsDirectory, generateSecureFilename } from '@/lib/file-utils';
+import { UPLOADS_DIR, ensureUploadsDirectory, generateSecureFilename, isAllowedDigitalFile } from '@/lib/file-utils';
 
 export async function POST(
   request: NextRequest
@@ -62,6 +62,23 @@ export async function POST(
     if (!files || files.length === 0) {
       return NextResponse.json({ 
         error: 'No files provided' 
+      }, { status: 400 });
+    }
+    
+    // Validate file types
+    const invalidFiles = files.filter(file => !isAllowedDigitalFile(file.name, file.type));
+    
+    if (invalidFiles.length > 0) {
+      return NextResponse.json({
+        error: 'Invalid file type(s)',
+        details: `Only specific file types are allowed. Invalid files: ${invalidFiles.map(f => f.name).join(', ')}`,
+        allowedExtensions: [
+          '.csv', '.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg', '.gif', '.webp',
+          '.mp4', '.mp3', '.wav', '.zip', '.rar', '.7z', '.xls', '.xlsx', '.md',
+          '.epub', '.mobi', '.pptx', '.txt', '.svg', '.ai', '.eps', '.psd',
+          '.aac', '.flac', '.m4b', '.mov', '.avi', '.mkv', '.webm', '.cube',
+          '.look', '.xmp', '.html', '.woff', '.woff2', '.ttf', '.otf', '.notion'
+        ]
       }, { status: 400 });
     }
     

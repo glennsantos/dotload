@@ -1287,16 +1287,16 @@ To improve security management and reduce policy sprawl, we've consolidated mult
    # 1. First, kill any existing Prisma Studio process
    pkill -f 'prisma studio'
    
-   # 2. Start Prisma Studio on a specific port (e.g., 5556)
+   # 2. Start Prisma Studio on a specific port (e.g., 5555)
    #    The 'nohup' and output redirection will keep it running after you log out
-   nohup pnpm prisma studio --port 5556 --browser none > /dev/null 2>&1 &
+   nohup pnpm prisma studio --port 5555 --browser none > /dev/null 2>&1 &
    
    # 3. On your local machine, set up an SSH tunnel
-   #    Replace 5556 with your chosen port if different
-   ssh -f -L 5556:localhost:5556 alacarte-ec2 -N
+   #    Replace 5555 with your chosen port if different
+   ssh -f -L 5555:localhost:5555 alacarte-ec2 -N
    
    # 4. Access Prisma Studio in your browser at:
-   #    http://localhost:5556
+   #    http://localhost:5555
    
    # Note: If you get an 'address already in use' error, try a different port
    

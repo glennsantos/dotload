@@ -151,17 +151,29 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
       })
 
       if (response.ok) {
-        // Update user state immediately instead of redirecting
+        // Update user state immediately
         setUser(null)
         // Dispatch logout event
         window.dispatchEvent(new CustomEvent('auth:logout'))
-        // Still redirect to login page
-        router.push('/login')
+        
+        // Get the response data to use the redirectUrl
+        const data = await response.json()
+        console.log('Logout successful, redirecting to:', data.redirectUrl)
+        
+        // Use the redirectUrl from the response if available, otherwise fallback to /login
+        if (data.redirectUrl) {
+          // Use window.location for a full page reload to ensure clean state
+          window.location.href = data.redirectUrl
+        } else {
+          router.push('/login')
+        }
       } else {
         console.error('Logout failed')
       }
     } catch (error) {
       console.error('Logout error:', error)
+      // Fallback to local redirect in case of error
+      router.push('/login')
     } finally {
       setIsLoggingOut(false)
       setMobileMenuOpen(false)
