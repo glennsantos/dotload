@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Mail, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { setAuthToken } from '@/lib/client-auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -52,12 +53,20 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Store the token in localStorage for client-side auth
+        if (data.token) {
+          setAuthToken(data.token);
+          console.log('Auth token stored in localStorage');
+        }
+        
         // Dispatch auth:login event to update UI components
         window.dispatchEvent(new CustomEvent('auth:login', {
           detail: { user: data.user }
         }));
-        // Redirect to callback URL or dashboard on successful login
-        router.push(decodeURI(callbackUrl));
+        
+        // Use window.location for a full page reload to ensure clean state
+        // This helps ensure the cookie is properly set before navigation
+        window.location.href = decodeURI(callbackUrl);
       } else if (response.status === 403 && data.requiresVerification) {
         // Handle unverified email
         setIsVerificationNeeded(true);

@@ -34,6 +34,7 @@
 - [x] add stock and pricing for physical products (see image)
 - [x] in advanced options, add product variants, advanced inventory, etc (see image)
 - [x] product description should be formatted html
+- [ ] edit product page should just use the create-product form
 
 ## Product Page
 - [ ] Match the design of the product page with the one in the preview
@@ -49,7 +50,7 @@
 - [x] Change from email for alacart in .env files
 - [x] Change other emails as needed
 - [ ] Create SSL cert for dev server via Letsencrypt.
-- [ ] test if SES is connected
+- [ ] update SES to prod
 - [ ] clean up front end console.logs for prod
 
 ## Deploy to Dev
