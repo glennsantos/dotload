@@ -18,7 +18,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
           asChild
           className="justify-center whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light"
         >
-          <Link href="/products/new">
+          <Link href="/create-product">
             <Plus size={16} /> Create Product
           </Link>
         </Button>

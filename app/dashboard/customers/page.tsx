@@ -214,7 +214,7 @@ export default function CustomersPage() {
                   <p className="text-lg font-medium mb-2">No customers yet</p>
                   <p className="text-sm mb-6">Your customer information will appear here once you make sales</p>
                   <Button asChild className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light">
-                    <Link href="/products/new">+ Create a product</Link>
+                    <Link href="/create-product">+ Create a product</Link>
                   </Button>
                 </div>
               ) : (
