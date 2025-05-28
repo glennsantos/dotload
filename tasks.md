@@ -67,28 +67,70 @@ reference repo: /home/aryeh/dev/alacart.store
    - Priority: Medium
    - Test Strategy: Test form validation with various input scenarios.
 
-10. **Set Default Currency to PHP** ✅
+10. **Integrate Existing Digital Files Upload Component** ✅
+    - Task ID: 6.14
+    - Description: Use the existing ContentUpload.tsx component from /app/products/new/ for the Digital Files section.
+    - Dependencies: 6.4
+    - Priority: High
+    - Test Strategy: Test file upload functionality with various file types and sizes.
+
+11. **Update Product Badges Display in Preview** ✅
+    - Task ID: 6.15
+    - Description: Move product badges to appear below the image in the product preview as shown in the design.
+    - Dependencies: 6.6
+    - Priority: Medium
+    - Test Strategy: Verify badges appear correctly in the preview and match the design.
+
+12. **Convert Badges and Trust Indicators to Toggles** ✅
+    - Task ID: 6.16
+    - Description: Update the badges and trust indicators in Advanced Options to use toggle switches instead of checkboxes.
+    - Dependencies: 6.5
+    - Priority: Medium
+    - Test Strategy: Test toggle functionality and verify state is saved correctly.
+
+13. **Format HTML in Product Description Preview** ✅
+    - Task ID: 6.17
+    - Description: Ensure the product description in the preview panel renders formatted HTML from the rich text editor.
+    - Dependencies: 6.2, 6.6
+    - Priority: Medium
+    - Test Strategy: Verify HTML formatting is preserved in the preview.
+
+14. **Add Stock & Pricing for Physical Products** ✅
+    - Task ID: 6.18
+    - Description: Implement stock quantity management for physical products with unlimited toggle option.
+    - Dependencies: 6.1, 6.2
+    - Priority: High
+    - Test Strategy: Test stock quantity input and unlimited toggle functionality.
+
+15. **Add Custom Trust Indicators with Thumbs Up Icon** ✅
+    - Task ID: 6.19
+    - Description: Update custom trust indicators to use thumbs up icon instead of lock icon.
+    - Dependencies: 6.5, 6.16
+    - Priority: Medium
+    - Test Strategy: Verify custom trust indicators display correctly with thumbs up icon.
+
+16. **Set Default Currency to PHP** 
     - Task ID: 6.10
     - Description: Ensure the default currency is set to PHP in the currency dropdown.
     - Dependencies: 6.2
-    - Priority: Medium
-    - Test Strategy: Verify PHP is the default selected currency.
+    - Priority: Low
+    - Test Strategy: Verify PHP is selected by default in the currency dropdown.
 
-11. **Implement Responsive Design** ✅
+17. **Implement Responsive Design** 
     - Task ID: 6.11
     - Description: Ensure the create product page is responsive across all device sizes.
     - Dependencies: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6
     - Priority: Medium
     - Test Strategy: Test the page on various device sizes and verify UI adapts correctly.
 
-12. **Implement Create Product Button Functionality** ✅
+16. **Implement Create Product Button Functionality** ✅
     - Task ID: 6.12
     - Description: Update the create product button to submit the form and handle loading states.
     - Dependencies: 6.7, 6.9
     - Priority: High
     - Test Strategy: Test product creation flow end-to-end.
 
-13. **Implement Cancel Button Functionality** ✅
+17. **Implement Cancel Button Functionality** ✅
     - Task ID: 6.13
     - Description: Update the cancel button to discard changes and return to products page.
     - Dependencies: None

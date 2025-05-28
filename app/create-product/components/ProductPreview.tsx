@@ -2,6 +2,7 @@
 
 import { Product } from './ProductCreationForm'
 import { Lock } from 'lucide-react'
+import RichTextRenderer from '@/components/rich-text-renderer'
 
 type ProductPreviewProps = {
   productData: Product
@@ -42,18 +43,39 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
             <img 
               src={URL.createObjectURL(productData.coverImage)} 
               alt="Product thumbnail" 
-              className="w-24 h-24 object-cover mb-2 rounded-md"
+              className="object-cover mb-2 rounded-xl"
             />
           ) : (
-            <div className="w-24 h-24 bg-gray-100 flex items-center justify-center mb-2 rounded-md">
+            <div className="bg-gray-100 flex items-center justify-center mb-2 rounded-xl">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                 <polyline points="21 15 16 10 5 21"></polyline>
               </svg>
             </div>
-          )}
+          )}          
           
+          {/* Product Name */}
+          <h3 className="text-2xl font-light text-center mb-1 mt-4">
+            {productData.name || 'Product Name'}
+          </h3>
+
+          <div className="mt-4">
+            
+            {/* Stock information for physical products */}
+            {productData.type === 'physical_product' && (
+              <div className="mt-1">
+                <span className="text-sm text-stone-600">
+                  {productData.stockQuantity === null || productData.stockQuantity === undefined ? 
+                    'In Stock' : 
+                    productData.stockQuantity > 0 ? 
+                      `${productData.stockQuantity} in stock` : 
+                      'Out of stock'}
+                </span>
+              </div>
+            )}
+          </div>
+
           {/* Product Badges */}
           {productData.badges && (
             <div className="flex flex-wrap justify-center gap-1 my-3">
@@ -76,7 +98,7 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
               )}
               
               {productData.badges.custom.map((badge, index) => (
-                <span key={index} className="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">
+                <span key={index} className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">
                   {badge}
                 </span>
               ))}
@@ -92,19 +114,16 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
             </div>
           )}
           
-          
-          {/* Product Name */}
-          <h3 className="text-2xl font-light text-center mb-1">
-            {productData.name || 'Product Name'}
-          </h3>
-          
           {/* Product Description */}
-          <p className="text-sm text-gray-600 font-light text-center mb-4 line-clamp-3">
-            {productData.description || 'Product description will appear here. Add a description to help customers understand what you\'re offering.'}
+          <p className="text-sm text-gray-600 font-light mb-4">
+            <RichTextRenderer 
+              content={productData.description || 'Product description will appear here. Add a description to help customers understand what you\'re offering.'}
+              className="text-gray-600"
+            />
           </p>
           
           {/* Product Price */}
-          <div className="text-xl font-light mb-4">
+          <div className="text-2xl font-light mb-4">
             {getCurrencySymbol(productData.currency)}
             {productData.price > 0 
               ? productData.price.toFixed(2) 

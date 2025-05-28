@@ -19,12 +19,19 @@
 
 ## Create product
 - [X] follow the create product page of /home/aryeh/dev/alacart.store
-  - [ ] follow the design
-  - [ ] update the product preview
-  - [ ] update the advanced options
-  - [ ] consolidate the inputs into one screen
+  - [x] follow the design
+  - [x] update the product preview
+  - [x] update the advanced options
+  - [x] consolidate the inputs into one screen
   - [x] update product types: digital and physical product
 - [X] add support for other currencies 
+- [x] add part for product content
+- [x] add download settings for digital products
+- [x] product badges need to appear below the image
+- [x] For product badges and trust indicators, turn them into toggles.
+- [ ] add stock and pricing for physical products (see image)
+- [ ] in advanced options, add product variants, advanced inventory, etc (see image)
+- [x] product description should be formatted html
 
 ## Checkout
 - [ ] add support for other currencies 

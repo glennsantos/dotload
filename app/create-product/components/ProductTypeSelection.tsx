@@ -18,7 +18,7 @@ export default function ProductTypeSelection({
 
   return (
     <div className="mt-8">
-      <h3 className="tracking-tight text-xl font-light text-stone-900">Product Type</h3>
+      <h3 className="mb-4 tracking-tight text-xl font-light text-stone-900">Product Type</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div 
           className={`p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
@@ -31,10 +31,10 @@ export default function ProductTypeSelection({
           <div className="flex items-center space-x-3">
             <div className={`p-2 rounded-xl ${
             productData.type === "digital_product" 
-              ? "border-emerald-300 bg-emerald-100 shadow-sm"
-              : "border-stone-300 hover:border-stone-300 hover:bg-stone-50"
+              ? "border-emerald-300 bg-emerald-100 shadow-sm text-emerald-600"
+              : "border-stone-300 hover:border-stone-300 hover:bg-stone-50 text-stone-600"
             }`}>
-              <Download className="h-5 w-5 text-emerald-600" />
+              <Download className="h-5 w-5" />
             </div>
             <div>
               <h3 className="font-light text-stone-900">Digital Product</h3>
@@ -54,10 +54,10 @@ export default function ProductTypeSelection({
           <div className="flex items-center space-x-3">
             <div className={`p-2 rounded-xl ${
             productData.type === "physical_product" 
-              ? "border-emerald-300 bg-emerald-100 shadow-sm"
-              : "border-stone-300 hover:border-stone-300 hover:bg-stone-50"
+              ? "border-emerald-300 bg-emerald-100 shadow-sm text-emerald-600"
+              : "border-stone-300 hover:border-stone-300 hover:bg-stone-50 text-stone-600"
             }`}>
-              <Package className="h-5 w-5 text-stone-600" />
+              <Package className="h-5 w-5" />
             </div>
             <div>
               <h3 className="font-light text-stone-900">Physical Product</h3>

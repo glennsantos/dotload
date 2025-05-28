@@ -28,6 +28,46 @@ body {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
+  
+  /* Toggle Switch Styles */
+  .toggle-checkbox {
+    position: absolute;
+    height: 0;
+    width: 0;
+    opacity: 0;
+  }
+  
+  .toggle-checkbox:checked + .toggle-label {
+    background-color: theme('colors.emerald.500');
+  }
+  
+  .toggle-checkbox:checked + .toggle-label:before {
+    transform: translateX(1.25rem);
+  }
+  
+  .toggle-label {
+    position: relative;
+    display: block;
+    height: 1.5rem;
+    width: 3rem;
+    background-color: theme('colors.stone.300');
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .toggle-label:before {
+    content: '';
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+  }
 }
 
 @layer base {

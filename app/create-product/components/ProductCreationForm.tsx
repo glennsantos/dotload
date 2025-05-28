@@ -9,6 +9,7 @@ import ProductInformation from './ProductInformation'
 import ProductFiles from './ProductFiles'
 import ProductPreview from './ProductPreview'
 import ProductAdvancedOptions from './ProductAdvancedOptions'
+import ProductStockPricing from './ProductStockPricing'
 
 // Define the Product type
 export type Product = {
@@ -23,6 +24,9 @@ export type Product = {
   contentFiles: File[]
   contentLinks: string[]
   currency: string
+  // Physical product fields
+  stockQuantity?: number | null
+  // Digital product fields
   downloadSettings: {
     downloadLimit: number
     linkExpiration: number
@@ -64,6 +68,7 @@ export default function ProductCreationForm() {
     contentFiles: [],
     contentLinks: [],
     currency: 'PHP', // Default currency set to PHP
+    stockQuantity: null, // For physical products, null means unlimited
     downloadSettings: {
       downloadLimit: 5,
       linkExpiration: 30
@@ -270,6 +275,10 @@ export default function ProductCreationForm() {
                   <ProductInformation 
                     productData={productData} 
                     setProductData={setProductData} 
+                  />
+                  <ProductStockPricing
+                    productData={productData}
+                    setProductData={setProductData}
                   />
                   
                   {productData.type === 'digital_product' && (
