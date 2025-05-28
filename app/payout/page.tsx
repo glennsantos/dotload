@@ -273,8 +273,8 @@ export default function PayoutPage() {
       
       // Add a slight delay before redirecting to ensure the user sees the success message
       setTimeout(() => {
-        // Redirect to transactions page
-        router.push('/transactions');
+        // Redirect to sales dashboard page
+        router.push('/dashboard/sales');
       }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -306,7 +306,7 @@ export default function PayoutPage() {
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={() => router.push('/transactions')}
+          onClick={() => router.push('/dashboard/sales')}
           className="mr-2"
         >
           <ArrowLeft className="h-4 w-4" />

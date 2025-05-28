@@ -1,13 +1,15 @@
 # alaCarte Launch Checklist
 
 ## Resolve Issues
-- [ ] fix Request Payout button
+- [x] fix Request Payout button
+- [ ] fix product preview in create product
+  - [ ] should match the product page in mobile
 - [ ] See issues in Github for more
 
 ## UI Redesign v0.1
 
 ### Register
-- [ ] Is the store setup required on sign up? Can we remove this from the MVP?
+- [ ] Is the store setup required on sign up?
   - [ ] What is the relationship of store to user account?
 
 ### Create Product

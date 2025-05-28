@@ -272,12 +272,10 @@ export default function SalesPage() {
               <p className="text-3xl font-bold">{formatCurrency(summary.availableBalance || 0, 'PHP').replace('PHP', '').trim()}</p>
             </div>
             <Button 
-              asChild
+              onClick={() => router.push('/payout')}
               className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light"
             >
-              <Link href="/dashboard/payouts">
-                Request Payout
-              </Link>
+              Request Payout
             </Button>
           </div>
         </div>
