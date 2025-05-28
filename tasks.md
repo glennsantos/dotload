@@ -258,9 +258,9 @@ reference repo: /home/aryeh/dev/alacart.store
    - Priority: Medium
    - Test Strategy: Verify the products page layout is improved and more intuitive.
 
-6. **Hide Advanced Tabs for New Users** ✅
+6. **Show All Menu Items** ✅
    - Task ID: 5.6
-   - Description: Hide sales, promos, and customers tabs when the user has no products yet.
+   - Description: Show all navigation tabs regardless of whether the user has products.
    - Dependencies: None
    - Priority: Medium
-   - Test Strategy: Verify that only Overview, Products, and Purchases tabs are visible for new users.
+   - Test Strategy: Verify that all tabs are visible for all users.
