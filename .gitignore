@@ -49,3 +49,4 @@ ssh*
 *.json
 
 EC2-DEPLOYMENT-GUIDE.md
+dkim-dns-records.csv
