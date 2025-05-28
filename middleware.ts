@@ -27,10 +27,8 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const pathname = request.nextUrl.pathname;
 
-  // Redirect dashboard to products page
-  if (pathname === '/dashboard') {
-    return NextResponse.redirect(new URL('/products', request.url));
-  }
+  // No longer redirecting dashboard to products page
+  // Dashboard now shows its own content
 
   // Check if the route is public
   if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route))) {

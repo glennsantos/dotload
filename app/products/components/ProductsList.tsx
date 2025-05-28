@@ -144,20 +144,6 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
 
   return (
     <div className="space-y-8">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {statsData.map((stat, index) => (
-          <StatsCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            subtitle={stat.subtitle}
-            icon={stat.icon}
-            iconClassName={stat.iconClassName}
-          />
-        ))}
-      </div>
-
       {/* Products Header */}
       <div>
         <h2 className="text-xl font-medium text-stone-800 mb-4">Your Products</h2>
@@ -170,8 +156,6 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
             <thead>
               <tr className="border-b bg-white">
                 <th className="text-left py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '250px' }}>Name</th>
-                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '80px' }}>Sales</th>
-                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '100px' }}>Revenue</th>
                 <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '80px' }}>Price</th>
                 <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '100px' }}>Status</th>
               </tr>
@@ -213,8 +197,6 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                     </div>
                   </Link>
                 </td>
-                <td className="py-3 px-4 text-right">0</td>
-                <td className="py-3 px-4 text-right">$0</td>
                 <td className="py-3 px-4 text-right">${product.price.toFixed(2)}+</td>
                 <td className="py-3 px-4 text-right">
                   <div className="flex items-center justify-end">

@@ -5,12 +5,9 @@ import { prisma } from "@/lib/prisma"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import dynamic from 'next/dynamic'
 
 // Import the client component wrapper instead of directly importing with ssr: false
 import ClientDebugWrapper from '@/components/client-debug-wrapper'
-
-const TopNavigation = dynamic(() => import('@/components/top-navigation'))
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -43,8 +40,7 @@ async function getCurrentUser() {
   }
 }
 
-// We'll use a client component to conditionally render the top navigation
-// This is handled in the TopNavigation component itself
+// Top navigation has been removed to match the design requirements
 
 export default async function RootLayout({
   children,
@@ -58,7 +54,6 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <div className="flex flex-col h-screen">
-          <TopNavigation user={currentUser} />
           <main className="flex-1 overflow-auto">{children}</main>
           <ClientDebugWrapper />
         </div>

@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 export async function GET(request: NextRequest) {
   try {
     // Create a response that will clear the token cookie and redirect to login
-    const response = NextResponse.redirect(new URL('/', request.url));
+    const response = NextResponse.redirect(new URL('/login', request.url));
 
     // Clear the token cookie
     response.cookies.set('token', '', {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Logout error:', error);
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 }
 

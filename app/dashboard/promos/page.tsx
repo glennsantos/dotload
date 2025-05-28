@@ -293,7 +293,7 @@ export default function PromosPage() {
           <StatsCard
             key={index}
             title={stat.title}
-            value={stat.value}
+            value={isNaN(Number(stat.value)) ? 0 : Number(stat.value).toLocaleString()}
             subtitle={stat.subtitle}
             icon={stat.icon}
             iconClassName={stat.iconClassName}

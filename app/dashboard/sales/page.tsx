@@ -221,31 +221,6 @@ export default function SalesPage() {
     }
   };
 
-  // Stats data for the cards
-  const statsData = [
-    { 
-      title: "Total Revenue", 
-      value: formatCurrency(summary.totalIncome || 0), 
-      subtitle: "All time earnings",
-      icon: <DollarSign className="h-5 w-5 text-green-600" />,
-      iconClassName: "bg-green-100"
-    },
-    { 
-      title: "Total Sales", 
-      value: String(transactions.filter(t => t.type === 'income').length), 
-      subtitle: "Completed orders",
-      icon: <ShoppingCart className="h-5 w-5 text-blue-600" />,
-      iconClassName: "bg-blue-100"
-    },
-    { 
-      title: "Customers", 
-      value: "0", 
-      subtitle: "Unique buyers",
-      icon: <Users className="h-5 w-5 text-purple-600" />,
-      iconClassName: "bg-purple-100"
-    }
-  ];
-
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Dashboard Header with Welcome Message and Action Buttons */}
@@ -281,20 +256,6 @@ export default function SalesPage() {
       {/* Horizontal Tab Menu */}
       <div className="mb-8">
         <DashboardTabs activeTab="sales" />
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {statsData.map((stat, index) => (
-          <StatsCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            subtitle={stat.subtitle}
-            icon={stat.icon}
-            iconClassName={stat.iconClassName}
-          />
-        ))}
       </div>
 
       {/* Transactions Section */}
