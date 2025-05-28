@@ -1,0 +1,407 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, ArrowRight, Download, Filter, Settings, LogOut, ShoppingCart, DollarSign, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { DashboardTabs } from '@/components/ui/dashboard-tabs';
+import { StatsCard } from '@/components/ui/stats-card';
+
+// Define types for our data
+type Transaction = {
+  id: string;
+  amount: number;
+  currency: string;
+  type: 'income' | 'payout' | 'fee';
+  status: 'completed' | 'pending' | 'failed';
+  description: string;
+  reference?: string;
+  referenceType?: string;
+  createdAt: string;
+};
+
+type Summary = {
+  totalIncome: number;
+  totalPayouts: number;
+  totalFees: number;
+  currentBalance: number;
+  availableBalance: number;
+};
+
+type Pagination = {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+export default function SalesPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summary, setSummary] = useState<Summary>({
+    totalIncome: 0,
+    totalPayouts: 0,
+    totalFees: 0,
+    currentBalance: 0,
+    availableBalance: 0,
+  });
+  const [pagination, setPagination] = useState<Pagination>({
+    total: 0,
+    page: 1,
+    limit: 20,
+    totalPages: 1,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<string>('all');
+  const [userName, setUserName] = useState("User");
+
+  // Fetch transactions data and user data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch user data and transactions in parallel
+        const [authResponse, transactionsResponse] = await Promise.all([
+          fetch('/api/auth/me'),
+          fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`)
+        ]);
+        
+        if (authResponse.status === 401 || authResponse.status === 403) {
+          // Redirect to login if unauthorized
+          router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+          return;
+        }
+        
+        // Get user data for welcome message
+        if (authResponse.ok) {
+          const userData = await authResponse.json();
+          if (userData.user && userData.user.name) {
+            setUserName(userData.user.name);
+          }
+        }
+        
+        if (!transactionsResponse.ok) {
+          throw new Error('Failed to fetch transactions data');
+        }
+        
+        const data = await transactionsResponse.json();
+        setTransactions(data.transactions || []);
+        setSummary(data.summary || {
+          totalIncome: 0,
+          totalPayouts: 0,
+          totalFees: 0,
+          currentBalance: 0,
+          availableBalance: 0,
+        });
+        setPagination(data.pagination || {
+          total: 0,
+          page: 1,
+          limit: 20,
+          totalPages: 1,
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        toast({
+          title: 'Error',
+          description: 'Failed to load transactions information',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [router, toast, pagination.page, pagination.limit]);
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setPagination(prev => ({
+        ...prev,
+        page: newPage,
+      }));
+    }
+  };
+
+  // Handle filter change
+  const handleFilterChange = (value: string) => {
+    setFilter(value);
+  };
+
+  // Filter transactions based on selected filter
+  const filteredTransactions = transactions.filter(transaction => {
+    if (filter === 'all') return true;
+    return transaction.type === filter;
+  });
+
+  // Format currency
+  const formatCurrency = (amount: number, currency: string = 'PHP') => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency,
+    }).format(amount);
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
+
+  // Get status badge color
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100';
+      case 'pending':
+        return 'bg-amber-100 text-amber-800 hover:bg-amber-100';
+      case 'failed':
+        return 'bg-red-100 text-red-800 hover:bg-red-100';
+      default:
+        return 'bg-stone-100 text-stone-800 hover:bg-stone-100';
+    }
+  };
+
+  // Get transaction type badge color
+  const getTypeBadgeColor = (type: string) => {
+    switch (type) {
+      case 'income':
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
+      case 'payout':
+        return 'bg-purple-100 text-purple-800 hover:bg-purple-100';
+      case 'fee':
+        return 'bg-stone-100 text-stone-800 hover:bg-stone-100';
+      default:
+        return 'bg-stone-100 text-stone-800 hover:bg-stone-100';
+    }
+  };
+
+  // Get transaction amount color
+  const getAmountColor = (type: string) => {
+    switch (type) {
+      case 'income':
+        return 'text-emerald-600';
+      case 'payout':
+      case 'fee':
+        return 'text-red-600';
+      default:
+        return 'text-stone-800';
+    }
+  };
+
+  // Get transaction amount prefix
+  const getAmountPrefix = (type: string) => {
+    switch (type) {
+      case 'income':
+        return '+';
+      case 'payout':
+      case 'fee':
+        return '-';
+      default:
+        return '';
+    }
+  };
+
+  // Stats data for the cards
+  const statsData = [
+    { 
+      title: "Total Revenue", 
+      value: formatCurrency(summary.totalIncome || 0), 
+      subtitle: "All time earnings",
+      icon: <DollarSign className="h-5 w-5 text-green-600" />,
+      iconClassName: "bg-green-100"
+    },
+    { 
+      title: "Total Sales", 
+      value: String(transactions.filter(t => t.type === 'income').length), 
+      subtitle: "Completed orders",
+      icon: <ShoppingCart className="h-5 w-5 text-blue-600" />,
+      iconClassName: "bg-blue-100"
+    },
+    { 
+      title: "Customers", 
+      value: "0", 
+      subtitle: "Unique buyers",
+      icon: <Users className="h-5 w-5 text-purple-600" />,
+      iconClassName: "bg-purple-100"
+    }
+  ];
+
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Dashboard Header with Welcome Message and Action Buttons */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-800">Sales</h1>
+          <p className="text-stone-600 font-light">Welcome back, {userName}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button 
+            asChild
+            variant="outline"
+            className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-md"
+          >
+            <Link href="/settings">
+              <Settings size={16} />
+              <span className="sr-only md:not-sr-only md:ml-2">Settings</span>
+            </Link>
+          </Button>
+          <Button 
+            asChild
+            variant="outline"
+            className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-md"
+          >
+            <Link href="/api/auth/logout">
+              <LogOut size={16} />
+              <span className="sr-only md:not-sr-only md:ml-2">Logout</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+      
+      {/* Horizontal Tab Menu */}
+      <div className="mb-8">
+        <DashboardTabs activeTab="sales" />
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {statsData.map((stat, index) => (
+          <StatsCard
+            key={index}
+            title={stat.title}
+            value={stat.value}
+            subtitle={stat.subtitle}
+            icon={stat.icon}
+            iconClassName={stat.iconClassName}
+          />
+        ))}
+      </div>
+
+      {/* Transactions Section */}
+      <div className="space-y-6">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          </div>
+        ) : error ? (
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : (
+          <Card className="border border-stone-200 shadow-sm">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-xl font-medium text-stone-800">All Sales</CardTitle>
+                <Select value={filter} onValueChange={handleFilterChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Transactions</SelectItem>
+                    <SelectItem value="income">Income Only</SelectItem>
+                    <SelectItem value="payout">Payouts Only</SelectItem>
+                    <SelectItem value="fee">Fees Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <CardDescription>
+                Showing {filteredTransactions.length} of {pagination.total} transactions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {filteredTransactions.length === 0 ? (
+                <div className="text-center py-8 text-stone-500">
+                  <ShoppingCart className="mx-auto h-12 w-12 text-stone-300 mb-4" />
+                  <p className="text-lg font-medium mb-2">No sales yet</p>
+                  <p className="text-sm mb-6">Start selling to see transactions here!</p>
+                  <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
+                    <Link href="/products/new">Create a product</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <div className="space-y-4 min-w-[600px]">
+                    {filteredTransactions.map((transaction) => (
+                      <div key={transaction.id} className="border border-stone-200 rounded-lg p-4 hover:bg-stone-50 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div className="min-w-0 flex-1 pr-4">
+                            <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+                              <h3 className="font-medium truncate text-stone-800">{transaction.description}</h3>
+                              <Badge className={getTypeBadgeColor(transaction.type)}>
+                                {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                              </Badge>
+                              <Badge className={getStatusBadgeColor(transaction.status)}>
+                                {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-stone-500">
+                              {formatDate(transaction.createdAt)}
+                            </p>
+                            {transaction.reference && (
+                              <p className="text-xs text-stone-500 mt-1 truncate">
+                                Reference: {transaction.reference} ({transaction.referenceType})
+                              </p>
+                            )}
+                          </div>
+                          <div className={`text-lg font-semibold whitespace-nowrap ${getAmountColor(transaction.type)}`}>
+                            {getAmountPrefix(transaction.type)}{formatCurrency(transaction.amount, transaction.currency)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            {pagination.totalPages > 1 && (
+              <CardFooter className="flex justify-between">
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="border-stone-200 text-stone-700"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
+                <div className="text-sm text-stone-500">
+                  Page {pagination.page} of {pagination.totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.totalPages}
+                  className="border-stone-200 text-stone-700"
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </CardFooter>
+            )}
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}

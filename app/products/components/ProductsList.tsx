@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Plus, Info } from "lucide-react"
+import { Plus, Info, ShoppingCart, DollarSign, Users, UserCheck } from "lucide-react"
+import { StatsCard } from "@/components/ui/stats-card"
+import { Button } from "@/components/ui/button"
 
 interface ProductFile {
   id: string
@@ -103,60 +105,80 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
 
   if (!hasProducts) {
     return (
-      <div className="border rounded-md p-8 text-center">
-        <h2 className="text-xl font-medium mb-2">You don't have any products yet</h2>
-        <p className="text-gray-600 mb-6">Create your first product to start selling</p>
-        <Link href="/products/new" className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
-          <Plus size={18} /> Create Product
-        </Link>
+      <div className="border border-stone-200 rounded-lg shadow-sm p-8 text-center">
+        <h2 className="text-xl font-medium mb-2 text-stone-800">You don't have any products yet</h2>
+        <p className="text-stone-600 mb-6">Create your first product to start selling</p>
+        <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-md inline-flex items-center gap-2">
+          <Link href="/products/new">
+            <Plus size={18} /> Create Product
+          </Link>
+        </Button>
       </div>
     )
   }
 
-  // Dashboard cards
-  const dashboardCards = [
-    { title: "Total Revenue", value: "$0", info: true },
-    { title: "Customers", value: "1", info: true },
-    { title: "Active Members", value: "0", info: true },
-    { title: "MRR", value: "$0", info: true },
+  // Stats data for the cards
+  const statsData = [
+    { 
+      title: "Total Revenue", 
+      value: "$0", 
+      subtitle: "All time earnings",
+      icon: <DollarSign className="h-5 w-5 text-green-600" />,
+      iconClassName: "bg-green-100"
+    },
+    { 
+      title: "Total Sales", 
+      value: "0", 
+      subtitle: "Completed orders",
+      icon: <ShoppingCart className="h-5 w-5 text-blue-600" />,
+      iconClassName: "bg-blue-100"
+    },
+    { 
+      title: "Customers", 
+      value: "0", 
+      subtitle: "Unique buyers",
+      icon: <Users className="h-5 w-5 text-purple-600" />,
+      iconClassName: "bg-purple-100"
+    }
   ]
 
   return (
     <div className="space-y-8">
-      {/* Dashboard Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {dashboardCards.map((card, index) => (
-          <div key={index} className="border rounded-md p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">{card.title}</span>
-              {card.info && <Info size={16} className="text-gray-400" />}
-            </div>
-            <div className="text-3xl font-bold">{card.value}</div>
-          </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {statsData.map((stat, index) => (
+          <StatsCard
+            key={index}
+            title={stat.title}
+            value={stat.value}
+            subtitle={stat.subtitle}
+            icon={stat.icon}
+            iconClassName={stat.iconClassName}
+          />
         ))}
       </div>
 
       {/* Products Header */}
       <div>
-        <h2 className="text-xl font-normal mb-4">Products</h2>
+        <h2 className="text-xl font-medium text-stone-800 mb-4">Your Products</h2>
       </div>
 
       {/* Products Table */}
-      <div className="border rounded-md overflow-hidden">
+      <div className="border border-stone-200 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b bg-white">
-                <th className="text-left py-3 px-4 font-normal text-sm" style={{ minWidth: '250px' }}>Name</th>
-                <th className="text-right py-3 px-4 font-normal text-sm" style={{ minWidth: '80px' }}>Sales</th>
-                <th className="text-right py-3 px-4 font-normal text-sm" style={{ minWidth: '100px' }}>Revenue</th>
-                <th className="text-right py-3 px-4 font-normal text-sm" style={{ minWidth: '80px' }}>Price</th>
-                <th className="text-right py-3 px-4 font-normal text-sm" style={{ minWidth: '100px' }}>Status</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '250px' }}>Name</th>
+                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '80px' }}>Sales</th>
+                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '100px' }}>Revenue</th>
+                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '80px' }}>Price</th>
+                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '100px' }}>Status</th>
               </tr>
             </thead>
             <tbody>
             {products.map((product) => (
-              <tr key={product.id} className="border-b hover:bg-gray-50">
+              <tr key={product.id} className="border-b hover:bg-stone-50">
                 <td className="py-3 px-4">
                   <Link href={`/products/${product.id}`} className="flex items-center gap-3">
                     <div className="w-12 h-12 relative overflow-hidden rounded">
@@ -178,14 +200,14 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                           unoptimized={!product.coverImagePath.startsWith('http')}
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-400 text-xs">No image</span>
+                        <div className="w-full h-full bg-stone-200 flex items-center justify-center">
+                          <span className="text-stone-400 text-xs">No image</span>
                         </div>
                       )}
                     </div>
                     <div>
-                      <div className="font-medium">{product.name}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="font-medium text-stone-800">{product.name}</div>
+                      <div className="text-sm text-stone-500">
                         {window.location.host}/p/{product.slug || product.id}
                       </div>
                     </div>
@@ -196,15 +218,15 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                 <td className="py-3 px-4 text-right">${product.price.toFixed(2)}+</td>
                 <td className="py-3 px-4 text-right">
                   <div className="flex items-center justify-end">
-                    <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                    <span>Published</span>
+                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
+                    <span className="text-stone-700">Published</span>
                   </div>
                 </td>
               </tr>
             ))}
-            <tr className="bg-gray-50">
-              <td colSpan={2} className="py-3 px-4 font-medium">Totals</td>
-              <td className="py-3 px-4 text-right">$0</td>
+            <tr className="bg-stone-50">
+              <td colSpan={2} className="py-3 px-4 font-medium text-stone-700">Totals</td>
+              <td className="py-3 px-4 text-right text-stone-700">$0</td>
               <td colSpan={2}></td>
             </tr>
           </tbody>
