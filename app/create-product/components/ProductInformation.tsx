@@ -68,10 +68,23 @@ export default function ProductInformation({
     }
   }
 
+  const getCurrencySymbol = (currency: string) => {
+    switch (currency) {
+      case 'PHP':
+        return '₱'
+      case 'USD':
+        return '$'
+      case 'EUR':
+        return '€'
+      default:
+        return '₱' // Default to PHP
+    }
+  }
+
   return (
     <div>
       <div className="mb-6">
-        <h3 className="text-base font-medium mb-2">Product Information</h3>
+        <h3 className="tracking-tight text-xl font-light text-stone-900">Product Information</h3>
         <p className="text-sm text-gray-500 mb-4">Essential details about your product</p>
       </div>
       
@@ -141,7 +154,7 @@ export default function ProductInformation({
           <div className="flex">
             <div className="flex-grow flex">
               <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-50 text-gray-500">
-                ₱
+                {getCurrencySymbol(productData.currency)}
               </span>
               <input
                 type="number"
@@ -172,8 +185,8 @@ export default function ProductInformation({
       
       {/* Thumbnail Upload */}
       <div className="mt-8 mb-6">
-        <h3 className="text-base font-medium mb-2">Product Thumbnail</h3>
-        <p className="text-sm text-gray-500 mb-4">Upload a thumbnail image for your product.</p>
+        <h3 className="text-base font-medium mb-2">Product Photo</h3>
+        <p className="text-sm text-gray-500 mb-4">Upload high-quality photos of your physical product</p>
         
         <div className="border border-dashed rounded-md p-4 flex flex-col items-center justify-center mb-4">
           {productData.coverImage ? (

@@ -26,7 +26,7 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
     <div className="sticky top-4">
       <h3 className="text-base font-medium mb-2">Product Preview</h3>
       <div className="flex justify-end mb-2">
-        <button className="text-xs text-gray-500 hover:text-gray-700">View Preview</button>
+        <button className="text-xs text-gray-500 hover:text-gray-700">Live Preview</button>
       </div>
       
       <div className="border rounded-md overflow-hidden bg-white">
@@ -64,17 +64,17 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
           </div>
           
           {/* Product Name */}
-          <h3 className="text-lg font-medium text-center mb-1">
+          <h3 className="text-2xl font-light text-center mb-1">
             {productData.name || 'Product Name'}
           </h3>
           
           {/* Product Description */}
-          <p className="text-sm text-gray-600 text-center mb-4 line-clamp-3">
+          <p className="text-sm text-gray-600 font-light text-center mb-4 line-clamp-3">
             {productData.description || 'Product description will appear here. Add a description to help customers understand what you\'re offering.'}
           </p>
           
           {/* Product Price */}
-          <div className="text-xl font-medium mb-4">
+          <div className="text-xl font-light mb-4">
             {getCurrencySymbol(productData.currency)}
             {productData.price > 0 
               ? productData.price.toFixed(2) 

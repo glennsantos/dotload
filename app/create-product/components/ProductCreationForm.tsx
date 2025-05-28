@@ -209,32 +209,32 @@ export default function ProductCreationForm() {
   return (
     <div className="min-h-screen">
       {/* Header with back button */}
-      <div className="bg-gray-50 py-3 px-6 border-b">
+      <div className="py-3 px-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm">
-            <Link href="/dashboard" className="text-gray-600 hover:text-black flex items-center">
+          <div className="flex font-light items-center text-sm">
+            <Link href="/dashboard" className="text-1xl text-gray-600 hover:text-black flex items-center">
               <ChevronLeft size={16} className="mr-1" />
               Back to Dashboard
             </Link>
           </div>
-          <button 
-            className="px-4 py-1 bg-emerald-500 text-white text-sm rounded-full"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Publishing...' : 'Publish'}
-          </button>
         </div>
       </div>
 
       {!createdProduct ? (
         <div>
           <header className="p-6 border-b">
-            <div className="flex justify-between items-center">
+            <div className="flex font-light justify-between items-center">
               <div>
-                <h1 className="text-2xl font-normal">Create Product</h1>
-                <p className="text-sm text-gray-500">Build your checkout page</p>
+                <h1 className="text-3xl">Create Product</h1>
+                <p className="pl-5text-sm text-gray-500">Build your checkout page</p>
               </div>
+              <button 
+                className="px-6 py-3 text-2xl bg-emerald-500 text-white text-sm rounded-full"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Publishing...' : 'Publish'}
+              </button>
             </div>
           </header>
 
@@ -242,16 +242,16 @@ export default function ProductCreationForm() {
             {/* Left side - Product Setup */}
             <div className="md:col-span-7">
               {/* Tabs */}
-              <div className="mb-6">
-                <div className="grid grid-cols-2 gap-0">
+              <div className="mb-6 border rounded-lg">
+                <div className="grid grid-cols-2 gap-0 p-1 font-light ">
                   <button 
-                    className={`py-2 px-4 text-center ${activeTab === 'setup' ? 'bg-emerald-100 text-emerald-700 font-medium rounded-t-md' : 'bg-gray-50 text-gray-500'}`}
+                    className={`py-2 px-4 text-center ${activeTab === 'setup' ? 'bg-emerald-100 text-emerald-700 rounded-lg' : 'text-gray-500'}`}
                     onClick={() => handleTabChange('setup')}
                   >
                     Product Setup
                   </button>
                   <button 
-                    className={`py-2 px-4 text-center ${activeTab === 'advanced' ? 'bg-emerald-100 text-emerald-700 font-medium rounded-t-md' : 'bg-gray-50 text-gray-500'}`}
+                    className={`py-2 px-4 text-center ${activeTab === 'advanced' ? 'bg-emerald-100 text-emerald-700 rounded-lg' : 'text-gray-500'}`}
                     onClick={() => handleTabChange('advanced')}
                   >
                     Advanced Options
