@@ -47,7 +47,49 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section class="max-w-6xl mx-auto px-6 lg:px-8 py-20"><div class="text-center mb-16"><h2 class="text-3xl font-light text-stone-900 mb-4">Why Choose Alacart?</h2><p class="text-lg text-stone-600">Everything you need to start selling online</p></div><div class="grid md:grid-cols-3 gap-12"><div class="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm"><div class="p-8 text-center"><div class="flex justify-center mb-6"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap h-5 w-5 text-stone-600"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg></div><h3 class="text-xl font-medium text-stone-900 mb-4">2-Minute Setup</h3><p class="text-stone-600 leading-relaxed">Create professional checkout pages in under 2 minutes with our smart wizard</p></div></div><div class="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm"><div class="p-8 text-center"><div class="flex justify-center mb-6"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield h-5 w-5 text-stone-600"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div><h3 class="text-xl font-medium text-stone-900 mb-4">Secure Payments</h3><p class="text-stone-600 leading-relaxed">Built-in Stripe integration with enterprise-level security and trust indicators</p></div></div><div class="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm"><div class="p-8 text-center"><div class="flex justify-center mb-6"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe h-5 w-5 text-stone-600"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg></div><h3 class="text-xl font-medium text-stone-900 mb-4">Digital &amp; Physical</h3><p class="text-stone-600 leading-relaxed">Support for both digital downloads and physical products with inventory management</p></div></div></div></section>
+      <section className="max-w-6xl mx-auto px-6 lg:px-8 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-light text-stone-900 mb-4">Why Choose Alacart?</h2>
+          <p className="text-lg text-stone-600">Everything you need to start selling online</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-12">
+          <div className="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm">
+            <div className="p-8 text-center">
+              <div className="flex justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap h-5 w-5 text-stone-600">
+                  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-stone-900 mb-4">2-Minute Setup</h3>
+              <p className="text-stone-600 leading-relaxed">Create professional checkout pages in under 2 minutes with our smart wizard</p>
+            </div>
+          </div>
+          <div className="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm">
+            <div className="p-8 text-center">
+              <div className="flex justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield h-5 w-5 text-stone-600">
+                  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-stone-900 mb-4">Secure Payments</h3>
+              <p className="text-stone-600 leading-relaxed">Built-in Stripe integration with enterprise-level security and trust indicators</p>
+            </div>
+          </div>
+          <div className="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm">
+            <div className="p-8 text-center">
+              <div className="flex justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-globe h-5 w-5 text-stone-600">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                  <path d="M2 12h20"></path>
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-stone-900 mb-4">Digital &amp; Physical</h3>
+              <p className="text-stone-600 leading-relaxed">Support for both digital downloads and physical products with inventory management</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Benefits Section */}
       <section className="py-16">
@@ -77,7 +119,21 @@ export default function Home() {
               ))}
             </div>
 
-            <div class="relative"><div class="bg-stone-100 rounded-2xl p-12"><div class="bg-white rounded-xl shadow-sm p-8"><div class="text-center"><div class="w-16 h-16 bg-emerald-600 rounded-full mx-auto mb-6 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap h-8 w-8 text-white"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg></div><h3 class="text-lg font-medium text-stone-900 mb-3">Professional Results</h3><p class="text-stone-600">Get enterprise-level checkout pages with minimal effort</p></div></div></div></div>
+            <div className="relative">
+              <div className="bg-stone-100 rounded-2xl p-12">
+                <div className="bg-white rounded-xl shadow-sm p-8">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-emerald-600 rounded-full mx-auto mb-6 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap h-8 w-8 text-white">
+                        <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-stone-900 mb-3">Professional Results</h3>
+                    <p className="text-stone-600">Get enterprise-level checkout pages with minimal effort</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
