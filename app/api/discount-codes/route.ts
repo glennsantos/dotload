@@ -1,0 +1,184 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(request: NextRequest) {
+  try {
+    // Check authentication
+    const user = await getCurrentUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get all products with discount codes
+    const products = await prisma.product.findMany({
+      where: {
+        userId: user.id,
+        discountCodes: {
+          not: null
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        discountCodes: true,
+        createdAt: true
+      }
+    });
+    
+    // Parse discount codes from products
+    const allDiscountCodes: any[] = [];
+    
+    products.forEach((product: any) => {
+      if (!product.discountCodes) return;
+      
+      try {
+        // Try to parse the discount codes JSON string
+        const productCodes = JSON.parse(product.discountCodes);
+        
+        if (Array.isArray(productCodes)) {
+          productCodes.forEach(code => {
+            allDiscountCodes.push({
+              ...code,
+              productId: product.id,
+              productName: product.name
+            });
+          });
+        }
+      } catch (error) {
+        console.error(`Error parsing discount codes for product ${product.id}:`, error);
+      }
+    });
+
+    return NextResponse.json(allDiscountCodes);
+  } catch (error) {
+    console.error('Error fetching discount codes:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch discount codes' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Check authentication
+    const user = await getCurrentUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Parse request body
+    const body = await request.json();
+    
+    // Validate required fields
+    if (!body.code || !body.type || body.value === undefined) {
+      return NextResponse.json(
+        { error: 'Missing required fields: code, type, value' },
+        { status: 400 }
+      );
+    }
+
+    // Create a new discount code
+    const newDiscountCode: any = {
+      id: Date.now().toString(),
+      code: body.code,
+      type: body.type,
+      value: body.value,
+      maxUses: body.maxUses || null,
+      usedCount: 0,
+      expiresAt: body.expiresAt || null,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+    
+    // If product-specific, add to that product's discount codes
+    if (body.productId && body.productId !== 'all') {
+      const product = await prisma.product.findUnique({
+        where: {
+          id: body.productId,
+          userId: user.id // Ensure the user owns this product
+        },
+        select: {
+          id: true,
+          name: true,
+          discountCodes: true
+        }
+      });
+      
+      if (!product) {
+        return NextResponse.json(
+          { error: 'Product not found or you do not have permission' },
+          { status: 404 }
+        );
+      }
+      
+      // Parse existing discount codes or create new array
+      let existingCodes = [];
+      try {
+        if (product.discountCodes) {
+          existingCodes = JSON.parse(product.discountCodes);
+        }
+      } catch (error) {
+        console.error(`Error parsing discount codes for product ${product.id}:`, error);
+      }
+      
+      // Add the new code
+      existingCodes.push(newDiscountCode);
+      
+      // Update the product with the new codes
+      await prisma.product.update({
+        where: { id: product.id },
+        data: {
+          discountCodes: JSON.stringify(existingCodes)
+        }
+      });
+      
+      // Add product info to the response
+      newDiscountCode.productId = product.id;
+      newDiscountCode.productName = product.name;
+    } else {
+      // For global discount codes, we'll add them to all products owned by the user
+      // This is a simplified approach - in a real system, you might want a separate table for global codes
+      const products = await prisma.product.findMany({
+        where: { userId: user.id },
+        select: {
+          id: true,
+          name: true,
+          discountCodes: true
+        }
+      });
+      
+      // Update each product with the new global code
+      for (const product of products) {
+        let existingCodes = [];
+        try {
+          if (product.discountCodes) {
+            existingCodes = JSON.parse(product.discountCodes);
+          }
+        } catch (error) {
+          console.error(`Error parsing discount codes for product ${product.id}:`, error);
+        }
+        
+        existingCodes.push(newDiscountCode);
+        
+        await prisma.product.update({
+          where: { id: product.id },
+          data: {
+            discountCodes: JSON.stringify(existingCodes)
+          }
+        });
+      }
+    }
+
+    return NextResponse.json(newDiscountCode, { status: 201 });
+  } catch (error) {
+    console.error('Error creating discount code:', error);
+    return NextResponse.json(
+      { error: 'Failed to create discount code' },
+      { status: 500 }
+    );
+  }
+}
