@@ -18,7 +18,7 @@ export default function Sidebar() {
   return (
     <div className="w-[200px] bg-black text-white flex flex-col h-full">
       <div className="p-6 pb-8">
-        <h1 className="text-2xl font-bold">alaCarte</h1>
+        <h1 className="text-2xl font-bold">alaCart</h1>
       </div>
 
       <nav className="flex-1">

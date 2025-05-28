@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Menu, X, Search, Bell, User, LogOut, Settings, ShoppingBag, Wallet, BookOpen } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
 // Create a custom event for auth state changes
 declare global {
@@ -30,7 +30,11 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
   const [isLoading, setIsLoading] = useState(true)
   const [hasPurchases, setHasPurchases] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const userMenuRef = useRef<HTMLDivElement>(null)
+  
+  // Check if current path is an auth page
+  const isAuthPage = ["/login", "/register", "/forgot-password"].includes(pathname)
   
   // Check authentication status on the client side
   useEffect(() => {
@@ -165,12 +169,17 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
     }
   }
 
+  // Don't render navigation on auth pages
+  if (isAuthPage) {
+    return null
+  }
+  
   return (
-    <header className="bg-black text-white">
+    <header className="bg-black text-white shadow-md">
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/products" className="text-2xl font-bold mr-8">
-            alaCarte
+            alaCart
           </Link>
         </div>
 

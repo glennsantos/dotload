@@ -43,16 +43,22 @@ async function getCurrentUser() {
   }
 }
 
+// We'll use a client component to conditionally render the top navigation
+// This is handled in the TopNavigation component itself
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Get current user
+  const currentUser = await getCurrentUser();
+  
   return (
     <html lang="en">
       <body className={inter.className}>
         <div className="flex flex-col h-screen">
-          <TopNavigation user={await getCurrentUser()} />
+          <TopNavigation user={currentUser} />
           <main className="flex-1 overflow-auto">{children}</main>
           <ClientDebugWrapper />
         </div>

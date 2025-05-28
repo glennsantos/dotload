@@ -46,17 +46,17 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Forgot Password</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-stone-800">Forgot Password</CardTitle>
+          <CardDescription className="text-stone-600 font-light">
             Enter your email address and we'll send you instructions to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-4 rounded-xl">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
@@ -64,8 +64,8 @@ export default function ForgotPasswordPage() {
           )}
           
           {success && (
-            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <Alert className="mb-4 bg-emerald-50 text-emerald-800 border-emerald-200 rounded-xl">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-stone-700 font-light">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -81,19 +81,23 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                className="border-stone-300 rounded-2xl h-12 font-light focus:border-emerald-500 focus:ring-emerald-500"
               />
             </div>
             
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light" 
+              disabled={isSubmitting}>
               {isSubmitting ? (
-                <span className="flex items-center">Sending... <Mail className="ml-2 h-4 w-4 animate-pulse" /></span>
+                <span className="flex items-center font-light">Sending... <Mail className="ml-2 h-4 w-4 animate-pulse" /></span>
               ) : (
                 'Send Reset Instructions'
               )}
             </Button>
             
-            <div className="text-center mt-4 text-sm">
-              <Link href="/login" className="text-blue-600 hover:underline flex items-center justify-center">
+            <div className="text-center mt-4 text-sm text-stone-600 font-light">
+              <Link href="/login" className="text-emerald-600 hover:text-emerald-700 font-light flex items-center justify-center">
                 <ArrowLeft size={16} className="mr-1" />
                 Back to login
               </Link>
