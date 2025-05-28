@@ -10,6 +10,9 @@ import ProductFiles from './ProductFiles'
 import ProductPreview from './ProductPreview'
 import ProductAdvancedOptions from './ProductAdvancedOptions'
 import ProductStockPricing from './ProductStockPricing'
+import ProductVariants from './ProductVariants'
+import AdvancedInventory from './AdvancedInventory'
+import ShippingFulfillment from './ShippingFulfillment'
 
 // Define the Product type
 export type Product = {
@@ -26,6 +29,14 @@ export type Product = {
   currency: string
   // Physical product fields
   stockQuantity?: number | null
+  variants?: {
+    name: string
+    displayType: string
+    options: string[]
+  }[]
+  inventorySettings?: {
+    allowPreOrders: boolean
+  }
   // Digital product fields
   downloadSettings: {
     downloadLimit: number
@@ -69,6 +80,10 @@ export default function ProductCreationForm() {
     contentLinks: [],
     currency: 'PHP', // Default currency set to PHP
     stockQuantity: null, // For physical products, null means unlimited
+    variants: [], // For physical products, product variants like size, color, etc.
+    inventorySettings: {
+      allowPreOrders: false // For physical products, whether to allow pre-orders
+    },
     downloadSettings: {
       downloadLimit: 5,
       linkExpiration: 30
@@ -280,6 +295,24 @@ export default function ProductCreationForm() {
                     productData={productData}
                     setProductData={setProductData}
                   />
+                  
+                  {/* Additional components for physical products */}
+                  {productData.type === 'physical_product' && (
+                    <>
+                      <ProductVariants
+                        productData={productData}
+                        setProductData={setProductData}
+                      />
+                      <AdvancedInventory
+                        productData={productData}
+                        setProductData={setProductData}
+                      />
+                      <ShippingFulfillment
+                        productData={productData}
+                        setProductData={setProductData}
+                      />
+                    </>
+                  )}
                   
                   {productData.type === 'digital_product' && (
                     <ProductFiles 

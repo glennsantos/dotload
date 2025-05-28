@@ -1,7 +1,7 @@
 'use client'
 
 import { Product } from './ProductCreationForm'
-import { Lock } from 'lucide-react'
+import { Lock, ThumbsUp, Download, RefreshCcw } from 'lucide-react'
 import RichTextRenderer from '@/components/rich-text-renderer'
 
 type ProductPreviewProps = {
@@ -156,34 +156,35 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
           
           {/* Trust Indicators */}
           {productData.trustIndicators && (
-            <div className="flex items-center justify-center w-full text-xs text-gray-500 space-x-4 mt-2">
+            <div className="flex flex-wrap items-center justify-center w-full text-xs text-gray-500 gap-4 mt-2">
               {productData.trustIndicators.secureCheckout && (
                 <div className="flex items-center">
-                  <Lock size={14} className="mr-1" />
+                  <Lock size={14} className="mr-1 text-emerald-500" />
                   <span>Secure Checkout</span>
                 </div>
               )}
               
               {productData.type === 'digital_product' && productData.trustIndicators.instantDownload && (
                 <div className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
+                  <Download size={14} className="mr-1 text-emerald-500" />
                   <span>Instant Download</span>
                 </div>
               )}
               
               {productData.trustIndicators.refundPolicy && (
                 <div className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                  </svg>
+                  <RefreshCcw size={14} className="mr-1 text-emerald-500" />
                   <span>Money-back Guarantee</span>
                 </div>
               )}
+
+              {/* Custom Trust Indicators */}
+              {productData.trustIndicators.custom.map((indicator, index) => (
+                <div key={index} className="flex items-center">
+                  <ThumbsUp size={14} className="mr-1 text-emerald-500" />
+                  <span>{indicator}</span>
+                </div>
+              ))}
             </div>
           )}
 

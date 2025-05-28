@@ -178,7 +178,7 @@ export default function ProductAdvancedOptions({
       
       {/* What's Included Section */}
       <div className="mb-8 border rounded-md p-4">
-        <h3 className="text-base font-medium mb-2">What's Included</h3>
+        <h3 className="text-base font-light mb-2">What's Included</h3>
         <p className="text-sm text-gray-500 mb-4">List what customers will get with this product</p>
         
         <div className="mb-3">

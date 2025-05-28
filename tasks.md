@@ -109,7 +109,28 @@ reference repo: /home/aryeh/dev/alacart.store
     - Priority: Medium
     - Test Strategy: Verify custom trust indicators display correctly with thumbs up icon.
 
-16. **Set Default Currency to PHP** 
+16. **Add Product Variants for Physical Products** ✅
+    - Task ID: 6.20
+    - Description: Implement product variants feature for physical products to allow options like size, color, or material.
+    - Dependencies: 6.18
+    - Priority: High
+    - Test Strategy: Test adding, editing, and removing variants and options.
+
+17. **Add Advanced Inventory Management** ✅
+    - Task ID: 6.21
+    - Description: Implement advanced inventory options including pre-orders for physical products.
+    - Dependencies: 6.18
+    - Priority: Medium
+    - Test Strategy: Test pre-order toggle functionality and verify state is saved correctly.
+
+18. **Add Shipping & Fulfillment Section** ✅
+    - Task ID: 6.22
+    - Description: Add shipping and fulfillment section for physical products with coming soon features.
+    - Dependencies: 6.18
+    - Priority: Medium
+    - Test Strategy: Verify section displays correctly for physical products only.
+
+16. **Set Default Currency to PHP** ✅
     - Task ID: 6.10
     - Description: Ensure the default currency is set to PHP in the currency dropdown.
     - Dependencies: 6.2
@@ -337,49 +358,49 @@ reference repo: /home/aryeh/dev/alacart.store
 
 ## Styling Updates
 
-1. **Update Font Styling**
+1. **Update Font Styling** ✅
    - Task ID: 5.1
    - Description: Update the font family, weights, and sizes to match the reference design.
    - Dependencies: None
    - Priority: High
    - Test Strategy: Verify font consistency across the application.
 
-2. **Update Button Styling**
+2. **Update Button Styling** ✅
    - Task ID: 5.2
    - Description: Update button styling to match the reference design with emerald accents, proper rounding, and hover states.
    - Dependencies: None
    - Priority: High
    - Test Strategy: Verify buttons match the reference design across all states (default, hover, focus, disabled).
 
-3. **Update Card Styling**
+3. **Update Card Styling** ✅
    - Task ID: 5.3
    - Description: Update card styling to match the reference design with proper shadows, borders, and rounded corners.
    - Dependencies: None
    - Priority: High
    - Test Strategy: Verify cards match the reference design in all contexts.
 
-4. **Update Input Styling**
+4. **Update Input Styling** ✅
    - Task ID: 5.4
    - Description: Update input field styling to match the reference design with proper borders, focus states, and placeholders.
    - Dependencies: None
    - Priority: High
    - Test Strategy: Verify input fields match the reference design across all states.
 
-5. **Update Modal Styling**
+5. **Update Modal Styling** ✅
    - Task ID: 5.5
    - Description: Update modal styling to match the reference design with proper shadows, borders, and animations.
    - Dependencies: None
    - Priority: High
    - Test Strategy: Verify modals match the reference design in all contexts.
 
-6. **Ensure Consistent Color Palette**
+6. **Ensure Consistent Color Palette**✅
    - Task ID: 5.6
    - Description: Update the color palette in globals.css and tailwind.config.ts to match the reference design.
    - Dependencies: 5.1, 5.2, 5.3, 5.4, 5.5
    - Priority: High
    - Test Strategy: Verify color consistency across the application.
 
-7. **Test Styling Across All Pages**
+7. **Test Styling Across All Pages** ✅
    - Task ID: 5.7
    - Description: Test the updated styling across all pages to ensure consistency.
    - Dependencies: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6
@@ -400,7 +421,7 @@ reference repo: /home/aryeh/dev/alacart.store
    - Priority: Low
    - Test Strategy: Check background color across all pages for consistency.
 
-4. **Standardize Button Styling** 
+4. **Standardize Button Styling** ✅
    - Task ID: 4.4
    - Description: Ensure all buttons match the design in the reference image.
    - Dependencies: None

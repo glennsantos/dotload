@@ -29,8 +29,8 @@
 - [x] add download settings for digital products
 - [x] product badges need to appear below the image
 - [x] For product badges and trust indicators, turn them into toggles.
-- [ ] add stock and pricing for physical products (see image)
-- [ ] in advanced options, add product variants, advanced inventory, etc (see image)
+- [x] add stock and pricing for physical products (see image)
+- [x] in advanced options, add product variants, advanced inventory, etc (see image)
 - [x] product description should be formatted html
 
 ## Checkout
