@@ -258,6 +258,31 @@ export default function SalesPage() {
         <DashboardTabs activeTab="sales" />
       </div>
 
+      {/* Balance Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-6">
+          <h3 className="text-base font-medium text-stone-600 mb-3">Current Balance</h3>
+          <p className="text-3xl font-bold">{formatCurrency(summary.currentBalance || 0, 'PHP').replace('PHP', '').trim()}</p>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-base font-medium text-stone-600 mb-3">Available Balance</h3>
+              <p className="text-3xl font-bold">{formatCurrency(summary.availableBalance || 0, 'PHP').replace('PHP', '').trim()}</p>
+            </div>
+            <Button 
+              asChild
+              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light"
+            >
+              <Link href="/dashboard/payouts">
+                Request Payout
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Transactions Section */}
       <div className="space-y-6">
         {isLoading ? (

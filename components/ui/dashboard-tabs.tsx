@@ -14,37 +14,13 @@ interface TabItem {
 
 interface DashboardTabsProps {
   activeTab?: string
-  hideAdvancedTabs?: boolean
 }
 
-export function DashboardTabs({ activeTab, hideAdvancedTabs }: DashboardTabsProps) {
+export function DashboardTabs({ activeTab }: DashboardTabsProps) {
   const pathname = usePathname();
-  const [hasProducts, setHasProducts] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   
-  // Check if user has products
-  useEffect(() => {
-    async function checkProducts() {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/products');
-        
-        if (response.ok) {
-          const data = await response.json();
-          setHasProducts(data.length > 0);
-        }
-      } catch (error) {
-        console.error('Error checking products:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    
-    checkProducts();
-  }, []);
-  
-  // Define all possible tabs
-  const allTabs: TabItem[] = [
+  // Define all tabs
+  const tabs: TabItem[] = [
     {
       label: "Overview",
       icon: <BarChart3 className="h-4 w-4" />,
@@ -76,26 +52,11 @@ export function DashboardTabs({ activeTab, hideAdvancedTabs }: DashboardTabsProp
       href: "/dashboard/customers"
     }
   ];
-  
-  // Filter tabs based on whether the user has products
-  const visibleTabs = allTabs.filter(tab => {
-    // Always show Overview, Products, and Purchases tabs
-    if (
-      tab.label === "Overview" || 
-      tab.label === "Products" || 
-      tab.label === "Purchases"
-    ) {
-      return true;
-    }
-    
-    // Only show Sales, Promos, and Customers tabs if user has products
-    return hasProducts && !hideAdvancedTabs;
-  });
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden mb-6">
       <div className="flex overflow-x-auto py-2 px-2 justify-evenly">
-        {visibleTabs.map((tab) => {
+        {tabs.map((tab) => {
           // Check if this tab is active based on the current pathname
           const isActive = activeTab 
             ? tab.label.toLowerCase() === activeTab.toLowerCase()
