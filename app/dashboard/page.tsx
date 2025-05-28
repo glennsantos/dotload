@@ -259,28 +259,6 @@ export default async function Dashboard() {
           </div>
         )}
       </div>
-      
-      {/* Create Product CTA - Only show if no products */}
-      {stats.productCount === 0 && (
-        <div className="border border-stone-200 rounded-lg shadow-sm p-8 text-center mb-8">
-          <Image
-            src="/placeholder.svg?key=37o07"
-            alt="Create your first product"
-            width={200}
-            height={200}
-            className="mx-auto mb-4"
-          />
-          <h2 className="text-xl font-medium mb-2 text-stone-800">Create your first product</h2>
-          <p className="text-stone-600 mb-6 max-w-md mx-auto">
-            Start selling digital products, courses, or memberships. Set up your product in minutes.
-          </p>
-          <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-md inline-flex items-center gap-2">
-            <Link href="/products/new">
-              <Plus size={18} /> Create Product
-            </Link>
-          </Button>
-        </div>
-      )}
     </div>
   )
 }
