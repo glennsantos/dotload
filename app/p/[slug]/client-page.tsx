@@ -192,7 +192,7 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">alaCarte</h3>
+              <h3 className="text-lg font-semibold mb-4">alaCart</h3>
               <p className="text-gray-600">The easiest way to sell your digital products online.</p>
             </div>
             <div>
@@ -214,7 +214,7 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-200 text-center text-gray-500">
-            <p>© {new Date().getFullYear()} alaCarte. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} alaCart. All rights reserved.</p>
           </div>
         </div>
       </footer>

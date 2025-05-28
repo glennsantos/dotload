@@ -105,14 +105,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>
-            Log in to access your alaCarte products
+          <CardTitle className="text-stone-800">Welcome Back</CardTitle>
+          <CardDescription className="text-stone-600 font-light">
+            Log in to access your alaCart products
             {callbackUrl !== '/products' && (
-              <div className="mt-2 text-xs flex items-center text-muted-foreground">
+              <div className="mt-2 text-xs flex items-center text-stone-500 font-light">
                 <span>You'll be redirected to: </span>
                 <span className="ml-1 font-medium truncate">{decodeURI(callbackUrl)}</span>
               </div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           {error && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-4 rounded-xl">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
@@ -131,7 +131,7 @@ export default function LoginPage() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="mt-2 w-full" 
+                    className="mt-2 w-full rounded-2xl border-stone-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 font-light" 
                     onClick={handleResendVerification}
                     disabled={isResendingVerification}
                   >
@@ -144,15 +144,15 @@ export default function LoginPage() {
           )}
           
           {success && (
-            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <Alert className="mb-4 bg-emerald-50 text-emerald-800 border-emerald-200 rounded-xl">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-stone-700 font-light">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -160,10 +160,11 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                className="border-stone-300 rounded-2xl h-12 font-light focus:border-emerald-500 focus:ring-emerald-500"
               />
             </div>
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-stone-700 font-light">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -171,22 +172,26 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
+                className="border-stone-300 rounded-2xl h-12 font-light focus:border-emerald-500 focus:ring-emerald-500"
               />
-              <Link href="/forgot-password" className="text-xs text-blue-600 hover:underline mt-1 block text-right">
+              <Link href="/forgot-password" className="text-xs text-emerald-600 hover:text-emerald-700 mt-1 block text-right font-light">
                 Forgot password?
               </Link>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoggingIn}>
+            <Button 
+              type="submit" 
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light" 
+              disabled={isLoggingIn}>
               {isLoggingIn ? (
-                <span className="flex items-center">Logging in... <ArrowRight className="ml-2 h-4 w-4 animate-pulse" /></span>
+                <span className="flex items-center font-light">Logging in... <ArrowRight className="ml-2 h-4 w-4 animate-pulse" /></span>
               ) : (
                 'Log In'
               )}
             </Button>
           </form>
-          <div className="text-center mt-4 text-sm">
+          <div className="text-center mt-4 text-sm text-stone-600 font-light">
             Don't have an account? {' '}
-            <Link href="/register" className="text-blue-600 hover:underline">
+            <Link href="/register" className="text-emerald-600 hover:text-emerald-700 font-light">
               Register
             </Link>
           </div>

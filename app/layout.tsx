@@ -15,9 +15,9 @@ const TopNavigation = dynamic(() => import('@/components/top-navigation'))
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "alaCarte",
+  title: "alaCart",
   description: "A digital product marketplace platform",
-    generator: 'v0.dev'
+    generator: 'Glenn Santos'
 }
 
 async function getCurrentUser() {

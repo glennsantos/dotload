@@ -38,13 +38,13 @@ export async function generateMetadata(
   // Use default metadata from parent if product not found
   if (!product) {
     return {
-      title: 'Product Not Found | alaCarte',
+      title: 'Product Not Found | alaCart',
       description: 'The requested product could not be found.'
     }
   }
   
   // Base URL for absolute URLs
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://alacarte.app'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://alacart.store'
   
   // Construct image URL - use product image or fallback
   const imageUrl = product.coverImagePath 
@@ -54,7 +54,7 @@ export async function generateMetadata(
     : `${baseUrl}/images/default-product.jpg`
   
   // Extract plain text description if it's in rich text format
-  let description = product.description || 'A digital product on alaCarte'
+  let description = product.description || 'A digital product on alaCart'
   // If description contains HTML tags, extract plain text
   if (description && description.includes('<')) {
     description = description.replace(/<[^>]*>/g, '')

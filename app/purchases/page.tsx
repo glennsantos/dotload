@@ -234,7 +234,7 @@ export default function PurchasesPage() {
             </div>
             <h2 className="text-xl font-medium mb-4">You don't have any purchases yet</h2>
             <p className="text-gray-600 mb-6">
-              When you buy products on alaCarte, they will appear here for easy access.
+              When you buy products on , they will appear here for easy access.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
