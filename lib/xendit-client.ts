@@ -39,7 +39,7 @@ export async function createCustomer({
         email: email,
         mobile_number: mobileNumber,
         phone_number: mobileNumber,
-        description: 'Customer for alaCarte',
+        description: 'Customer for alaCart',
       })
     });
     
@@ -723,7 +723,7 @@ export async function chargeCard({
   amount,
   currency = 'PHP',
   cardCvn,
-  descriptor = 'alaCarte Purchase',
+  descriptor = 'alaCart Purchase',
   metadata,
 }: {
   tokenId: string;
@@ -815,7 +815,7 @@ export async function processCardPayment({
       amount,
       currency,
       cardCvn: cardCvc,
-      descriptor: 'alaCarte Purchase',
+      descriptor: 'alaCart Purchase',
       metadata
     });
     
@@ -879,7 +879,7 @@ export async function createEWalletPayment({
           mobile_number: phone
         },
         metadata: {
-          branch_code: 'ALaCarte_001'
+          branch_code: 'ALaCart_001'
         }
       })
     });

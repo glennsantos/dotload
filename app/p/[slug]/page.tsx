@@ -82,7 +82,7 @@ export async function generateMetadata(
         alt: product.name
       }],
       type: 'website',
-      siteName: 'alaCarte',
+      siteName: 'alaCart',
       locale: 'en_US',
     },
     
@@ -92,7 +92,7 @@ export async function generateMetadata(
       title: product.name,
       description: description,
       images: [imageUrl],
-      creator: '@alacarte'
+      creator: '@alacart'
     },
     
     // Additional meta tags for better SEO

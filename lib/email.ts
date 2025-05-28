@@ -10,7 +10,7 @@ const sesClient = new SESClient({
 });
 
 // Email sender address
-const fromEmail = process.env.EMAIL_FROM || 'alaCarte <no-reply@alacarte.app>';
+const fromEmail = process.env.EMAIL_FROM || 'alaCart <no-reply@alacart.store>';
 
 // Send verification email
 export async function sendVerificationEmail(
@@ -23,7 +23,7 @@ export async function sendVerificationEmail(
 
   const htmlBody = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #333;">Welcome to alaCarte${name ? `, ${name}` : ''}!</h2>
+      <h2 style="color: #333;">Welcome to alaCart${name ? `, ${name}` : ''}!</h2>
       <p>Thank you for registering. Please verify your email address to activate your account.</p>
       <div style="margin: 30px 0;">
         <a href="${verificationUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
@@ -37,7 +37,7 @@ export async function sendVerificationEmail(
   `;
 
   const textBody = `
-    Welcome to alaCarte${name ? `, ${name}` : ''}!
+    Welcome to alaCart${name ? `, ${name}` : ''}!
     
     Thank you for registering. Please verify your email address to activate your account.
     
@@ -50,7 +50,7 @@ export async function sendVerificationEmail(
     Source: fromEmail,
     Destination: { ToAddresses: [to] },
     Message: {
-      Subject: { Data: 'Verify your alaCarte account' },
+      Subject: { Data: 'Verify your alaCart account' },
       Body: {
         Html: { Data: htmlBody },
         Text: { Data: textBody }
@@ -111,7 +111,7 @@ export async function sendPasswordResetEmail(
     Source: fromEmail,
     Destination: { ToAddresses: [to] },
     Message: {
-      Subject: { Data: 'Reset your alaCarte password' },
+      Subject: { Data: 'Reset your alaCart password' },
       Body: {
         Html: { Data: htmlBody },
         Text: { Data: textBody }
@@ -151,7 +151,7 @@ export async function sendPurchaseConfirmationEmail(
 
   // Different email content based on purchase status
   if (status === 'pending') {
-    subject = `Your alaCarte Purchase: ${productName} (Payment Pending)`;
+    subject = `Your alaCart Purchase: ${productName} (Payment Pending)`;
     
     htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -183,7 +183,7 @@ export async function sendPurchaseConfirmationEmail(
     `;
   } else {
     // Default completed status
-    subject = `Your alaCarte Purchase: ${productName}`;
+    subject = `Your alaCart Purchase: ${productName}`;
     
     htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

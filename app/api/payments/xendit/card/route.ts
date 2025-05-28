@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
         amount: amount,
         currency: currency,
         // No cardCvn parameter - it's now optional in the function
-        descriptor: `alaCarte: ${purchase.product.name.substring(0, 20)}`,
+        descriptor: `alaCart: ${purchase.product.name.substring(0, 20)}`,
         metadata: {
           purchaseId: purchase.id,
           productId: purchase.productId
