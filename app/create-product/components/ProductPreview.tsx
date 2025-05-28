@@ -24,7 +24,7 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
 
   return (
     <div className="sticky top-4">
-      <h3 className="text-base font-medium mb-2">Product Preview</h3>
+      <h3 className="text-xl font-light mb-2">Product Preview</h3>
       <div className="flex justify-end mb-2">
         <button className="text-xs text-gray-500 hover:text-gray-700">Live Preview</button>
       </div>
@@ -54,14 +54,44 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
             </div>
           )}
           
-          {/* Product Type Badge */}
-          <div className="text-xs text-emerald-500 mb-1 bg-emerald-50 px-2 py-0.5 rounded-full">
-            {productData.type === 'digital_product' 
-              ? 'Digital Product' 
-              : productData.type === 'physical_product' 
-                ? 'Physical Product' 
-                : 'Product'}
-          </div>
+          {/* Product Badges */}
+          {productData.badges && (
+            <div className="flex flex-wrap justify-center gap-1 my-3">
+              {productData.badges.bestSeller && (
+                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                  Best Seller
+                </span>
+              )}
+              
+              {productData.badges.newRelease && (
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                  New Release
+                </span>
+              )}
+              
+              {productData.badges.popular && (
+                <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
+                  Popular
+                </span>
+              )}
+              
+              {productData.badges.custom.map((badge, index) => (
+                <span key={index} className="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">
+                  {badge}
+                </span>
+              ))}
+
+              {/* Product Type Badge */}
+              <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                {productData.type === 'digital_product' 
+                  ? 'Digital Product' 
+                  : productData.type === 'physical_product' 
+                    ? 'Physical Product' 
+                    : 'Product'}
+              </span> 
+            </div>
+          )}
+          
           
           {/* Product Name */}
           <h3 className="text-2xl font-light text-center mb-1">
@@ -87,6 +117,23 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
               ? 'Buy Now - Instant Download' 
               : 'Buy Now'}
           </button>
+
+          {/* What's Included Section - Only show if items exist */}
+          {productData.whatsIncluded.length > 0 && (
+            <div className="p-4 border font-light rounded-xl py-6 my-4">
+              <h4 className="text-md mb-2 text-center">What's Included</h4>
+              <ul className="space-y-1">
+                {productData.whatsIncluded.map((item, index) => (
+                  <li key={index} className="flex items-start text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           
           {/* Trust Indicators */}
           {productData.trustIndicators && (
@@ -120,53 +167,10 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
               )}
             </div>
           )}
-          
-          {/* Product Badges */}
-          {productData.badges && (
-            <div className="flex flex-wrap justify-center gap-1 mt-3">
-              {productData.badges.bestSeller && (
-                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
-                  Best Seller
-                </span>
-              )}
-              
-              {productData.badges.newRelease && (
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                  New Release
-                </span>
-              )}
-              
-              {productData.badges.popular && (
-                <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
-                  Popular
-                </span>
-              )}
-              
-              {productData.badges.custom.map((badge, index) => (
-                <span key={index} className="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">
-                  {badge}
-                </span>
-              ))}
-            </div>
-          )}
+
         </div>
         
-        {/* What's Included Section - Only show if items exist */}
-        {productData.whatsIncluded.length > 0 && (
-          <div className="p-4 border-t">
-            <h4 className="text-sm font-medium mb-2">What's Included</h4>
-            <ul className="space-y-1">
-              {productData.whatsIncluded.map((item, index) => (
-                <li key={index} className="flex items-start text-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        
       </div>
     </div>
   )

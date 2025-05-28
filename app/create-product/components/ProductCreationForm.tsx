@@ -222,7 +222,7 @@ export default function ProductCreationForm() {
 
       {!createdProduct ? (
         <div>
-          <header className="p-6 border-b">
+          <header className="p-6">
             <div className="flex font-light justify-between items-center">
               <div>
                 <h1 className="text-3xl">Create Product</h1>
