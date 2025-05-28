@@ -41,10 +41,10 @@
 - [x] Attach domain to dev server
 - [x] Create SSL cert for dev server via Letsencrypt.
 - [x] Convert SES to prod setup
-- [ ] check SES if connected
 - [x] check domain if connected
 - [x] Change from email for alacart in .env files
 - [x] Change other emails as needed
+- [ ] check SES if connected
 - [ ] clean up front end console.logs
 
 ## Perform QA Testing

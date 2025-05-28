@@ -43,6 +43,30 @@ model Product {
   discountCodes       String?
   isPublic            Boolean     @default(true)
   status              String      @default("active")
+  
+  // New fields for download settings
+  downloadLimit       Int         @default(5)
+  linkExpiration      Int         @default(30)
+  
+  // New fields for product badges
+  bestSeller          Boolean     @default(false)
+  newRelease          Boolean     @default(false)
+  popular             Boolean     @default(false)
+  customBadges        String?     // Stored as JSON string
+  
+  // New fields for trust indicators
+  secureCheckout      Boolean     @default(true)
+  instantDownload     Boolean     @default(true)
+  refundPolicy        Boolean     @default(false)
+  customTrustIndicators String?   // Stored as JSON string
+  
+  // New fields for physical products
+  stockQuantity       Int?        // Null means unlimited
+  allowPreOrders      Boolean     @default(false)
+  whatsIncluded       String?     // Stored as JSON string
+  curriculum          String?     // Stored as JSON string
+  contentLinks        String?     // Stored as JSON string
+  
   files               File[]
   user                User        @relation(fields: [userId], references: [id])
   purchases           Purchase[]

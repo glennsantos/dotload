@@ -46,21 +46,21 @@ reference repo: /home/aryeh/dev/alacart.store
    - Priority: High
    - Test Strategy: Verify the preview updates correctly as user enters information.
 
-7. **Update API to Handle New Product Fields** 
+7. **Update API to Handle New Product Fields** ✅
    - Task ID: 6.7
    - Description: Update the product creation API to handle the new fields from the form (download limits, badges, trust indicators, etc.).
    - Dependencies: 6.5
    - Priority: High
    - Test Strategy: Test API with various product configurations and verify data is saved correctly.
 
-8. **Update Database Schema for New Product Fields** 
+8. **Update Database Schema for New Product Fields** ✅
    - Task ID: 6.8
    - Description: Add new columns to the Product table for download settings, badges, and trust indicators.
    - Dependencies: None
    - Priority: High
    - Test Strategy: Verify the database schema changes and test with sample data.
 
-9. **Implement Form Validation** 
+9. **Implement Form Validation** ✅
    - Task ID: 6.9
    - Description: Add client-side validation for all form fields with appropriate error messages.
    - Dependencies: 6.2, 6.5
@@ -129,13 +129,6 @@ reference repo: /home/aryeh/dev/alacart.store
     - Dependencies: 6.18
     - Priority: Medium
     - Test Strategy: Verify section displays correctly for physical products only.
-
-19. **Move Physical Product Components to Advanced Options** ✅
-    - Task ID: 6.23
-    - Description: Move Product Variants, Advanced Inventory, and Shipping & Fulfillment components to the ProductAdvancedOptions component for better organization.
-    - Dependencies: 6.20, 6.21, 6.22
-    - Priority: Medium
-    - Test Strategy: Verify all physical product components display correctly in the Advanced Options section.
 
 16. **Set Default Currency to PHP** ✅
     - Task ID: 6.10

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronRight, ChevronLeft, Plus } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Plus, AlertCircle } from 'lucide-react'
+import { validateProductForm } from '@/lib/form-validation'
 import ProductTypeSelection from './ProductTypeSelection'
 import ProductInformation from './ProductInformation'
 import ProductFiles from './ProductFiles'
@@ -64,6 +65,8 @@ export default function ProductCreationForm() {
   const [activeTab, setActiveTab] = useState('setup') // 'setup' or 'advanced'
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [showValidationErrors, setShowValidationErrors] = useState(false)
   
   // Initialize product data with default values
   const [productData, setProductData] = useState<Product>({
@@ -117,9 +120,31 @@ export default function ProductCreationForm() {
     }
   }
 
+  // Validate form data
+  const validateForm = () => {
+    const { isValid, errors } = validateProductForm(productData)
+    setValidationErrors(errors)
+    setShowValidationErrors(!isValid)
+    return isValid
+  }
+  
+  // Effect to validate form when product data changes
+  useEffect(() => {
+    if (showValidationErrors) {
+      validateForm()
+    }
+  }, [productData, showValidationErrors])
+  
   // Handle form submission
   const handleSubmit = async () => {
     try {
+      // Validate form before submission
+      if (!validateForm()) {
+        // Scroll to the top to show validation errors
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+      
       setIsSubmitting(true)
       
       // Prepare form data for product creation
@@ -205,10 +230,9 @@ export default function ProductCreationForm() {
         }
       }
       
-      // Set the created product in state and move to success step
+      // Set the created product in state
       if (productResult.product) {
         setCreatedProduct(productResult.product)
-        setStep(totalSteps + 1)
       }
       
       setIsSubmitting(false)
@@ -244,6 +268,23 @@ export default function ProductCreationForm() {
               <div>
                 <h1 className="text-3xl">Create Product</h1>
                 <p className="pl-5text-sm text-gray-500">Build your checkout page</p>
+                
+                {/* Validation Errors */}
+                {showValidationErrors && Object.keys(validationErrors).length > 0 && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 mt-4 rounded-md">
+                    <div className="flex items-center mb-2">
+                      <AlertCircle size={18} className="mr-2" />
+                      <h3 className="font-medium">Please fix the following errors:</h3>
+                    </div>
+                    <ul className="list-disc pl-6 space-y-1">
+                      {Object.entries(validationErrors).map(([field, error]) => (
+                        <li key={field} className="text-sm">
+                          <span className="font-medium">{field.replace(/\[\d+\]|\./g, ' ').replace(/([A-Z])/g, ' $1').toLowerCase()}:</span> {error}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
               <button 
                 className="px-6 py-3 text-2xl bg-emerald-500 text-white text-sm rounded-full"
