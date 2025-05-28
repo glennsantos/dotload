@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
         { userId: user.id, email: user.email }, 
         JWT_SECRET, 
         { 
-          expiresIn: '24h',
+          expiresIn: '7d', // Extend from 24h to 7 days
           algorithm: 'HS256' // Explicitly set algorithm
         }
       );
@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 24 * 60 * 60, // 24 hours
+        maxAge: 7 * 24 * 60 * 60, // 7 days
         path: '/'
       });
       

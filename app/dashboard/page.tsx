@@ -9,6 +9,7 @@ import { cookies } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import jwt from "jsonwebtoken"
 import { formatCurrency } from "@/lib/utils"
+import { redirect } from "next/navigation"
 
 async function getCurrentUser() {
   try {
@@ -117,7 +118,9 @@ export default async function Dashboard() {
   // Get user data from server-side
   const user = await getCurrentUser();
   if (!user) {
-    return null; // Will redirect to login in middleware
+    // Explicitly redirect to login page
+    redirect('/login?callbackUrl=/dashboard');
+    return null;
   }
   
   const userName = user.name || "User";

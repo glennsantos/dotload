@@ -2,25 +2,36 @@
 
 ## Resolve Issues
 - [x] fix Request Payout button
-- [ ] fix product preview in create product
-  - [ ] should match the product page in mobile
 - [ ] See issues in Github for more
+- [?] Fix user being auto logged out
 
 ## UI Redesign v0.1
+- [ ] Understand the styling of /home/aryeh/dev/alacart.store
+- [ ] Update the fonts to match the fonts used there
+- [ ] Update the button styling to match
+- [ ] Update the card styling to match
+- [ ] Update the input styling to match
+- [ ] Update the modal styling to match
 
-### Register
-- [ ] Is the store setup required on sign up?
-  - [ ] What is the relationship of store to user account?
+## User setup
+- [ ] Allow saving of branding elements in the database (logo, header image)
+- [ ] add seller plans placeholder : see setting > billings
 
-### Create Product
-- [ ] Why not wizard for create product?
-- [ ] Currency should be removed since only PHP
-- [ ] What is the plan for? And payment method?
+## Create product
+- [ ] follow the create product page of /home/aryeh/dev/alacart.store
+  - [ ] follow the design
+  - [ ] update the product preview
+  - [ ] update the advanced options
+  - [ ] consolidate the inputs into one screen
+  - [ ] update product types: digital and physical product
+- [ ] add support for other currencies 
 
 ## Site Setup
-- [ ] Attach domain to dev server
-- [ ] Create SSL cert for dev server via Letsencrypt.
-- [ ] Convert SES to prod setup
+- [x] Attach domain to dev server
+- [x] Create SSL cert for dev server via Letsencrypt.
+- [x] Convert SES to prod setup
+- [ ] check SES if connected
+- [ ] check domain if connected
 - [ ] Change from email for alacart in .env files
 - [ ] Change other emails as needed
 - [ ] clean up front end console.logs

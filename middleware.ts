@@ -6,9 +6,9 @@ const JWT_SECRET = process.env.JWT_SECRET!.trim(); // Ensure no whitespace
 
 // List of public routes that don't require authentication
 const PUBLIC_ROUTES = [
+  '/',
   '/login', 
   '/register', 
-  '/', 
   '/verify-email',
   '/api/auth/login',
   '/api/auth/register',
@@ -52,7 +52,7 @@ export function middleware(request: NextRequest) {
     // Decode the token to get user information
     const decoded = verify(token, JWT_SECRET, {
       algorithms: ['HS256'], // Specify the expected algorithm
-      maxAge: '24h' // Match the token expiration from login route
+      maxAge: '7d' // Match the token expiration from login route
     }) as JwtPayload & { userId: string; email: string; emailVerified?: boolean };
     
     // Additional validation

@@ -200,6 +200,57 @@ reference repo: /home/aryeh/dev/alacart.store
    - Priority: Medium
    - Test Strategy: Compare with reference design for visual consistency.
 
+## Styling Updates
+
+1. **Update Font Styling**
+   - Task ID: 5.1
+   - Description: Update the font family, weights, and sizes to match the reference design.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify font consistency across the application.
+
+2. **Update Button Styling**
+   - Task ID: 5.2
+   - Description: Update button styling to match the reference design with emerald accents, proper rounding, and hover states.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify buttons match the reference design across all states (default, hover, focus, disabled).
+
+3. **Update Card Styling**
+   - Task ID: 5.3
+   - Description: Update card styling to match the reference design with proper shadows, borders, and rounded corners.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify cards match the reference design in all contexts.
+
+4. **Update Input Styling**
+   - Task ID: 5.4
+   - Description: Update input field styling to match the reference design with proper borders, focus states, and placeholders.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify input fields match the reference design across all states.
+
+5. **Update Modal Styling**
+   - Task ID: 5.5
+   - Description: Update modal styling to match the reference design with proper shadows, borders, and animations.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify modals match the reference design in all contexts.
+
+6. **Ensure Consistent Color Palette**
+   - Task ID: 5.6
+   - Description: Update the color palette in globals.css and tailwind.config.ts to match the reference design.
+   - Dependencies: 5.1, 5.2, 5.3, 5.4, 5.5
+   - Priority: High
+   - Test Strategy: Verify color consistency across the application.
+
+7. **Test Styling Across All Pages**
+   - Task ID: 5.7
+   - Description: Test the updated styling across all pages to ensure consistency.
+   - Dependencies: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6
+   - Priority: High
+   - Test Strategy: Verify styling consistency across all pages and components.
+
 2. **Refine Card Styling** ✅
    - Task ID: 4.2
    - Description: Update cards to have lighter outlines with a slight shadow at the bottom.

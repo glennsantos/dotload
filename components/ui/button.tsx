@@ -5,24 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap text-sm font-light ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm rounded-2xl",
+        default: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm rounded-full",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-2xl",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full",
         outline:
-          "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50 shadow-sm rounded-2xl",
+          "border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 shadow-sm rounded-full",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-2xl",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "bg-stone-100 text-stone-800 hover:bg-stone-200 rounded-full",
+        ghost: "hover:bg-stone-100 hover:text-stone-800",
         link: "text-emerald-600 hover:text-emerald-700 underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-12 px-4 py-2",
-        sm: "h-9 px-3",
-        lg: "h-12 px-8",
+        default: "h-10 px-5 py-2",
+        sm: "h-9 px-4 py-2",
+        lg: "h-11 px-6 py-2",
         icon: "h-10 w-10",
       },
     },

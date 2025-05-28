@@ -3,13 +3,11 @@ import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import { prisma } from "@/lib/prisma"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
 
 // Import the client component wrapper instead of directly importing with ssr: false
 import ClientDebugWrapper from '@/components/client-debug-wrapper'
 
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "alaCart",
@@ -52,7 +50,7 @@ export default async function RootLayout({
   
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         <div className="flex flex-col h-screen">
           <main className="flex-1 overflow-auto">{children}</main>
           <ClientDebugWrapper />
