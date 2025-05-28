@@ -20,7 +20,6 @@ export default function ShippingFulfillment({
   return (
     <div className="mt-8 mb-6 border rounded-md p-4">
       <div className="flex items-start mb-2">
-        <Truck className="text-stone-700 mr-2 mt-1" size={20} />
         <div>
           <h3 className="tracking-tight text-xl font-light text-stone-900">Shipping & Fulfillment</h3>
           <p className="text-sm text-gray-500 mb-4 font-light">

@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { Product } from './ProductCreationForm'
 import { Plus, X, Check, Lock, ThumbsUp } from 'lucide-react'
+import ProductVariants from './ProductVariants'
+import AdvancedInventory from './AdvancedInventory'
+import ShippingFulfillment from './ShippingFulfillment'
 
 type ProductAdvancedOptionsProps = {
   productData: Product
@@ -129,10 +132,7 @@ export default function ProductAdvancedOptions({
       {productData.type === 'digital_product' && (
         <div className="mb-8 border rounded-md p-4">
           <div className="flex items-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-            <h3 className="text-base font-medium">Download Settings</h3>
+            <h3 className="text-xl font-light text-stone-900">Download Settings</h3>
           </div>
           <p className="text-sm text-gray-500 mb-4">Control how customers access your digital content</p>
           
@@ -175,10 +175,33 @@ export default function ProductAdvancedOptions({
           </div>
         </div>
       )}
+
+      {/* Physical Product Advanced Options */}
+      {productData.type === 'physical_product' && (
+        <>
+          {/* Product Variants */}
+          <ProductVariants
+            productData={productData}
+            setProductData={setProductData}
+          />
+          
+          {/* Advanced Inventory */}
+          <AdvancedInventory
+            productData={productData}
+            setProductData={setProductData}
+          />
+          
+          {/* Shipping & Fulfillment */}
+          <ShippingFulfillment
+            productData={productData}
+            setProductData={setProductData}
+          />
+        </>
+      )}
       
       {/* What's Included Section */}
       <div className="mb-8 border rounded-md p-4">
-        <h3 className="text-base font-light mb-2">What's Included</h3>
+        <h3 className="text-xl font-light mb-2">What's Included</h3>
         <p className="text-sm text-gray-500 mb-4">List what customers will get with this product</p>
         
         <div className="mb-3">
@@ -228,7 +251,7 @@ export default function ProductAdvancedOptions({
       {/* Course Curriculum - Only for digital products */}
       {productData.type === 'digital_product' && (
         <div className="mb-8 border rounded-md p-4">
-          <h3 className="text-base font-medium mb-2">Course Curriculum</h3>
+          <h3 className="text-xl font-light mb-2">Course Curriculum</h3>
           <p className="text-sm text-gray-500 mb-4">Add modules, lessons, and resources</p>
           
           {productData.curriculum.length > 0 ? (
@@ -318,7 +341,7 @@ export default function ProductAdvancedOptions({
       
       {/* Product Badges */}
       <div className="mb-8 border rounded-md p-4">
-        <h3 className="text-base font-light mb-2">Product Badges</h3>
+        <h3 className="text-xl font-light mb-2">Product Badges</h3>
         <p className="text-sm text-gray-500 mb-4 font-light">Add credibility badges to your digital product</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
@@ -429,36 +452,42 @@ export default function ProductAdvancedOptions({
       
       {/* Trust Indicators */}
       <div className="mb-8 border rounded-md p-4">
-        <h3 className="text-base font-light mb-2">Trust Indicators</h3>
-        <p className="text-sm text-gray-500 mb-4 font-light">Build customer confidence in your digital product</p>
+        <h3 className="text-xl font-light mb-2">Trust Indicators</h3>
+        <p className="text-sm text-gray-500 mb-4 font-light">Add trust indicators to increase customer confidence</p>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <div className="flex items-center justify-between p-2 border rounded-md">
-            <label htmlFor="trust-secure" className="text-sm font-light">Secure Checkout</label>
-            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-              <input 
-                type="checkbox" 
-                id="trust-secure" 
-                checked={productData.trustIndicators.secureCheckout}
-                onChange={(e) => setProductData({
-                  ...productData,
-                  trustIndicators: {...productData.trustIndicators, secureCheckout: e.target.checked}
-                })}
-                className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-              />
-              <label 
-                htmlFor="trust-secure" 
-                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.secureCheckout ? 'bg-emerald-500' : 'bg-stone-300'}`}
-              ></label>
-            </div>
+        <div className="flex items-center justify-between p-2 border rounded-md mb-2">
+          <div>
+            <h4 className="text-sm font-light">Secure Checkout</h4>
+            <p className="text-xs text-gray-500 font-light">Show that your checkout is secure</p>
           </div>
-          
-          <div className="flex items-center justify-between p-2 border rounded-md">
-            <label htmlFor="trust-instant" className="text-sm font-light">Instant Download</label>
+          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input 
+              type="checkbox" 
+              id="trust-secure" 
+              checked={productData.trustIndicators.secureCheckout}
+              onChange={(e) => setProductData({
+                ...productData,
+                trustIndicators: {...productData.trustIndicators, secureCheckout: e.target.checked}
+              })}
+              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+            />
+            <label 
+              htmlFor="trust-secure" 
+              className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.secureCheckout ? 'bg-emerald-500' : 'bg-stone-300'}`}
+            ></label>
+          </div>
+        </div>
+        
+        {productData.type === 'digital_product' && (
+          <div className="flex items-center justify-between p-2 border rounded-md mb-2">
+            <div>
+              <h4 className="text-sm font-light">Instant Download</h4>
+              <p className="text-xs text-gray-500 font-light">Show that your product is available immediately</p>
+            </div>
             <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
               <input 
                 type="checkbox" 
-                id="trust-instant" 
+                id="trust-download" 
                 checked={productData.trustIndicators.instantDownload}
                 onChange={(e) => setProductData({
                   ...productData,
@@ -467,34 +496,37 @@ export default function ProductAdvancedOptions({
                 className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
               />
               <label 
-                htmlFor="trust-instant" 
+                htmlFor="trust-download" 
                 className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.instantDownload ? 'bg-emerald-500' : 'bg-stone-300'}`}
               ></label>
             </div>
           </div>
-          
-          <div className="flex items-center justify-between p-2 border rounded-md">
-            <label htmlFor="trust-refund" className="text-sm font-light">30-day refund policy</label>
-            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-              <input 
-                type="checkbox" 
-                id="trust-refund" 
-                checked={productData.trustIndicators.refundPolicy}
-                onChange={(e) => setProductData({
-                  ...productData,
-                  trustIndicators: {...productData.trustIndicators, refundPolicy: e.target.checked}
-                })}
-                className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-              />
-              <label 
-                htmlFor="trust-refund" 
-                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.refundPolicy ? 'bg-emerald-500' : 'bg-stone-300'}`}
-              ></label>
-            </div>
+        )}
+        
+        <div className="flex items-center justify-between p-2 border rounded-md mb-2">
+          <div>
+            <h4 className="text-sm font-light">30-Day Refund Policy</h4>
+            <p className="text-xs text-gray-500 font-light">Show that you offer refunds</p>
+          </div>
+          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input 
+              type="checkbox" 
+              id="trust-refund" 
+              checked={productData.trustIndicators.refundPolicy}
+              onChange={(e) => setProductData({
+                ...productData,
+                trustIndicators: {...productData.trustIndicators, refundPolicy: e.target.checked}
+              })}
+              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+            />
+            <label 
+              htmlFor="trust-refund" 
+              className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.refundPolicy ? 'bg-emerald-500' : 'bg-stone-300'}`}
+            ></label>
           </div>
         </div>
         
-        <div>
+        <div className="mt-4">
           <label className="block text-sm mb-2">Custom Trust Indicators</label>
           <div className="mb-3">
             {productData.trustIndicators.custom.map((indicator, index) => (
@@ -520,16 +552,10 @@ export default function ProductAdvancedOptions({
           <div className="flex">
             <input
               type="text"
-              placeholder="e.g., '24/7 Support'"
-              className="flex-grow p-2 border rounded-l-md"
+              placeholder="Add custom trust indicator"
               value={newCustomTrustIndicator}
               onChange={(e) => setNewCustomTrustIndicator(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleAddCustomTrustIndicator()
-                }
-              }}
+              className="flex-1 p-2 border rounded-l-md"
             />
             <button
               className="px-4 py-2 bg-gray-100 border border-l-0 rounded-r-md"

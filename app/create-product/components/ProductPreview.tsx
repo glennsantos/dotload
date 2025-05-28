@@ -30,11 +30,11 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
         <button className="text-xs text-gray-500 hover:text-gray-700">Live Preview</button>
       </div>
       
-      <div className="border rounded-md overflow-hidden bg-white">
+      <div className="border rounded-2xl overflow-hidden bg-white">
         {/* Store Header */}
         <div className="p-3 bg-gray-50 flex items-center">
           <div className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center text-white text-xs mr-2">YS</div>
-          <span className="text-sm font-medium">Your Store</span>
+          <span className="text-lg font-light">Your Store</span>
         </div>
         
         {/* Product Preview */}
@@ -43,10 +43,10 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
             <img 
               src={URL.createObjectURL(productData.coverImage)} 
               alt="Product thumbnail" 
-              className="object-cover mb-2 rounded-xl"
+              className="object-cover mb-2 rounded-3xl"
             />
           ) : (
-            <div className="bg-gray-100 flex items-center justify-center mb-2 rounded-xl">
+            <div className="bg-gray-100 flex items-center justify-center mb-2 rounded-2xl">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -56,7 +56,7 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
           )}          
           
           {/* Product Name */}
-          <h3 className="text-2xl font-light text-center mb-1 mt-4">
+          <h3 className="text-2xl font-medium text-center mb-1 mt-4">
             {productData.name || 'Product Name'}
           </h3>
 

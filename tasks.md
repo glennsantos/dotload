@@ -130,6 +130,13 @@ reference repo: /home/aryeh/dev/alacart.store
     - Priority: Medium
     - Test Strategy: Verify section displays correctly for physical products only.
 
+19. **Move Physical Product Components to Advanced Options** ✅
+    - Task ID: 6.23
+    - Description: Move Product Variants, Advanced Inventory, and Shipping & Fulfillment components to the ProductAdvancedOptions component for better organization.
+    - Dependencies: 6.20, 6.21, 6.22
+    - Priority: Medium
+    - Test Strategy: Verify all physical product components display correctly in the Advanced Options section.
+
 16. **Set Default Currency to PHP** ✅
     - Task ID: 6.10
     - Description: Ensure the default currency is set to PHP in the currency dropdown.

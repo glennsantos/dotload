@@ -10,9 +10,6 @@ import ProductFiles from './ProductFiles'
 import ProductPreview from './ProductPreview'
 import ProductAdvancedOptions from './ProductAdvancedOptions'
 import ProductStockPricing from './ProductStockPricing'
-import ProductVariants from './ProductVariants'
-import AdvancedInventory from './AdvancedInventory'
-import ShippingFulfillment from './ShippingFulfillment'
 
 // Define the Product type
 export type Product = {
@@ -296,23 +293,7 @@ export default function ProductCreationForm() {
                     setProductData={setProductData}
                   />
                   
-                  {/* Additional components for physical products */}
-                  {productData.type === 'physical_product' && (
-                    <>
-                      <ProductVariants
-                        productData={productData}
-                        setProductData={setProductData}
-                      />
-                      <AdvancedInventory
-                        productData={productData}
-                        setProductData={setProductData}
-                      />
-                      <ShippingFulfillment
-                        productData={productData}
-                        setProductData={setProductData}
-                      />
-                    </>
-                  )}
+                  {/* Physical product components moved to ProductAdvancedOptions */}
                   
                   {productData.type === 'digital_product' && (
                     <ProductFiles 
