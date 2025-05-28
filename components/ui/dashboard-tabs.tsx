@@ -48,8 +48,8 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
   ]
 
   return (
-    <div className="bg-white rounded-full shadow-sm border border-stone-100 overflow-hidden mb-6">
-      <div className="flex overflow-x-auto">
+    <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden mb-6">
+      <div className="flex overflow-x-auto py-2 px-2 justify-evenly">
         {tabs.map((tab) => {
           // Check if this tab is active based on the current pathname
           const isActive = activeTab 
@@ -62,7 +62,7 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
               key={tab.label}
               href={tab.href}
               className={cn(
-                "flex items-center gap-2 px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors",
+                "flex flex-1 justify-center items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-lg",
                 isActive 
                   ? "bg-emerald-100 text-emerald-600" 
                   : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
