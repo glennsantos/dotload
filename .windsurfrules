@@ -4,10 +4,9 @@
 * ask the user if you want to read logs since it takes a long time for you to load the logs.
 * you are allowed to read and write to files covered by .gitignore but do not commit them.
 * you can use AWS CLI and you can create / add / remove policies and roles in AWS. you can also create new users and attach new policies to them.
-* always add my current IP to the security group since it changes constantly.
+* always add my current IP to the AWS security group since it changes constantly.
 * when you restart the server, also restart the app.
 * use `ssh -v alacarte-ec2` to connect to the server.
-* when changing things in remote servers, add whatever you did to the README.md 
 * Use pnpm instead of npm
 * fixes that change the code in the remote EC2 should be done through the local git branch so it can be version controlled and we have the same code for both local and remote.
 * you hang when you use pm2 logs. make sure to have a timeout so you can continue work.

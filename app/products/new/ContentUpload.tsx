@@ -214,6 +214,12 @@ export default function ContentUpload({
           </p>
           <ul className="list-disc pl-5 text-gray-600 mb-3 space-y-1">
             <li>PDF documents</li>
+            <li>Excel files</li>
+            <li>CSV files</li>
+            <li>Word documents</li>
+            <li>Powerpoint presentations</li>
+            <li>Images</li>
+            <li>Videos</li>
             <li>eBooks</li>
             <li>Software applications</li>
             <li>Audio or video files</li>
