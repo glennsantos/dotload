@@ -15,9 +15,9 @@
 
 ## User setup
 - [x] Allow saving of branding elements in the database (logo, header image)
-- [ ] fix user settings page to be same as the one in lovable
-  - [ ] also needs a back to dashboard button
-- [ ] add seller plans placeholder : see setting > billings
+- [x] fix user settings page to be same as the one in lovable
+  - [x] also needs a back to dashboard button
+- [x] add seller plans placeholder : see setting > billings
 
 ## Create product
 - [X] follow the create product page of /home/aryeh/dev/alacart.store

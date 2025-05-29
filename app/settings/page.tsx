@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, UserIcon, KeyIcon } from "lucide-react"
 
 export default function AccountSettingsPage() {
   const [fullName, setFullName] = useState("")
@@ -114,9 +114,21 @@ export default function AccountSettingsPage() {
 
   return (
     <div>
-     
       <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-6 mb-8">
-        <form onSubmit={handleUpdateAccount} className="space-y-6">
+        {message.text && (
+          <div className={`p-4 mb-4 rounded-md ${message.type === "error" ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+            {message.text}
+          </div>
+        )}
+        
+        <div className="flex items-center mb-6">
+          <div className="bg-emerald-100 p-2 rounded-2xl mr-3">
+            <UserIcon className="h-5 w-5 text-emerald-600" />
+          </div>
+          <h2 className="text-xl font-light">Account Settings</h2>
+        </div>
+        
+        <form className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="full-name" className="block text-sm font-light text-stone-700 mb-1">
@@ -127,7 +139,7 @@ export default function AccountSettingsPage() {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full p-2 border rounded-2xl"
+                className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
             </div>
@@ -141,40 +153,21 @@ export default function AccountSettingsPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded-2xl"
+                className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
             </div>
           </div>
           
-          <div>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              Update Account
-            </button>
+          <div className="pt-4 border-t border-stone-200">
+            <h3 className="text-xl font-light text-stone-700 mb-4 flex items-center">
+              <div className="bg-emerald-100 p-2 rounded-2xl mr-3">
+              <KeyIcon className="h-5 w-5 text-emerald-600" />
+              </div>
+              Change Password
+            </h3>
           </div>
-        </form>
-      
-        <div className="flex items-center">
-          <div className="bg-emerald-100 p-2 rounded-2xl mr-3">
-            <svg className="h-5 w-5 text-emerald-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-          </div>
-          <h2 className="text-xl font-light">Change Password</h2>
-        </div>
-
-        {message.text && (
-          <div className={`p-4 mb-4 rounded-md ${message.type === "error" ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
-            {message.text}
-          </div>
-        )}
-        
-        <form onSubmit={handleChangePassword} className="space-y-6">
+          
           <div>
             <label htmlFor="current-password" className="block text-sm font-light text-stone-700 mb-1">
               Current Password
@@ -185,8 +178,7 @@ export default function AccountSettingsPage() {
                 type={showCurrentPassword ? "text" : "password"}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full p-2 border border-stone-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
-                required
+                className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
               />
               <button
                 type="button"
@@ -209,8 +201,7 @@ export default function AccountSettingsPage() {
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full p-2 border border-stone-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
-                  required
+                  className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
                   minLength={8}
                 />
                 <button
@@ -233,8 +224,7 @@ export default function AccountSettingsPage() {
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-2 border border-stone-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
-                  required
+                  className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
                 />
                 <button
                   type="button"
@@ -249,11 +239,21 @@ export default function AccountSettingsPage() {
           
           <div>
             <button
-              type="submit"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
+              type="button"
+              onClick={handleUpdateAccount}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 font-light mr-4"
               disabled={isLoading}
             >
-              Update Password
+              Update Account
+            </button>
+            
+            <button
+              type="button"
+              onClick={handleChangePassword}
+              className="px-4 py-2 border border-stone-300 text-stone-700 rounded-2xl hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 font-light"
+              disabled={isLoading || (!currentPassword && !newPassword && !confirmPassword)}
+            >
+              Change Password
             </button>
           </div>
         </form>

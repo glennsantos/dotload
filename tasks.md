@@ -529,3 +529,17 @@ reference repo: /home/aryeh/dev/alacart.store
    - Dependencies: 7.7
    - Priority: High
    - Test Strategy: Test that brand assets are correctly displayed in the settings pages.
+
+9. **Merge Account Settings Forms** ✅
+   - Task ID: 7.9
+   - Description: Merge the account information and password change forms into a single unified form according to the design.
+   - Dependencies: 7.3
+   - Priority: Medium
+   - Test Strategy: Verify that the form matches the design and both account updates and password changes work correctly.
+
+10. **Ensure User Data Loads in Settings** ✅
+    - Task ID: 7.10
+    - Description: Update the settings page to ensure user name and email load correctly from the API.
+    - Dependencies: 7.9
+    - Priority: High
+    - Test Strategy: Test that user data is correctly displayed when the settings page loads.
