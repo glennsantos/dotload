@@ -131,10 +131,8 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
           </div>
           
           {/* Buy Button */}
-          <button className="w-full bg-emerald-500 text-white py-2 px-4 rounded-md hover:bg-emerald-600 transition mb-2">
-            {productData.type === 'digital_product' 
-              ? 'Buy Now - Instant Download' 
-              : 'Buy Now'}
+          <button className="w-full bg-emerald-500 text-white py-2 px-4 rounded-md hover:bg-emerald-600 transition mb-2 text-xl font-normal">
+            Buy Now
           </button>
 
           {/* What's Included Section - Only show if items exist */}

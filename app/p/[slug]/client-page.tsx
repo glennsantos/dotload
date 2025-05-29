@@ -63,11 +63,11 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
               className="rounded-full w-6 h-6 object-cover"
             />
           ) : (
-            <div className="bg-gray-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
+            <div className="bg-gray-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-light">
               {product.user?.storeName ? product.user.storeName.charAt(0).toUpperCase() : "S"}
             </div>
           )}
-          <span className="font-medium">{product.user?.storeName || "Store"}</span>
+          <span className="font-light">{product.user?.storeName || "Store"}</span>
         </div>
       </div>
 
@@ -119,11 +119,11 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
 
         {/* Price and Buy Button */}
         <div className="hidden sm:block mb-8 text-center">
-          <p className="text-2xl font-bold mb-4">₱{product.price.toFixed(2)}</p>
+          <p className="text-2xl font-light mb-4">₱{product.price.toFixed(2)}</p>
           <button
             onClick={handlePurchase}
             disabled={loading}
-            className="w-full bg-emerald-500 text-white px-6 py-3 rounded-md font-medium hover:bg-emerald-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-emerald-500 text-white px-6 py-3 rounded-md font-normal text-xl hover:bg-emerald-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -137,8 +137,8 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
         </div>
 
         {/* What's Included Section */}
-        <div className="border rounded-lg p-4 mb-8">
-          <h3 className="font-medium text-gray-800 mb-3">What's Included</h3>
+        <div className="border rounded-xl font-light p-4 mb-8">
+          <h3 className="text-lg mb-2 text-center">What's Included</h3>
           <ul className="space-y-2">
             {whatsIncluded && whatsIncluded.length > 0 ? (
               whatsIncluded.map((item: string, index: number) => (
