@@ -16,6 +16,14 @@ async function getProduct(slug: string) {
         slug: slug,
         isPublic: true,
         status: "active"
+      },
+      include: {
+        user: {
+          select: {
+            storeName: true,
+            storeLogoPath: true
+          }
+        }
       }
     })
     return product

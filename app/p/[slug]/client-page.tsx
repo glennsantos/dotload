@@ -4,7 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, ShoppingCart, Star } from "lucide-react"
+import { ArrowLeft, ShoppingCart, Star, Check, Download, Clock } from "lucide-react"
 import RichTextRenderer from "@/components/rich-text-renderer"
 
 interface ClientProductPageProps {
@@ -39,185 +39,173 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
       </div>
     )
   }
-
-  // Get ratings data from the product if available
-  const ratings = {
-    average: 0,
-    count: 0,
-    displayStars: 5
-  }
+  
+  // Parse whatsIncluded from JSON if it exists
+  const whatsIncluded = product.whatsIncluded ? JSON.parse(product.whatsIncluded) : []
+  
+  // Parse customTrustIndicators from JSON if it exists
+  const trustIndicators = product.customTrustIndicators ? JSON.parse(product.customTrustIndicators) : []
+  
+  // Parse customBadges from JSON if it exists
+  const customBadges = product.customBadges ? JSON.parse(product.customBadges) : []
 
   return (
-    <div className="min-h-screen bg-white pb-20 md:pb-0">  {/* Added padding bottom for mobile fixed button */}
-      {/* Hero Image Section */}
-      <div className="w-full bg-black">
-        {product.coverImagePath ? (
-          <div className="relative h-[300px] md:h-[500px] w-full">
-            <Image
-              src={product.coverImagePath}
-              alt={product.name}
-              fill
-              className="object-cover opacity-90"
-              priority
+    <div className="min-h-screen bg-white pb-20 md:pb-0">
+      {/* Product Preview Header */}
+      <div className="bg-white border-b flex justify-between items-center p-4">
+        <div className="flex items-center gap-2">
+          {product.user?.storeLogoPath ? (
+            <Image 
+              src={product.user.storeLogoPath} 
+              alt={product.user?.storeName || "Store"} 
+              width={24} 
+              height={24} 
+              className="rounded-full w-6 h-6 object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-          </div>
-        ) : (
-          <div className="bg-gray-800 h-[300px] md:h-[500px] w-full flex items-center justify-center">
-            <span className="text-gray-400 text-lg">No image available</span>
-          </div>
-        )}
+          ) : (
+            <div className="bg-gray-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
+              {product.user?.storeName ? product.user.storeName.charAt(0).toUpperCase() : "S"}
+            </div>
+          )}
+          <span className="font-medium">{product.user?.storeName || "Store"}</span>
+        </div>
       </div>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Left panel - Title and Description */}
-          <div>
-            {/* Product type badge */}
-            <div className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm text-gray-700 mb-4">
-              {product.type}
-            </div>
-            
-            {/* Product name */}
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
-            
-            {/* Product description */}
-            <div className="prose prose-gray max-w-none mb-8">
-              {product.description && (
-                <RichTextRenderer content={product.description} />
-              )}
-            </div>
-            
-            {/* Ratings - Desktop only - Only shown if there are ratings */}
-            {ratings.count > 0 && (
-              <div className="hidden md:block mb-8">
-                <h3 className="text-lg font-medium mb-3">Ratings</h3>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        size={18} 
-                        className={i < Math.floor(ratings.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
-                      />
-                    ))}
-                  </div>
-                  <span className="font-medium">{ratings.average}</span>
-                  <span className="text-gray-500">({ratings.count} ratings)</span>
-                </div>
-              </div>
+      {/* Product Image */}
+      <div className="w-full">
+        <div className="relative w-full max-h-[400px] overflow-hidden rounded-lg mx-auto max-w-3xl my-4">
+          <Image
+            src={product.coverImagePath}
+            alt={product.name}
+            width={600}
+            height={300}
+            className="w-full h-auto rounded-lg object-cover"
+            priority
+          />
+        </div>
+      </div>
+
+      <main className="max-w-3xl mx-auto px-4 py-4">
+        {/* Product Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+          
+          {/* Product Badges */}
+          <div className="flex flex-wrap justify-center gap-2 mb-2">
+            {product.bestSeller && (
+              <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">Best Seller</span>
             )}
+            {product.newRelease && (
+              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">New Release</span>
+            )}
+            {product.popular && (
+              <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Popular</span>
+            )}
+            <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">{product.type === 'physical' ? 'Physical Product' : 'Digital Product'}</span>
+            
+            {/* Custom Badges */}
+            {product.customBadges && JSON.parse(product.customBadges || '[]').map((badge: string, index: number) => (
+              <span key={`badge-${index}`} className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">{badge}</span>
+            ))}
           </div>
           
-          {/* Right panel - Price and Purchase */}
-          <div>
-            <div className="bg-gray-50 rounded-xl p-6 sticky top-4">
-              {/* Price */}
-              <div className="flex items-baseline mb-6">
-                <span className="text-3xl font-bold">{product.currency} {product.price.toFixed(2)}</span>
-                {product.comparePrice && (
-                  <span className="ml-2 text-lg text-gray-500 line-through">{product.currency} {product.comparePrice.toFixed(2)}</span>
-                )}
-              </div>
-              
-              {/* Add to cart button - Desktop */}
-              <div className="hidden md:block space-y-4 mb-6">
-                <button
-                  onClick={handlePurchase}
-                  disabled={loading}
-                  className="w-full bg-black text-white px-6 py-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <>
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent"></div>
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart size={20} />
-                      <span>Add to Cart</span>
-                    </>
-                  )}
-                </button>
-              </div>
-              {/* Ratings - Mobile only - Only shown if there are ratings */}
-              {ratings.count > 0 && (
-                <div className="md:hidden mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="text-lg font-medium mb-3">Ratings</h3>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={18} 
-                          className={i < Math.floor(ratings.average) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
-                        />
-                      ))}
-                    </div>
-                    <span className="font-medium">{ratings.average}</span>
-                    <span className="text-gray-500">({ratings.count} ratings)</span>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* Product Description */}
+          <div className="text-gray-600 text-sm md:text-base mb-6 text-left">
+            {product.description && (
+              <RichTextRenderer content={product.description} />
+            )}
           </div>
+        </div>
+
+        {/* Price and Buy Button */}
+        <div className="hidden sm:block mb-8 text-center">
+          <p className="text-2xl font-bold mb-4">₱{product.price.toFixed(2)}</p>
+          <button
+            onClick={handlePurchase}
+            disabled={loading}
+            className="w-full bg-emerald-500 text-white px-6 py-3 rounded-md font-medium hover:bg-emerald-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent inline-block mr-2"></div>
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>Buy Now</>
+            )}
+          </button>
+        </div>
+
+        {/* What's Included Section */}
+        <div className="border rounded-lg p-4 mb-8">
+          <h3 className="font-medium text-gray-800 mb-3">What's Included</h3>
+          <ul className="space-y-2">
+            {whatsIncluded && whatsIncluded.length > 0 ? (
+              whatsIncluded.map((item: string, index: number) => (
+                <li key={index} className="flex items-start gap-2 text-sm">
+                  <Check size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))
+            ) : (
+              <li className="flex items-start gap-2 text-sm">
+                <Check size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                <span>{product.name}</span>
+              </li>
+            )}
+          </ul>
+        </div>
+
+        {/* Trust Indicators */}
+        <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-gray-500 mb-4">
+          {product.secureCheckout && (
+            <div className="flex items-center gap-1">
+              <Check size={14} className="text-emerald-500" />
+              <span>Secure Checkout</span>
+            </div>
+          )}
+          {product.instantDownload && (
+            <div className="flex items-center gap-1">
+              <Download size={14} className="text-emerald-500" />
+              <span>Instant Download</span>
+            </div>
+          )}
+          {product.refundPolicy && (
+            <div className="flex items-center gap-1">
+              <Clock size={14} className="text-emerald-500" />
+              <span>Money-back Guarantee</span>
+            </div>
+          )}
+          
+          {/* Custom Trust Indicators */}
+          {trustIndicators && trustIndicators.length > 0 && 
+            trustIndicators.map((indicator: string, index: number) => (
+              <div key={`trust-${index}`} className="flex items-center gap-1">
+                <Check size={14} className="text-emerald-500" />
+                <span>{indicator}</span>
+              </div>
+            ))
+          }
         </div>
       </main>
       
-      {/* Mobile fixed Add to Cart button */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 flex items-center justify-between">
-        <div>
-          <p className="font-bold text-xl">{product.currency} {product.price.toFixed(2)}</p>
-        </div>
+      {/* Mobile fixed Buy Now button */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
         <button
           onClick={handlePurchase}
           disabled={loading}
-          className="bg-black text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full bg-emerald-500 text-white px-6 py-3 rounded-md font-medium hover:bg-emerald-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent"></div>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent inline-block mr-2"></div>
               <span>Processing...</span>
             </>
           ) : (
-            <>
-              <ShoppingCart size={18} />
-              <span>Add to Cart</span>
-            </>
+            <>Buy Now - ₱{product.price.toFixed(2)}</>
           )}
         </button>
       </div>
-
-      <footer className="bg-gray-50 border-t border-gray-200 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">alaCart</h3>
-              <p className="text-gray-600">The easiest way to sell your digital products online.</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Links</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li><Link href="/" className="hover:text-gray-900">Home</Link></li>
-                <li><Link href="/products" className="hover:text-gray-900">Products</Link></li>
-                <li><Link href="#" className="hover:text-gray-900">Pricing</Link></li>
-                <li><Link href="#" className="hover:text-gray-900">Contact</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li><Link href="#" className="hover:text-gray-900">Terms of Service</Link></li>
-                <li><Link href="#" className="hover:text-gray-900">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-gray-900">Refund Policy</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-200 text-center text-gray-500">
-            <p>© {new Date().getFullYear()} alaCart. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

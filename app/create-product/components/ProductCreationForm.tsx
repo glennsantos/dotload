@@ -287,11 +287,11 @@ export default function ProductCreationForm() {
                 )}
               </div>
               <button 
-                className="px-6 py-3 text-2xl bg-emerald-500 text-white text-sm rounded-full"
+                className="px-6 py-3 bg-emerald-500 text-white text-sm rounded-3xl"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Publishing...' : 'Publish'}
+                <span className="text-lg">{isSubmitting ? 'Publishing...' : 'Publish'}</span>
               </button>
             </div>
           </header>

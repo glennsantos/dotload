@@ -144,6 +144,20 @@ reference repo: /home/aryeh/dev/alacart.store
     - Priority: Medium
     - Test Strategy: Test the page on various device sizes and verify UI adapts correctly.
 
+18. **Implement New Product Page Design** ✅
+    - Task ID: 6.23
+    - Description: Update the public product page to match the new design with Live Preview header, product badges, bonus materials, perfect for section, user feedback, and trust indicators.
+    - Dependencies: None
+    - Priority: High
+    - Test Strategy: Verify the product page matches the design and displays all product information correctly.
+
+19. **Improve Product Page with Dynamic Content** ✅
+    - Task ID: 6.24
+    - Description: Enhance the product page to display the seller's brand name and logo, align description to the left, load custom badges and trust indicators, and use the product's whatsIncluded data.
+    - Dependencies: 6.23
+    - Priority: High
+    - Test Strategy: Verify the product page correctly displays dynamic content from the database.
+
 16. **Implement Create Product Button Functionality** ✅
     - Task ID: 6.12
     - Description: Update the create product button to submit the form and handle loading states.

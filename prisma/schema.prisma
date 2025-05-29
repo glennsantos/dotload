@@ -18,13 +18,10 @@ model User {
   emailVerified           Boolean        @default(false)
   verificationToken       String?        @unique
   verificationTokenExpiry DateTime?
-  
-  // Store branding fields
-  storeName               String?
   storeDescription        String?
-  storeLogoPath           String?
   storeHeaderPath         String?
-  
+  storeLogoPath           String?
+  storeName               String?
   passwordReset           PasswordReset?
   payouts                 Payout[]
   products                Product[]
@@ -33,51 +30,42 @@ model User {
 }
 
 model Product {
-  id                  String      @id @default(cuid())
-  name                String
-  type                String
-  price               Float
-  description         String?
-  coverImagePath      String?
-  userId              String
-  allowPayWhatYouWant Boolean     @default(false)
-  offerCoupons        Boolean     @default(false)
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
-  currency            String      @default("PHP")
-  digitalItemPath     String?
-  slug                String?
-  discountCodes       String?
-  isPublic            Boolean     @default(true)
-  status              String      @default("active")
-  
-  // New fields for download settings
-  downloadLimit       Int         @default(5)
-  linkExpiration      Int         @default(30)
-  
-  // New fields for product badges
-  bestSeller          Boolean     @default(false)
-  newRelease          Boolean     @default(false)
-  popular             Boolean     @default(false)
-  customBadges        String?     // Stored as JSON string
-  
-  // New fields for trust indicators
-  secureCheckout      Boolean     @default(true)
-  instantDownload     Boolean     @default(true)
-  refundPolicy        Boolean     @default(false)
-  customTrustIndicators String?   // Stored as JSON string
-  
-  // New fields for physical products
-  stockQuantity       Int?        // Null means unlimited
-  allowPreOrders      Boolean     @default(false)
-  whatsIncluded       String?     // Stored as JSON string
-  curriculum          String?     // Stored as JSON string
-  contentLinks        String?     // Stored as JSON string
-  
-  files               File[]
-  user                User        @relation(fields: [userId], references: [id])
-  purchases           Purchase[]
-  variations          Variation[]
+  id                    String      @id @default(cuid())
+  name                  String
+  type                  String
+  price                 Float
+  description           String?
+  coverImagePath        String?
+  userId                String
+  allowPayWhatYouWant   Boolean     @default(false)
+  offerCoupons          Boolean     @default(false)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  currency              String      @default("PHP")
+  digitalItemPath       String?
+  slug                  String?
+  discountCodes         String?
+  isPublic              Boolean     @default(true)
+  status                String      @default("active")
+  allowPreOrders        Boolean     @default(false)
+  bestSeller            Boolean     @default(false)
+  contentLinks          String?
+  curriculum            String?
+  customBadges          String?
+  customTrustIndicators String?
+  downloadLimit         Int         @default(5)
+  instantDownload       Boolean     @default(true)
+  linkExpiration        Int         @default(30)
+  newRelease            Boolean     @default(false)
+  popular               Boolean     @default(false)
+  refundPolicy          Boolean     @default(false)
+  secureCheckout        Boolean     @default(true)
+  stockQuantity         Int?
+  whatsIncluded         String?
+  files                 File[]
+  user                  User        @relation(fields: [userId], references: [id])
+  purchases             Purchase[]
+  variations            Variation[]
 }
 
 model File {
