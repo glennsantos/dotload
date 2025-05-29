@@ -12,7 +12,7 @@ export default function OrderSummary({ product, appliedDiscount }: OrderSummaryP
   
   return (
     <div className="bg-white shadow-sm rounded-lg p-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-6">Order Summary</h2>
+      <h2 className="text-lg font-light text-gray-900 mb-6">Order Summary</h2>
       
       {/* Product details */}
       <div className="flex items-start space-x-4 mb-6">
@@ -32,33 +32,33 @@ export default function OrderSummary({ product, appliedDiscount }: OrderSummaryP
           )}
         </div>
         <div className="flex-1">
-          <h3 className="text-base font-medium text-gray-900">{product.name}</h3>
+          <h3 className="text-base font-light text-gray-900">{product.name}</h3>
         </div>
-        <p className="text-base font-medium text-gray-900">{product.currency} {product.price.toFixed(2)}</p>
+        <p className="text-base font-light text-gray-900">{product.currency} {product.price.toFixed(2)}</p>
       </div>
       
       {/* Price breakdown */}
       <div className="border-t border-gray-200 pt-4">
         <div className="flex justify-between mb-2">
-          <p className="text-sm text-gray-600">Subtotal</p>
-          <p className="text-sm font-medium text-gray-900">{product.currency} {product.price.toFixed(2)}</p>
+          <p className="text-sm text-gray-500">Subtotal</p>
+          <p className="text-sm font-light text-gray-500">{product.currency} {product.price.toFixed(2)}</p>
         </div>
         
         {appliedDiscount && (
-          <div className="flex justify-between mb-2 text-green-600">
+          <div className="flex justify-between mb-2 text-green-500">
             <p className="text-sm">Discount ({appliedDiscount.type === 'percentage' ? `${appliedDiscount.amount}%` : `${product.currency} ${appliedDiscount.amount}`})</p>
-            <p className="text-sm font-medium">- {product.currency} {(product.price - finalPrice).toFixed(2)}</p>
+            <p className="text-sm font-light">- {product.currency} {(product.price - finalPrice).toFixed(2)}</p>
           </div>
         )}
         
         <div className="flex justify-between mb-2">
-          <p className="text-sm text-gray-600">Taxes</p>
-          <p className="text-sm font-medium text-gray-900">{product.currency} 0.00</p>
+          <p className="text-sm text-gray-500">Taxes</p>
+          <p className="text-sm font-light text-gray-500">{product.currency} 0.00</p>
         </div>
         
         <div className="flex justify-between pt-4 border-t border-gray-200">
-          <p className="text-base font-medium text-gray-900">Total</p>
-          <p className="text-base font-medium text-gray-900">{product.currency} {finalPrice.toFixed(2)}</p>
+          <p className="text-base font-light text-gray-500">Total</p>
+          <p className="text-base font-medium text-gray-500">{product.currency} {finalPrice.toFixed(2)}</p>
         </div>
       </div>
     </div>

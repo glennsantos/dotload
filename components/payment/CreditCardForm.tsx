@@ -463,7 +463,7 @@ export default function CreditCardForm({
   
   return (
     <div className="w-full">
-      <h3 className="text-lg font-medium mb-1">Credit Card Payment</h3>
+      <h3 className="text-lg font-light mb-1">Credit Card Payment</h3>
       <p className="text-sm text-gray-500 mb-4">
         Enter your card details to complete the purchase
       </p>
@@ -476,7 +476,7 @@ export default function CreditCardForm({
       
       <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="cardNumber">Card Number</Label>
+              <Label htmlFor="cardNumber" className="font-light">Card Number</Label>
               <Input
                 id="cardNumber"
                 placeholder="1234 5678 9012 3456"
@@ -489,7 +489,7 @@ export default function CreditCardForm({
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="cardExpMonth">Expiry Month (MM)</Label>
+                <Label htmlFor="cardExpMonth" className="font-light">Expiry Month (MM)</Label>
                 <Input
                   id="cardExpMonth"
                   placeholder="MM"
@@ -501,7 +501,7 @@ export default function CreditCardForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cardExpYear">Expiry Year (YY)</Label>
+                <Label htmlFor="cardExpYear" className="font-light">Expiry Year (YY)</Label>
                 <Input
                   id="cardExpYear"
                   placeholder="YY"
@@ -519,7 +519,7 @@ export default function CreditCardForm({
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="cardCvn">CVV/CVC</Label>
+              <Label htmlFor="cardCvn" className="font-light">CVV/CVC</Label>
               <Input
                 id="cardCvn"
                 placeholder="123"
@@ -532,7 +532,7 @@ export default function CreditCardForm({
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="cardholderName">Cardholder Name</Label>
+              <Label htmlFor="cardholderName" className="font-light">Cardholder Name</Label>
               <Input
                 id="cardholderName"
                 placeholder="John Doe"
@@ -547,7 +547,7 @@ export default function CreditCardForm({
             
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full font-light text-md" 
               disabled={isLoading || isTokenizing}
             >
               {isLoading || isTokenizing ? (
