@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Plus, Info, ShoppingCart, DollarSign, Users, UserCheck } from "lucide-react"
 import { StatsCard } from "@/components/ui/stats-card"
@@ -45,6 +46,7 @@ interface ProductsListProps {
 }
 
 export default function ProductsList({ products, onProductsChange }: ProductsListProps) {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -159,7 +161,10 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
             {products.map((product) => (
               <tr key={product.id} className="border-b hover:bg-stone-50">
                 <td className="py-3 px-4">
-                  <Link href={`/products/${product.id}`} className="flex items-center gap-3">
+                  <div 
+                    onClick={() => router.push(`/edit-product/${product.id}`)} 
+                    className="flex items-center gap-3 cursor-pointer hover:opacity-80">
+                  
                     <div className="w-12 h-12 relative overflow-hidden rounded">
                       {product.coverImagePath ? (
                         <Image 
@@ -190,7 +195,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                         {window.location.host}/p/{product.slug || product.id}
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 </td>
                 <td className="py-3 px-4 text-right">₱{product.price.toFixed(2)}+</td>
                 <td className="py-3 px-4 text-right">

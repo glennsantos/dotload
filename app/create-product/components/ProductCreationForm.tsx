@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronRight, ChevronLeft, Plus, AlertCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, AlertCircle } from 'lucide-react'
 import { validateProductForm } from '@/lib/form-validation'
 import ProductTypeSelection from './ProductTypeSelection'
 import ProductInformation from './ProductInformation'
@@ -23,6 +23,14 @@ export type Product = {
   coverImagePath?: string
   coverImage?: File | null
   contentFiles: File[]
+  existingFiles?: Array<{
+    id: string
+    name: string
+    path: string
+    size: number
+    type: string
+    isExisting: boolean
+  }>
   contentLinks: string[]
   currency: string
   // Physical product fields
@@ -60,7 +68,12 @@ export type Product = {
   }
 }
 
-export default function ProductCreationForm() {
+interface ProductCreationFormProps {
+  isEditing?: boolean;
+  productId?: string;
+}
+
+export default function ProductCreationForm({ isEditing = false, productId = '' }: ProductCreationFormProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('setup') // 'setup' or 'advanced'
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -128,6 +141,92 @@ export default function ProductCreationForm() {
     return isValid
   }
   
+  // Effect to fetch product data when in editing mode
+  useEffect(() => {
+    if (isEditing && productId) {
+      const fetchProductData = async () => {
+        try {
+          const response = await fetch(`/api/products/${productId}`);
+          
+          if (response.status === 401 || response.status === 403) {
+            // Redirect to login if unauthorized
+            router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+            return;
+          }
+          
+          if (response.ok) {
+            const product = await response.json();
+            
+            // Fetch existing files information if available
+            let existingFiles = [];
+            if (product.files && Array.isArray(product.files) && product.files.length > 0) {
+              existingFiles = product.files.map((file: any) => ({
+                id: file.id,
+                name: file.filename,
+                path: file.path,
+                size: file.size,
+                type: file.mimetype,
+                isExisting: true // Flag to identify existing files
+              }));
+            }
+            
+            // Transform API data to match our form structure
+            setProductData({
+              ...productData,
+              id: product.id,
+              name: product.name || '',
+              type: product.type || '',
+              price: product.price || 0,
+              description: product.description || '',
+              slug: product.slug || '',
+              coverImagePath: product.coverImagePath || '',
+              contentFiles: [], // We can't fetch actual File objects, just display existing files
+              existingFiles: existingFiles, // Store existing files separately
+              contentLinks: Array.isArray(product.contentLinks) ? product.contentLinks : [],
+              currency: product.currency || 'PHP',
+              stockQuantity: product.stockQuantity || null,
+              variants: Array.isArray(product.variants) ? product.variants : [],
+              inventorySettings: product.inventorySettings || {
+                allowPreOrders: false
+              },
+              downloadSettings: product.downloadSettings || {
+                downloadLimit: 5,
+                linkExpiration: 30
+              },
+              paymentOptions: product.paymentOptions || {
+                allowPayWhatYouWant: false,
+                offerCoupons: false,
+              },
+              whatsIncluded: Array.isArray(product.whatsIncluded) ? product.whatsIncluded : [],
+              curriculum: Array.isArray(product.curriculum) ? product.curriculum : [],
+              badges: {
+                bestSeller: product.badges?.bestSeller || false,
+                newRelease: product.badges?.newRelease || false,
+                popular: product.badges?.popular || false,
+                custom: Array.isArray(product.badges?.custom) ? product.badges.custom : []
+              },
+              trustIndicators: {
+                secureCheckout: product.trustIndicators?.secureCheckout || true,
+                instantDownload: product.trustIndicators?.instantDownload || true,
+                refundPolicy: product.trustIndicators?.refundPolicy || false,
+                custom: Array.isArray(product.trustIndicators?.custom) ? product.trustIndicators.custom : []
+              }
+            });
+          } else {
+            console.error('Failed to fetch product data');
+            // Redirect to products page if product not found
+            router.push('/products');
+          }
+        } catch (error) {
+          console.error('Error fetching product data:', error);
+          router.push('/products');
+        }
+      };
+      
+      fetchProductData();
+    }
+  }, [isEditing, productId, router, productData]);
+  
   // Effect to validate form when product data changes
   useEffect(() => {
     if (showValidationErrors) {
@@ -147,7 +246,7 @@ export default function ProductCreationForm() {
       
       setIsSubmitting(true)
       
-      // Prepare form data for product creation
+      // Prepare form data for product creation or update
       const formData = new FormData()
       
       // Add basic product details
@@ -158,168 +257,190 @@ export default function ProductCreationForm() {
       formData.append('slug', productData.slug || '')
       formData.append('currency', productData.currency)
       
-      // Add payment options
-      formData.append('paymentOptions', JSON.stringify(productData.paymentOptions))
-      
-      // Add download settings for digital products
-      if (productData.type === 'digital_product') {
-        formData.append('downloadSettings', JSON.stringify(productData.downloadSettings))
-      }
-      
-      // Add cover image if any
-      if (productData.coverImage) {
+      // Add cover image if exists and is a File object (not just a path)
+      if (productData.coverImage instanceof File) {
         formData.append('coverImage', productData.coverImage)
       }
       
-      // Add content links if any
-      if (productData.contentLinks.length > 0) {
-        formData.append('contentLinks', JSON.stringify(productData.contentLinks))
-      }
-      
-      // Add what's included, curriculum, badges, and trust indicators
-      formData.append('whatsIncluded', JSON.stringify(productData.whatsIncluded))
-      formData.append('curriculum', JSON.stringify(productData.curriculum))
-      formData.append('badges', JSON.stringify(productData.badges))
-      formData.append('trustIndicators', JSON.stringify(productData.trustIndicators))
-      
-      // Submit product to backend using Next.js API route
-      const productResponse = await fetch('/api/products', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      })
-
-      if (!productResponse.ok) {
-        const errorData = await productResponse.json()
-        throw new Error(errorData.details || 'Failed to create product')
-      }
-
-      const productResult = await productResponse.json()
-      
-      // Upload content files if any
-      if (productData.contentFiles.length > 0 && productResult.product?.id) {
-        const filesFormData = new FormData()
+      // Add physical product details if applicable
+      if (productData.type === 'physical_product') {
+        formData.append('stockQuantity', productData.stockQuantity?.toString() || '')
         
-        // Add all content files to the files form data
-        productData.contentFiles.forEach((file: File) => {
-          filesFormData.append('files', file)
-        })
+        // Add variants if any
+        if (productData.variants && productData.variants.length > 0) {
+          formData.append('variants', JSON.stringify(productData.variants))
+        }
         
-        // Upload files to the dedicated endpoint
-        try {
-          const filesResponse = await fetch(`/api/products/${productResult.product.id}/files`, {
-            method: 'POST',
-            body: filesFormData,
-            credentials: 'include'
-          })
-          
-          if (filesResponse.ok) {
-            const filesResult = await filesResponse.json()
-            
-            // Update the product in state with the uploaded files
-            if (filesResult.files && filesResult.files.length > 0) {
-              productResult.product.files = [
-                ...productResult.product.files || [],
-                ...filesResult.files
-              ]
-            }
-          }
-        } catch (filesError) {
-          console.error('Error uploading files:', filesError)
-          // Don't throw here, we already have the product created
+        // Add inventory settings
+        if (productData.inventorySettings) {
+          formData.append('inventorySettings', JSON.stringify(productData.inventorySettings))
         }
       }
       
-      // Set the created product in state
-      if (productResult.product) {
-        setCreatedProduct(productResult.product)
+      // Add digital product details if applicable
+      if (productData.type === 'digital_product') {
+        // Add content links if any
+        if (productData.contentLinks.length > 0) {
+          formData.append('contentLinks', JSON.stringify(productData.contentLinks))
+        }
+        
+        // Add download settings
+        formData.append('downloadSettings', JSON.stringify(productData.downloadSettings))
       }
       
+      // Add payment options
+      formData.append('paymentOptions', JSON.stringify(productData.paymentOptions))
+      
+      // Add what's included items if any
+      if (productData.whatsIncluded.length > 0) {
+        formData.append('whatsIncluded', JSON.stringify(productData.whatsIncluded))
+      }
+      
+      // Add curriculum items if any
+      if (productData.curriculum.length > 0) {
+        formData.append('curriculum', JSON.stringify(productData.curriculum))
+      }
+      
+      // Add badges and trust indicators
+      formData.append('badges', JSON.stringify(productData.badges))
+      formData.append('trustIndicators', JSON.stringify(productData.trustIndicators))
+      
+      // Submit product to backend
+      const url = isEditing ? `/api/products/${productId}` : '/api/products'
+      const method = isEditing ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
+        body: formData,
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.details || `Failed to ${isEditing ? 'update' : 'create'} product`)
+      }
+      
+      // Get the created/updated product data
+      const responseData = await response.json()
+      setCreatedProduct(responseData.product || responseData)
+      
+      // Upload content files if any
+      if (productData.contentFiles.length > 0 && (responseData.product?.id || responseData.id)) {
+        const filesFormData = new FormData()
+        
+        // Add all content files to the form data
+        for (let i = 0; i < productData.contentFiles.length; i++) {
+          filesFormData.append('files', productData.contentFiles[i])
+        }
+        
+        // Add product ID to the form data
+        const productId = responseData.product?.id || responseData.id
+        filesFormData.append('productId', productId)
+        
+        // Upload files
+        const filesResponse = await fetch('/api/files/upload', {
+          method: 'POST',
+          body: filesFormData,
+          credentials: 'include'
+        })
+        
+        if (!filesResponse.ok) {
+          console.error('Failed to upload content files')
+          // Continue anyway, the product was created/updated successfully
+        }
+      }
+      
+      // Success - update UI
       setIsSubmitting(false)
+      
+      // If editing, redirect back to products page after successful update
+      if (isEditing) {
+        router.push('/products')
+      }
     } catch (error: unknown) {
       console.error('Product submission error:', error)
       if (error instanceof Error) {
-        alert(error.message)
+        alert(`Error: ${error.message}`)
       } else {
         alert('An unknown error occurred')
       }
       setIsSubmitting(false)
     }
   }
-
+  
   return (
-    <div className="min-h-screen">
-      {/* Header with back button */}
-      <div className="py-3 px-6">
-        <div className="flex items-center justify-between">
-          <div className="flex font-light items-center text-sm">
-            <Link href="/dashboard" className="text-1xl text-gray-600 hover:text-black flex items-center">
-              <ChevronLeft size={16} className="mr-1" />
-              Back to Dashboard
-            </Link>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-white">
       {!createdProduct ? (
         <div>
-          <header className="p-6">
-            <div className="flex font-light justify-between items-center">
-              <div>
-                <h1 className="text-3xl">Create Product</h1>
-                <p className="pl-5text-sm text-gray-500">Build your checkout page</p>
-                
-                {/* Validation Errors */}
-                {showValidationErrors && Object.keys(validationErrors).length > 0 && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 mt-4 rounded-md">
-                    <div className="flex items-center mb-2">
-                      <AlertCircle size={18} className="mr-2" />
-                      <h3 className="font-medium">Please fix the following errors:</h3>
-                    </div>
-                    <ul className="list-disc pl-6 space-y-1">
-                      {Object.entries(validationErrors).map(([field, error]) => (
-                        <li key={field} className="text-sm">
-                          <span className="font-medium">{field.replace(/\[\d+\]|\./g, ' ').replace(/([A-Z])/g, ' $1').toLowerCase()}:</span> {error}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-              <button 
-                className="px-6 py-3 bg-emerald-500 text-white text-sm rounded-3xl"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-              >
-                <span className="text-lg">{isSubmitting ? 'Publishing...' : 'Publish'}</span>
-              </button>
-            </div>
-          </header>
+          <header className="p-6 border-b">
 
-          <div className="p-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
-            {/* Left side - Product Setup */}
-            <div className="md:col-span-7">
-              {/* Tabs */}
-              <div className="mb-6 border rounded-lg">
-                <div className="grid grid-cols-2 gap-0 p-1 font-light ">
-                  <button 
-                    className={`py-2 px-4 text-center ${activeTab === 'setup' ? 'bg-emerald-100 text-emerald-700 rounded-lg' : 'text-gray-500'}`}
-                    onClick={() => handleTabChange('setup')}
-                  >
-                    Product Setup
-                  </button>
-                  <button 
-                    className={`py-2 px-4 text-center ${activeTab === 'advanced' ? 'bg-emerald-100 text-emerald-700 rounded-lg' : 'text-gray-500'}`}
-                    onClick={() => handleTabChange('advanced')}
-                  >
-                    Advanced Options
-                  </button>
+             {/* Back to Dashboard button */}
+             <Link href="/products" className="text-sm text-stone-500 hover:text-stone-700">
+              <span className="flex items-center">
+                <ChevronLeft size={16} className="mr-1" />
+                Back to Dashboard
+              </span>
+            </Link>
+            
+            <h1 className="text-3xl font-light truncate mt-4">
+              {isEditing ? 'Edit Product' : 'Create New Product'}
+            </h1>
+            
+           
+          </header>
+          
+          {/* Validation errors alert */}
+          {showValidationErrors && Object.keys(validationErrors).length > 0 && (
+            <div className="mx-auto max-w-7xl p-4 mt-4 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-start">
+                <AlertCircle className="w-5 h-5 text-red-500 mr-2 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">
+                    Please fix the following errors:
+                  </h3>
+                  <ul className="mt-2 text-sm text-red-700 list-disc list-inside">
+                    {Object.entries(validationErrors).map(([field, error]) => (
+                      <li key={field}>{error}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
-              
-              {/* Tab Content */}
+            </div>
+          )}
+          
+          
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 p-6">
+            {/* Left side - Form */}
+            <div className="md:col-span-7">
+
+              {/* Tab Navigation */}
+              <div className="flex bg-white border rounded-full overflow-hidden w-full max-w-md mx-auto">
+                <button
+                  onClick={() => handleTabChange('setup')}
+                  className={`w-1/2 py-3 text-sm font-medium transition-colors ${
+                    activeTab === 'setup'
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : 'text-stone-500 hover:text-stone-700'
+                  }`}
+                >
+                  Product Setup
+                </button>
+                <button
+                  onClick={() => handleTabChange('advanced')}
+                  className={`w-1/2 py-3 text-sm font-medium transition-colors ${
+                    activeTab === 'advanced'
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : 'text-stone-500 hover:text-stone-700'
+                  }`}
+                >
+                  Advanced Options
+                </button>
+              </div>
+
+
               {activeTab === 'setup' && (
-                <div>
+                <div className="space-y-8">
                   <ProductTypeSelection 
                     productData={productData} 
                     setProductData={setProductData} 
@@ -365,7 +486,10 @@ export default function ProductCreationForm() {
                   className="px-4 py-2 bg-emerald-500 text-white rounded-md"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Creating Product...' : 'Create Product'}
+                  {isSubmitting 
+                    ? isEditing ? 'Updating Product...' : 'Creating Product...' 
+                    : isEditing ? 'Update Product' : 'Create Product'
+                  }
                 </button>
               </div>
             </div>
@@ -386,7 +510,7 @@ export default function ProductCreationForm() {
           
           <div className="p-6 max-w-3xl mx-auto">
             <div className="mb-6">
-              <h2 className="text-xl font-medium mb-4">Product Created Successfully!</h2>
+              <h2 className="text-xl font-medium mb-4">Product {isEditing ? 'Updated' : 'Created'} Successfully!</h2>
               <p className="text-gray-600 mb-4">Your product has been published and is now available for purchase.</p>
               
               <div className="p-4 border rounded-md mb-4">
@@ -435,7 +559,10 @@ export default function ProductCreationForm() {
             className="w-full px-4 py-3 rounded-md bg-emerald-500 text-white flex items-center justify-center"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating Product...' : 'Create Product'}
+            {isSubmitting 
+              ? isEditing ? 'Updating Product...' : 'Creating Product...' 
+              : isEditing ? 'Update Product' : 'Create Product'
+            }
           </button>
         </div>
       )}

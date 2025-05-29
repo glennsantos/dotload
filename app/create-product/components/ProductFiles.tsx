@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Upload, X, File as FileIcon, Link as LinkIcon, Plus, Check, Loader2 } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Product } from './ProductCreationForm'
+import { Trash, Upload, X, Link as LinkIcon, Plus, FileText, Check, Loader2, File as FileIcon } from 'lucide-react'
 
 type ProductFilesProps = {
   productData: Product
@@ -12,22 +12,33 @@ type ProductFilesProps = {
 export default function ProductFiles({ 
   productData, 
   setProductData 
-}: ProductFilesProps) {
+}: {
+  productData: Product
+  setProductData: React.Dispatch<React.SetStateAction<Product>>
+}) {
   const [dragActive, setDragActive] = useState(false)
   const [newLink, setNewLink] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Initialize existingFiles if it doesn't exist
+  React.useEffect(() => {
+    if (!productData.existingFiles) {
+      setProductData(prev => ({ ...prev, existingFiles: [] }));
+    }
+  }, []);
+
   // Initialize from productData if available
   useEffect(() => {
-    if (productData.contentLinks && productData.contentLinks.length === 0) {
+    // Ensure contentLinks is always an array
+    if (!productData.contentLinks || !Array.isArray(productData.contentLinks)) {
       setProductData({
         ...productData,
         contentLinks: []
       })
     }
-  }, [])
+  }, [productData, setProductData])
 
   // Handle drag events
   const handleDrag = (e: React.DragEvent) => {
@@ -95,9 +106,12 @@ export default function ProductFiles({
       return
     }
     
+    // Ensure contentLinks is an array before spreading
+    const currentLinks = Array.isArray(productData.contentLinks) ? productData.contentLinks : []
+    
     setProductData({
       ...productData,
-      contentLinks: [...(productData.contentLinks || []), newLink]
+      contentLinks: [...currentLinks, newLink]
     })
     setNewLink('')
     setError(null)
@@ -105,7 +119,9 @@ export default function ProductFiles({
 
   // Handle removing a content link
   const handleRemoveLink = (index: number) => {
-    const updatedLinks = [...(productData.contentLinks || [])]
+    // Ensure contentLinks is an array before operating on it
+    const currentLinks = Array.isArray(productData.contentLinks) ? productData.contentLinks : []
+    const updatedLinks = [...currentLinks]
     updatedLinks.splice(index, 1)
     setProductData({
       ...productData,
@@ -175,18 +191,35 @@ export default function ProductFiles({
       </div>
       
       {/* File list */}
-      {productData.contentFiles.length > 0 && (
+      {(productData.contentFiles.length > 0 || (productData.existingFiles && productData.existingFiles.length > 0)) && (
         <div className="mb-6">
           <h3 className="text-base font-light mb-2">Uploaded Files</h3>
           <div className="max-h-60 overflow-y-auto border rounded-md">
             <ul className="divide-y">
-              {productData.contentFiles.map((file, index) => (
-                <li key={index} className="flex items-center justify-between p-3">
+              {/* Display existing files */}
+              {productData.existingFiles && productData.existingFiles.map((file, index) => (
+                <li key={`existing-${index}`} className="flex items-center justify-between p-3 bg-stone-50">
                   <div className="flex items-center">
                     <FileIcon size={16} className="text-stone-500 mr-2" />
                     <div>
                       <p className="text-sm font-light">{file.name}</p>
                       <p className="text-xs text-gray-500 font-light">{formatFileSize(file.size)}</p>
+                      <p className="text-xs text-emerald-600 font-light">Already uploaded</p>
+                    </div>
+                  </div>
+                  {/* No delete button for existing files in edit mode */}
+                </li>
+              ))}
+              
+              {/* Display newly added files */}
+              {productData.contentFiles.map((file, index) => (
+                <li key={`new-${index}`} className="flex items-center justify-between p-3">
+                  <div className="flex items-center">
+                    <FileIcon size={16} className="text-stone-500 mr-2" />
+                    <div>
+                      <p className="text-sm font-light">{file.name}</p>
+                      <p className="text-xs text-gray-500 font-light">{formatFileSize(file.size)}</p>
+                      <p className="text-xs text-blue-600 font-light">New upload</p>
                     </div>
                   </div>
                   <button 
@@ -200,16 +233,16 @@ export default function ProductFiles({
             </ul>
           </div>
           <p className="text-xs text-gray-500 mt-2 font-light">
-            {productData.contentFiles.length === 1 
+            {(productData.contentFiles.length + (productData.existingFiles ? productData.existingFiles.length : 0)) === 1 
               ? '1 file selected' 
-              : `${productData.contentFiles.length} files selected`}
+              : `${productData.contentFiles.length + (productData.existingFiles ? productData.existingFiles.length : 0)} files selected`}
           </p>
         </div>
       )}
 
       {/* Content Links */}
       <div className="mb-6">
-        {productData.contentLinks && productData.contentLinks.length > 0 && (
+        {Array.isArray(productData.contentLinks) && productData.contentLinks.length > 0 && (
           <div className="border rounded-md">
             <ul className="divide-y">
               {productData.contentLinks.map((link, index) => (

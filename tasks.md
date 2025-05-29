@@ -486,6 +486,22 @@ reference repo: /home/aryeh/dev/alacart.store
    - Priority: Medium
    - Test Strategy: Verify that all tabs are visible for all users.
 
+## Product Editing Functionality
+
+1. **Implement Edit Product Functionality**
+   - Task ID: 8.1
+   - Description: When a product is clicked on /products, it should open the /edit-product/[id] page, loading the details of that product so it can be edited.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify that clicking on a product in the products list redirects to the edit page with all product details loaded correctly.
+
+2. **Enhance Product Editing Experience**
+   - Task ID: 8.2
+   - Description: Improve the product editing functionality by restoring the original menu design, loading product photos and files, displaying badges and trust indicators correctly, and ensuring all product data is properly loaded in both the form and preview.
+   - Dependencies: 8.1
+   - Priority: High
+   - Test Strategy: Test editing various product types and verify all data is correctly loaded and displayed.
+
 ## Settings Pages Redesign
 
 1. **Create Settings Layout with Tabs** ✅

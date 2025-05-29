@@ -45,6 +45,21 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
               alt="Product thumbnail" 
               className="object-cover mb-2 rounded-3xl"
             />
+          ) : productData.coverImagePath ? (
+            <img 
+              src={
+                // Handle URLs that start with http:// or https://
+                productData.coverImagePath.startsWith('http') ? productData.coverImagePath :
+                // Handle protocol-relative URLs that start with //
+                productData.coverImagePath.startsWith('//') ? `https:${productData.coverImagePath}` :
+                // Handle absolute paths that start with /
+                productData.coverImagePath.startsWith('/') ? productData.coverImagePath :
+                // Handle relative paths by adding a leading /
+                `/${productData.coverImagePath}`
+              } 
+              alt="Product thumbnail" 
+              className="object-cover mb-2 rounded-3xl"
+            />
           ) : (
             <div className="bg-gray-100 flex items-center justify-center mb-2 rounded-2xl">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
@@ -97,12 +112,13 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
                 </span>
               )}
               
-              {productData.badges.custom.map((badge, index) => (
+              {/* Custom badges */}
+              {Array.isArray(productData.badges.custom) && productData.badges.custom.map((badge, index) => (
                 <span key={index} className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">
                   {badge}
                 </span>
               ))}
-
+              
               {/* Product Type Badge */}
               <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
                 {productData.type === 'digital_product' 
@@ -115,12 +131,12 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
           )}
           
           {/* Product Description */}
-          <p className="text-sm text-gray-600 font-light mb-4">
+          <div className="text-sm text-gray-600 font-light mb-4">
             <RichTextRenderer 
               content={productData.description || 'Product description will appear here. Add a description to help customers understand what you\'re offering.'}
               className="text-gray-600"
             />
-          </p>
+          </div>
           
           {/* Product Price */}
           <div className="text-2xl font-light mb-4">
@@ -136,7 +152,7 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
           </button>
 
           {/* What's Included Section - Only show if items exist */}
-          {productData.whatsIncluded.length > 0 && (
+          {Array.isArray(productData.whatsIncluded) && productData.whatsIncluded.length > 0 && (
             <div className="p-4 border font-light rounded-xl py-6 my-4">
               <h4 className="text-md mb-2 text-center">What's Included</h4>
               <ul className="space-y-1">
@@ -177,7 +193,7 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
               )}
 
               {/* Custom Trust Indicators */}
-              {productData.trustIndicators.custom.map((indicator, index) => (
+              {Array.isArray(productData.trustIndicators.custom) && productData.trustIndicators.custom.map((indicator, index) => (
                 <div key={index} className="flex items-center">
                   <ThumbsUp size={14} className="mr-1 text-emerald-500" />
                   <span>{indicator}</span>

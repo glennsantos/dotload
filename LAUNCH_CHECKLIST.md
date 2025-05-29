@@ -34,11 +34,11 @@
 - [x] add stock and pricing for physical products (see image)
 - [x] in advanced options, add product variants, advanced inventory, etc (see image)
 - [x] product description should be formatted html
-- [ ] replace your store with store name and logo
+- [x] replace your store with store name and logo
 - [ ] edit product page should just use the create-product form
 
 ## Product Page
-- [ ] Match the design of the product page with the one in the preview
+- [x] Match the design of the product page with the one in the preview
 
 ## Checkout
 - [ ] add support for other currencies 
@@ -55,10 +55,9 @@
 - [ ] clean up front end console.logs for prod
 
 ## Deploy to Dev
-- [ ] Update code
-- [ ] Update database
-- [ ] Update environment variables
-
+- [x] Update code
+- [x] Update database
+- [x] Update environment variables
 
 ## Perform QA Testing
 - [ ] Get QA assistance for the rest of the testing
@@ -73,18 +72,18 @@
 - [ ] Execute final smoke testing
 - [ ] Get agreement when to launch
 
-## Craft GTM
-
-- [ ] Determine marketing activities to execute
-- [ ] Get funds for those activities
-- [ ] Execute those activities with a marketing person
-
 ## Calculate Financials
 - [x] Create napkin computation to determine revenue targets
 - [ ] Assess costs for the service
 - [ ] Get initial funding for costs
 
-# POST LAUNCH ITEMS
+# POST SALE ITEMS
+
+## Craft GTM
+
+- [ ] Determine marketing activities to execute
+- [ ] Get funds for those activities
+- [ ] Execute those activities with a marketing person
 
 ## Support
 - [ ] Determine who will handle support issues 
