@@ -388,12 +388,17 @@ export async function PUT(
         // Continue with default values
       }
       
+      // Get the slug from form data
+      const slug = formData.get('slug') as string || '';
+      
       updateData = {
         name,
-        description,
+        description: description || undefined, // Only update if not blank
         price: parsedPrice,
         ...paymentOptions,
         ...(coverImagePath ? { coverImagePath } : {}),
+        // Add slug if provided
+        ...(slug ? { slug } : {}),
         // Add trust indicators
         secureCheckout: trustIndicators.secureCheckout,
         instantDownload: trustIndicators.instantDownload,

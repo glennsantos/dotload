@@ -2,8 +2,8 @@
 
 ## Resolve Issues
 - [x] fix Request Payout button
-- [ ] See issues in Github for more
 - [x] Fix user being auto logged out
+- [ ] See issues in Github for more
 
 ## UI Redesign v0.1
 - [x] Understand the styling of /home/aryeh/dev/alacart.store

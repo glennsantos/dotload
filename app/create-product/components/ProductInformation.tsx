@@ -143,7 +143,7 @@ export default function ProductInformation({
           </div>
           <p className="text-xs text-gray-500 mt-1">
             {productData.slug 
-              ? `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}` 
+              ? <a target="_blank" className="text-emerald-600 hover:text-emerald-700" href={`${typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}`}>{typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}</a> 
               : 'Product URL will be generated automatically'}
           </p>
         </div>

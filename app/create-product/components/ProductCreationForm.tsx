@@ -302,7 +302,13 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       formData.append('name', productData.name)
       formData.append('type', productData.type)
       formData.append('price', productData.price.toString())
-      formData.append('description', productData.description || '')
+      
+      // Only append description if it's not empty
+      if (productData.description && productData.description.trim() !== '') {
+        formData.append('description', productData.description)
+      }
+      
+      // Always include slug for edit mode
       formData.append('slug', productData.slug || '')
       formData.append('currency', productData.currency)
       

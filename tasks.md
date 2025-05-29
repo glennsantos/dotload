@@ -2,6 +2,11 @@
 
 reference repo: /home/aryeh/dev/alacart.store
 
+
+link the digital file to its source. it is a secure link so check how to retrieve this
+ enable updating of what's included.
+ enable updating of course curriculum
+
 ## Create Product Page Redesign
 
 1. **Implement Product Type Selection UI** ✅

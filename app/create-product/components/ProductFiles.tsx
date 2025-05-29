@@ -202,7 +202,7 @@ export default function ProductFiles({
                   <div className="flex items-center">
                     <FileIcon size={16} className="text-stone-500 mr-2" />
                     <div>
-                      <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-sm font-light">{file.name}</a>
+                      <a href={file.path} target="_blank" rel="noopener noreferrer" className="text-sm font-light">{file.name}</a>
                       <p className="text-xs text-emerald-600 font-light">Already uploaded</p>
                     </div>
                   </div>
@@ -216,6 +216,7 @@ export default function ProductFiles({
                   <div className="flex items-center">
                     <FileIcon size={16} className="text-stone-500 mr-2" />
                     <div>
+                      {/* File objects don't have URL property, so we just display the name */}
                       <p className="text-sm font-light">{file.name}</p>
                       <p className="text-xs text-gray-500 font-light">{formatFileSize(file.size)}</p>
                       <p className="text-xs text-blue-600 font-light">New upload</p>
