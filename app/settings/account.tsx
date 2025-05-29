@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Eye, EyeOff } from "lucide-react"
 
-export default function AccountSettingsPage() {
+export default function AccountSettings() {
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [currentPassword, setCurrentPassword] = useState("")
@@ -114,12 +114,23 @@ export default function AccountSettingsPage() {
 
   return (
     <div>
-     
+      <div className="mb-8">
+        <div className="flex items-center">
+          <div className="bg-emerald-100 p-2 rounded-full mr-3">
+            <svg className="h-5 w-5 text-emerald-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <h2 className="text-xl font-medium">Account Settings</h2>
+        </div>
+      </div>
+      
       <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-6 mb-8">
         <form onSubmit={handleUpdateAccount} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="full-name" className="block text-sm font-light text-stone-700 mb-1">
+              <label htmlFor="full-name" className="block text-sm font-medium text-stone-700 mb-1">
                 Full Name
               </label>
               <input
@@ -127,13 +138,13 @@ export default function AccountSettingsPage() {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full p-2 border rounded-2xl"
+                className="w-full p-2 border rounded-lg"
                 required
               />
             </div>
             
             <div>
-              <label htmlFor="email-address" className="block text-sm font-light text-stone-700 mb-1">
+              <label htmlFor="email-address" className="block text-sm font-medium text-stone-700 mb-1">
                 Email Address
               </label>
               <input
@@ -141,7 +152,7 @@ export default function AccountSettingsPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded-2xl"
+                className="w-full p-2 border rounded-xl"
                 required
               />
             </div>
@@ -157,17 +168,21 @@ export default function AccountSettingsPage() {
             </button>
           </div>
         </form>
+      </div>
       
+      <div className="mb-8">
         <div className="flex items-center">
-          <div className="bg-emerald-100 p-2 rounded-2xl mr-3">
+          <div className="bg-emerald-100 p-2 rounded-full mr-3">
             <svg className="h-5 w-5 text-emerald-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          <h2 className="text-xl font-light">Change Password</h2>
+          <h2 className="text-xl font-medium">Change Password</h2>
         </div>
-
+      </div>
+      
+      <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-6">
         {message.text && (
           <div className={`p-4 mb-4 rounded-md ${message.type === "error" ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
             {message.text}
@@ -176,7 +191,7 @@ export default function AccountSettingsPage() {
         
         <form onSubmit={handleChangePassword} className="space-y-6">
           <div>
-            <label htmlFor="current-password" className="block text-sm font-light text-stone-700 mb-1">
+            <label htmlFor="current-password" className="block text-sm font-medium text-stone-700 mb-1">
               Current Password
             </label>
             <div className="relative">
@@ -200,7 +215,7 @@ export default function AccountSettingsPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="new-password" className="block text-sm font-light text-stone-700 mb-1">
+              <label htmlFor="new-password" className="block text-sm font-medium text-stone-700 mb-1">
                 New Password
               </label>
               <div className="relative">
@@ -224,7 +239,7 @@ export default function AccountSettingsPage() {
             </div>
             
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-light text-stone-700 mb-1">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-stone-700 mb-1">
                 Confirm Password
               </label>
               <div className="relative">
@@ -250,10 +265,10 @@ export default function AccountSettingsPage() {
           <div>
             <button
               type="submit"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
               disabled={isLoading}
             >
-              Update Password
+              Update Account
             </button>
           </div>
         </form>

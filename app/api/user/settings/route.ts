@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Get user from database with store branding fields
+    // Get user from database with brand fields
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -94,7 +94,15 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    return NextResponse.json({ user }, { status: 200 });
+    // Return formatted response with brand terminology
+    return NextResponse.json({
+      storeName: user.storeName,
+      storeDescription: user.storeDescription,
+      logoUrl: user.storeLogoPath,
+      headerUrl: user.storeHeaderPath,
+      name: user.name,
+      email: user.email
+    }, { status: 200 });
   } catch (error) {
     console.error('Error fetching user settings:', error);
     return NextResponse.json(
@@ -164,8 +172,13 @@ export async function POST(request: NextRequest) {
     });
     
     return NextResponse.json({ 
-      message: 'Store settings updated successfully',
-      user: updatedUser 
+      message: 'Brand settings updated successfully',
+      storeName: updatedUser.storeName,
+      storeDescription: updatedUser.storeDescription,
+      logoUrl: updatedUser.storeLogoPath,
+      headerUrl: updatedUser.storeHeaderPath,
+      name: updatedUser.name,
+      email: updatedUser.email
     }, { status: 200 });
   } catch (error) {
     console.error('Error updating user settings:', error);

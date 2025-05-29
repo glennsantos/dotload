@@ -34,6 +34,7 @@
 - [x] add stock and pricing for physical products (see image)
 - [x] in advanced options, add product variants, advanced inventory, etc (see image)
 - [x] product description should be formatted html
+- [ ] replace your store with store name and logo
 - [ ] edit product page should just use the create-product form
 
 ## Product Page

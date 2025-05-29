@@ -471,3 +471,61 @@ reference repo: /home/aryeh/dev/alacart.store
    - Dependencies: None
    - Priority: Medium
    - Test Strategy: Verify that all tabs are visible for all users.
+
+## Settings Pages Redesign
+
+1. **Create Settings Layout with Tabs** ✅
+   - Task ID: 7.1
+   - Description: Create a settings layout with tabs for Account, Brand Settings, and Billing.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify the tabs navigation works correctly and matches the design.
+
+2. **Add Back to Dashboard Link** ✅
+   - Task ID: 7.2
+   - Description: Add a back to dashboard link at the top of the settings pages.
+   - Dependencies: 7.1
+   - Priority: Medium
+   - Test Strategy: Verify the back link works correctly and navigates to the dashboard.
+
+3. **Implement Account Settings Page** ✅
+   - Task ID: 7.3
+   - Description: Create the account settings page with user information and password change functionality.
+   - Dependencies: 7.1
+   - Priority: High
+   - Test Strategy: Test updating user information and changing password.
+
+4. **Implement Brand Settings Page** ✅
+   - Task ID: 7.4
+   - Description: Create the brand settings page with brand name, description, logo, and header image upload.
+   - Dependencies: 7.1
+   - Priority: High
+   - Test Strategy: Test updating brand information and uploading images.
+
+5. **Implement Billing Page** ✅
+   - Task ID: 7.5
+   - Description: Create the billing page with current plan, payment method, and billing history sections.
+   - Dependencies: 7.1
+   - Priority: High
+   - Test Strategy: Verify the billing page UI matches the design (frontend only).
+
+6. **Update Settings Menu Design** ✅
+   - Task ID: 7.6
+   - Description: Update the settings menu to use a rounded pill design with active tab highlighted in green.
+   - Dependencies: 7.1
+   - Priority: Medium
+   - Test Strategy: Verify the menu matches the design in the provided image.
+
+7. **Standardize Brand Terminology** ✅
+   - Task ID: 7.7
+   - Description: Update the registration page and settings pages to consistently use "brand" instead of "store".
+   - Dependencies: None
+   - Priority: Medium
+   - Test Strategy: Verify consistent terminology across the application.
+
+8. **Ensure Brand Assets Load Correctly** ✅
+   - Task ID: 7.8
+   - Description: Update the API to ensure brand assets (logo, header) saved during registration are correctly loaded in settings.
+   - Dependencies: 7.7
+   - Priority: High
+   - Test Strategy: Test that brand assets are correctly displayed in the settings pages.
