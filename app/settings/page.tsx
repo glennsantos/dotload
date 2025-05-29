@@ -19,14 +19,23 @@ export default function AccountSettingsPage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/user/profile', {
-          credentials: 'include'
+        console.log('Fetching user data...');
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         })
         
+        console.log('Response status:', response.status);
+        const userData = await response.json();
+        console.log('User data:', userData);
+        
         if (response.ok) {
-          const userData = await response.json()
-          setFullName(userData.name || '')
-          setEmail(userData.email || '')
+          setFullName(userData.user.name || '');
+          setEmail(userData.user.email || '');
+        } else {
+          console.error('Error response:', userData);
         }
       } catch (error) {
         console.error('Error fetching user data:', error)
@@ -36,14 +45,15 @@ export default function AccountSettingsPage() {
     fetchUserData()
   }, [])
   
-  // Handle account update
-  const handleUpdateAccount = async (e: React.FormEvent) => {
+  // Handle form submission (both account update and password change if needed)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setMessage({ type: "", text: "" })
     setIsLoading(true)
     
     try {
-      const response = await fetch('/api/user/profile', {
+      // First update account information
+      const accountResponse = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -55,57 +65,58 @@ export default function AccountSettingsPage() {
         credentials: 'include'
       })
       
-      if (response.ok) {
-        setMessage({ type: "success", text: "Account information updated successfully" })
-      } else {
-        const errorData = await response.json()
+      if (!accountResponse.ok) {
+        const errorData = await accountResponse.json()
         setMessage({ type: "error", text: errorData.message || "Failed to update account information" })
+        setIsLoading(false)
+        return
+      }
+      
+      // If password fields are filled, update password too
+      if (newPassword && confirmPassword) {
+        // Validate passwords
+        if (newPassword !== confirmPassword) {
+          setMessage({ type: "error", text: "New passwords do not match" })
+          setIsLoading(false)
+          return
+        }
+        
+        // Only proceed with password change if current password is provided
+        if (!currentPassword) {
+          setMessage({ type: "error", text: "Current password is required to change password" })
+          setIsLoading(false)
+          return
+        }
+        
+        const passwordResponse = await fetch('/api/user/password', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword
+          }),
+          credentials: 'include'
+        })
+        
+        if (passwordResponse.ok) {
+          setMessage({ type: "success", text: "Account and password updated successfully" })
+          setCurrentPassword("")
+          setNewPassword("")
+          setConfirmPassword("")
+        } else {
+          const errorData = await passwordResponse.json()
+          setMessage({ type: "error", text: errorData.message || "Failed to update password" })
+          setIsLoading(false)
+          return
+        }
+      } else {
+        // Only account was updated
+        setMessage({ type: "success", text: "Account information updated successfully" })
       }
     } catch (error) {
       console.error('Error updating account:', error)
-      setMessage({ type: "error", text: "An unexpected error occurred" })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-  
-  // Handle password change
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Validate passwords
-    if (newPassword !== confirmPassword) {
-      setMessage({ type: "error", text: "New passwords do not match" })
-      return
-    }
-    
-    setMessage({ type: "", text: "" })
-    setIsLoading(true)
-    
-    try {
-      const response = await fetch('/api/user/password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword
-        }),
-        credentials: 'include'
-      })
-      
-      if (response.ok) {
-        setMessage({ type: "success", text: "Password updated successfully" })
-        setCurrentPassword("")
-        setNewPassword("")
-        setConfirmPassword("")
-      } else {
-        const errorData = await response.json()
-        setMessage({ type: "error", text: errorData.message || "Failed to update password" })
-      }
-    } catch (error) {
-      console.error('Error updating password:', error)
       setMessage({ type: "error", text: "An unexpected error occurred" })
     } finally {
       setIsLoading(false)
@@ -128,7 +139,7 @@ export default function AccountSettingsPage() {
           <h2 className="text-xl font-light">Account Settings</h2>
         </div>
         
-        <form className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="full-name" className="block text-sm font-light text-stone-700 mb-1">
@@ -239,21 +250,11 @@ export default function AccountSettingsPage() {
           
           <div>
             <button
-              type="button"
-              onClick={handleUpdateAccount}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 font-light mr-4"
+              type="submit"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 font-light"
               disabled={isLoading}
             >
               Update Account
-            </button>
-            
-            <button
-              type="button"
-              onClick={handleChangePassword}
-              className="px-4 py-2 border border-stone-300 text-stone-700 rounded-2xl hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 font-light"
-              disabled={isLoading || (!currentPassword && !newPassword && !confirmPassword)}
-            >
-              Change Password
             </button>
           </div>
         </form>

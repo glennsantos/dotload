@@ -543,3 +543,17 @@ reference repo: /home/aryeh/dev/alacart.store
     - Dependencies: 7.9
     - Priority: High
     - Test Strategy: Test that user data is correctly displayed when the settings page loads.
+
+11. **Simplify Account Settings Form** ✅
+    - Task ID: 7.11
+    - Description: Simplify the account settings form to use a single button that handles both account updates and password changes.
+    - Dependencies: 7.9
+    - Priority: Medium
+    - Test Strategy: Test that account updates and password changes work correctly with a single button.
+
+12. **Clear Password Fields on Load** ✅
+    - Task ID: 7.12
+    - Description: Ensure password fields are cleared when the settings page loads.
+    - Dependencies: 7.11
+    - Priority: Low
+    - Test Strategy: Verify that password fields are empty when the page loads.
