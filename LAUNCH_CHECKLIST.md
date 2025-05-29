@@ -4,45 +4,8 @@
 *Note: more issues listed in Github*
 - [ ] link the digital file to its source. it is a secure link so check how to retrieve this
 
-
-## UI Redesign v0.1
-- [x] Understand the styling of /home/aryeh/dev/alacart.store
-- [x] Update the fonts to match the fonts used there
-- [x] Update the button styling to match
-- [x] Update the card styling to match
-- [x] Update the input styling to match
-- [x] Update the modal styling to match
-
-## User setup
-- [x] Allow saving of branding elements in the database (logo, header image)
-- [x] fix user settings page to be same as the one in lovable
-  - [x] also needs a back to dashboard button
-- [x] add seller plans placeholder : see setting > billings
-
-## Create product
-- [X] follow the create product page of /home/aryeh/dev/alacart.store
-  - [x] follow the design
-  - [x] update the product preview
-  - [x] update the advanced options
-  - [x] consolidate the inputs into one screen
-  - [x] update product types: digital and physical product
-- [X] add support for other currencies 
-- [x] add part for product content
-- [x] add download settings for digital products
-- [x] product badges need to appear below the image
-- [x] For product badges and trust indicators, turn them into toggles.
-- [x] add stock and pricing for physical products (see image)
-- [x] in advanced options, add product variants, advanced inventory, etc (see image)
-- [x] product description should be formatted html
-- [x] replace your store with store name and logo
-- [ ] edit product page should just use the create-product form
-
-## Product Page
-- [x] Match the design of the product page with the one in the preview
-
 ## Checkout
 - [ ] add support for other currencies 
-
 
 ## Site Setup
 - [x] Attach domain to dev server
