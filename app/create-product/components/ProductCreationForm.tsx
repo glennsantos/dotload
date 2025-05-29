@@ -195,9 +195,6 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
           }));
         }
         
-        // Log the product data for debugging
-        console.log('Fetched product data:', product);
-        
         // Only update state if component is still mounted
         if (!isMounted) return;
         
@@ -633,6 +630,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                 <Link href={`/p/${createdProduct.slug}`} className="px-4 py-2 bg-emerald-600 text-white rounded-2xl">
                   View Product
                 </Link>
+                <button onClick={() => window.location.reload()} className="px-4 py-2 border rounded-2xl">Continue Editing</button>
                 <Link href="/products" className="px-4 py-2 border rounded-2xl">
                   Back to Products
                 </Link>

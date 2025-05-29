@@ -33,8 +33,8 @@ export default function ErrorModal({ isOpen, onClose, title = 'Error', message }
           isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         }`}
       >
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="text-lg font-medium text-stone-900">{title}</h3>
+        <div className="flex justify-between items-center p-4">
+          <h3 className="text-lg font-medium text-red-500">{title}</h3>
           <button 
             onClick={onClose}
             className="text-stone-500 hover:text-stone-700 transition-colors"
@@ -43,15 +43,15 @@ export default function ErrorModal({ isOpen, onClose, title = 'Error', message }
           </button>
         </div>
         
-        <div className="p-4">
+        <div className="p-8">
           {typeof message === 'string' ? (
-            <p className="text-stone-700">{message}</p>
+            <p className="text-lg font-light text-stone-700">{message}</p>
           ) : (
             message
           )}
         </div>
         
-        <div className="p-4 border-t flex justify-end">
+        <div className="p-4 flex justify-end">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors"

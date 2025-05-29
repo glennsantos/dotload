@@ -202,8 +202,36 @@ export default function ProductFiles({
                   <div className="flex items-center">
                     <FileIcon size={16} className="text-stone-500 mr-2" />
                     <div>
-                      <a href={file.path} target="_blank" rel="noopener noreferrer" className="text-sm font-light">{file.name}</a>
-                      <p className="text-xs text-emerald-600 font-light">Already uploaded</p>
+                      <button 
+                        onClick={async () => {
+                          try {
+                            // Get secure download URL
+                            const response = await fetch('/api/files/secure-download', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({ fileId: file.id }),
+                            });
+                            
+                            if (!response.ok) {
+                              throw new Error('Failed to generate download link');
+                            }
+                            
+                            const data = await response.json();
+                            
+                            // Open the download URL in a new tab
+                            window.open(data.url, '_blank');
+                          } catch (error) {
+                            console.error('Error downloading file:', error);
+                            alert('Failed to download file. Please try again.');
+                          }
+                        }}
+                        className="text-sm font-light text-emerald-600 hover:text-emerald-700 hover:underline"
+                      >
+                        {file.name}
+                      </button>
+                      <p className="text-xs text-stone-600 font-light">Already uploaded</p>
                     </div>
                   </div>
                 </li>

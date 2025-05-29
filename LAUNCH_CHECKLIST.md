@@ -1,9 +1,9 @@
 # alaCarte Launch Checklist
 
 ## Resolve Issues
-- [x] fix Request Payout button
-- [x] Fix user being auto logged out
-- [ ] See issues in Github for more
+*Note: more issues listed in Github*
+- [ ] link the digital file to its source. it is a secure link so check how to retrieve this
+
 
 ## UI Redesign v0.1
 - [x] Understand the styling of /home/aryeh/dev/alacart.store

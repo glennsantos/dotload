@@ -7,35 +7,41 @@ import { mkdir } from 'fs/promises';
 import { cwd } from 'process';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 
-// Ensure uploads directory exists
-async function ensureUploadsDir() {
-  const uploadsDir = join(cwd(), 'uploads');
+// Ensure uploads directory exists with proper structure
+async function ensureUploadsDir(userId: string, productId: string) {
+  // Create the base uploads directory
+  const baseUploadsDir = join(cwd(), 'uploads');
+  
+  // Create the user-specific directory structure
+  const userProductDir = join(baseUploadsDir, 'user', userId, 'products', productId);
+  
   try {
-    await mkdir(uploadsDir, { recursive: true });
-    console.log(`Successfully ensured uploads directory exists: ${uploadsDir}`);
+    // Create all directories recursively
+    await mkdir(userProductDir, { recursive: true });
+    console.log(`Successfully ensured product directory exists: ${userProductDir}`);
     
     // Verify the directory exists and is writable
     try {
-      const testFile = join(uploadsDir, '.test-write-access');
+      const testFile = join(userProductDir, '.test-write-access');
       await writeFile(testFile, 'test');
       await unlink(testFile);
-      console.log('Uploads directory is writable');
+      console.log('Product directory is writable');
     } catch (writeError) {
-      console.error('Uploads directory exists but is not writable:', writeError instanceof Error ? writeError.message : String(writeError));
+      console.error('Product directory exists but is not writable:', writeError instanceof Error ? writeError.message : String(writeError));
       // We'll continue anyway, but log the warning
     }
     
-    return uploadsDir;
+    return userProductDir;
   } catch (error: unknown) {
     const typedError = error instanceof Error ? error : new Error(String(error));
-    console.error('Error creating uploads directory:', typedError);
+    console.error('Error creating product directory:', typedError);
     throw typedError;
   }
 }
 
 // Process uploaded files
 async function processFiles(formData: FormData, userId: string, productId: string) {
-  const uploadsDir = await ensureUploadsDir();
+  const productDir = await ensureUploadsDir(userId, productId);
   const coverImage = formData.get('coverImage') as File | null;
   const contentFiles: File[] = [];
   
@@ -68,10 +74,10 @@ async function processFiles(formData: FormData, userId: string, productId: strin
       // Fallback to local storage if Cloudinary fails
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       const filename = `coverImage-${uniqueSuffix}-${coverImage.name}`;
-      const path = join(uploadsDir, filename);
+      const path = join(productDir, filename);
       
       await writeFile(path, new Uint8Array(await coverImage.arrayBuffer()));
-      coverImagePath = `uploads/${filename}`;
+      coverImagePath = `uploads/user/${userId}/products/${productId}/${filename}`;
     }
   }
   
@@ -84,16 +90,19 @@ async function processFiles(formData: FormData, userId: string, productId: strin
         // Create a unique filename
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const filename = `${uniqueSuffix}-${file.name}`;
-        const filePath = join(uploadsDir, filename);
+        const filePath = join(productDir, filename);
         
         // Save file to disk
         await writeFile(filePath, new Uint8Array(await file.arrayBuffer()));
+        
+        // Create the relative path for storage in the database
+        const relativePath = `uploads/user/${userId}/products/${productId}/${filename}`;
         
         // Create file record in database
         const fileRecord = await prisma.file.create({
           data: {
             filename: file.name,
-            path: `uploads/${filename}`,
+            path: relativePath,
             mimetype: file.type,
             productId: productId
           }
@@ -391,6 +400,56 @@ export async function PUT(
       // Get the slug from form data
       const slug = formData.get('slug') as string || '';
       
+      // Parse what's included items
+      let whatsIncluded = [];
+      try {
+        const whatsIncludedData = formData.get('whatsIncluded');
+        if (whatsIncludedData) {
+          whatsIncluded = JSON.parse(whatsIncludedData as string);
+          if (!Array.isArray(whatsIncluded)) {
+            whatsIncluded = [];
+          }
+        }
+      } catch (parseError) {
+        console.error('Error parsing whatsIncluded:', parseError);
+        // Continue with empty array
+      }
+      
+      // Parse curriculum items
+      let curriculum = [];
+      try {
+        const curriculumData = formData.get('curriculum');
+        if (curriculumData) {
+          curriculum = JSON.parse(curriculumData as string);
+          if (!Array.isArray(curriculum)) {
+            curriculum = [];
+          }
+        }
+      } catch (parseError) {
+        console.error('Error parsing curriculum:', parseError);
+        // Continue with empty array
+      }
+      
+      // Parse download settings
+      let downloadSettings = {
+        downloadLimit: 5,
+        linkExpiration: 30
+      };
+      
+      try {
+        const downloadSettingsData = formData.get('downloadSettings');
+        if (downloadSettingsData) {
+          const parsedSettings = JSON.parse(downloadSettingsData as string);
+          downloadSettings = {
+            downloadLimit: parseInt(parsedSettings.downloadLimit) || 5,
+            linkExpiration: parseInt(parsedSettings.linkExpiration) || 30
+          };
+        }
+      } catch (parseError) {
+        console.error('Error parsing download settings:', parseError);
+        // Continue with default values
+      }
+      
       updateData = {
         name,
         description: description || undefined, // Only update if not blank
@@ -408,7 +467,13 @@ export async function PUT(
         bestSeller: badges.bestSeller,
         newRelease: badges.newRelease,
         popular: badges.popular,
-        customBadges: badges.customBadges
+        customBadges: badges.customBadges,
+        // Add what's included and curriculum
+        whatsIncluded: JSON.stringify(whatsIncluded),
+        curriculum: JSON.stringify(curriculum),
+        // Add download settings
+        downloadLimit: downloadSettings.downloadLimit,
+        linkExpiration: downloadSettings.linkExpiration
       };
       
       // Handle variations update if provided

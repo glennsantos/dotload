@@ -25,7 +25,6 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
 
   return (
     <div className="sticky top-4">
-      <h3 className="text-xl font-light mb-2">Product Preview</h3>
       <div className="flex justify-end mb-2">
         <button className="text-xs text-gray-500 hover:text-gray-700">Live Preview</button>
       </div>
