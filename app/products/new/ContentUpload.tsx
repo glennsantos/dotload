@@ -220,13 +220,6 @@ export default function ContentUpload({
                         <File size={16} className="mr-2 text-gray-500" />
                         <span className="text-sm">{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
                       </div>
-                      <button
-                        onClick={() => handleRemoveFile(index)}
-                        className="text-red-500 hover:text-red-700"
-                        disabled={isSubmitting}
-                      >
-                        <X size={16} />
-                      </button>
                     </li>
                   ))}
                 </ul>

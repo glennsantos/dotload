@@ -65,9 +65,11 @@ export default function ProductAdvancedOptions({
   // Handle adding a new "What's Included" item
   const handleAddIncludedItem = () => {
     if (newIncludedItem.trim()) {
+      // Ensure whatsIncluded is an array before spreading
+      const currentItems = Array.isArray(productData.whatsIncluded) ? productData.whatsIncluded : [];
       setProductData({
         ...productData,
-        whatsIncluded: [...productData.whatsIncluded, newIncludedItem.trim()]
+        whatsIncluded: [...currentItems, newIncludedItem.trim()]
       })
       setNewIncludedItem('')
     }
@@ -75,7 +77,9 @@ export default function ProductAdvancedOptions({
 
   // Handle removing a "What's Included" item
   const handleRemoveIncludedItem = (index: number) => {
-    const newItems = [...productData.whatsIncluded]
+    // Ensure whatsIncluded is an array before spreading
+    const currentItems = Array.isArray(productData.whatsIncluded) ? productData.whatsIncluded : [];
+    const newItems = [...currentItems]
     newItems.splice(index, 1)
     setProductData({...productData, whatsIncluded: newItems})
   }
@@ -244,7 +248,7 @@ export default function ProductAdvancedOptions({
         <p className="text-sm text-gray-500 mb-4">List what customers will get with this product</p>
         
         <div className="mb-3">
-          {productData.whatsIncluded.map((item, index) => (
+          {Array.isArray(productData.whatsIncluded) && productData.whatsIncluded.map((item, index) => (
             <div key={index} className="flex items-center justify-between mb-2 p-2 bg-gray-50 rounded-md">
               <div className="flex items-center">
                 <Check size={16} className="text-emerald-500 mr-2" />
@@ -259,7 +263,7 @@ export default function ProductAdvancedOptions({
             </div>
           ))}
 
-          {productData.whatsIncluded.length === 0 && (
+          {(!Array.isArray(productData.whatsIncluded) || productData.whatsIncluded.length === 0) && (
             <p className="text-sm text-gray-400 italic mb-2">No items added yet</p>
           )}
         </div>

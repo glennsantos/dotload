@@ -197,18 +197,18 @@ export default function ProductFiles({
           <div className="max-h-60 overflow-y-auto border rounded-md">
             <ul className="divide-y">
               {/* Display existing files */}
-              {productData.existingFiles && productData.existingFiles.map((file, index) => (
+              {productData.existingFiles && productData.existingFiles.length > 0 && productData.existingFiles.map((file, index) => (
                 <li key={`existing-${index}`} className="flex items-center justify-between p-3 bg-stone-50">
                   <div className="flex items-center">
                     <FileIcon size={16} className="text-stone-500 mr-2" />
                     <div>
-                      <p className="text-sm font-light">{file.name}</p>
+                      <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-sm font-light">{file.name}</a>
                       <p className="text-xs text-emerald-600 font-light">Already uploaded</p>
                     </div>
                   </div>
-                  {/* No delete button for existing files in edit mode */}
                 </li>
               ))}
+              
               
               {/* Display newly added files */}
               {productData.contentFiles.map((file, index) => (

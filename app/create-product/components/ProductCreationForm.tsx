@@ -182,22 +182,26 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
         
         if (!isMounted) return;
         
-        // Fetch existing files information if available
+        // Process existing files information if available
         let existingFiles = [];
         if (product.files && Array.isArray(product.files) && product.files.length > 0) {
           existingFiles = product.files.map((file: any) => ({
             id: file.id,
             name: file.filename,
             path: file.path,
-            size: file.size,
+            size: file.size || 0,
             type: file.mimetype,
             isExisting: true // Flag to identify existing files
           }));
         }
         
+        // Log the product data for debugging
+        console.log('Fetched product data:', product);
+        
         // Only update state if component is still mounted
         if (!isMounted) return;
         
+        // The API now returns a processed product with all fields properly formatted
         setProductData({
           id: product.id,
           name: product.name || '',
@@ -208,52 +212,52 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
           coverImagePath: product.coverImagePath || '',
           contentFiles: [], // We can't fetch actual File objects, just display existing files
           existingFiles: existingFiles, // Store existing files separately
-          contentLinks: Array.isArray(product.contentLinks) ? product.contentLinks : [],
+          contentLinks: Array.isArray(product.contentLinks) ? [...product.contentLinks] : [],
           currency: product.currency || 'PHP',
           stockQuantity: product.stockQuantity || null,
-          variants: Array.isArray(product.variants) ? product.variants : [],
-          inventorySettings: product.inventorySettings || {
-            allowPreOrders: false
+          variants: Array.isArray(product.variations) ? product.variations.map((v: any) => ({
+            name: v.name,
+            displayType: 'dropdown',
+            options: v.options ? v.options.split(',') : []
+          })) : [],
+          inventorySettings: {
+            allowPreOrders: product.inventorySettings?.allowPreOrders || product.allowPreOrders || false
           },
-          downloadSettings: product.downloadSettings || {
-            downloadLimit: 5,
-            linkExpiration: 30
+          downloadSettings: {
+            downloadLimit: product.downloadSettings?.downloadLimit || product.downloadLimit || 5,
+            linkExpiration: product.downloadSettings?.linkExpiration || product.linkExpiration || 30
           },
-          paymentOptions: product.paymentOptions || {
-            allowPayWhatYouWant: false,
-            offerCoupons: false,
+          paymentOptions: {
+            allowPayWhatYouWant: product.paymentOptions?.allowPayWhatYouWant || product.allowPayWhatYouWant || false,
+            offerCoupons: product.paymentOptions?.offerCoupons || product.offerCoupons || false,
           },
-          whatsIncluded: Array.isArray(product.whatsIncluded) ? product.whatsIncluded : [],
-          curriculum: Array.isArray(product.curriculum) ? product.curriculum : [],
-          badges: product.badges ? {
-            bestSeller: product.badges.bestSeller || false,
-            newRelease: product.badges.newRelease || false,
-            popular: product.badges.popular || false,
-            custom: Array.isArray(product.badges.custom) ? product.badges.custom : []
-          } : {
-            bestSeller: false,
-            newRelease: false,
-            popular: false,
-            custom: []
+          whatsIncluded: Array.isArray(product.whatsIncluded) ? [...product.whatsIncluded] : [],
+          curriculum: Array.isArray(product.curriculum) ? [...product.curriculum] : [],
+          badges: {
+            bestSeller: product.badges?.bestSeller || product.bestSeller || false,
+            newRelease: product.badges?.newRelease || product.newRelease || false,
+            popular: product.badges?.popular || product.popular || false,
+            custom: Array.isArray(product.badges?.custom) ? [...product.badges.custom] : []
           },
-          trustIndicators: product.trustIndicators ? {
-            secureCheckout: product.trustIndicators.secureCheckout !== undefined 
+          trustIndicators: {
+            secureCheckout: product.trustIndicators?.secureCheckout !== undefined 
               ? product.trustIndicators.secureCheckout 
-              : true,
-            instantDownload: product.trustIndicators.instantDownload !== undefined 
+              : product.secureCheckout !== undefined
+                ? product.secureCheckout
+                : true,
+            instantDownload: product.trustIndicators?.instantDownload !== undefined 
               ? product.trustIndicators.instantDownload 
-              : true,
-            refundPolicy: product.trustIndicators.refundPolicy !== undefined 
+              : product.instantDownload !== undefined
+                ? product.instantDownload
+                : true,
+            refundPolicy: product.trustIndicators?.refundPolicy !== undefined 
               ? product.trustIndicators.refundPolicy 
-              : false,
-            custom: Array.isArray(product.trustIndicators.custom) 
-              ? product.trustIndicators.custom 
+              : product.refundPolicy !== undefined
+                ? product.refundPolicy
+                : false,
+            custom: Array.isArray(product.trustIndicators?.custom) 
+              ? [...product.trustIndicators.custom] 
               : []
-          } : {
-            secureCheckout: true,
-            instantDownload: true,
-            refundPolicy: false,
-            custom: []
           }
         });
       } catch (error) {
@@ -370,37 +374,66 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       setCreatedProduct(responseData.product || responseData)
       
       // Upload content files if any
-      if (productData.contentFiles.length > 0 && (responseData.product?.id || responseData.id)) {
-        const filesFormData = new FormData()
-        
-        // Add all content files to the form data
-        for (let i = 0; i < productData.contentFiles.length; i++) {
-          filesFormData.append('files', productData.contentFiles[i])
-        }
-        
-        // Add product ID to the form data
-        const productId = responseData.product?.id || responseData.id
-        filesFormData.append('productId', productId)
-        
-        // Upload files
-        const filesResponse = await fetch('/api/files/upload', {
-          method: 'POST',
-          body: filesFormData,
-          credentials: 'include'
-        })
-        
-        if (!filesResponse.ok) {
-          console.error('Failed to upload content files')
-          // Continue anyway, the product was created/updated successfully
+      if (productData.contentFiles.length > 0) {
+        // For edit mode, we'll upload files directly to the product endpoint
+        if (isEditing && productId) {
+          // Create a new FormData for the files
+          const filesFormData = new FormData()
+          
+          // Add basic product info to ensure the request is valid
+          filesFormData.append('name', productData.name)
+          filesFormData.append('price', productData.price.toString())
+          
+          // Add all content files to the form data with unique keys
+          for (let i = 0; i < productData.contentFiles.length; i++) {
+            filesFormData.append(`contentFile${i}`, productData.contentFiles[i])
+          }
+          
+          // Send files to the product endpoint
+          const filesResponse = await fetch(`/api/products/${productId}`, {
+            method: 'PUT',
+            body: filesFormData,
+            credentials: 'include'
+          })
+          
+          if (!filesResponse.ok) {
+            console.error('Failed to upload content files in edit mode')
+            // Continue anyway, the product was updated successfully
+          } else {
+            console.log('Successfully uploaded content files in edit mode')
+          }
+        } else {
+          // For create mode, use the /api/files endpoint as before
+          const filesFormData = new FormData()
+          
+          // Add all content files to the form data
+          for (let i = 0; i <productData.contentFiles.length; i++) {
+            filesFormData.append(`file${i}`, productData.contentFiles[i])
+          }
+          
+          // Add product ID
+          const productId = responseData.product?.id || responseData.id
+          filesFormData.append('productId', productId)
+          
+          // Send files to backend
+          const filesResponse = await fetch('/api/files', {
+            method: 'POST',
+            body: filesFormData,
+            credentials: 'include'
+          })
+          
+          if (!filesResponse.ok) {
+            console.error('Failed to upload content files')
+            // Continue anyway, the product was created/updated successfully
+          }
         }
       }
       
       // Success - update UI
       setIsSubmitting(false)
       
-      // If editing, redirect back to products page after successful update
       if (isEditing) {
-        router.push('/products')
+        router.push(`/edit-product/${productId}`)
       }
     } catch (error: unknown) {
       console.error('Product submission error:', error)

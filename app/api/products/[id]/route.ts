@@ -37,8 +37,17 @@ async function ensureUploadsDir() {
 async function processFiles(formData: FormData, userId: string, productId: string) {
   const uploadsDir = await ensureUploadsDir();
   const coverImage = formData.get('coverImage') as File | null;
+  const contentFiles: File[] = [];
+  
+  // Extract content files from formData
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith('contentFile') && value instanceof File) {
+      contentFiles.push(value);
+    }
+  }
   
   let coverImagePath = null;
+  const uploadedContentFiles = [];
   
   // Process cover image if exists
   if (coverImage) {
@@ -66,7 +75,38 @@ async function processFiles(formData: FormData, userId: string, productId: strin
     }
   }
   
-  return { coverImagePath };
+  // Process content files if any
+  if (contentFiles.length > 0) {
+    console.log(`Processing ${contentFiles.length} content files`);
+    
+    for (const file of contentFiles) {
+      try {
+        // Create a unique filename
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const filename = `${uniqueSuffix}-${file.name}`;
+        const filePath = join(uploadsDir, filename);
+        
+        // Save file to disk
+        await writeFile(filePath, new Uint8Array(await file.arrayBuffer()));
+        
+        // Create file record in database
+        const fileRecord = await prisma.file.create({
+          data: {
+            filename: file.name,
+            path: `uploads/${filename}`,
+            mimetype: file.type,
+            productId: productId
+          }
+        });
+        
+        uploadedContentFiles.push(fileRecord);
+      } catch (error) {
+        console.error(`Error processing content file ${file.name}:`, error);
+      }
+    }
+  }
+  
+  return { coverImagePath, uploadedContentFiles };
 }
 
 export async function GET(
@@ -107,7 +147,6 @@ export async function GET(
       }
     });
     
-    // Check if product exists and belongs to the user
     if (!product) {
       return NextResponse.json({ 
         error: 'Product not found',
@@ -115,6 +154,38 @@ export async function GET(
       }, { status: 404 });
     }
     
+    // Process string fields that should be JSON objects
+    const processedProduct = {
+      ...product,
+      contentLinks: product.contentLinks ? JSON.parse(product.contentLinks) : [],
+      whatsIncluded: product.whatsIncluded ? JSON.parse(product.whatsIncluded) : [],
+      curriculum: product.curriculum ? JSON.parse(product.curriculum) : [],
+      badges: {
+        bestSeller: product.bestSeller || false,
+        newRelease: product.newRelease || false,
+        popular: product.popular || false,
+        custom: product.customBadges ? JSON.parse(product.customBadges) : []
+      },
+      trustIndicators: {
+        secureCheckout: product.secureCheckout || true,
+        instantDownload: product.instantDownload || true,
+        refundPolicy: product.refundPolicy || false,
+        custom: product.customTrustIndicators ? JSON.parse(product.customTrustIndicators) : []
+      },
+      downloadSettings: {
+        downloadLimit: product.downloadLimit || 5,
+        linkExpiration: product.linkExpiration || 30
+      },
+      paymentOptions: {
+        allowPayWhatYouWant: product.allowPayWhatYouWant || false,
+        offerCoupons: product.offerCoupons || false
+      },
+      inventorySettings: {
+        allowPreOrders: product.allowPreOrders || false
+      }
+    };
+    
+    // Check if user has permission to view this product
     if (product.userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
@@ -122,7 +193,8 @@ export async function GET(
       }, { status: 403 });
     }
     
-    return NextResponse.json(product);
+    // Return the processed product with all data properly formatted
+    return NextResponse.json(processedProduct);
   } catch (error) {
     console.error('Fetch product error:', error);
     return NextResponse.json({ 
@@ -217,9 +289,14 @@ export async function PUT(
       }
       
       // Process uploaded files if any
-      const { coverImagePath: newCoverImagePath } = await processFiles(formData, userId, productId);
+      const { coverImagePath: newCoverImagePath, uploadedContentFiles } = await processFiles(formData, userId, productId);
       if (newCoverImagePath) {
         coverImagePath = newCoverImagePath;
+      }
+      
+      // Log the uploaded content files
+      if (uploadedContentFiles && uploadedContentFiles.length > 0) {
+        console.log(`Successfully uploaded ${uploadedContentFiles.length} content files`);
       }
       
       // Parse variations if exist
@@ -263,12 +340,70 @@ export async function PUT(
         // Continue with default values
       }
       
+      // Parse trust indicators
+      let trustIndicators = {
+        secureCheckout: true,
+        instantDownload: true,
+        refundPolicy: false,
+        customTrustIndicators: '[]'
+      };
+      
+      try {
+        const trustIndicatorsData = formData.get('trustIndicators');
+        if (trustIndicatorsData) {
+          const parsedTrustIndicators = JSON.parse(trustIndicatorsData as string);
+          trustIndicators = {
+            secureCheckout: !!parsedTrustIndicators.secureCheckout,
+            instantDownload: !!parsedTrustIndicators.instantDownload,
+            refundPolicy: !!parsedTrustIndicators.refundPolicy,
+            customTrustIndicators: JSON.stringify(parsedTrustIndicators.custom || [])
+          };
+        }
+      } catch (parseError) {
+        console.error('Error parsing trust indicators:', parseError);
+        // Continue with default values
+      }
+      
+      // Parse badges
+      let badges = {
+        bestSeller: false,
+        newRelease: false,
+        popular: false,
+        customBadges: '[]'
+      };
+      
+      try {
+        const badgesData = formData.get('badges');
+        if (badgesData) {
+          const parsedBadges = JSON.parse(badgesData as string);
+          badges = {
+            bestSeller: !!parsedBadges.bestSeller,
+            newRelease: !!parsedBadges.newRelease,
+            popular: !!parsedBadges.popular,
+            customBadges: JSON.stringify(parsedBadges.custom || [])
+          };
+        }
+      } catch (parseError) {
+        console.error('Error parsing badges:', parseError);
+        // Continue with default values
+      }
+      
       updateData = {
         name,
         description,
         price: parsedPrice,
         ...paymentOptions,
-        ...(coverImagePath ? { coverImagePath } : {})
+        ...(coverImagePath ? { coverImagePath } : {}),
+        // Add trust indicators
+        secureCheckout: trustIndicators.secureCheckout,
+        instantDownload: trustIndicators.instantDownload,
+        refundPolicy: trustIndicators.refundPolicy,
+        customTrustIndicators: trustIndicators.customTrustIndicators,
+        // Add badges
+        bestSeller: badges.bestSeller,
+        newRelease: badges.newRelease,
+        popular: badges.popular,
+        customBadges: badges.customBadges
       };
       
       // Handle variations update if provided
