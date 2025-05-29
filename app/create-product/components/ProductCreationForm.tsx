@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Plus, AlertCircle } from 'lucide-react'
+import ErrorModal from '@/app/components/ErrorModal'
 import { validateProductForm } from '@/lib/form-validation'
 import ProductTypeSelection from './ProductTypeSelection'
 import ProductInformation from './ProductInformation'
@@ -73,13 +74,15 @@ interface ProductCreationFormProps {
   productId?: string;
 }
 
-export default function ProductCreationForm({ isEditing = false, productId = '' }: ProductCreationFormProps) {
+const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreationFormProps) => {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('setup') // 'setup' or 'advanced'
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [showValidationErrors, setShowValidationErrors] = useState(false)
+  const [errorModalOpen, setErrorModalOpen] = useState(false)
+  const [errorModalMessage, setErrorModalMessage] = useState('')
   
   // Initialize product data with default values
   const [productData, setProductData] = useState<Product>({
@@ -133,106 +136,148 @@ export default function ProductCreationForm({ isEditing = false, productId = '' 
     }
   }
 
-  // Validate form data
-  const validateForm = () => {
+  // Validate form data - memoized to prevent infinite loops
+  const validateForm = useCallback(() => {
     const { isValid, errors } = validateProductForm(productData)
     setValidationErrors(errors)
     setShowValidationErrors(!isValid)
+    
+    // If not valid, show error modal with first error
+    if (!isValid) {
+      const firstError = Object.values(errors)[0]
+      setErrorModalMessage(firstError)
+      setErrorModalOpen(true)
+    }
+    
     return isValid
-  }
+  }, [productData])
   
   // Effect to fetch product data when in editing mode
   useEffect(() => {
-    if (isEditing && productId) {
-      const fetchProductData = async () => {
-        try {
-          const response = await fetch(`/api/products/${productId}`);
-          
-          if (response.status === 401 || response.status === 403) {
-            // Redirect to login if unauthorized
-            router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
-            return;
+    // Only fetch data if we're in editing mode and have a productId
+    if (!isEditing || !productId) return;
+    
+    let isMounted = true;
+    
+    const fetchProductData = async () => {
+      try {
+        // Add a small delay to prevent rapid consecutive calls
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const response = await fetch(`/api/products/${productId}`);
+        
+        if (!isMounted) return;
+        
+        if (response.status === 401 || response.status === 403) {
+          // Redirect to login if unauthorized
+          router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+          return;
+        }
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch product: ${response.status}`);
+        }
+        
+        const product = await response.json();
+        
+        if (!isMounted) return;
+        
+        // Fetch existing files information if available
+        let existingFiles = [];
+        if (product.files && Array.isArray(product.files) && product.files.length > 0) {
+          existingFiles = product.files.map((file: any) => ({
+            id: file.id,
+            name: file.filename,
+            path: file.path,
+            size: file.size,
+            type: file.mimetype,
+            isExisting: true // Flag to identify existing files
+          }));
+        }
+        
+        // Only update state if component is still mounted
+        if (!isMounted) return;
+        
+        setProductData({
+          id: product.id,
+          name: product.name || '',
+          type: product.type || '',
+          price: product.price || 0,
+          description: product.description || '',
+          slug: product.slug || '',
+          coverImagePath: product.coverImagePath || '',
+          contentFiles: [], // We can't fetch actual File objects, just display existing files
+          existingFiles: existingFiles, // Store existing files separately
+          contentLinks: Array.isArray(product.contentLinks) ? product.contentLinks : [],
+          currency: product.currency || 'PHP',
+          stockQuantity: product.stockQuantity || null,
+          variants: Array.isArray(product.variants) ? product.variants : [],
+          inventorySettings: product.inventorySettings || {
+            allowPreOrders: false
+          },
+          downloadSettings: product.downloadSettings || {
+            downloadLimit: 5,
+            linkExpiration: 30
+          },
+          paymentOptions: product.paymentOptions || {
+            allowPayWhatYouWant: false,
+            offerCoupons: false,
+          },
+          whatsIncluded: Array.isArray(product.whatsIncluded) ? product.whatsIncluded : [],
+          curriculum: Array.isArray(product.curriculum) ? product.curriculum : [],
+          badges: product.badges ? {
+            bestSeller: product.badges.bestSeller || false,
+            newRelease: product.badges.newRelease || false,
+            popular: product.badges.popular || false,
+            custom: Array.isArray(product.badges.custom) ? product.badges.custom : []
+          } : {
+            bestSeller: false,
+            newRelease: false,
+            popular: false,
+            custom: []
+          },
+          trustIndicators: product.trustIndicators ? {
+            secureCheckout: product.trustIndicators.secureCheckout !== undefined 
+              ? product.trustIndicators.secureCheckout 
+              : true,
+            instantDownload: product.trustIndicators.instantDownload !== undefined 
+              ? product.trustIndicators.instantDownload 
+              : true,
+            refundPolicy: product.trustIndicators.refundPolicy !== undefined 
+              ? product.trustIndicators.refundPolicy 
+              : false,
+            custom: Array.isArray(product.trustIndicators.custom) 
+              ? product.trustIndicators.custom 
+              : []
+          } : {
+            secureCheckout: true,
+            instantDownload: true,
+            refundPolicy: false,
+            custom: []
           }
-          
-          if (response.ok) {
-            const product = await response.json();
-            
-            // Fetch existing files information if available
-            let existingFiles = [];
-            if (product.files && Array.isArray(product.files) && product.files.length > 0) {
-              existingFiles = product.files.map((file: any) => ({
-                id: file.id,
-                name: file.filename,
-                path: file.path,
-                size: file.size,
-                type: file.mimetype,
-                isExisting: true // Flag to identify existing files
-              }));
-            }
-            
-            // Transform API data to match our form structure
-            setProductData({
-              ...productData,
-              id: product.id,
-              name: product.name || '',
-              type: product.type || '',
-              price: product.price || 0,
-              description: product.description || '',
-              slug: product.slug || '',
-              coverImagePath: product.coverImagePath || '',
-              contentFiles: [], // We can't fetch actual File objects, just display existing files
-              existingFiles: existingFiles, // Store existing files separately
-              contentLinks: Array.isArray(product.contentLinks) ? product.contentLinks : [],
-              currency: product.currency || 'PHP',
-              stockQuantity: product.stockQuantity || null,
-              variants: Array.isArray(product.variants) ? product.variants : [],
-              inventorySettings: product.inventorySettings || {
-                allowPreOrders: false
-              },
-              downloadSettings: product.downloadSettings || {
-                downloadLimit: 5,
-                linkExpiration: 30
-              },
-              paymentOptions: product.paymentOptions || {
-                allowPayWhatYouWant: false,
-                offerCoupons: false,
-              },
-              whatsIncluded: Array.isArray(product.whatsIncluded) ? product.whatsIncluded : [],
-              curriculum: Array.isArray(product.curriculum) ? product.curriculum : [],
-              badges: {
-                bestSeller: product.badges?.bestSeller || false,
-                newRelease: product.badges?.newRelease || false,
-                popular: product.badges?.popular || false,
-                custom: Array.isArray(product.badges?.custom) ? product.badges.custom : []
-              },
-              trustIndicators: {
-                secureCheckout: product.trustIndicators?.secureCheckout || true,
-                instantDownload: product.trustIndicators?.instantDownload || true,
-                refundPolicy: product.trustIndicators?.refundPolicy || false,
-                custom: Array.isArray(product.trustIndicators?.custom) ? product.trustIndicators.custom : []
-              }
-            });
-          } else {
-            console.error('Failed to fetch product data');
-            // Redirect to products page if product not found
-            router.push('/products');
-          }
-        } catch (error) {
-          console.error('Error fetching product data:', error);
+        });
+      } catch (error) {
+        console.error('Error fetching product data:', error);
+        if (isMounted) {
           router.push('/products');
         }
-      };
-      
-      fetchProductData();
-    }
-  }, [isEditing, productId, router, productData]);
+      }
+    };
+    
+    fetchProductData();
+    
+    // Cleanup function to prevent state updates after unmounting
+    return () => {
+      isMounted = false;
+    };
+  }, [isEditing, productId, router]);
   
-  // Effect to validate form when product data changes
+  // Effect to validate form when validation status changes
   useEffect(() => {
     if (showValidationErrors) {
       validateForm()
     }
-  }, [productData, showValidationErrors])
+  }, [showValidationErrors, validateForm])
   
   // Handle form submission
   const handleSubmit = async () => {
@@ -370,9 +415,16 @@ export default function ProductCreationForm({ isEditing = false, productId = '' 
   
   return (
     <div className="min-h-screen bg-white">
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModalOpen}
+        onClose={() => setErrorModalOpen(false)}
+        title="Validation Error"
+        message={errorModalMessage}
+      />
       {!createdProduct ? (
         <div>
-          <header className="p-6 border-b">
+          <header className="p-6">
 
              {/* Back to Dashboard button */}
              <Link href="/products" className="text-sm text-stone-500 hover:text-stone-700">
@@ -415,12 +467,12 @@ export default function ProductCreationForm({ isEditing = false, productId = '' 
             <div className="md:col-span-7">
 
               {/* Tab Navigation */}
-              <div className="flex bg-white border rounded-full overflow-hidden w-full max-w-md mx-auto">
+              <div className="w-full flex bg-white border rounded-full overflow-hidden mx-auto rounded-full">
                 <button
                   onClick={() => handleTabChange('setup')}
-                  className={`w-1/2 py-3 text-sm font-medium transition-colors ${
+                  className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-full transition-colors ${
                     activeTab === 'setup'
-                      ? 'bg-emerald-100 text-emerald-600'
+                      ? 'bg-emerald-100 text-emerald-700'
                       : 'text-stone-500 hover:text-stone-700'
                   }`}
                 >
@@ -428,9 +480,9 @@ export default function ProductCreationForm({ isEditing = false, productId = '' 
                 </button>
                 <button
                   onClick={() => handleTabChange('advanced')}
-                  className={`w-1/2 py-3 text-sm font-medium transition-colors ${
+                  className={`w-1/2 m-1 py-3 text-sm font-light rounded-full transition-colors ${
                     activeTab === 'advanced'
-                      ? 'bg-emerald-100 text-emerald-600'
+                      ? 'bg-emerald-100 text-emerald-700'
                       : 'text-stone-500 hover:text-stone-700'
                   }`}
                 >
@@ -502,25 +554,25 @@ export default function ProductCreationForm({ isEditing = false, productId = '' 
         </div>
       ) : (
         <div>
-          <header className="p-6 border-b flex justify-between items-center">
-            <h1 className="text-3xl font-normal truncate">
+          <header className="mt-10 p-6 flex justify-center items-center">
+            <h1 className="text-3xl font-light truncate">
               {createdProduct.name}
             </h1>
           </header>
           
           <div className="p-6 max-w-3xl mx-auto">
             <div className="mb-6">
-              <h2 className="text-xl font-medium mb-4">Product {isEditing ? 'Updated' : 'Created'} Successfully!</h2>
-              <p className="text-gray-600 mb-4">Your product has been published and is now available for purchase.</p>
+              <h2 className="text-xl font-light mb-4">Product {isEditing ? 'Updated' : 'Created'} Successfully!</h2>
+              <p className="font-light text-gray-600 mb-4">Your product has been published and is now available for purchase.</p>
               
-              <div className="p-4 border rounded-md mb-4">
-                <h3 className="font-medium mb-2">Product URL</h3>
+              <div className="p-4 border rounded-3xl mb-4">
+                <h3 className="font-light mb-2">Product URL</h3>
                 <div className="flex mb-4">
                   <input
                     type="text"
                     value={`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`}
                     readOnly
-                    className="flex-1 p-2 border rounded-l-md bg-gray-100"
+                    className="flex-1 p-2 border rounded-l-2xl bg-gray-100"
                   />
                   <button 
                     onClick={() => {
@@ -531,18 +583,18 @@ export default function ProductCreationForm({ isEditing = false, productId = '' 
                           .catch(() => alert('Failed to copy URL'));
                       }
                     }}
-                    className="px-4 py-2 bg-black text-white rounded-r-md"
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-r-2xl"
                   >
                     Copy
                   </button>
                 </div>
               </div>
               
-              <div className="flex gap-4 mt-8">
-                <Link href={`/products/${createdProduct.id}`} className="px-4 py-2 bg-emerald-500 text-white rounded-md">
+              <div className="flex gap-4 mt-8 font-light">
+                <Link href={`/p/${createdProduct.slug}`} className="px-4 py-2 bg-emerald-600 text-white rounded-2xl">
                   View Product
                 </Link>
-                <Link href="/products" className="px-4 py-2 border rounded-md">
+                <Link href="/products" className="px-4 py-2 border rounded-2xl">
                   Back to Products
                 </Link>
               </div>
@@ -569,3 +621,5 @@ export default function ProductCreationForm({ isEditing = false, productId = '' 
     </div>
   )
 }
+
+export default ProductCreationForm;

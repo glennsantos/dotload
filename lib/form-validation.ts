@@ -63,7 +63,8 @@ export const validateProductForm = (formData: any) => {
     // Validate content files or links for digital products
     if (
       (!formData.contentFiles || formData.contentFiles.length === 0) && 
-      (!formData.contentLinks || formData.contentLinks.length === 0)
+      (!formData.contentLinks || formData.contentLinks.length === 0) &&
+      (!formData.existingFiles || formData.existingFiles.length === 0)
     ) {
       errors.contentFiles = 'Digital products require at least one content file or link';
     }

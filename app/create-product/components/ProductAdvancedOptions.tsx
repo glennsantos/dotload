@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Product } from './ProductCreationForm'
 import { Plus, X, Check, Lock, ThumbsUp } from 'lucide-react'
 import ProductVariants from './ProductVariants'
@@ -22,6 +22,45 @@ export default function ProductAdvancedOptions({
   const [newModuleTitle, setNewModuleTitle] = useState('')
   const [newModuleItem, setNewModuleItem] = useState('')
   const [selectedModuleIndex, setSelectedModuleIndex] = useState<number | null>(null)
+  
+  // One-time initialization for badges and trust indicators
+  useEffect(() => {
+    let needsUpdate = false;
+    let updatedProduct = {...productData};
+    
+    // Initialize badges if needed
+    if (!updatedProduct.badges) {
+      updatedProduct.badges = {
+        bestSeller: false,
+        newRelease: false,
+        popular: false,
+        custom: []
+      };
+      needsUpdate = true;
+    } else if (!Array.isArray(updatedProduct.badges.custom)) {
+      updatedProduct.badges.custom = [];
+      needsUpdate = true;
+    }
+    
+    // Initialize trust indicators if needed
+    if (!updatedProduct.trustIndicators) {
+      updatedProduct.trustIndicators = {
+        secureCheckout: true,
+        instantDownload: true,
+        refundPolicy: false,
+        custom: []
+      };
+      needsUpdate = true;
+    } else if (!Array.isArray(updatedProduct.trustIndicators.custom)) {
+      updatedProduct.trustIndicators.custom = [];
+      needsUpdate = true;
+    }
+    
+    // Only update if needed
+    if (needsUpdate) {
+      setProductData(updatedProduct);
+    }
+  }, []);  // Empty dependency array means this only runs once on mount
 
   // Handle adding a new "What's Included" item
   const handleAddIncludedItem = () => {
@@ -130,7 +169,7 @@ export default function ProductAdvancedOptions({
     <div className="space-y-8">
       {/* Download Settings - Only for digital products */}
       {productData.type === 'digital_product' && (
-        <div className="mb-8 border rounded-md p-4">
+        <div className="mt-5 mb-8 border rounded-md p-4">
           <div className="flex items-center mb-4">
             <h3 className="text-xl font-light text-stone-900">Download Settings</h3>
           </div>

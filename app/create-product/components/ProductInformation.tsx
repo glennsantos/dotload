@@ -204,6 +204,30 @@ export default function ProductInformation({
               </button>
               <p className="text-sm text-center text-gray-500">{productData.coverImage.name}</p>
             </div>
+          ) : productData.coverImagePath ? (
+            <div className="relative w-full">
+              <img 
+                src={
+                  // Handle URLs that start with http:// or https://
+                  productData.coverImagePath.startsWith('http') ? productData.coverImagePath :
+                  // Handle protocol-relative URLs that start with //
+                  productData.coverImagePath.startsWith('//') ? `https:${productData.coverImagePath}` :
+                  // Handle absolute paths that start with /
+                  productData.coverImagePath.startsWith('/') ? productData.coverImagePath :
+                  // Handle relative paths by adding a leading /
+                  `/${productData.coverImagePath}`
+                } 
+                alt="Thumbnail preview" 
+                className="w-32 h-32 object-cover rounded-md mx-auto mb-2"
+              />
+              <button 
+                onClick={() => setProductData({...productData, coverImagePath: ''})}
+                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2"
+              >
+                <X size={14} />
+              </button>
+              <p className="text-sm text-center text-gray-500">Existing photo</p>
+            </div>
           ) : (
             <>
               <input

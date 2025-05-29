@@ -27,18 +27,18 @@ export default function ProductFiles({
     if (!productData.existingFiles) {
       setProductData(prev => ({ ...prev, existingFiles: [] }));
     }
-  }, []);
+  }, [productData.existingFiles, setProductData]);
 
   // Initialize from productData if available
   useEffect(() => {
     // Ensure contentLinks is always an array
     if (!productData.contentLinks || !Array.isArray(productData.contentLinks)) {
-      setProductData({
-        ...productData,
+      setProductData(prev => ({
+        ...prev,
         contentLinks: []
-      })
+      }))
     }
-  }, [productData, setProductData])
+  }, [productData.contentLinks, setProductData])
 
   // Handle drag events
   const handleDrag = (e: React.DragEvent) => {
@@ -203,7 +203,6 @@ export default function ProductFiles({
                     <FileIcon size={16} className="text-stone-500 mr-2" />
                     <div>
                       <p className="text-sm font-light">{file.name}</p>
-                      <p className="text-xs text-gray-500 font-light">{formatFileSize(file.size)}</p>
                       <p className="text-xs text-emerald-600 font-light">Already uploaded</p>
                     </div>
                   </div>

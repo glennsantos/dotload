@@ -50,8 +50,8 @@
 - [x] check domain if connected
 - [x] Change from email for alacart in .env files
 - [x] Change other emails as needed
-- [ ] Create SSL cert for dev server via Letsencrypt.
-- [ ] update SES to prod
+- [x] Create SSL cert for dev server via Letsencrypt.
+- [?] update SES to prod
 - [ ] clean up front end console.logs for prod
 
 ## Deploy to Dev
