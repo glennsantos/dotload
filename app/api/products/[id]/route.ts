@@ -1,40 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
-import { writeFile, unlink } from 'fs/promises';
+import { writeFile, unlink, mkdir, stat } from 'fs/promises';
 import { join } from 'path';
-import { mkdir } from 'fs/promises';
 import { cwd } from 'process';
+import * as fs from 'fs';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 
 // Ensure uploads directory exists with proper structure
 async function ensureUploadsDir(userId: string, productId: string) {
   // Create the base uploads directory
   const baseUploadsDir = join(cwd(), 'uploads');
+  console.log(`Base uploads directory: ${baseUploadsDir}`);
   
   // Create the user-specific directory structure
-  const userProductDir = join(baseUploadsDir, 'user', userId, 'products', productId);
+  const userProductDir = join(baseUploadsDir, 'users', userId, 'products', productId);
+  console.log(`Target product directory: ${userProductDir}`);
   
   try {
-    // Create all directories recursively
-    await mkdir(userProductDir, { recursive: true });
-    console.log(`Successfully ensured product directory exists: ${userProductDir}`);
+    // First ensure the base uploads directory exists
+    try {
+      await mkdir(baseUploadsDir, { recursive: false });
+      console.log(`Created base uploads directory: ${baseUploadsDir}`);
+    } catch (error) {
+      // Directory may already exist, which is fine
+      console.log(`Base uploads directory already exists or error: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    
+    // Now create the nested structure
+    try {
+      await mkdir(userProductDir, { recursive: true });
+      console.log(`Successfully created product directory: ${userProductDir}`);
+    } catch (dirError) {
+      console.error(`Failed to create directory structure: ${dirError instanceof Error ? dirError.message : String(dirError)}`);
+      throw dirError;
+    }
     
     // Verify the directory exists and is writable
     try {
       const testFile = join(userProductDir, '.test-write-access');
       await writeFile(testFile, 'test');
       await unlink(testFile);
-      console.log('Product directory is writable');
+      console.log(`Product directory is writable: ${userProductDir}`);
     } catch (writeError) {
-      console.error('Product directory exists but is not writable:', writeError instanceof Error ? writeError.message : String(writeError));
-      // We'll continue anyway, but log the warning
+      console.error(`Product directory exists but is not writable: ${userProductDir}`, 
+        writeError instanceof Error ? writeError.message : String(writeError));
+      throw new Error(`Directory exists but is not writable: ${userProductDir}`);
     }
     
     return userProductDir;
   } catch (error: unknown) {
     const typedError = error instanceof Error ? error : new Error(String(error));
-    console.error('Error creating product directory:', typedError);
+    console.error('Error ensuring product directory:', typedError);
     throw typedError;
   }
 }
@@ -69,15 +86,35 @@ async function processFiles(formData: FormData, userId: string, productId: strin
       }) as any;
       
       coverImagePath = result.secure_url;
+      console.log(`Uploaded cover image to Cloudinary: ${coverImagePath}`);
     } catch (error) {
       console.error('Cover image upload error:', error);
-      // Fallback to local storage if Cloudinary fails
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const filename = `coverImage-${uniqueSuffix}-${coverImage.name}`;
-      const path = join(productDir, filename);
+      console.log('Falling back to local storage for cover image');
       
-      await writeFile(path, new Uint8Array(await coverImage.arrayBuffer()));
-      coverImagePath = `uploads/user/${userId}/products/${productId}/${filename}`;
+      // Fallback to local storage if Cloudinary fails
+      try {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const filename = `coverImage-${uniqueSuffix}-${coverImage.name}`;
+        const filePath = join(productDir, filename);
+        
+        console.log(`Saving cover image to: ${filePath}`);
+        
+        // Save file to disk
+        const fileBuffer = new Uint8Array(await coverImage.arrayBuffer());
+        await writeFile(filePath, fileBuffer);
+        console.log(`Successfully wrote cover image: ${filePath} (${fileBuffer.length} bytes)`);
+        
+        // Verify file was written
+        const stats = await stat(filePath);
+        console.log(`Cover image verified: ${filePath}, size: ${stats.size} bytes`);
+        
+        // Set the path for database storage
+        coverImagePath = `uploads/users/${userId}/products/${productId}/${filename}`;
+        console.log(`Cover image path for database: ${coverImagePath}`);
+      } catch (fileError) {
+        console.error('Failed to save cover image locally:', fileError);
+        throw fileError;
+      }
     }
   }
   
@@ -92,11 +129,25 @@ async function processFiles(formData: FormData, userId: string, productId: strin
         const filename = `${uniqueSuffix}-${file.name}`;
         const filePath = join(productDir, filename);
         
-        // Save file to disk
-        await writeFile(filePath, new Uint8Array(await file.arrayBuffer()));
+        console.log(`Saving file to: ${filePath}`);
+        
+        try {
+          // Save file to disk
+          const fileBuffer = new Uint8Array(await file.arrayBuffer());
+          await writeFile(filePath, fileBuffer);
+          console.log(`Successfully wrote file: ${filePath} (${fileBuffer.length} bytes)`);
+          
+          // Verify file was written
+          const stats = await stat(filePath);
+          console.log(`File verified: ${filePath}, size: ${stats.size} bytes`);
+        } catch (writeError) {
+          console.error(`Failed to write file to disk: ${filePath}`, writeError);
+          throw writeError;
+        }
         
         // Create the relative path for storage in the database
-        const relativePath = `uploads/user/${userId}/products/${productId}/${filename}`;
+        const relativePath = `uploads/users/${userId}/products/${productId}/${filename}`;
+        console.log(`Database path: ${relativePath}`);
         
         // Create file record in database
         const fileRecord = await prisma.file.create({
@@ -108,6 +159,7 @@ async function processFiles(formData: FormData, userId: string, productId: strin
           }
         });
         
+        console.log(`Created database record for file: ${file.name}, id: ${fileRecord.id}`);
         uploadedContentFiles.push(fileRecord);
       } catch (error) {
         console.error(`Error processing content file ${file.name}:`, error);

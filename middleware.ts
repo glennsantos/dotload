@@ -24,7 +24,15 @@ const PUBLIC_ROUTES = [
   '/api/auth/verify-email',
   '/api/auth/logout',
   '/uploads',
-  '/uploads/*'
+  '/uploads/*',
+  // Old download endpoints (deprecated)
+  '/api/files/secure-download',
+  '/api/files/secure-download/*',
+  '/api/files/direct-download',
+  '/api/files/direct-download/*',
+  // New download endpoints
+  '/api/downloads/secure',
+  '/api/downloads/secure/*'
 ];
 
 // Routes that require authentication but not email verification
@@ -33,6 +41,19 @@ const AUTH_ONLY_ROUTES = [
 ];
 
 export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // Debug logging for all requests
+  console.log(`[MIDDLEWARE] Processing request to: ${pathname}`);
+  
+  // Explicitly allow secure download routes (both old and new endpoints)
+  if (pathname.startsWith('/api/files/secure-download') || 
+      pathname.startsWith('/api/files/direct-download') ||
+      pathname.startsWith('/api/downloads/secure')) {
+    console.log(`[MIDDLEWARE] Allowing access to: ${pathname}`);
+    return NextResponse.next();
+  }
+  
   debugLog('Checking for auth token...');
   
   // Get all cookies for debugging
@@ -41,7 +62,6 @@ export function middleware(request: NextRequest) {
   
   // Try to get the token from cookies
   const token = request.cookies.get('token')?.value;
-  const pathname = request.nextUrl.pathname;
   
   // Check for Authorization header as fallback
   const authHeader = request.headers.get('Authorization');
@@ -175,23 +195,9 @@ export function middleware(request: NextRequest) {
 // Specify which routes this middleware should run on
 export const config = {
   matcher: [
-    // Protect all dashboard and product routes
-    '/dashboard/:path*', 
-    '/products/:path*',
-    '/settings/:path*',
-    '/analytics/:path*',
-    '/audience/:path*',
-    '/help/:path*',
-    '/payouts/:path*',
-    '/transactions/:path*',
-    // Add API routes that need protection
-    '/api/products',
-    '/api/products/:path*',
-    '/api/users/:path*',
-    '/api/files/:path*',
-    '/api/payouts/:path*',
-    '/api/transactions/:path*',
-    // Exclude public API routes
-    '/((?!api/auth/login|api/auth/register|api/auth/verify-email|api/auth/logout)api/:path*)',
+    // Match all routes except static files, _next, and specific API endpoints
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Match API routes but exclude specific endpoints
+    '/(api/(?!files/secure-download|files/direct-download|downloads/secure).*)'
   ]
 }

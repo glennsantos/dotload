@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { Product } from './ProductCreationForm'
-import { Trash, Upload, X, Link as LinkIcon, Plus, FileText, Check, Loader2, File as FileIcon } from 'lucide-react'
+import { Trash, Upload, X, Link as LinkIcon, Plus, FileText, Check, Loader2, File as FileIcon, Download } from 'lucide-react'
 
 type ProductFilesProps = {
   productData: Product
@@ -205,23 +205,26 @@ export default function ProductFiles({
                       <button 
                         onClick={async () => {
                           try {
-                            // Get secure download URL
-                            const response = await fetch('/api/files/secure-download', {
+                            // Use the secure download endpoint
+                            const response = await fetch(`/api/downloads/secure/generate`, {
                               method: 'POST',
                               headers: {
                                 'Content-Type': 'application/json',
                               },
-                              body: JSON.stringify({ fileId: file.id }),
+                              body: JSON.stringify({ 
+                                fileId: file.id,
+                                fileName: file.name
+                              }),
                             });
                             
                             if (!response.ok) {
                               throw new Error('Failed to generate download link');
                             }
                             
-                            const data = await response.json();
+                            const { url } = await response.json();
                             
-                            // Open the download URL in a new tab
-                            window.open(data.url, '_blank');
+                            // Open the secure download URL in a new tab
+                            window.open(url, '_blank', 'noopener,noreferrer');
                           } catch (error) {
                             console.error('Error downloading file:', error);
                             alert('Failed to download file. Please try again.');
@@ -230,6 +233,7 @@ export default function ProductFiles({
                         className="text-sm font-light text-emerald-600 hover:text-emerald-700 hover:underline"
                       >
                         {file.name}
+                        <Download size={14} className="ml-2 inline" />
                       </button>
                       <p className="text-xs text-stone-600 font-light">Already uploaded</p>
                     </div>
