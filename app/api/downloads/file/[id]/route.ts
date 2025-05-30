@@ -20,13 +20,18 @@ const debugLog = (message: string, ...args: any[]) => {
  * Download a file based on authentication and authorization
  * GET /api/downloads/file/[id]
  */
-export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
-  const { params } = context;
+export async function GET(request: NextRequest) {
   try {
-    const fileId = params.id;
+    // Extract the file ID from the URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const fileId = pathParts[pathParts.indexOf('file') + 1];
+    
+    if (!fileId) {
+      debugLog('Missing file ID in the request');
+      return NextResponse.json({ error: 'Missing file ID' }, { status: 400 });
+    }
+    
     debugLog(`Processing download request for fileId: ${fileId}`);
     
     // Check for both regular auth token and temporary token
@@ -36,6 +41,7 @@ export async function GET(
     // Track if this is a temporary access request
     let isTempAccess = false;
     let tempData: any = null;
+    let purchaseId: string | null = null;
     
     // If no regular auth token, check for temp token
     if (!authToken && !tempToken) {
@@ -61,11 +67,31 @@ export async function GET(
       debugLog('Using temporary access token');
       isTempAccess = true;
       tempData = decoded;
+      purchaseId = decoded.purchaseId;
       
       // For temp access, we'll use a special userId format
       if (!decoded.purchaseId || !decoded.productId) {
         debugLog('Invalid temp token data - missing required fields');
         return NextResponse.json({ error: 'Invalid token data' }, { status: 401 });
+      }
+      
+      // If this is a temporary access, check if this purchase already has a download
+      // Only one download is allowed per purchase with temporary access
+      if (purchaseId) {
+        const previousDownloads = await prisma.fileDownload.findFirst({
+          where: {
+            purchaseId: purchaseId,
+            fileId: fileId
+          }
+        });
+        
+        // If there's already a download for this purchase, redirect to register
+        if (previousDownloads) {
+          debugLog(`Previous download found for purchase ${purchaseId}, redirecting to register`);
+          // Redirect to register page with email pre-filled
+          const registerUrl = `/register?email=${encodeURIComponent(decoded.email || '')}&redirectAfter=true`;
+          return NextResponse.redirect(new URL(registerUrl, request.url));
+        }
       }
     } else if (!decoded.userId) {
       // Regular token must have userId
@@ -205,17 +231,17 @@ export async function GET(
       
       // Log the download for analytics
       try {
-        // Log the download for analytics
         const downloadLog = await prisma.fileDownload.create({
           data: {
             fileId: fileId,
             userId: isTempAccess ? null : userId, // Don't store temp user IDs
+            purchaseId: purchaseId, // Store the purchase ID for tracking
             downloadedAt: new Date(),
             userAgent: request.headers.get('user-agent') || 'unknown',
+            ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
             // Track if this was a temporary access download
             metadata: isTempAccess ? JSON.stringify({
               tempAccess: true,
-              purchaseId: tempData.purchaseId,
               email: tempData.email,
               productId: tempData.productId
             }) : null
@@ -223,36 +249,6 @@ export async function GET(
         });
         
         debugLog(`Logged download for analytics, id: ${downloadLog.id}`);
-        
-        // If this is a temporary access download, check if this is their second download
-        // On second download, we'll set a cookie indicating they should register
-        if (isTempAccess) {
-          const previousDownloads = await prisma.fileDownload.count({
-            where: {
-              metadata: {
-                contains: `"purchaseId":"${tempData.purchaseId}"`
-              }
-            }
-          });
-          
-          debugLog(`Previous downloads for this purchase: ${previousDownloads}`);
-          
-          // If this is their second or later download, set a cookie to prompt registration
-          if (previousDownloads > 1) {
-            debugLog('Setting registration prompt cookie');
-            const responseWithCookie = new NextResponse(fileBuffer, {
-              status: 200,
-              headers: {
-                'Content-Type': contentType,
-                'Content-Disposition': `${disposition}; filename="${encodeURIComponent(fileName)}"`,
-                'Content-Length': fileBuffer.length.toString(),
-                'Set-Cookie': `show_register_prompt=true; path=/; max-age=${60 * 60 * 24}; HttpOnly; SameSite=Lax`
-              },
-            });
-            
-            return responseWithCookie;
-          }
-        }
       } catch (logError) {
         // Don't fail the download if logging fails
         debugLog(`Failed to log download: ${logError instanceof Error ? logError.message : String(logError)}`);
@@ -267,10 +263,7 @@ export async function GET(
       }, { status: 404 });
     }
   } catch (error) {
-    console.error('Download error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to download content', 
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    debugLog(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
