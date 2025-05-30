@@ -1,7 +1,83 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Shield, Package, Globe, Clock, Zap, Check } from "lucide-react"
+import { ArrowRight, Shield, Package, Globe, Clock, Zap, Check, LayoutDashboard, Plus } from "lucide-react"
+import { getCurrentUser } from "@/lib/auth"
+
+async function HeroSection() {
+  const user = await getCurrentUser();
+  
+  return (
+    <section className="py-32 text-center">
+      <div className="container mx-auto px-4">
+        <h1 className="text-5xl lg:text-6xl text-stone-900 mb-8 leading-tight">
+          <span className="block font-extralight">Create Professional</span>
+          <span className="text-7xl block font-medium">Checkout Pages</span>
+          <span className="block font-extralight">in Minutes</span>
+        </h1>
+        <p className="max-w-2xl mx-auto text-xl text-stone-600 mb-12">
+          The fastest way to sell digital and physical products online. Build stunning,
+          conversion-optimized checkout pages with zero coding required.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-6">
+          {user ? (
+            <>
+              <Button asChild variant="default" size="lg" className="text-lg py-6 px-8">
+                <Link href="/products/new" className="flex items-center gap-2">
+                  Create New Product <ArrowRight size={18} />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="text-lg py-6 px-8">
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  View Dashboard
+                </Link>
+              </Button>
+              
+            </>
+          ) : (
+            <>
+              <Button asChild variant="default" size="lg" className="text-lg py-6 px-8">
+                <Link href="/register" className="flex items-center gap-2">
+                  Get Started Free <ArrowRight size={18} />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="text-lg py-6 px-8">
+                <Link href="/login">Sign In</Link>
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function AuthButtons() {
+  const user = await getCurrentUser();
+
+  if (user) {
+    return (
+      <div className="flex items-center gap-3">
+        <Button asChild variant="default">
+          <Link href="/dashboard">
+            <span>Dashboard</span>
+          </Link>
+        </Button>
+      </div>  
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <Button asChild variant="outline">
+        <Link href="/login">Sign In</Link>
+      </Button>
+      <Button asChild variant="default">
+        <Link href="/register">Get Started</Link>
+      </Button>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
@@ -9,42 +85,17 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-stone-200 py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <Image src="/logo.png" alt="Alacart Logo" width={60} height={60} />
+          <Link href="/">
+            <Image src="/logo.png" alt="Alacart Logo" width={60} height={60} className="hover:opacity-90 transition-opacity" />
+          </Link>
           <div className="flex items-center gap-3">
-            <Button variant="outline">
-              <Link href="/login">Sign In</Link>
-            </Button>
-            <Button asChild variant="default">
-              <Link href="/register">Get Started</Link>
-            </Button>
+            <AuthButtons />
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-32 text-center">
-        <div className="container mx-auto px-4">
-          <h1 className="text-5xl lg:text-6xl text-stone-900 mb-8 leading-tight">
-            <span className="block font-extralight">Create Professional</span>
-            <span className="text-7xl block font-medium">Checkout Pages</span>
-            <span className="block font-extralight">in Minutes</span>
-          </h1>
-          <p className="max-w-2xl mx-auto text-xl text-stone-600 mb-12">
-            The fastest way to sell digital and physical products online. Build stunning,
-            conversion-optimized checkout pages with zero coding required.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Button asChild variant="default" size="lg" className="text-lg py-6 px-8">
-              <Link href="/register" className="flex items-center gap-2">
-                Get Started Free <ArrowRight size={18} />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg py-6 px-8">
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* Features Section */}
       <section className="max-w-6xl mx-auto px-6 lg:px-8 py-10">
