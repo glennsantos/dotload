@@ -324,6 +324,16 @@ export async function PUT(
       // Handle form data
       const formData = await request.formData();
       
+      // Log form data keys and values for debugging
+      console.log('Edit Product - Form Data Keys:', [...formData.keys()]);
+      
+      // Log the raw form data values for key fields
+      console.log('Edit Product - Raw Form Data:');
+      console.log('- badges:', formData.get('badges'));
+      console.log('- trustIndicators:', formData.get('trustIndicators'));
+      console.log('- whatsIncluded:', formData.get('whatsIncluded'));
+      console.log('- curriculum:', formData.get('curriculum'));
+      
       // Extract basic product details
       const name = formData.get('name') as string;
       const description = formData.get('description') as string || '';
@@ -402,23 +412,34 @@ export async function PUT(
       }
       
       // Parse trust indicators
-      let trustIndicators = {
-        secureCheckout: true,
-        instantDownload: true,
-        refundPolicy: false,
-        customTrustIndicators: '[]'
-      };
+      let secureCheckout = false;
+      let instantDownload = false;
+      let refundPolicy = false;
+      let customTrustIndicators = '[]';
       
       try {
         const trustIndicatorsData = formData.get('trustIndicators');
         if (trustIndicatorsData) {
           const parsedTrustIndicators = JSON.parse(trustIndicatorsData as string);
-          trustIndicators = {
-            secureCheckout: !!parsedTrustIndicators.secureCheckout,
-            instantDownload: !!parsedTrustIndicators.instantDownload,
-            refundPolicy: !!parsedTrustIndicators.refundPolicy,
-            customTrustIndicators: JSON.stringify(parsedTrustIndicators.custom || [])
-          };
+          secureCheckout = !!parsedTrustIndicators.secureCheckout;
+          instantDownload = !!parsedTrustIndicators.instantDownload;
+          refundPolicy = !!parsedTrustIndicators.refundPolicy;
+          customTrustIndicators = JSON.stringify(parsedTrustIndicators.custom || []);
+        } else {
+          console.log('Edit Product - No trust indicators data found in form, preserving existing data');
+          // Preserve existing trust indicators data if not provided in form
+          secureCheckout = existingProduct.secureCheckout || false;
+          instantDownload = existingProduct.instantDownload || false;
+          refundPolicy = existingProduct.refundPolicy || false;
+          
+          try {
+            if (existingProduct.customTrustIndicators) {
+              customTrustIndicators = existingProduct.customTrustIndicators;
+              console.log('Edit Product - Using existing customTrustIndicators data:', customTrustIndicators);
+            }
+          } catch (error) {
+            console.error('Error using existing customTrustIndicators:', error);
+          }
         }
       } catch (parseError) {
         console.error('Error parsing trust indicators:', parseError);
@@ -426,23 +447,34 @@ export async function PUT(
       }
       
       // Parse badges
-      let badges = {
-        bestSeller: false,
-        newRelease: false,
-        popular: false,
-        customBadges: '[]'
-      };
+      let bestSeller = false;
+      let newRelease = false;
+      let popular = false;
+      let customBadges = '[]';
       
       try {
         const badgesData = formData.get('badges');
         if (badgesData) {
           const parsedBadges = JSON.parse(badgesData as string);
-          badges = {
-            bestSeller: !!parsedBadges.bestSeller,
-            newRelease: !!parsedBadges.newRelease,
-            popular: !!parsedBadges.popular,
-            customBadges: JSON.stringify(parsedBadges.custom || [])
-          };
+          bestSeller = !!parsedBadges.bestSeller;
+          newRelease = !!parsedBadges.newRelease;
+          popular = !!parsedBadges.popular;
+          customBadges = JSON.stringify(Array.isArray(parsedBadges.custom) ? parsedBadges.custom : []);
+        } else {
+          console.log('Edit Product - No badges data found in form, preserving existing data');
+          // Preserve existing badges data if not provided in form
+          bestSeller = existingProduct.bestSeller || false;
+          newRelease = existingProduct.newRelease || false;
+          popular = existingProduct.popular || false;
+          
+          try {
+            if (existingProduct.customBadges) {
+              customBadges = existingProduct.customBadges;
+              console.log('Edit Product - Using existing customBadges data:', customBadges);
+            }
+          } catch (error) {
+            console.error('Error using existing customBadges:', error);
+          }
         }
       } catch (parseError) {
         console.error('Error parsing badges:', parseError);
@@ -452,14 +484,30 @@ export async function PUT(
       // Get the slug from form data
       const slug = formData.get('slug') as string || '';
       
-      // Parse what's included items
+      // Parse what's included
       let whatsIncluded = [];
+      
       try {
         const whatsIncludedData = formData.get('whatsIncluded');
+        console.log('Edit Product - Processing whatsIncluded:', whatsIncludedData);
         if (whatsIncludedData) {
           whatsIncluded = JSON.parse(whatsIncludedData as string);
+          console.log('Edit Product - Parsed whatsIncluded:', whatsIncluded);
           if (!Array.isArray(whatsIncluded)) {
+            console.log('Edit Product - whatsIncluded is not an array, resetting to empty array');
             whatsIncluded = [];
+          }
+        } else {
+          console.log('Edit Product - No whatsIncluded data found in form, preserving existing data');
+          // Preserve existing whatsIncluded data if not provided in form
+          try {
+            const existingWhatsIncluded = existingProduct.whatsIncluded;
+            if (existingWhatsIncluded) {
+              whatsIncluded = JSON.parse(existingWhatsIncluded);
+              console.log('Edit Product - Using existing whatsIncluded data:', whatsIncluded);
+            }
+          } catch (error) {
+            console.error('Error parsing existing whatsIncluded:', error);
           }
         }
       } catch (parseError) {
@@ -471,10 +519,25 @@ export async function PUT(
       let curriculum = [];
       try {
         const curriculumData = formData.get('curriculum');
+        console.log('Edit Product - Processing curriculum:', curriculumData);
         if (curriculumData) {
           curriculum = JSON.parse(curriculumData as string);
+          console.log('Edit Product - Parsed curriculum:', curriculum);
           if (!Array.isArray(curriculum)) {
+            console.log('Edit Product - curriculum is not an array, resetting to empty array');
             curriculum = [];
+          }
+        } else {
+          console.log('Edit Product - No curriculum data found in form, preserving existing data');
+          // Preserve existing curriculum data if not provided in form
+          try {
+            const existingCurriculum = existingProduct.curriculum;
+            if (existingCurriculum) {
+              curriculum = JSON.parse(existingCurriculum);
+              console.log('Edit Product - Using existing curriculum data:', curriculum);
+            }
+          } catch (error) {
+            console.error('Error parsing existing curriculum:', error);
           }
         }
       } catch (parseError) {
@@ -502,31 +565,45 @@ export async function PUT(
         // Continue with default values
       }
       
+      // Log the data before creating the updateData object
+      console.log('Edit Product - Data for updateData:', {
+        whatsIncluded,
+        curriculum,
+        bestSeller,
+        newRelease,
+        popular,
+        customBadges
+      });
+      
       updateData = {
         name,
         description: description || undefined, // Only update if not blank
         price: parsedPrice,
-        ...paymentOptions,
+        // Add payment options as individual fields
+        allowPayWhatYouWant: paymentOptions.allowPayWhatYouWant,
+        offerCoupons: paymentOptions.offerCoupons,
         ...(coverImagePath ? { coverImagePath } : {}),
         // Add slug if provided
         ...(slug ? { slug } : {}),
-        // Add trust indicators
-        secureCheckout: trustIndicators.secureCheckout,
-        instantDownload: trustIndicators.instantDownload,
-        refundPolicy: trustIndicators.refundPolicy,
-        customTrustIndicators: trustIndicators.customTrustIndicators,
-        // Add badges
-        bestSeller: badges.bestSeller,
-        newRelease: badges.newRelease,
-        popular: badges.popular,
-        customBadges: badges.customBadges,
-        // Add what's included and curriculum
-        whatsIncluded: JSON.stringify(whatsIncluded),
-        curriculum: JSON.stringify(curriculum),
-        // Add download settings
+        // Add trust indicators as individual fields
+        secureCheckout: secureCheckout,
+        instantDownload: instantDownload,
+        refundPolicy: refundPolicy,
+        customTrustIndicators: customTrustIndicators,
+        // Add badges as individual fields
+        bestSeller: bestSeller,
+        newRelease: newRelease,
+        popular: popular,
+        customBadges: customBadges,
+        // Always include whatsIncluded and curriculum, even if empty
+        whatsIncluded: JSON.stringify(whatsIncluded || []),
+        curriculum: JSON.stringify(curriculum || []),
+        // Add download settings as individual fields
         downloadLimit: downloadSettings.downloadLimit,
         linkExpiration: downloadSettings.linkExpiration
       };
+      
+      console.log('Edit Product - Final updateData:', updateData);
       
       // Handle variations update if provided
       if (parsedVariations.length > 0) {
@@ -634,6 +711,9 @@ export async function PUT(
         }, { status: 400 });
       }
     }
+    
+    // Log the final updateData object
+    console.log('Edit Product - Final updateData:', updateData);
     
     // Update the product with the provided data
     const updatedProduct = await prisma.product.update({

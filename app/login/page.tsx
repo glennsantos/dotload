@@ -66,8 +66,31 @@ export default function LoginPage() {
           detail: { user: data.user }
         }));
         
+        // Check if user is primarily a buyer (has purchases but no products)
+        try {
+          const statusResponse = await fetch('/api/auth/user-status', {
+            method: 'GET',
+            credentials: 'include', // Include cookies for authentication
+          });
+          
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            console.log('User status:', statusData);
+            
+            // If the API recommends a different redirect, use that instead
+            if (statusData.recommendedRedirect && statusData.recommendedRedirect !== '/dashboard') {
+              // Use window.location for a full page reload to ensure clean state
+              window.location.href = statusData.recommendedRedirect;
+              return;
+            }
+          }
+        } catch (statusError) {
+          console.error('Error checking user status:', statusError);
+          // Continue with normal redirect if status check fails
+        }
+        
+        // Default redirect behavior if status check fails or no special redirect needed
         // Use window.location for a full page reload to ensure clean state
-        // This helps ensure the cookie is properly set before navigation
         window.location.href = decodeURI(callbackUrl);
       } else if (response.status === 403 && data.requiresVerification) {
         // Handle unverified email

@@ -343,15 +343,21 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       // Add payment options
       formData.append('paymentOptions', JSON.stringify(productData.paymentOptions))
       
-      // Add what's included items if any
-      if (productData.whatsIncluded.length > 0) {
-        formData.append('whatsIncluded', JSON.stringify(productData.whatsIncluded))
-      }
+      // Log advanced options data before submission
+      console.log('ProductCreationForm - Advanced Options Data:', {
+        whatsIncluded: productData.whatsIncluded,
+        curriculum: productData.curriculum,
+        badges: productData.badges,
+        trustIndicators: productData.trustIndicators
+      })
       
-      // Add curriculum items if any
-      if (productData.curriculum.length > 0) {
-        formData.append('curriculum', JSON.stringify(productData.curriculum))
-      }
+      // Always include whatsIncluded and curriculum, even if empty
+      formData.append('whatsIncluded', JSON.stringify(productData.whatsIncluded || []))
+      console.log('ProductCreationForm - Appending whatsIncluded:', JSON.stringify(productData.whatsIncluded || []))
+      
+      // Always include curriculum, even if empty
+      formData.append('curriculum', JSON.stringify(productData.curriculum || []))
+      console.log('ProductCreationForm - Appending curriculum:', JSON.stringify(productData.curriculum || []))
       
       // Add badges and trust indicators
       formData.append('badges', JSON.stringify(productData.badges))

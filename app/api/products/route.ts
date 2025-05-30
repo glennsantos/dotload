@@ -308,8 +308,10 @@ export async function POST(request: NextRequest) {
     
     try {
       const whatsIncludedData = formData.get('whatsIncluded');
+      console.log('Create Product - Processing whatsIncluded:', whatsIncludedData);
       if (whatsIncludedData) {
         whatsIncluded = JSON.parse(whatsIncludedData as string);
+        console.log('Create Product - Parsed whatsIncluded:', whatsIncluded);
         
         // Validate what's included items
         if (Array.isArray(whatsIncluded)) {
@@ -350,8 +352,10 @@ export async function POST(request: NextRequest) {
     
     try {
       const curriculumData = formData.get('curriculum');
+      console.log('Create Product - Processing curriculum:', curriculumData);
       if (curriculumData) {
         curriculum = JSON.parse(curriculumData as string);
+        console.log('Create Product - Parsed curriculum:', curriculum);
         
         // Validate curriculum items
         if (Array.isArray(curriculum)) {
@@ -561,10 +565,10 @@ export async function POST(request: NextRequest) {
       stockQuantity: stockQuantity,
       allowPreOrders: allowPreOrders,
       
-      // Additional fields
-      whatsIncluded: JSON.stringify(whatsIncluded),
-      curriculum: JSON.stringify(curriculum),
-      contentLinks: JSON.stringify(contentLinks),
+      // Additional fields - ensure we always have valid JSON arrays even if empty
+      whatsIncluded: JSON.stringify(whatsIncluded || []),
+      curriculum: JSON.stringify(curriculum || []),
+      contentLinks: JSON.stringify(contentLinks || []),
     };
     
     // Add slug if provided
@@ -587,6 +591,12 @@ export async function POST(request: NextRequest) {
       userId,
       variations: parsedVariations.length > 0 ? 'present' : 'none',
       files: processedFiles.length + contentLinks.length
+    });
+    console.log('Create Product - Final Data:', {
+      whatsIncluded: productData.whatsIncluded,
+      curriculum: productData.curriculum,
+      customBadges: productData.customBadges,
+      customTrustIndicators: productData.customTrustIndicators
     });
     
     const product = await prisma.product.create({

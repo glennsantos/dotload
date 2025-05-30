@@ -173,7 +173,7 @@ export default function ProductAdvancedOptions({
     <div className="space-y-8">
       {/* Download Settings - Only for digital products */}
       {productData.type === 'digital_product' && (
-        <div className="mt-5 mb-8 border rounded-md p-4">
+        <div className="hidden mt-5 mb-8 border rounded-md p-4">
           <div className="flex items-center mb-4">
             <h3 className="text-xl font-light text-stone-900">Download Settings</h3>
           </div>
