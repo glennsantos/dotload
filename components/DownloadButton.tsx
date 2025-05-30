@@ -12,7 +12,7 @@ interface DownloadButtonProps {
 }
 
 /**
- * Button component that generates and uses a secure download link
+ * Button component that directly uses the authenticated download endpoint
  */
 export function DownloadButton({
   fileId,
@@ -24,28 +24,16 @@ export function DownloadButton({
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     try {
       setIsLoading(true);
       
-      // Request a secure download URL from the server
-      const response = await fetch('/api/downloads/secure', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ fileId }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate download link');
-      }
-
-      const data = await response.json();
-      
       // Open the download URL in a new tab
-      window.open(data.url, '_blank');
+      // This will trigger authentication check on the server
+      window.open(`/api/downloads/file/${fileId}`, '_blank');
+      
+      // Set a timeout to reset the loading state since we can't detect when the download starts/ends
+      setTimeout(() => setIsLoading(false), 1500);
     } catch (error) {
       console.error('Download error:', error);
       toast({
@@ -53,7 +41,6 @@ export function DownloadButton({
         description: error instanceof Error ? error.message : 'Could not download file',
         variant: 'destructive',
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -85,7 +72,7 @@ export function DownloadButton({
 }
 
 /**
- * Button component that uses a direct download link (for already generated links)
+ * Button component that uses a direct download link (for external URLs)
  */
 export function DirectDownloadButton({
   downloadUrl,

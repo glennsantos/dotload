@@ -28,6 +28,11 @@ type Purchase = {
     name: string;
     description: string;
     price: number;
+    files?: {
+      id: string;
+      filename: string;
+      path: string;
+    }[];
   };
   createdAt: string;
 };
@@ -63,7 +68,7 @@ export default function PurchasesPage() {
         // Fetch user data and purchases in parallel
         const [authResponse, purchasesResponse] = await Promise.all([
           fetch('/api/auth/me'),
-          fetch(`/api/purchases?page=${pagination.page}&limit=${pagination.limit}`)
+          fetch(`/api/purchases?page=${pagination.page}&limit=${pagination.limit}&includeFiles=true`)
         ]);
         
         if (authResponse.status === 401 || authResponse.status === 403) {
@@ -237,6 +242,27 @@ export default function PurchasesPage() {
                             <p className="text-xs text-stone-500 mt-1 truncate">
                               Order ID: {purchase.id}
                             </p>
+                            
+                            {/* Display download buttons for completed purchases with files */}
+                            {purchase.status === 'completed' && purchase.product.files && purchase.product.files.length > 0 && (
+                              <div className="mt-3">
+                                <p className="text-xs font-medium text-stone-600 mb-2">Download Files:</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {purchase.product.files.map((file) => (
+                                    <Button 
+                                      key={file.id} 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="text-xs h-8 px-2 py-1 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                                      onClick={() => window.open(`/api/downloads/file/${file.id}`, '_blank')}
+                                    >
+                                      <Download className="h-3 w-3 mr-1" />
+                                      {file.filename}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                           <div className="text-lg font-semibold whitespace-nowrap text-green-600">
                             {formatCurrency(purchase.amount, purchase.currency)}

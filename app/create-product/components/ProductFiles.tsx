@@ -203,28 +203,10 @@ export default function ProductFiles({
                     <FileIcon size={16} className="text-stone-500 mr-2" />
                     <div>
                       <button 
-                        onClick={async () => {
+                        onClick={() => {
                           try {
-                            // Use the secure download endpoint
-                            const response = await fetch(`/api/downloads/secure/generate`, {
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify({ 
-                                fileId: file.id,
-                                fileName: file.name
-                              }),
-                            });
-                            
-                            if (!response.ok) {
-                              throw new Error('Failed to generate download link');
-                            }
-                            
-                            const { url } = await response.json();
-                            
-                            // Open the secure download URL in a new tab
-                            window.open(url, '_blank', 'noopener,noreferrer');
+                            // Use the direct download endpoint
+                            window.open(`/api/downloads/file/${file.id}`, '_blank', 'noopener,noreferrer');
                           } catch (error) {
                             console.error('Error downloading file:', error);
                             alert('Failed to download file. Please try again.');

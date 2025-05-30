@@ -2,10 +2,17 @@ import fs from 'fs';
 import path from 'path';
 import { access, readdir, stat } from 'fs/promises';
 import { constants } from 'fs';
-import crypto from 'crypto';
 
 // Base directory for uploads
 const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads');
+
+// Enable verbose logging for debugging
+const DEBUG = true;
+const debugLog = (message: string, ...args: any[]) => {
+  if (DEBUG) {
+    console.log(`[DOWNLOAD-UTILS] ${message}`, ...args);
+  }
+};
 
 /**
  * Resolves a file path and ensures it exists
@@ -18,7 +25,7 @@ export async function resolveDownloadPath(filePath: string): Promise<{
   size?: number;
   alternativePaths?: string[];
 }> {
-  console.log(`[DOWNLOAD-UTILS] Resolving file path: ${filePath}`);
+  debugLog(`Resolving file path: ${filePath}`);
   
   // If the path is already absolute, use it directly
   const isAbsolute = filePath.startsWith('/');
@@ -29,14 +36,14 @@ export async function resolveDownloadPath(filePath: string): Promise<{
     await access(fullPath, constants.F_OK);
     const fileStats = await stat(fullPath);
     
-    console.log(`[DOWNLOAD-UTILS] File found at original path: ${fullPath}`);
+    debugLog(`File found at original path: ${fullPath}`);
     return {
       path: fullPath,
       exists: true,
       size: fileStats.size
     };
   } catch (err) {
-    console.log(`[DOWNLOAD-UTILS] File not found at original path: ${fullPath}`);
+    debugLog(`File not found at original path: ${fullPath}`);
     
     // Generate alternative paths to try
     const alternativePaths = await generateAlternativePaths(filePath);
@@ -47,7 +54,7 @@ export async function resolveDownloadPath(filePath: string): Promise<{
         await access(altPath, constants.F_OK);
         const fileStats = await stat(altPath);
         
-        console.log(`[DOWNLOAD-UTILS] File found at alternative path: ${altPath}`);
+        debugLog(`File found at alternative path: ${altPath}`);
         return {
           path: altPath,
           exists: true,
@@ -143,7 +150,7 @@ async function generateAlternativePaths(filePath: string): Promise<string[]> {
         }
       }
     } catch (e) {
-      console.error('[DOWNLOAD-UTILS] Error searching for similar files:', e);
+      debugLog(`Error searching for similar files: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
   
@@ -152,90 +159,12 @@ async function generateAlternativePaths(filePath: string): Promise<string[]> {
 }
 
 /**
- * Generate a secure download token
+ * Create a simple download URL
  * @param fileId - ID of the file to download
- * @param userId - ID of the user requesting the download
- * @returns Secure download token
+ * @returns Simple download URL
  */
-export function generateDownloadToken(fileId: string, userId: string): string {
-  // Use a dedicated download secret if available, otherwise fall back to JWT_SECRET
-  const secret = process.env.DOWNLOAD_SECRET || process.env.JWT_SECRET || 'secure-download-secret';
-  
-  // Generate a random nonce for additional security
-  const nonce = crypto.randomBytes(16).toString('hex');
-  
-  // Current timestamp for token expiration
-  const timestamp = Date.now();
-  
-  // Combine all data for token generation
-  const data = `${fileId}:${userId}:${timestamp}:${nonce}:${process.env.NEXTAUTH_URL || ''}`;
-  
-  // Generate HMAC for the data
-  const hmac = crypto.createHmac('sha256', secret).update(data).digest('hex');
-  
-  // Combine all parts into a token
-  return `${hmac}.${nonce}.${timestamp}`;
-}
-
-/**
- * Validate a download token
- * @param token - Token to validate
- * @param fileId - ID of the file
- * @param userId - ID of the user
- * @returns Whether the token is valid
- */
-export function validateDownloadToken(token: string, fileId: string, userId: string): boolean {
-  console.log(`[DOWNLOAD-UTILS] Validating token for fileId: ${fileId}, userId: ${userId}`);
-  
-  // Parse token parts (hmac.nonce.timestamp)
-  const parts = token.split('.');
-  if (parts.length !== 3) {
-    console.log('[DOWNLOAD-UTILS] Invalid token format - expected 3 parts');
-    return false;
-  }
-  
-  const [originalHmac, nonce, timestampStr] = parts;
-  
-  // Parse timestamp
-  const timestamp = parseInt(timestampStr, 10);
-  if (isNaN(timestamp)) {
-    console.log('[DOWNLOAD-UTILS] Invalid timestamp in token');
-    return false;
-  }
-  
-  // Check token expiration (24 hours)
-  const currentTime = Date.now();
-  const tokenAge = currentTime - timestamp;
-  const maxTokenAge = 24 * 60 * 60 * 1000; // 24 hours
-  
-  if (tokenAge > maxTokenAge) {
-    console.log(`[DOWNLOAD-UTILS] Token expired. Age: ${tokenAge}ms, Max allowed: ${maxTokenAge}ms`);
-    return false;
-  }
-  
-  // Recreate the HMAC for verification
-  const secret = process.env.DOWNLOAD_SECRET || process.env.JWT_SECRET || 'secure-download-secret';
-  const data = `${fileId}:${userId}:${timestamp}:${nonce}:${process.env.NEXTAUTH_URL || ''}`;
-  const expectedHmac = crypto.createHmac('sha256', secret).update(data).digest('hex');
-  
-  // For security in a production environment, you would want to use a constant-time comparison
-  // But for compatibility with TypeScript, we'll use a simple string comparison
-  // This is acceptable for this application since we're not dealing with passwords
-  const isValid = expectedHmac === originalHmac;
-  
-  console.log(`[DOWNLOAD-UTILS] Token validation result: ${isValid}`);
-  return isValid;
-}
-
-/**
- * Create a secure download URL
- * @param fileId - ID of the file to download
- * @param userId - ID of the user requesting the download
- * @returns Secure download URL
- */
-export function createDownloadUrl(fileId: string, userId: string): string {
-  const token = generateDownloadToken(fileId, userId);
-  return `/api/downloads/secure/${fileId}?token=${encodeURIComponent(token)}&userId=${userId}`;
+export function createDownloadUrl(fileId: string): string {
+  return `/api/downloads/file/${fileId}`;
 }
 
 /**
