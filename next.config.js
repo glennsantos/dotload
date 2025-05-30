@@ -28,15 +28,23 @@ const nextConfig = {
     // Add CSS handling for production build
     if (!isServer && !dev) {
       // Find the default CSS loader
-      const cssRule = config.module.rules.find(
-        (rule) => rule.test && rule.test.test('.css')
+      const cssRuleIndex = config.module.rules.findIndex(
+        (rule) => {
+          if (!rule || typeof rule !== 'object' || !rule.test) return false;
+          
+          // Handle both string and RegExp test patterns
+          if (typeof rule.test === 'string') {
+            return rule.test.includes('css');
+          } else if (rule.test instanceof RegExp) {
+            return rule.test.test('.css');
+          }
+          return false;
+        }
       );
 
-      if (cssRule) {
+      if (cssRuleIndex !== -1) {
         // Remove the default CSS loader
-        config.module.rules = config.module.rules.filter(
-          (rule) => rule !== cssRule
-        );
+        config.module.rules.splice(cssRuleIndex, 1);
 
         // Add our custom CSS loader with MiniCssExtractPlugin
         config.module.rules.push({
