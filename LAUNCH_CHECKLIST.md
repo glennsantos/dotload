@@ -3,10 +3,8 @@
 ## Resolve Issues
 *Note: more issues listed in Github*
 
-
 ## Checkout
 - [ ] add support for other currencies 
-- [ ] when the download resolves in the backend, log the attempt properly in the database. for that purchase, only one download is allowed using the temporary access code. next attempts should be through that user's /dashboard/purchases page.
 
 ## Site Setup
 - [x] Attach domain to dev server
@@ -15,7 +13,7 @@
 - [x] Change from email for alacart in .env files
 - [x] Change other emails as needed
 - [x] Create SSL cert for dev server via Letsencrypt.
-- [?] update SES to prod
+- [ ] update SES to prod
 - [ ] clean up front end console.logs for prod
 
 ## Deploy to Dev

@@ -58,7 +58,6 @@ export async function GET(request: NextRequest) {
                   id: true,
                   filename: true,
                   path: true,
-                  size: true,
                   mimetype: true
                 }
               }

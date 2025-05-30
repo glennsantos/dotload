@@ -139,11 +139,25 @@ export async function GET(request: NextRequest) {
         where: {
           userId: userId,
           productId: file.productId,
-          status: 'COMPLETED'
+          status: 'completed'
         }
       });
       
       hasPurchased = !!purchase;
+      
+      // If no purchase found by userId, also check by email (for purchases made before account creation)
+      if (!hasPurchased && decoded.email) {
+        const emailPurchase = await prisma.purchase.findFirst({
+          where: {
+            email: decoded.email,
+            productId: file.productId,
+            status: 'completed'
+          }
+        });
+        
+        hasPurchased = !!emailPurchase;
+        debugLog(`Email purchase check: ${decoded.email}, found=${hasPurchased}`);
+      }
     }
     
     if (!isCreator && !isAdmin && !hasPurchased) {
