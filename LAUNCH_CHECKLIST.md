@@ -5,7 +5,11 @@
 - [ ] link the digital file to its source. it is a secure link so check how to retrieve this
 
 ## Checkout
+- [ ] access content button in success page does not open the buyer dashboard. it should allow the user to create a temporary account and access the content
 - [ ] add support for other currencies 
+
+## Email
+- [ ] Match styling for pages with emerald buttons and font-light
 
 ## Site Setup
 - [x] Attach domain to dev server
