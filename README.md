@@ -55,6 +55,30 @@ pnpm dev
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
 
+### Seeding the Database
+
+To populate the database with test data, you can use the seeder script. The seeder will create:
+- 10 test users
+- 10 products per user
+- 10 purchases per product (with random statuses)
+
+1. Install required dependencies:
+```bash
+pnpm add -D tsx ts-node @types/node node-fetch@2 --legacy-peer-deps
+```
+
+2. Generate the Prisma client (if not already done):
+```bash
+pnpm prisma generate
+```
+
+3. Run the seeder script:
+```bash
+pnpm seed
+```
+
+This will populate your database with test data. The script will log its progress as it creates users, products, and purchases.
+
 ### Additional Commands
 - Build for production: `pnpm build`
 - Start production server: `pnpm start`
