@@ -9,13 +9,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm rounded-full",
+        default: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm rounded-xl",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl",
         outline:
-          "border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 shadow-sm rounded-full",
+          "border border-stone-200 bg-white text-stone-800 hover:bg-stone-50 shadow-sm rounded-xl",
+        'outline-emerald':
+          'border border-emerald-600 bg-white text-emerald-600 hover:bg-emerald-50 shadow-sm rounded-xl',
         secondary:
-          "bg-stone-100 text-stone-800 hover:bg-stone-200 rounded-full",
+          "bg-stone-100 text-stone-800 hover:bg-stone-200 rounded-xl",
         ghost: "hover:bg-stone-100 hover:text-stone-800",
         link: "text-emerald-600 hover:text-emerald-700 underline-offset-4 hover:underline",
       },

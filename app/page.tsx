@@ -9,12 +9,12 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-stone-200 py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <Image src="/logo.png" alt="Alacart Logo" width={120} height={32} />
+          <Image src="/logo.png" alt="Alacart Logo" width={60} height={60} />
           <div className="flex items-center gap-3">
-            <Link href="/login" className="text-stone-700 hover:text-emerald-600 text-sm font-medium">
-              Sign In
-            </Link>
-            <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full">
+            <Button variant="outline">
+              <Link href="/login">Sign In</Link>
+            </Button>
+            <Button asChild variant="default">
               <Link href="/register">Get Started</Link>
             </Button>
           </div>
@@ -22,24 +22,24 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 text-center">
+      <section className="py-32 text-center">
         <div className="container mx-auto px-4">
-          <h1 className="text-5xl lg:text-6xl font-light text-stone-900 mb-8 leading-tight">
-          <span className="block font-light">Create Professional</span>
-            <div className="block font-medium">Checkout Pages</div>
-            <span className="block font-light">in Minutes</span>
+          <h1 className="text-5xl lg:text-6xl text-stone-900 mb-8 leading-tight">
+            <span className="block font-extralight">Create Professional</span>
+            <span className="text-7xl block font-medium">Checkout Pages</span>
+            <span className="block font-extralight">in Minutes</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-stone-600 mb-10">
+          <p className="max-w-2xl mx-auto text-xl text-stone-600 mb-12">
             The fastest way to sell digital and physical products online. Build stunning,
             conversion-optimized checkout pages with zero coding required.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8 py-6 flex items-center gap-2 text-lg">
-              <Link href="/register">
-                Get Started Free <ArrowRight size={16} />
+          <div className="flex flex-col sm:flex-row justify-center gap-6">
+            <Button asChild variant="default" size="lg" className="text-lg py-6 px-8">
+              <Link href="/register" className="flex items-center gap-2">
+                Get Started Free <ArrowRight size={18} />
               </Link>
             </Button>
-            <Button asChild variant="outline" className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-full text-lg px-8 py-6 flex items-center gap-2">
+            <Button asChild variant="outline" size="lg" className="text-lg py-6 px-8">
               <Link href="/login">Sign In</Link>
             </Button>
           </div>
@@ -133,7 +133,7 @@ export default function Home() {
           <p className="mb-8">Join thousands of creators already using Alacart</p>
           <Button
             asChild
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8 py-6 text-lg flex items-center gap-1.5 mx-auto w-fit"
+            variant="default" size="lg" className="text-lg py-6 px-8"
           >
             <Link href="/register">
               Get Started Free <ArrowRight size={14} />
@@ -145,7 +145,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-8 border-t border-stone-200 text-center text-stone-500 text-sm">
         <div className="container mx-auto px-4">
-          <p>  {new Date().getFullYear()} Alacart. Built for creators, by creators.</p>
+          <p>©  {new Date().getFullYear()} Alacart. Built for creators, by creators.</p>
         </div>
       </footer>
     </div>
