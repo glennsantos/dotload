@@ -69,12 +69,26 @@ model Product {
 }
 
 model File {
-  id        String  @id @default(cuid())
+  id        String        @id @default(cuid())
   filename  String
   path      String
   mimetype  String
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  downloads FileDownload[]
+}
+
+model FileDownload {
+  id           String    @id @default(cuid())
+  fileId       String
+  userId       String?
+  purchaseId   String?
+  downloadedAt DateTime  @default(now())
+  userAgent    String?
+  ipAddress    String?
+  metadata     String?
+  file         File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  purchase     Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
 }
 
 model Variation {
@@ -86,21 +100,22 @@ model Variation {
 }
 
 model Purchase {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   email         String
   mobileNumber  String
   amount        Float
-  currency      String   @default("PHP")
+  currency      String        @default("PHP")
   paymentMethod String
   paymentId     String?
   status        String
-  accessCode    String   @unique
+  accessCode    String        @unique
   productId     String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   userId        String?
-  product       Product  @relation(fields: [productId], references: [id])
-  user          User?    @relation(fields: [userId], references: [id])
+  product       Product       @relation(fields: [productId], references: [id])
+  user          User?         @relation(fields: [userId], references: [id])
+  downloads     FileDownload[]
 }
 
 model Payout {
