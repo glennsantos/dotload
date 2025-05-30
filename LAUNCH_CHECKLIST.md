@@ -2,14 +2,11 @@
 
 ## Resolve Issues
 *Note: more issues listed in Github*
-- [ ] link the digital file to its source. it is a secure link so check how to retrieve this
+
 
 ## Checkout
-- [ ] access content button in success page does not open the buyer dashboard. it should allow the user to create a temporary account and access the content
 - [ ] add support for other currencies 
-
-## Email
-- [ ] Match styling for pages with emerald buttons and font-light
+- [ ] when the download resolves in the backend, log the attempt properly in the database. for that purchase, only one download is allowed using the temporary access code. next attempts should be through that user's /dashboard/purchases page.
 
 ## Site Setup
 - [x] Attach domain to dev server

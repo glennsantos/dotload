@@ -166,13 +166,13 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
               You can access your purchased content using the link below:
             </p>
             
-            <Button 
-              href={`/buyer-dashboard?code=${accessCode}`}
+            <Link 
+              href={`/temp-downloads?code=${accessCode}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full font-light hover:bg-emerald-700 transition-colors"
             >
               <Download size={20} />
               Access Content
-            </Button>
+            </Link>
           </div>
           
           <div className="border-t pt-6">
@@ -185,12 +185,12 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
               }
             </p>
             
-            <Button 
+            <Link 
               href={`/p/${purchase?.product?.slug || unwrappedParams.slug}`}
-              className=" rounded-full font-light text-emerald-600 bg-white hover:bg-emerald-200 border border-emerald-600"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-full font-light text-emerald-600 bg-white hover:bg-emerald-200 border border-emerald-600"
             >
               Return to Product Page
-            </Button>
+            </Link>
           </div>
         </div>
       </main>

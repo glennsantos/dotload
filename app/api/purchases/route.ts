@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
     const status = searchParams.get('status') || undefined;
+    const includeFiles = searchParams.get('includeFiles') === 'true';
 
     // Build the where clause
     const where: any = {
@@ -49,13 +50,35 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             description: true,
-            price: true
+            price: true,
+            // Include files if requested
+            ...(includeFiles ? {
+              files: {
+                select: {
+                  id: true,
+                  filename: true,
+                  path: true,
+                  size: true,
+                  mimetype: true
+                }
+              }
+            } : {})
           }
         }
       },
       skip,
       take: limit
     });
+    
+    // Add debug logging
+    console.log(`[PURCHASES-API] Fetched ${purchases.length} purchases with includeFiles=${includeFiles}`);
+    if (includeFiles) {
+      purchases.forEach((purchase: any) => {
+        if (purchase.product?.files) {
+          console.log(`[PURCHASES-API] Purchase ${purchase.id} has ${purchase.product.files.length} files`);
+        }
+      });
+    }
 
     return NextResponse.json({
       purchases,

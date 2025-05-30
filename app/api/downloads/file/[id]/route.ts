@@ -22,37 +22,59 @@ const debugLog = (message: string, ...args: any[]) => {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   try {
     const fileId = params.id;
     debugLog(`Processing download request for fileId: ${fileId}`);
     
-    // Verify user is authenticated
+    // Check for both regular auth token and temporary token
     const authToken = await getAuthToken(request);
+    const tempToken = request.cookies.get('temp_token')?.value;
     
-    if (!authToken) {
+    // Track if this is a temporary access request
+    let isTempAccess = false;
+    let tempData: any = null;
+    
+    // If no regular auth token, check for temp token
+    if (!authToken && !tempToken) {
       debugLog('Authentication failed - no token');
       return NextResponse.json({ error: 'Unauthorized - Please log in to download files' }, { status: 401 });
     }
     
-    // Decode the JWT token
+    // Decode the JWT token (either regular or temporary)
     const secret = process.env.JWT_SECRET || 'your-fallback-secret';
     let decoded: any;
     
     try {
-      decoded = verify(authToken, secret) as { userId: string; role?: string };
+      // Try to decode the token (either regular or temp)
+      const tokenToVerify = authToken || tempToken;
+      decoded = verify(tokenToVerify as string, secret);
     } catch (err) {
       debugLog('JWT verification failed', err);
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
     }
     
-    if (!decoded || !decoded.userId) {
+    // Check if this is a temporary access token
+    if (decoded.tempAccess) {
+      debugLog('Using temporary access token');
+      isTempAccess = true;
+      tempData = decoded;
+      
+      // For temp access, we'll use a special userId format
+      if (!decoded.purchaseId || !decoded.productId) {
+        debugLog('Invalid temp token data - missing required fields');
+        return NextResponse.json({ error: 'Invalid token data' }, { status: 401 });
+      }
+    } else if (!decoded.userId) {
+      // Regular token must have userId
       debugLog('Invalid token data - missing userId');
       return NextResponse.json({ error: 'Invalid token data' }, { status: 401 });
     }
     
-    const userId = decoded.userId;
+    // Set user info based on token type
+    const userId = decoded.userId || `temp_${decoded.purchaseId}`;
     const isAdmin = decoded.role === 'ADMIN';
     
     debugLog(`Authenticated user: ${userId}, isAdmin: ${isAdmin}`);
@@ -81,7 +103,12 @@ export async function GET(
     // If user is not the creator or admin, check if they've purchased the product
     let hasPurchased = false;
     
-    if (!isCreator && !isAdmin && file.productId) {
+    if (isTempAccess) {
+      // For temporary access, verify the file belongs to the purchase/product in the token
+      hasPurchased = tempData.productId === file.productId;
+      debugLog(`Temp access check: token productId=${tempData.productId}, file productId=${file.productId}, match=${hasPurchased}`);
+    } else if (!isCreator && !isAdmin && file.productId) {
+      // For regular users, check the database
       const purchase = await prisma.purchase.findFirst({
         where: {
           userId: userId,
@@ -178,15 +205,54 @@ export async function GET(
       
       // Log the download for analytics
       try {
-        await prisma.fileDownload.create({
+        // Log the download for analytics
+        const downloadLog = await prisma.fileDownload.create({
           data: {
             fileId: fileId,
-            userId: userId,
+            userId: isTempAccess ? null : userId, // Don't store temp user IDs
             downloadedAt: new Date(),
-            userAgent: request.headers.get('user-agent') || 'unknown'
+            userAgent: request.headers.get('user-agent') || 'unknown',
+            // Track if this was a temporary access download
+            metadata: isTempAccess ? JSON.stringify({
+              tempAccess: true,
+              purchaseId: tempData.purchaseId,
+              email: tempData.email,
+              productId: tempData.productId
+            }) : null
           }
         });
-        debugLog(`Logged download for analytics`);
+        
+        debugLog(`Logged download for analytics, id: ${downloadLog.id}`);
+        
+        // If this is a temporary access download, check if this is their second download
+        // On second download, we'll set a cookie indicating they should register
+        if (isTempAccess) {
+          const previousDownloads = await prisma.fileDownload.count({
+            where: {
+              metadata: {
+                contains: `"purchaseId":"${tempData.purchaseId}"`
+              }
+            }
+          });
+          
+          debugLog(`Previous downloads for this purchase: ${previousDownloads}`);
+          
+          // If this is their second or later download, set a cookie to prompt registration
+          if (previousDownloads > 1) {
+            debugLog('Setting registration prompt cookie');
+            const responseWithCookie = new NextResponse(fileBuffer, {
+              status: 200,
+              headers: {
+                'Content-Type': contentType,
+                'Content-Disposition': `${disposition}; filename="${encodeURIComponent(fileName)}"`,
+                'Content-Length': fileBuffer.length.toString(),
+                'Set-Cookie': `show_register_prompt=true; path=/; max-age=${60 * 60 * 24}; HttpOnly; SameSite=Lax`
+              },
+            });
+            
+            return responseWithCookie;
+          }
+        }
       } catch (logError) {
         // Don't fail the download if logging fails
         debugLog(`Failed to log download: ${logError instanceof Error ? logError.message : String(logError)}`);

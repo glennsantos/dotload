@@ -142,7 +142,7 @@ export async function sendPurchaseConfirmationEmail(
   name?: string | null
 ) {
   const baseUrl = `http://${process.env.DOMAIN}`;
-  const buyerDashboardUrl = `${baseUrl}/buyer-dashboard?code=${accessCode}`;
+  const tempDownloadsUrl = `${baseUrl}/temp-downloads?code=${accessCode}`;
   const productUrl = `${baseUrl}/p/${productSlug}`;
 
   let subject = '';
@@ -193,13 +193,13 @@ export async function sendPurchaseConfirmationEmail(
         
         <div style="margin: 30px 0;">
           <p><strong>Access Your Content</strong></p>
-          <a href="${buyerDashboardUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-            Access Your Purchase
+          <a href="${tempDownloadsUrl}" style="background-color: #10b981; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: 300; text-align: center;">
+            <span style="display: inline-block; vertical-align: middle;">Access Your Purchase</span>
           </a>
         </div>
         
         <p>Or copy and paste this link in your browser:</p>
-        <p style="word-break: break-all; color: #666;">${buyerDashboardUrl}</p>
+        <p style="word-break: break-all; color: #666;">${tempDownloadsUrl}</p>
         
         <p style="margin-top: 30px; color: #666; font-size: 14px;">Keep this email for your records. The link above provides permanent access to your purchased content.</p>
       </div>
@@ -212,7 +212,7 @@ export async function sendPurchaseConfirmationEmail(
       
       Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} has been successfully processed.
       
-      Access Your Content: ${buyerDashboardUrl}
+      Access Your Content: ${tempDownloadsUrl}
       
       Keep this email for your records. The link above provides permanent access to your purchased content.
     `;
