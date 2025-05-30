@@ -3,11 +3,15 @@
 ## Resolve Issues
 *Note: more issues listed in Github*
 - [ ] review mobile responsive version
-- [ ] Add Actions to products https://private-user-images.githubusercontent.com/1162329/449143984-c1956446-3c39-43e7-ab12-6368091aced2.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDg1OTExMzEsIm5iZiI6MTc0ODU5MDgzMSwicGF0aCI6Ii8xMTYyMzI5LzQ0OTE0Mzk4NC1jMTk1NjQ0Ni0zYzM5LTQzZTctYWIxMi02MzY4MDkxYWNlZDIucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI1MDUzMCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNTA1MzBUMDc0MDMxWiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9YjJmM2Y0MGE5NjQ1MzM0NTMxMTM4ODUwNjFmNWJlNTdmZDdkYmNjNmU1YTViMWIzNmExMTY0NWZkZmE0MzliZCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.VArIgio53RFtd7AJUOxYK6Z70lVQjj_e_zCy6vaZUQs
+- [ ] Add Actions to products  /home/aryeh/Pictures/Screenshots/Screenshot from 2025-05-30 15-39-52.png
 - [ ] Remove purchases tab
   - [ ] reinstate the hidden download settings. whenever there is a download, that should tick down. the purchase should only be downloadable a fixed number of times
   - [ ] also track link expiration in the purchase
   - [ ] remove the need for the buyer to register 
+- [ ] Check behavior of homepage when user is logged in 
+- [ ] remove digital product
+- [ ] fix the menu : /home/aryeh/Pictures/Screenshots/Screenshot from 2025-05-30 16-17-09.png
+- [] update shipping and fulfillment
 
 ## Site Setup
 - [x] Attach domain to dev server
