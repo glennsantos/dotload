@@ -147,18 +147,16 @@ export default function LoginPage() {
             alt="Alacart Logo" 
             width={160} 
             height={42.67} 
-            className="h-auto"
+            className="h-auto mb-8"
             priority
           />
         </Link>
+        <h1 className="text-4xl font-extralight mb-4">Welcome Back</h1>
+        <p className="text-stone-600 font-light">
+          Sign in to your account
+        </p>
       </div>
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-stone-800">Welcome Back</CardTitle>
-          <CardDescription className="text-stone-600 font-light">
-            Log in to access your alaCart products
-          </CardDescription>
-        </CardHeader>
+      <Card className="w-full max-w-md py-8">
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4 rounded-xl">
@@ -223,16 +221,16 @@ export default function LoginPage() {
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light" 
               disabled={isLoggingIn}>
               {isLoggingIn ? (
-                <span className="flex items-center font-light">Logging in... <ArrowRight className="ml-2 h-4 w-4 animate-pulse" /></span>
+                <span className="flex items-center font-light">Signing in... <ArrowRight className="ml-2 h-4 w-4 animate-pulse" /></span>
               ) : (
-                'Log In'
+                'Sign In'
               )}
             </Button>
           </form>
           <div className="text-center mt-4 text-sm text-stone-600 font-light">
             Don't have an account? {' '}
             <Link href="/register" className="text-emerald-600 hover:text-emerald-700 font-light">
-              Register
+              Sign up
             </Link>
           </div>
         </CardContent>
