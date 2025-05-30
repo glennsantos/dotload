@@ -3,6 +3,11 @@
 ## Resolve Issues
 *Note: more issues listed in Github*
 - [ ] review mobile responsive version
+- [ ] Add Actions to products https://private-user-images.githubusercontent.com/1162329/449143984-c1956446-3c39-43e7-ab12-6368091aced2.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDg1OTExMzEsIm5iZiI6MTc0ODU5MDgzMSwicGF0aCI6Ii8xMTYyMzI5LzQ0OTE0Mzk4NC1jMTk1NjQ0Ni0zYzM5LTQzZTctYWIxMi02MzY4MDkxYWNlZDIucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI1MDUzMCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNTA1MzBUMDc0MDMxWiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9YjJmM2Y0MGE5NjQ1MzM0NTMxMTM4ODUwNjFmNWJlNTdmZDdkYmNjNmU1YTViMWIzNmExMTY0NWZkZmE0MzliZCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.VArIgio53RFtd7AJUOxYK6Z70lVQjj_e_zCy6vaZUQs
+- [ ] Remove purchases tab
+  - [ ] reinstate the hidden download settings. whenever there is a download, that should tick down. the purchase should only be downloadable a fixed number of times
+  - [ ] also track link expiration in the purchase
+  - [ ] remove the need for the buyer to register 
 
 ## Site Setup
 - [x] Attach domain to dev server
@@ -11,7 +16,7 @@
 - [x] Change from email for alacart in .env files
 - [x] Change other emails as needed
 - [x] Create SSL cert for dev server via Letsencrypt.
-- [ ] update SES to prod
+- [ ] fix SES DKIM
   - [ ] https://repost.aws/knowledge-center/ses-dkim-failing-verification
   - [ ] https://docs.aws.amazon.com/ses/latest/dg/send-email-authentication-dkim.html
 - [ ] clean up front end console.logs for prod
@@ -23,6 +28,7 @@
 
 ## Perform QA Testing
 - [ ] Get QA assistance for the rest of the testing
+- [ ] Check marco's alacart github for the tests
 - [ ] Document happy path 
   - [ ] Execute happy path and note any issues
   - [ ] For showstoppers, list and address

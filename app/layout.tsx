@@ -8,6 +8,9 @@ import "./globals.css"
 // Import the client component wrapper instead of directly importing with ssr: false
 import ClientDebugWrapper from '@/components/client-debug-wrapper'
 
+// Import the fonts
+import { inter } from './fonts'
+
 
 export const metadata: Metadata = {
   title: "alaCart",
@@ -49,8 +52,8 @@ export default async function RootLayout({
   const currentUser = await getCurrentUser();
   
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={inter.variable}>
+      <body className="font-inter">
         <div className="flex flex-col h-screen">
           <main className="flex-1 overflow-auto">{children}</main>
           <ClientDebugWrapper />
