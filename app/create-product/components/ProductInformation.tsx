@@ -114,7 +114,24 @@ export default function ProductInformation({
         
         {/* Custom URL */}
         <div>
-          <label className="block mb-2 text-sm">Custom URL (Optional)</label>
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-sm">Custom URL (Optional)</label>
+            <button 
+              className="px-2 py-1 border rounded text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+              onClick={() => {
+                if (productData.name) {
+                  const slug = productData.name
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '')
+                  setProductData({ ...productData, slug })
+                }
+              }}
+              type="button"
+            >
+              Generate from name
+            </button>
+          </div>
           <div className="flex">
             <input
               type="text"
@@ -124,26 +141,11 @@ export default function ProductInformation({
               className="w-full p-2 border rounded-md"
               placeholder="your-product-name"
             />
-            <div className="ml-2">
-              <button 
-                className="px-2 py-1 border rounded text-xs text-gray-500"
-                onClick={() => {
-                  if (productData.name) {
-                    const slug = productData.name
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, '-')
-                      .replace(/^-+|-+$/g, '')
-                    setProductData({ ...productData, slug })
-                  }
-                }}
-              >
-                Generate from name
-              </button>
-            </div>
+            
           </div>
           <p className="text-xs text-gray-500 mt-1">
             {productData.slug 
-              ? <a target="_blank" className="text-emerald-600 hover:text-emerald-700" href={`${typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}`}>{typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}</a> 
+              ? <><span className="font-semibold">Product URL:</span> <a target="_blank" className="text-emerald-600 hover:text-emerald-700" href={`${typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}`}>{typeof window !== 'undefined' ? window.location.origin : ''}/p/{productData.slug}</a></>
               : 'Product URL will be generated automatically'}
           </p>
         </div>
@@ -151,34 +153,31 @@ export default function ProductInformation({
         {/* Price */}
         <div>
           <label className="block mb-2 text-sm">Price</label>
-          <div className="flex">
-            <div className="flex-grow flex">
-              <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-50 text-gray-500">
-                {getCurrencySymbol(productData.currency)}
-              </span>
-              <input
-                type="number"
-                value={isPriceFocused ? priceInput : productData.price}
-                onChange={handlePriceChange}
-                onFocus={handlePriceFocus}
-                onBlur={handlePriceBlur}
-                className="flex-grow p-2 border rounded-r-md [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div className="ml-2 w-24">
-              <select 
-                className="w-full p-2 border rounded-md bg-white"
-                value={productData.currency}
-                onChange={(e) => setProductData({ ...productData, currency: e.target.value })}
-              >
-                <option value="PHP">PHP</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-              </select>
-            </div>
+          <div className="relative flex rounded-md shadow-sm">
+            <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-50 text-gray-500 text-sm">
+              {getCurrencySymbol(productData.currency)}
+            </span>
+            <input
+              type="number"
+              value={isPriceFocused ? priceInput : productData.price}
+              onChange={handlePriceChange}
+              onFocus={handlePriceFocus}
+              onBlur={handlePriceBlur}
+              className="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-r-none"
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+            />
+            <select 
+              className="border-l-0 rounded-r-md border-gray-300 bg-stone-50 text-gray-700 py-2 pl-3 pr-8 text-sm focus:ring-emerald-500 focus:border-emerald-500 border"
+              disabled
+              value={productData.currency}
+              onChange={(e) => setProductData({ ...productData, currency: e.target.value })}
+            >
+              <option value="PHP" selected>PHP</option>
+              <option value="USD" disabled>USD</option>
+              <option value="EUR" disabled>EUR</option>
+            </select>
           </div>
         </div>
       </div>
@@ -186,7 +185,7 @@ export default function ProductInformation({
       {/* Thumbnail Upload */}
       <div className="mt-8 mb-6">
         <h3 className="text-xl font-light mb-2">Product Photo</h3>
-        <p className="text-sm text-gray-500 mb-4">Upload high-quality photos of your physical product</p>
+        <p className="text-sm text-gray-500 mb-4">Upload a high-quality photos of your physical product</p>
         
         <div className="border border-dashed rounded-md p-4 flex flex-col items-center justify-center mb-4">
           {productData.coverImage ? (

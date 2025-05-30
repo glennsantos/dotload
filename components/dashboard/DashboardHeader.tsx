@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Plus, Settings, LogOut } from "lucide-react";
 
@@ -9,9 +10,22 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ userName }: DashboardHeaderProps) {
   return (
     <div className="flex justify-between items-center mb-6">
-      <div>
-        <h1 className="text-2xl font-bold text-stone-800">Dashboard</h1>
-        <p className="text-stone-600 font-light">Welcome back, {userName}</p>
+      <div className="flex items-center space-x-4">
+        <Link href="/" className="block">
+          <Image 
+            src="/logo.png" 
+            alt="Alacart Logo" 
+            width={120} 
+            height={32} 
+            className="h-8 w-auto"
+            priority
+          />
+        </Link>
+        <div className="h-8 w-px bg-stone-200"></div>
+        <div>
+          <h1 className="text-3xl font-light text-stone-800">Dashboard</h1>
+          <p className="text-stone-600 font-light">Welcome back, {userName}</p>
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <Button
