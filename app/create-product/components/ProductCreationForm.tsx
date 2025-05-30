@@ -378,8 +378,10 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       
       // Upload content files if any
       if (productData.contentFiles.length > 0) {
-        // For edit mode, we'll upload files directly to the product endpoint
-        if (isEditing && productId) {
+        try {
+          // Get the product ID from the response
+          const newProductId = responseData.product?.id || responseData.id
+          
           // Create a new FormData for the files
           const filesFormData = new FormData()
           
@@ -392,43 +394,25 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
             filesFormData.append(`contentFile${i}`, productData.contentFiles[i])
           }
           
-          // Send files to the product endpoint
-          const filesResponse = await fetch(`/api/products/${productId}`, {
+          console.log(`Uploading ${productData.contentFiles.length} files for product ${newProductId}`)
+          
+          // Send files to the product endpoint (same approach for both create and edit modes)
+          const filesResponse = await fetch(`/api/products/${newProductId}`, {
             method: 'PUT',
             body: filesFormData,
             credentials: 'include'
           })
           
           if (!filesResponse.ok) {
-            console.error('Failed to upload content files in edit mode')
-            // Continue anyway, the product was updated successfully
-          } else {
-            console.log('Successfully uploaded content files in edit mode')
-          }
-        } else {
-          // For create mode, use the /api/files endpoint as before
-          const filesFormData = new FormData()
-          
-          // Add all content files to the form data
-          for (let i = 0; i <productData.contentFiles.length; i++) {
-            filesFormData.append(`file${i}`, productData.contentFiles[i])
-          }
-          
-          // Add product ID
-          const productId = responseData.product?.id || responseData.id
-          filesFormData.append('productId', productId)
-          
-          // Send files to backend
-          const filesResponse = await fetch('/api/files', {
-            method: 'POST',
-            body: filesFormData,
-            credentials: 'include'
-          })
-          
-          if (!filesResponse.ok) {
-            console.error('Failed to upload content files')
+            const errorData = await filesResponse.json()
+            console.error('Failed to upload content files:', errorData)
             // Continue anyway, the product was created/updated successfully
+          } else {
+            console.log('Successfully uploaded content files')
           }
+        } catch (fileError) {
+          console.error('Error during file upload:', fileError)
+          // Continue anyway, the product was created/updated successfully
         }
       }
       
@@ -630,7 +614,11 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                 <Link href={`/p/${createdProduct.slug}`} className="px-4 py-2 bg-emerald-600 text-white rounded-2xl">
                   View Product
                 </Link>
-                <button onClick={() => window.location.reload()} className="px-4 py-2 border rounded-2xl">Continue Editing</button>
+                {isEditing && (
+                  <button onClick={() => window.location.reload()} className="px-4 py-2 border rounded-2xl">
+                    Continue Editing
+                  </button>
+                )}
                 <Link href="/products" className="px-4 py-2 border rounded-2xl">
                   Back to Products
                 </Link>
