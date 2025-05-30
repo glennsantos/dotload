@@ -2,6 +2,7 @@
 
 ## Resolve Issues
 *Note: more issues listed in Github*
+- [ ] review mobile responsive version
 
 ## Site Setup
 - [x] Attach domain to dev server
@@ -11,6 +12,8 @@
 - [x] Change other emails as needed
 - [x] Create SSL cert for dev server via Letsencrypt.
 - [ ] update SES to prod
+  - [ ] https://repost.aws/knowledge-center/ses-dkim-failing-verification
+  - [ ] https://docs.aws.amazon.com/ses/latest/dg/send-email-authentication-dkim.html
 - [ ] clean up front end console.logs for prod
 
 ## Deploy to Dev
