@@ -20,6 +20,7 @@ export default function RegisterPage() {
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [headerImage, setHeaderImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
@@ -155,6 +156,11 @@ export default function RegisterPage() {
   const handleResendVerification = async () => {
     if (!registeredEmail) return;
     
+    // Clear any previous messages
+    setError(null);
+    setSuccess(null);
+    setIsSubmitting(true);
+    
     try {
       const response = await fetch('/api/auth/resend-verification', {
         method: 'POST',
@@ -170,9 +176,16 @@ export default function RegisterPage() {
       }
       
       setSuccess('Verification email has been resent');
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 5000);
     } catch (error) {
       console.error('Resend verification error:', error);
       setError(error instanceof Error ? error.message : 'Failed to resend verification email');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -369,6 +382,27 @@ export default function RegisterPage() {
                 </div>
                 <h3 className="text-xl font-light text-stone-800 mb-2">Check your email</h3>
                 <p className="text-stone-600 mb-6">We've sent a verification link to <span className="font-medium">{registeredEmail}</span></p>
+                
+                {success && (
+                  <Alert className="mb-4 bg-emerald-50 border-emerald-200">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <AlertTitle className="text-emerald-600 font-normal">Success</AlertTitle>
+                    <AlertDescription className="text-emerald-700 font-light">
+                      {success}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                {error && (
+                  <Alert className="mb-4 bg-red-50 border-red-200">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertTitle className="text-red-600 font-normal">Error</AlertTitle>
+                    <AlertDescription className="text-red-700 font-light">
+                      {error}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
                 <Button 
                   variant="outline" 
                   onClick={handleResendVerification}
