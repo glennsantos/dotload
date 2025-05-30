@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import Image from 'next/image';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -46,7 +47,19 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 p-4">
+      <div className="mb-8">
+        <Link href="/" className="block">
+          <Image 
+            src="/logo.png" 
+            alt="Alacart Logo" 
+            width={160} 
+            height={42.67} 
+            className="h-auto"
+            priority
+          />
+        </Link>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-stone-800">Forgot Password</CardTitle>

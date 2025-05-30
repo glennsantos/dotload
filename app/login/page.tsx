@@ -10,6 +10,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Mail, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { setAuthToken } from '@/lib/client-auth';
+import Image from 'next/image';
+import AuthHeader from '@/components/auth/AuthHeader';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -114,7 +116,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
+    <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] py-8">
+      <div className="flex flex-col items-center mb-8">
+        <Link href="/" className="mb-4">
+          <Image 
+            src="/logo.png" 
+            alt="Alacart Logo" 
+            width={160} 
+            height={42.67} 
+            className="h-auto"
+            priority
+          />
+        </Link>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-stone-800">Welcome Back</CardTitle>

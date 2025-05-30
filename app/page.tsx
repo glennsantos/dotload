@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Shield, Package, Globe, Clock } from "lucide-react"
+import { ArrowRight, Shield, Package, Globe, Clock, Zap, Check } from "lucide-react"
 
 export default function Home() {
   return (
@@ -33,13 +33,13 @@ export default function Home() {
             The fastest way to sell digital and physical products online. Build stunning,
             conversion-optimized checkout pages with zero coding required.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-20">
-            <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 py-2 flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8 py-6 flex items-center gap-2 text-lg">
               <Link href="/register">
                 Get Started Free <ArrowRight size={16} />
               </Link>
             </Button>
-            <Button asChild variant="outline" className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-full">
+            <Button asChild variant="outline" className="border-stone-200 text-stone-700 hover:bg-stone-50 rounded-full text-lg px-8 py-6 flex items-center gap-2">
               <Link href="/login">Sign In</Link>
             </Button>
           </div>
@@ -47,8 +47,8 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="max-w-6xl mx-auto px-6 lg:px-8 py-20">
-        <div className="text-center mb-16">
+      <section className="max-w-6xl mx-auto px-6 lg:px-8 py-10">
+        <div className="text-center mb-6">
           <h2 className="text-3xl font-light text-stone-900 mb-4">Why Choose Alacart?</h2>
           <p className="text-lg text-stone-600">Everything you need to start selling online</p>
         </div>
@@ -56,9 +56,7 @@ export default function Home() {
           <div className="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm">
             <div className="p-8 text-center">
               <div className="flex justify-center mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap h-5 w-5 text-stone-600">
-                  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
-                </svg>
+                <Zap className="h-5 w-5 text-stone-600" />
               </div>
               <h3 className="text-xl font-medium text-stone-900 mb-4">2-Minute Setup</h3>
               <p className="text-stone-600 leading-relaxed">Create professional checkout pages in under 2 minutes with our smart wizard</p>
@@ -67,9 +65,7 @@ export default function Home() {
           <div className="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm">
             <div className="p-8 text-center">
               <div className="flex justify-center mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield h-5 w-5 text-stone-600">
-                  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
-                </svg>
+                <Shield className="h-5 w-5 text-stone-600" />
               </div>
               <h3 className="text-xl font-medium text-stone-900 mb-4">Secure Payments</h3>
               <p className="text-stone-600 leading-relaxed">Built-in Stripe integration with enterprise-level security and trust indicators</p>
@@ -78,11 +74,7 @@ export default function Home() {
           <div className="rounded-lg border text-card-foreground bg-white border-stone-200 shadow-sm">
             <div className="p-8 text-center">
               <div className="flex justify-center mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-globe h-5 w-5 text-stone-600">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-                  <path d="M2 12h20"></path>
-                </svg>
+                <Globe className="h-5 w-5 text-stone-600" />
               </div>
               <h3 className="text-xl font-medium text-stone-900 mb-4">Digital &amp; Physical</h3>
               <p className="text-stone-600 leading-relaxed">Support for both digital downloads and physical products with inventory management</p>
@@ -110,9 +102,7 @@ export default function Home() {
               ].map((feature, index) => (
                 <div key={index} className="flex items-start gap-2">
                   <div className="text-emerald-500 mt-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
+                    <Check className="h-4 w-4" />
                   </div>
                   <p className="text-stone-700">{feature}</p>
                 </div>
@@ -124,9 +114,7 @@ export default function Home() {
                 <div className="bg-white rounded-xl shadow-sm p-8">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-emerald-600 rounded-full mx-auto mb-6 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap h-8 w-8 text-white">
-                        <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
-                      </svg>
+                      <Zap className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="text-lg font-medium text-stone-900 mb-3">Professional Results</h3>
                     <p className="text-stone-600">Get enterprise-level checkout pages with minimal effort</p>
@@ -141,11 +129,14 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-16 bg-stone-900 text-white text-center">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-4">Ready to Start Selling?</h2>
+          <h2 className="text-3xl font-light mb-4">Ready to Start Selling?</h2>
           <p className="mb-8">Join thousands of creators already using Alacart</p>
-          <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 py-2 flex items-center gap-2 mx-auto">
+          <Button
+            asChild
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8 py-6 text-lg flex items-center gap-1.5 mx-auto w-fit"
+          >
             <Link href="/register">
-              Get Started Free <ArrowRight size={16} />
+              Get Started Free <ArrowRight size={14} />
             </Link>
           </Button>
         </div>
