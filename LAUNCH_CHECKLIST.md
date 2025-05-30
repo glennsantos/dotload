@@ -3,9 +3,6 @@
 ## Resolve Issues
 *Note: more issues listed in Github*
 
-## Checkout
-- [ ] add support for other currencies 
-
 ## Site Setup
 - [x] Attach domain to dev server
 - [x] Convert SES to prod setup
