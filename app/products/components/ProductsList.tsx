@@ -190,14 +190,14 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                       )}
                     </div>
                     <div>
-                      <div className="font-medium text-stone-800">{product.name}</div>
+                      <div className="font-light text-stone-800">{product.name}</div>
                       <div className="text-sm text-stone-500">
                         {window.location.host}/p/{product.slug || product.id}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-4 text-right">₱{product.price.toFixed(2)}+</td>
+                <td className="py-3 px-4 text-right">₱{product.price.toFixed(2)}</td>
                 <td className="py-3 px-4 text-right">
                   <div className="flex items-center justify-end">
                     <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
