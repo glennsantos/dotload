@@ -57,12 +57,12 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
   }) || tabs[0];
 
   return (
-    <div className="bg-white rounded-2xl md:shadow-sm md:border border-stone-200 overflow-hidden mb-12 mt-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden mb-12 mt-6">
       {/* Mobile Dropdown */}
-      <div className="md:hidden p-2">
+      <div className="md:hidden relative w-full">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between bg-white px-4 py-2 text-sm font-light rounded-lg border border-stone-200"
+          className="w-full flex items-center justify-between bg-white px-4 py-2 text-sm font-light rounded-lg"
         >
           <div className="flex items-center gap-2">
             {activeTabItem.icon}
@@ -72,7 +72,7 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
         </button>
         
         {isOpen && (
-          <div className="mt-1 py-1 bg-white rounded-lg border border-stone-200 shadow-sm">
+          <div className="mt-1 mx-6 py-1 bg-white rounded-xl border border-stone-200 fixed inset-x-0 mx-2 z-50 px-2 py-2">
             {tabs.map((tab) => {
               const isActive = activeTab 
                 ? tab.label.toLowerCase() === activeTab.toLowerCase()
@@ -87,8 +87,8 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors w-full",
                     isActive 
-                      ? "bg-emerald-100 text-emerald-700" 
-                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+                      ? "bg-emerald-100 text-emerald-700 rounded-lg" 
+                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-200"
                   )}
                 >
                   {tab.icon}
