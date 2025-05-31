@@ -8,6 +8,7 @@ import { mkdir } from 'fs/promises';
 import { cwd } from 'process';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { generateUniqueSlug } from '@/lib/slug-utils';
+import { apiConfig, checkFileSizeLimit, formatFileSize } from '../config';
 
 // Function removed - using Cloudinary exclusively
 

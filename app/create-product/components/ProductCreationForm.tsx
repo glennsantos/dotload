@@ -385,6 +385,15 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       // Upload content files if any
       if (productData.contentFiles.length > 0) {
         try {
+          // Check file sizes before uploading
+          const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
+          const largeFiles = productData.contentFiles.filter(file => file.size > MAX_FILE_SIZE);
+          
+          if (largeFiles.length > 0) {
+            const fileNames = largeFiles.map(file => `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`).join(', ');
+            throw new Error(`The following files exceed the 50MB size limit: ${fileNames}`);
+          }
+          
           // Get the product ID from the response
           const newProductId = responseData.product?.id || responseData.id
           

@@ -5,6 +5,12 @@ const nextConfig = {
   logging: {
     level: 'verbose'
   },
+  api: {
+    bodyParser: {
+      sizeLimit: '100mb', // Increase the API body size limit to 100MB
+    },
+    responseLimit: false,
+  },
   images: {
     domains: [
       'res.cloudinary.com',

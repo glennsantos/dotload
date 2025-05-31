@@ -6,6 +6,7 @@ import { join } from 'path';
 import { cwd } from 'process';
 import * as fs from 'fs';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { apiConfig, checkFileSizeLimit, formatFileSize } from '../../config';
 
 // Ensure uploads directory exists with proper structure
 async function ensureUploadsDir(userId: string, productId: string) {
@@ -61,10 +62,15 @@ async function processFiles(formData: FormData, userId: string, productId: strin
   const productDir = await ensureUploadsDir(userId, productId);
   const coverImage = formData.get('coverImage') as File | null;
   const contentFiles: File[] = [];
+  const MAX_FILE_SIZE_MB = 50; // 50MB file size limit
   
-  // Extract content files from formData
+  // Extract content files from formData and validate size
   for (const [key, value] of formData.entries()) {
     if (key.startsWith('contentFile') && value instanceof File) {
+      // Check file size
+      if (!checkFileSizeLimit(value, MAX_FILE_SIZE_MB)) {
+        throw new Error(`File ${value.name} exceeds the maximum size limit of ${MAX_FILE_SIZE_MB}MB. File size: ${formatFileSize(value.size)}`);
+      }
       contentFiles.push(value);
     }
   }
