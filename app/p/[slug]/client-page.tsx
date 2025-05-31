@@ -86,10 +86,7 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
       </div>
 
       <main className="max-w-3xl mx-auto px-4 py-4">
-        {/* Product Title */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-          
           {/* Product Badges */}
           <div className="flex flex-wrap justify-center gap-2 mb-2">
             {product.bestSeller && (
@@ -107,6 +104,9 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
               <span key={`badge-${index}`} className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">{badge}</span>
             ))}
           </div>
+
+          {/* Product Title */}
+          <h1 className="text-3xl md:text-4xl font-normal text-gray-900 mb-2">{product.name}</h1>
           
           {/* Product Description */}
           <div className="text-gray-600 text-sm md:text-base mb-6 text-left">
@@ -137,7 +137,7 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
 
         {/* What's Included Section */}
         <div className="border rounded-xl font-light p-4 mb-8">
-          <h3 className="text-lg mb-2 text-center">What's Included</h3>
+          <h3 className="text-lg mb-2 text-center">What's included:</h3>
           <ul className="space-y-2">
             {whatsIncluded && whatsIncluded.length > 0 ? (
               whatsIncluded.map((item: string, index: number) => (
@@ -190,7 +190,14 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
       
       {/* Powered by alacart footer */}
       <div className="py-4 text-center border-t text-xs text-gray-400 font-light max-w-3xl mx-auto mb-16 md:mb-4">
-        Powered by <span className="text-emerald-500 font-medium">alacart</span>
+        Powered by <Image 
+                        src="/logo.png" 
+                        alt="Alacart Logo" 
+                        width={100}
+                        height={28}
+                        className="h-6 w-auto sm:h-7"
+                        priority
+                      />
       </div>
       
       {/* Mobile fixed Buy Now button */}
