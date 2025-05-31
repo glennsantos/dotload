@@ -3,6 +3,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Shield, Package, Globe, Clock, Zap, Check, LayoutDashboard, Plus } from "lucide-react"
 import { getCurrentUser } from "@/lib/auth"
+import { AuthButtons } from "@/components/auth/auth-buttons";
 
 async function HeroSection() {
   const user = await getCurrentUser();
@@ -78,32 +79,7 @@ async function CTASection() {
   );
 }
 
-async function AuthButtons() {
-  const user = await getCurrentUser();
-
-  if (user) {
-    return (
-      <div className="flex items-center gap-3">
-        <Button asChild variant="default">
-          <Link href="/dashboard">
-            <span>Dashboard</span>
-          </Link>
-        </Button>
-      </div>  
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-3">
-      <Button asChild variant="outline">
-        <Link href="/login">Sign In</Link>
-      </Button>
-      <Button asChild variant="default">
-        <Link href="/register">Get Started</Link>
-      </Button>
-    </div>
-  );
-}
+// Auth buttons moved to client component
 
 export default function Home() {
   return (
