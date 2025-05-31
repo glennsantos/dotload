@@ -124,8 +124,6 @@ export default async function Dashboard() {
     return null;
   }
 
-  console.log('user', user)
-  
   const userName = user.name || "User";
   const stats = await getStats(user.id);
   

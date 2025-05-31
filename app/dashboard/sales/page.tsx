@@ -67,6 +67,7 @@ export default function SalesPage() {
   const [filter, setFilter] = useState<string>('all');
   const [userName, setUserName] = useState("User");
   const [userEmail, setUserEmail] = useState("");
+  const [userLogo, setUserLogo] = useState("");
 
   // Fetch transactions data and user data
   useEffect(() => {
@@ -92,6 +93,7 @@ export default function SalesPage() {
           const user = userData.user || userData;
           setUserName(user.name || 'User');
           setUserEmail(user.email || '');
+          setUserLogo(user.storeLogoPath || '');
         }
         
         if (!transactionsResponse.ok) {
@@ -225,7 +227,7 @@ export default function SalesPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} userEmail={userEmail} />
+      <DashboardHeader userName={userName} userEmail={userEmail} userLogo={userLogo}/>
 
       {/* Horizontal Tab Menu */}
       <DashboardTabs activeTab="sales" />

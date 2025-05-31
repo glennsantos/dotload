@@ -41,6 +41,8 @@ export default function PromosPage() {
   const [userName, setUserName] = useState("User");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState("User");
+  const [userLogo, setUserLogo] = useState("User");
   
   // Form state for creating a new discount code
   const [newCode, setNewCode] = useState({
@@ -75,6 +77,8 @@ export default function PromosPage() {
           const userData = await authResponse.json();
           if (userData.user && userData.user.name) {
             setUserName(userData.user.name);
+            setUserEmail(userData.user.email);
+            setUserLogo(userData.user.storeLogoPath);
           }
         }
         
@@ -253,7 +257,7 @@ export default function PromosPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} />
+      <DashboardHeader userName={userName} userEmail={userEmail} userLogo={userLogo} />
       
       {/* Horizontal Tab Menu */}
       <DashboardTabs activeTab="promos" />

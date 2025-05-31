@@ -59,6 +59,7 @@ export default function PurchasesPage() {
   const [filter, setFilter] = useState<string>('all');
   const [userName, setUserName] = useState("User");
   const [userEmail, setUserEmail] = useState("");
+  const [userLogo, setUserLogo] = useState("");
 
   // Fetch purchases data and user data
   useEffect(() => {
@@ -84,6 +85,7 @@ export default function PurchasesPage() {
           const user = userData.user || userData;
           setUserName(user.name || 'User');
           setUserEmail(user.email || '');
+          setUserLogo(user.storeLogoPath || '');
         }
         
         if (!purchasesResponse.ok) {

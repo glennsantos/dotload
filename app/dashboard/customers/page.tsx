@@ -36,6 +36,7 @@ export default function CustomersPage() {
   const [userName, setUserName] = useState("User");
   const [userEmail, setUserEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState('');
+  const [userLogo, setUserLogo] = useState("");
   
   // Fetch customers data and user data
   useEffect(() => {
@@ -60,6 +61,7 @@ export default function CustomersPage() {
           const userData = await authResponse.json();
           setUserName(userData.name || 'User');
           setUserEmail(userData.email || '');
+          setUserLogo(userData.storeLogoPath || '');
         }
         
         if (!customersResponse.ok) {
@@ -155,7 +157,7 @@ export default function CustomersPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} userEmail={userEmail} />
+      <DashboardHeader userName={userName} userEmail={userEmail} userLogo={userLogo} />
       
       {/* Horizontal Tab Menu */}
       <DashboardTabs activeTab="customers" />
