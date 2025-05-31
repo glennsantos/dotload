@@ -172,7 +172,7 @@ export default function PurchasesPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} userEmail={userEmail} />
+      <DashboardHeader />
 
       {/* Horizontal Tab Menu */}
       <DashboardTabs activeTab="purchases" />

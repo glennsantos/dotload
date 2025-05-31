@@ -4,13 +4,12 @@ import { X, LogOut, Settings, Plus } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { getClientUser } from "@/lib/client-auth-utils";
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  userName?: string;
-  userEmail?: string;
-  userLogo?: string;
 }
 
 type MenuItem = {
@@ -20,7 +19,36 @@ type MenuItem = {
   isActive?: boolean;
 };
 
-export function MobileMenu({ isOpen, onClose, userName, userEmail, userLogo }: MobileMenuProps) {
+export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+  const [userData, setUserData] = useState({
+    userName: "User",
+    userEmail: "",
+    userLogo: ""
+  });
+  
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await getClientUser();
+        
+        if (user) {
+          setUserData({
+            userName: user.name || 'User',
+            userEmail: user.email || '',
+            userLogo: user.storeLogoPath || ''
+          });
+        } else {
+          console.warn('No user found or not authenticated');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    
+    if (isOpen) {
+      fetchUserData();
+    }
+  }, [isOpen]);
 
   return (
     <>
@@ -59,20 +87,20 @@ export function MobileMenu({ isOpen, onClose, userName, userEmail, userLogo }: M
         <div className="px-6 py-4">
           <div className="flex items-center">
             <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-medium text-lg overflow-hidden">
-              {userLogo ? (
+              {userData.userLogo ? (
                 <img 
-                  src={userLogo} 
+                  src={userData.userLogo} 
                   alt="User Logo" 
                   className="h-full w-full object-cover"
                 />
               ) : (
-                userName?.[0]?.toUpperCase() || 'T'
+                userData.userName?.[0]?.toUpperCase() || 'T'
               )}
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-stone-900">{userName}</p>
-              {userEmail && (
-                <p className="text-xs text-stone-500">{userEmail}</p>
+              <p className="text-sm font-medium text-stone-900">{userData.userName}</p>
+              {userData.userEmail && (
+                <p className="text-xs text-stone-500">{userData.userEmail}</p>
               )}
             </div>
           </div>

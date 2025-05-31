@@ -1,39 +1,14 @@
 import Link from "next/link"
-import Image from "next/image"
-import { Package, TrendingUp, DollarSign, Plus, Settings, LogOut, Users, ShoppingCart, ArrowRight, LucideBanknote } from "lucide-react"
+import { Package, TrendingUp, DollarSign, Users, ShoppingCart, LucideBanknote, ArrowRight } from "lucide-react"
+import { getCurrentUser } from "@/lib/auth-utils"
 import { DashboardTabs } from "@/components/ui/dashboard-tabs"
 import { StatsCard } from "@/components/ui/stats-card"
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { cookies } from "next/headers"
 import { prisma } from "@/lib/prisma"
-import jwt from "jsonwebtoken"
 import { formatCurrency } from "@/lib/utils"
 import { redirect } from "next/navigation"
-
-async function getCurrentUser() {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token');
-    const tokenValue = token?.value;
-
-    if (!tokenValue) return null;
-
-    const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-    const decoded = jwt.verify(tokenValue, JWT_SECRET) as { userId: string, email: string };
-
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, name: true, email: true, storeLogoPath: true }
-    });
-
-    return user;
-  } catch (error) {
-    console.error('Error getting current user:', error);
-    return null;
-  }
-}
 
 // Define types for purchases and transactions
 type Product = {
@@ -116,8 +91,8 @@ async function getStats(userId: string) {
 }
 
 export default async function Dashboard() {
-  // Get user data from server-side
   const user = await getCurrentUser();
+
   if (!user) {
     // Explicitly redirect to login page
     redirect('/login?callbackUrl=/dashboard');
@@ -129,7 +104,7 @@ export default async function Dashboard() {
   
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} userEmail={user?.email} userLogo={user?.storeLogoPath} />
+      <DashboardHeader />
       
       {/* Horizontal Tab Menu */}
       <DashboardTabs activeTab="overview" />

@@ -196,8 +196,6 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
     }
   ]
 
-  console.log('products', products)
-
   return (
     <div className="space-y-8">
       {/* Products Header */}

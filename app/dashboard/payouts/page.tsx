@@ -17,6 +17,7 @@ export default function PayoutsPage() {
   const [showRequestForm, setShowRequestForm] = useState(false)
   const [userName, setUserName] = useState("User");
   const [userEmail, setUserEmail] = useState("");
+  const [userLogo, setUserLogo] = useState("");
   
   // Form state
   const [amount, setAmount] = useState("")
@@ -52,6 +53,7 @@ export default function PayoutsPage() {
           const user = userData.user || userData;
           setUserName(user.name || 'User');
           setUserEmail(user.email || '');
+          setUserLogo(user.storeLogoPath || '');
         }
       } catch (err) {
         console.error('Error fetching user data:', err);
@@ -204,7 +206,7 @@ export default function PayoutsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <DashboardHeader userName={userName} userEmail={userEmail} />
+      <DashboardHeader />
       
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

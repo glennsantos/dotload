@@ -157,7 +157,7 @@ export default function CustomersPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} userEmail={userEmail} userLogo={userLogo} />
+      <DashboardHeader />
       
       {/* Horizontal Tab Menu */}
       <DashboardTabs activeTab="customers" />
