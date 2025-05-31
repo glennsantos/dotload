@@ -3,12 +3,37 @@
 import { Product } from './ProductCreationForm'
 import { Lock, ThumbsUp, Download, RefreshCcw } from 'lucide-react'
 import RichTextRenderer from '@/components/rich-text-renderer'
+import { useEffect, useState } from 'react'
+import { getClientUser } from '@/lib/client-auth-utils'
 
 type ProductPreviewProps = {
   productData: Product
 }
 
 export default function ProductPreview({ productData }: ProductPreviewProps) {
+  const [userData, setUserData] = useState({
+    userName: "Your Store",
+    storeLogoPath: ""
+  });
+  
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await getClientUser();
+        
+        if (user) {
+          setUserData({
+            userName: user.name || 'Your Store',
+            storeLogoPath: user.storeLogoPath || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    
+    fetchUserData();
+  }, []);
   // Get currency symbol based on selected currency
   const getCurrencySymbol = (currency: string) => {
     switch (currency) {
@@ -32,8 +57,18 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
       <div className="border rounded-2xl overflow-hidden bg-white">
         {/* Store Header */}
         <div className="p-3 bg-gray-50 flex items-center">
-          <div className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center text-white text-xs mr-2">YS</div>
-          <span className="text-lg font-light">Your Store</span>
+          {userData.storeLogoPath ? (
+            <img 
+              src={userData.storeLogoPath} 
+              alt="Store logo" 
+              className="w-6 h-6 rounded-full object-cover mr-2" 
+            />
+          ) : (
+            <div className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center text-white text-xs mr-2">
+              {userData.userName.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span className="text-lg font-light">{userData.userName}</span>
         </div>
         
         {/* Product Preview */}
