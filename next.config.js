@@ -15,6 +15,11 @@ const nextConfig = {
       },
     },
   }),
+  // Ensure static files are properly served
+  output: 'standalone',
+  images: {
+    unoptimized: true, // Disable image optimization if not needed
+  },
   logging: {
     level: 'verbose'
   },
