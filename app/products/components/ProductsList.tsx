@@ -196,6 +196,8 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
     }
   ]
 
+  console.log('products', products)
+
   return (
     <div className="space-y-8">
       {/* Products Header */}
@@ -206,13 +208,13 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
             className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'active' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100'}`}
             onClick={() => setActiveFilter('active')}
           >
-            Active ({products.filter(p => !p.isArchived).length})
+            Active ({products.filter(p => p.status !== 'archived').length})
           </button>
           <button 
             className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'archived' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100'}`}
             onClick={() => setActiveFilter('archived')}
           >
-            <span className="flex items-center"><Archive className="mr-2 h-4 w-4" /> Archived ({products.filter(p => p.isArchived).length})</span>
+            <span className="flex items-center"><Archive className="mr-2 h-4 w-4" /> Archived ({products.filter(p => p.status === 'archived').length})</span>
           </button>
         </div>
       </div>
