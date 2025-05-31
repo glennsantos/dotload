@@ -229,7 +229,6 @@ export default function TempDownloadsPage() {
                       </div>
                       <div>
                         <h3 className="text-sm font-medium text-gray-900">{file.filename}</h3>
-                        <p className="text-xs text-gray-500 font-light">{formatFileSize(file.size)}</p>
                       </div>
                     </div>
                     
