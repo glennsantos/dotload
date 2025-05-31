@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { 
-  MoreVertical, 
+  Ellipsis, 
   Eye, 
   Edit, 
   Globe, 
@@ -184,10 +184,10 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
           e.stopPropagation()
           setIsMenuOpen(!isMenuOpen)
         }}
-        className="p-2 rounded-full hover:bg-stone-100"
+        className="p-2 rounded-xl hover:bg-stone-100 border border-stone-200"
         aria-label="Product actions"
       >
-        <MoreVertical size={16} />
+        <Ellipsis size={16} />
       </button>
       
       {/* Actions menu */}
