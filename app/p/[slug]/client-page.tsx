@@ -188,6 +188,11 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
         </div>
       </main>
       
+      {/* Powered by alacart footer */}
+      <div className="py-4 text-center border-t text-xs text-gray-400 font-light max-w-3xl mx-auto mb-16 md:mb-4">
+        Powered by <span className="text-emerald-500 font-medium">alacart</span>
+      </div>
+      
       {/* Mobile fixed Buy Now button */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
         <button

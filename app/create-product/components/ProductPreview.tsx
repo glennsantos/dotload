@@ -5,6 +5,7 @@ import { Lock, ThumbsUp, Download, RefreshCcw } from 'lucide-react'
 import RichTextRenderer from '@/components/rich-text-renderer'
 import { useEffect, useState } from 'react'
 import { getClientUser } from '@/lib/client-auth-utils'
+import Image from 'next/image'
 
 type ProductPreviewProps = {
   productData: Product
@@ -229,7 +230,21 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
 
         </div>
         
-        
+        {/* Powered by alacart footer */}
+        <div className="py-6 text-center mx-auto text-xs text-stone-500 font-light flex flex-col items-center justify-center gap-1 border-t m-8">
+          <div className="text-sm">Powered by</div>
+          <div className="flex items-center mt-2">
+            <Image 
+              src="/logo.png" 
+              alt="Alacart Logo" 
+              width={200}
+              height={40}
+              className="h-6 w-auto sm:h-10"
+              priority
+            />
+          </div>
+        </div>
+
       </div>
     </div>
   )
