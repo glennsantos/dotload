@@ -440,7 +440,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   }
   
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white mt-20">
       {/* Error Modal */}
       <ErrorModal
         isOpen={errorModalOpen}
@@ -450,23 +450,6 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       />
       {!createdProduct ? (
         <div>
-          <header className="p-6">
-
-             {/* Back to Dashboard button */}
-             <Link href="/products" className="text-sm text-stone-500 hover:text-stone-700">
-              <span className="flex items-center">
-                <ChevronLeft size={16} className="mr-1" />
-                Back to Dashboard
-              </span>
-            </Link>
-            
-            <h1 className="text-3xl font-light truncate mt-4">
-              {isEditing ? 'Edit Product' : 'Create New Product'}
-            </h1>
-            
-           
-          </header>
-          
           {/* Validation errors alert */}
           {showValidationErrors && Object.keys(validationErrors).length > 0 && (
             <div className="mx-auto max-w-7xl p-4 mt-4 bg-red-50 border border-red-200 rounded-md">
