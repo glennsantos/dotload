@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Plus, Info, ShoppingCart, DollarSign, Users, UserCheck } from "lucide-react"
+import { Plus, Info, ShoppingCart, DollarSign, Users, UserCheck, Archive } from "lucide-react"
 import { StatsCard } from "@/components/ui/stats-card"
 import { Button } from "@/components/ui/button"
 
@@ -38,6 +38,7 @@ export interface Product {
   updatedAt: string
   files: ProductFile[]
   variations: ProductVariation[]
+  isArchived?: boolean
 }
 
 interface ProductsListProps {
@@ -49,6 +50,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [activeFilter, setActiveFilter] = useState<'active' | 'archived'>('active')
 
   useEffect(() => {
     async function fetchProducts() {
@@ -146,19 +148,40 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
 
   return (
     <div className="space-y-8">
+      {/* Products Header */}
+      <div className="flex items-center mb-4 gap-4">
+        <h2 className="text-2xl font-light text-stone-800">Your Products</h2>
+        <div className="flex rounded-xl overflow-hidden border border-stone-200 shadow-none">
+          <button 
+            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'active' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100'}`}
+            onClick={() => setActiveFilter('active')}
+          >
+            Active ({products.filter(p => !p.isArchived).length})
+          </button>
+          <button 
+            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'archived' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100'}`}
+            onClick={() => setActiveFilter('archived')}
+          >
+            <span className="flex items-center"><Archive className="mr-2 h-4 w-4" /> Archived ({products.filter(p => p.isArchived).length})</span>
+          </button>
+        </div>
+      </div>
+      
       {/* Products Table */}
       <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b bg-white">
-                <th className="text-left py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '250px' }}>Name</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '250px' }}>Product</th>
                 <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '80px' }}>Price</th>
                 <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '100px' }}>Status</th>
               </tr>
             </thead>
             <tbody>
-            {products.map((product) => (
+            {products
+              .filter(product => activeFilter === 'archived' ? product.isArchived : !product.isArchived)
+              .map((product) => (
               <tr key={product.id} className="border-b hover:bg-stone-50">
                 <td className="py-3 px-4">
                   <div 
