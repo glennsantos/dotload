@@ -177,13 +177,13 @@ export default function TempDownloadsPage() {
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-gray-500 font-light text-center mb-4">
-                  You can download your purchased files below. These links will be available for 24 hours.
+                  You can download your purchased files below.
                 </p>
                 
                 {files.map((file) => (
                   <div 
                     key={file.id} 
-                    className="border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center">
                       <div className="bg-gray-100 p-2 rounded-md mr-3">
@@ -198,7 +198,7 @@ export default function TempDownloadsPage() {
                     <Button
                       onClick={() => handleDownload(file.id)}
                       disabled={downloadStatus[file.id] === 'loading'}
-                      className="rounded-full font-light bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="rounded-full font-light bg-emerald-600 hover:bg-emerald-700 text-white mt-4 sm:mt-0"
                       size="sm"
                     >
                       {downloadStatus[file.id] === 'loading' ? (

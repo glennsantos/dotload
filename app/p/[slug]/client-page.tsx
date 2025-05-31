@@ -72,7 +72,7 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
       </div>
 
       {/* Product Image */}
-      <div className="w-full">
+      <div className="w-full px-4">
         <div className="relative w-full max-h-[400px] overflow-hidden rounded-lg mx-auto max-w-3xl my-4">
           <Image
             src={product.coverImagePath}
