@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import { getAuthToken } from '@/lib/auth-utils';
 import { verify } from 'jsonwebtoken';
 import { resolveDownloadPath } from '@/lib/download-utils';
+import { differenceInDays } from 'date-fns';
 
 // Enable verbose logging for debugging
 const DEBUG = true;
@@ -46,7 +47,10 @@ export async function GET(request: NextRequest) {
     // If no regular auth token, check for temp token
     if (!authToken && !tempToken) {
       debugLog('Authentication failed - no token');
-      return NextResponse.json({ error: 'Unauthorized - Please log in to download files' }, { status: 401 });
+      return NextResponse.json({ 
+        error: 'Unauthorized - Please log in to download files',
+        type: 'unauthorized'
+      }, { status: 401 });
     }
     
     // Decode the JWT token (either regular or temporary)
@@ -59,7 +63,10 @@ export async function GET(request: NextRequest) {
       decoded = verify(tokenToVerify as string, secret);
     } catch (err) {
       debugLog('JWT verification failed', err);
-      return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
+      return NextResponse.json({ 
+        error: 'Invalid authentication token',
+        type: 'invalid_token' 
+      }, { status: 401 });
     }
     
     // Check if this is a temporary access token
@@ -74,25 +81,6 @@ export async function GET(request: NextRequest) {
         debugLog('Invalid temp token data - missing required fields');
         return NextResponse.json({ error: 'Invalid token data' }, { status: 401 });
       }
-      
-      // If this is a temporary access, check if this purchase already has a download
-      // Only one download is allowed per purchase with temporary access
-      if (purchaseId) {
-        const previousDownloads = await prisma.fileDownload.findFirst({
-          where: {
-            purchaseId: purchaseId,
-            fileId: fileId
-          }
-        });
-        
-        // If there's already a download for this purchase, redirect to register
-        if (previousDownloads) {
-          debugLog(`Previous download found for purchase ${purchaseId}, redirecting to register`);
-          // Redirect to register page with email pre-filled
-          const registerUrl = `/register?email=${encodeURIComponent(decoded.email || '')}&redirectAfter=true`;
-          return NextResponse.redirect(new URL(registerUrl, request.url));
-        }
-      }
     } else if (!decoded.userId) {
       // Regular token must have userId
       debugLog('Invalid token data - missing userId');
@@ -106,7 +94,7 @@ export async function GET(request: NextRequest) {
     debugLog(`Authenticated user: ${userId}, isAdmin: ${isAdmin}`);
     debugLog(`Looking up file with ID: ${fileId}`);
     
-    // Find the file
+    // Find the file with product details including downloadLimit and linkExpiration
     const file = await prisma.file.findUnique({
       where: { id: fileId },
       include: { 
@@ -123,49 +111,110 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
     
+    // Get product download restrictions
+    const downloadLimit = file.product.downloadLimit;
+    const linkExpiration = file.product.linkExpiration;
+    
+    debugLog(`Product download restrictions: limit=${downloadLimit}, expiration=${linkExpiration} days`);
+    
     // Verify the user has access to the file
     const isCreator = file.product?.userId === userId;
     
     // If user is not the creator or admin, check if they've purchased the product
     let hasPurchased = false;
+    let authorized = false;
+    let purchase = null;
     
-    if (isTempAccess) {
-      // For temporary access, verify the file belongs to the purchase/product in the token
-      hasPurchased = tempData.productId === file.productId;
-      debugLog(`Temp access check: token productId=${tempData.productId}, file productId=${file.productId}, match=${hasPurchased}`);
-    } else if (!isCreator && !isAdmin && file.productId) {
-      // For regular users, check the database
-      const purchase = await prisma.purchase.findFirst({
-        where: {
-          userId: userId,
-          productId: file.productId,
-          status: 'completed'
-        }
-      });
-      
-      hasPurchased = !!purchase;
-      
-      // If no purchase found by userId, also check by email (for purchases made before account creation)
-      if (!hasPurchased && decoded.email) {
-        const emailPurchase = await prisma.purchase.findFirst({
+    // Case 1: User is the owner of the product
+    if (file.product.userId === userId) {
+      debugLog('User is the product owner - access granted');
+      authorized = true;
+    }
+    // Case 2: User is an admin
+    else if (isAdmin) {
+      debugLog('User is an admin - access granted');
+      authorized = true;
+    }
+    // Case 3: User has purchased the product
+    else {
+      // For temporary access tokens, we already have the purchase ID
+      if (isTempAccess && purchaseId) {
+        purchase = await prisma.purchase.findUnique({
           where: {
-            email: decoded.email,
-            productId: file.productId,
+            id: purchaseId,
+            productId: file.product.id,
             status: 'completed'
           }
         });
         
-        hasPurchased = !!emailPurchase;
-        debugLog(`Email purchase check: ${decoded.email}, found=${hasPurchased}`);
+        if (purchase) {
+          debugLog(`Found valid purchase with temp access token: ${purchase.id}`);
+          authorized = true;
+        }
+      } else {
+        // For regular users, check if they have a purchase for this product
+        purchase = await prisma.purchase.findFirst({
+          where: {
+            userId: userId,
+            productId: file.product.id,
+            status: 'completed'
+          }
+        });
+        
+        if (purchase) {
+          debugLog(`User has purchased this product: ${purchase.id}`);
+          authorized = true;
+          purchaseId = purchase.id;
+        }
       }
     }
     
-    if (!isCreator && !isAdmin && !hasPurchased) {
-      debugLog(`Access denied - user ${userId} does not have access to file ${fileId}`);
+    if (!authorized) {
+      debugLog('User is not authorized to access this file');
       return NextResponse.json({ 
-        error: 'Unauthorized', 
-        details: 'You do not have permission to download this file'
+        error: 'You do not have permission to access this file',
+        type: 'unauthorized_access' 
       }, { status: 403 });
+    }
+    
+    // If this is a purchase-based download (not owner or admin), check restrictions
+    if (authorized && purchase && !isAdmin && file.product.userId !== userId) {
+      // 1. Check download limit
+      const previousDownloads = await prisma.fileDownload.count({
+        where: {
+          purchaseId: purchase.id,
+          fileId: fileId
+        }
+      });
+      
+      debugLog(`Previous downloads for this purchase: ${previousDownloads}/${downloadLimit}`);
+      
+      if (previousDownloads >= downloadLimit) {
+        debugLog('Download limit exceeded');
+        return NextResponse.json({
+          error: 'Download limit exceeded',
+          type: 'limit_exceeded',
+          limit: downloadLimit,
+          downloads: previousDownloads
+        }, { status: 403 });
+      }
+      
+      // 2. Check link expiration
+      const purchaseDate = purchase.createdAt;
+      const currentDate = new Date();
+      const daysSincePurchase = differenceInDays(currentDate, purchaseDate);
+      
+      debugLog(`Days since purchase: ${daysSincePurchase}/${linkExpiration}`);
+      
+      if (daysSincePurchase > linkExpiration) {
+        debugLog('Download link expired');
+        return NextResponse.json({
+          error: 'Download link expired',
+          type: 'link_expired',
+          expirationDays: linkExpiration,
+          daysSincePurchase: daysSincePurchase
+        }, { status: 403 });
+      }
     }
     
     debugLog(`Access granted - user ${userId} has permission to download file ${fileId}`);
