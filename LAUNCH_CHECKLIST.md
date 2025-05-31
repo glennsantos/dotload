@@ -3,14 +3,10 @@
 ## Resolve Issues
 *Note: more issues listed in Github*
 - [ ] review mobile responsive version
-- [ ] Add Actions to products  /home/aryeh/Pictures/Screenshots/Screenshot from 2025-05-30 15-39-52.png
-- [ ] Remove purchases tab
+# purchases
   - [ ] reinstate the hidden download settings. whenever there is a download, that should tick down. the purchase should only be downloadable a fixed number of times
   - [ ] also track link expiration in the purchase
   - [ ] remove the need for the buyer to register 
-- [ ] Check behavior of homepage when user is logged in 
-- [ ] remove digital product
-- [ ] fix the menu : /home/aryeh/Pictures/Screenshots/Screenshot from 2025-05-30 16-17-09.png
 - [] update shipping and fulfillment
 
 ## Site Setup
