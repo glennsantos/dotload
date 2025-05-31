@@ -144,9 +144,9 @@ export default function ProductInformation({
             
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            {productData.slug 
-              ? <><span className="font-semibold">Product URL:</span> <a target="_blank" className="text-emerald-600 hover:text-emerald-700" href={`${typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}`}>{typeof window !== 'undefined' ? window.location.origin : ''}/p/{productData.slug}</a></>
-              : 'Product URL will be generated automatically'}
+          <span className="flex items-center bg-stone-50 p-2 rounded-lg p-2">
+            <span className="font-semibold">Product URL:</span>&nbsp;
+            <a target="_blank" className="text-emerald-600 hover:text-emerald-700" href={`${typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}`}>{typeof window !== 'undefined' ? window.location.origin : ''}/p/{productData.slug ? productData.slug : 'your-product-url'}</a></span>
           </p>
         </div>
         
