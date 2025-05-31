@@ -1,83 +1,15 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Shield, Package, Globe, Clock, Zap, Check, LayoutDashboard, Plus } from "lucide-react"
+import { Shield, Package, Globe, Clock, Zap, Check, LayoutDashboard, Plus } from "lucide-react"
 import { getCurrentUser } from "@/lib/auth"
 import { AuthButtons } from "@/components/auth/auth-buttons";
+import { HeroSection } from "@/components/home/hero-section";
+import { CTASection } from "@/components/home/cta-section";
 
-async function HeroSection() {
-  const user = await getCurrentUser();
-  
-  return (
-    <section className="py-32 text-center">
-      <div className="container mx-auto px-4">
-        <h1 className="text-5xl lg:text-6xl text-stone-900 mb-8 leading-tight">
-          <span className="block font-extralight">Create Professional</span>
-          <span className="text-7xl block font-medium">Checkout Pages</span>
-          <span className="block font-extralight">in Minutes</span>
-        </h1>
-        <p className="max-w-2xl mx-auto text-xl text-stone-600 mb-12">
-          The fastest way to sell digital and physical products online. Build stunning,
-          conversion-optimized checkout pages with zero coding required.
-        </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-6">
-          {user ? (
-            <>
-              <Button asChild variant="default" size="lg" className="text-lg py-6 px-8">
-                <Link href="/create-product" className="flex items-center gap-2">
-                  Create New Product <ArrowRight size={18} />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg py-6 px-8">
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  View Dashboard 
-                </Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button asChild variant="default" size="lg" className="text-lg py-6 px-8">
-                <Link href="/register" className="flex items-center gap-2">
-                  Get Started Free <ArrowRight size={18} />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg py-6 px-8">
-                <Link href="/login">Sign In</Link>
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
+// HeroSection moved to client component
 
-async function CTASection() {
-  const user = await getCurrentUser();
-  
-  return (
-    <section className="py-16 bg-stone-900 text-white text-center">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-light mb-4">
-          Ready to Start Selling?
-        </h2>
-        <p className="mb-8">
-          Join thousands of creators already using Alacart
-        </p>
-        <Button
-          asChild
-          variant="default" 
-          size="lg" 
-          className="text-lg py-6 px-8"
-        >
-          <Link href={user ? "/create-product" : "/register"} className="flex items-center gap-2">
-            {user ? 'Create New Product' : 'Get Started Free'} <ArrowRight size={18} />
-          </Link>
-        </Button>
-      </div>
-    </section>
-  );
-}
+// CTASection moved to client component
 
 // Auth buttons moved to client component
 
