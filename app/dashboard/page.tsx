@@ -137,7 +137,7 @@ export default async function Dashboard() {
       <DashboardTabs activeTab="overview" />
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid mb:grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <StatsCard
           title="Total Products"
           value={stats.productCount.toString()}

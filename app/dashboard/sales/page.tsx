@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Download, Filter, Settings, LogOut, ShoppingCart, DollarSign, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, Filter, Settings, LogOut, ShoppingCart, DollarSign, Users, Wallet, Landmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -232,20 +232,29 @@ export default function SalesPage() {
 
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-6">
-          <h3 className="text-base font-medium text-stone-600 mb-3">Current Balance</h3>
-          <p className="text-3xl font-bold">{formatCurrency(summary.currentBalance || 0, 'PHP').replace('PHP', '').trim()}</p>
-        </div>
+        <StatsCard
+          title="Current Balance"
+          value={formatCurrency(summary.currentBalance || 0, 'PHP').replace('PHP', '').trim()}
+          subtitle="Total balance in your account"
+          icon={<Landmark className="h-5 w-5 text-emerald-600" />}
+          iconClassName="bg-emerald-100"
+        />
         
-        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-6">
-          <div className="flex justify-between items-start">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-100">
+          <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-base font-medium text-stone-600 mb-3">Available Balance</h3>
-              <p className="text-3xl font-bold">{formatCurrency(summary.availableBalance || 0, 'PHP').replace('PHP', '').trim()}</p>
+              <h3 className="text-sm font-light text-stone-600">Available Balance</h3>
+              <p className="text-2xl font-normal mt-1">{formatCurrency(summary.availableBalance || 0, 'PHP').replace('PHP', '').trim()}</p>
+              <p className="text-xs text-stone-500 mt-1">Available for withdrawal</p>
             </div>
+            <div className="p-2 rounded-xl bg-emerald-100">
+              <Wallet className="h-5 w-5 text-emerald-600" />
+            </div>
+          </div>
+          <div className="mt-2 flex justify-end">
             <Button 
               onClick={() => router.push('/payout')}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light"
+              className="w-full sm:w-auto"
             >
               Request Payout
             </Button>

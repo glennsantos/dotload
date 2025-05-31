@@ -21,7 +21,7 @@ export function StatsCard({
   iconClassName
 }: StatsCardProps) {
   return (
-    <div className={cn("bg-white rounded-xl p-6 shadow-md border border-stone-100", className)}>
+    <div className={cn("bg-white rounded-xl p-6 shadow-sm border border-stone-100", className)}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-sm font-light text-stone-600">{title}</h3>
