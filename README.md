@@ -48,7 +48,26 @@ cp .env.example .env
 pnpm prisma migrate dev
 ```
 
-5. Run the development server
+5. Set up HTTPS for local development
+   ```bash
+   # Install mkcert if not already installed
+   curl -sSL https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 -o mkcert
+   chmod +x mkcert
+   
+   # Create certificates
+   mkdir -p .certs
+   ./mkcert -install
+   ./mkcert -cert-file .certs/local-cert.pem -key-file .certs/local-key.pem localhost 127.0.0.1 ::1
+   ```
+
+6. Run the development server with HTTPS
+   ```bash
+   pnpm dev  # Uses HTTPS
+   # or for HTTP only:
+   # pnpm dev:http
+   ```
+   
+   Note: Your browser will show a security warning for the self-signed certificate. You'll need to accept the risk and proceed.
 ```bash
 pnpm dev
 ```

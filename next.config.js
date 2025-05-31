@@ -1,7 +1,16 @@
 /** @type {import('next').NextConfig} */
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const fs = require('fs');
+const path = require('path');
 
 const nextConfig = {
+  // Enable HTTPS in development
+  server: {
+    https: {
+      key: fs.readFileSync(path.join(__dirname, '.certs/local-key.pem')),
+      cert: fs.readFileSync(path.join(__dirname, '.certs/local-cert.pem')),
+    },
+  },
   logging: {
     level: 'verbose'
   },

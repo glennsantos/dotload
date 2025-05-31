@@ -72,3 +72,7 @@ node_modules/
 # Task files
 tasks.json
 tasks/ 
+certificates
+.certs/local-cert.pem
+.certs/local-key.pem
+.certs/mkcert
