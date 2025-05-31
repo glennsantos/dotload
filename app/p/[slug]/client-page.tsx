@@ -101,7 +101,6 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
             {product.popular && (
               <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Popular</span>
             )}
-            <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">{product.type === 'physical' ? 'Physical Product' : 'Digital Product'}</span>
             
             {/* Custom Badges */}
             {product.customBadges && JSON.parse(product.customBadges || '[]').map((badge: string, index: number) => (

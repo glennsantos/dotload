@@ -117,15 +117,6 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
                   {badge}
                 </span>
               ))}
-              
-              {/* Product Type Badge */}
-              <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                {productData.type === 'digital_product' 
-                  ? 'Digital Product' 
-                  : productData.type === 'physical_product' 
-                    ? 'Physical Product' 
-                    : 'Product'}
-              </span> 
             </div>
           )}
           

@@ -41,6 +41,7 @@ export interface Product {
   variations: ProductVariation[]
   isArchived?: boolean
   isPublic?: boolean
+  status?: string
 }
 
 interface ProductsListProps {

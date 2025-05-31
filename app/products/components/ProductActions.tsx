@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 import { Product } from "./ProductsList"
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import ClientProductPage from "@/app/p/[slug]/client-page"
 
 interface ProductActionsProps {
   product: Product
@@ -23,36 +23,30 @@ interface ProductActionsProps {
   onProductDelete: (productId: string) => void
 }
 
-export default function ProductActions({ 
-  product, 
-  onProductUpdate, 
-  onProductDelete 
-}: ProductActionsProps) {
+export default function ProductActions({ product, onProductUpdate, onProductDelete }: ProductActionsProps) {
   const router = useRouter()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Toggle menu
-  const toggleMenu = () => setMenuOpen(!menuOpen)
-  
   // Close menu
-  const closeMenu = () => setMenuOpen(false)
+  const closeMenu = () => setIsMenuOpen(false)
 
   // Preview product
   const handlePreview = (e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsPreviewOpen(true)
     closeMenu()
+    setIsPreviewOpen(true)
   }
-
+  
   // Edit product
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation()
-    router.push(`/edit-product/${product.id}`)
     closeMenu()
+    router.push(`/edit-product/${product.id}`)
   }
 
   // Toggle publish status
@@ -63,14 +57,13 @@ export default function ProductActions({
     setError(null)
     
     try {
-      const response = await fetch(`/api/products/${product.id}`, {
+      // Use the dedicated publish endpoint
+      const formData = new FormData()
+      formData.append('isPublic', (!product.isPublic).toString())
+      
+      const response = await fetch(`/api/products/${product.id}/publish`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          isPublic: !product.isPublic
-        }),
+        body: formData,
         credentials: 'include'
       })
       
@@ -79,7 +72,11 @@ export default function ProductActions({
       }
       
       const data = await response.json()
-      onProductUpdate(data.product)
+      onProductUpdate({
+        ...product,
+        isPublic: !product.isPublic,
+        status: !product.isPublic ? 'active' : 'draft'
+      })
     } catch (err) {
       console.error('Error updating product:', err)
       setError(err instanceof Error ? err.message : 'Failed to update product')
@@ -96,14 +93,13 @@ export default function ProductActions({
     setError(null)
     
     try {
-      const response = await fetch(`/api/products/${product.id}`, {
+      // Use the dedicated status endpoint
+      const formData = new FormData()
+      formData.append('status', product.isArchived ? 'active' : 'archived')
+      
+      const response = await fetch(`/api/products/${product.id}/status`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          isArchived: !product.isArchived
-        }),
+        body: formData,
         credentials: 'include'
       })
       
@@ -112,7 +108,11 @@ export default function ProductActions({
       }
       
       const data = await response.json()
-      onProductUpdate(data.product)
+      onProductUpdate({
+        ...product,
+        isArchived: !product.isArchived,
+        status: product.isArchived ? 'active' : 'archived'
+      })
     } catch (err) {
       console.error('Error updating product:', err)
       setError(err instanceof Error ? err.message : 'Failed to update product')
@@ -122,15 +122,15 @@ export default function ProductActions({
   }
 
   // Delete product
-  const handleDelete = async (e: React.MouseEvent) => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    
-    if (!isDeleting) {
-      setIsDeleting(true)
-      return
-    }
-    
-    setIsLoading(true)
+    closeMenu()
+    setShowDeleteModal(true)
+  }
+  
+  // Handle actual deletion
+  const handleDeleteProduct = async () => {
+    setIsDeleting(true)
     setError(null)
     
     try {
@@ -144,126 +144,94 @@ export default function ProductActions({
       }
       
       onProductDelete(product.id)
+      setShowDeleteModal(false)
     } catch (err) {
       console.error('Error deleting product:', err)
       setError(err instanceof Error ? err.message : 'Failed to delete product')
     } finally {
-      setIsLoading(false)
       setIsDeleting(false)
     }
   }
 
-  // Cancel delete
-  const cancelDelete = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsDeleting(false)
-  }
-
   return (
-    <div className="relative" onClick={(e) => e.stopPropagation()}>
+    <div className="relative">
       {/* Actions button */}
-      <button 
-        onClick={toggleMenu}
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsMenuOpen(!isMenuOpen)
+        }}
         className="p-2 rounded-full hover:bg-stone-100"
-        disabled={isLoading}
+        aria-label="Product actions"
       >
-        <MoreVertical size={16} className="text-stone-500" />
+        <MoreVertical size={16} />
       </button>
       
       {/* Actions menu */}
-      {menuOpen && (
+      {isMenuOpen && (
         <div className="absolute right-0 top-8 w-48 bg-white border border-stone-200 rounded-lg shadow-md z-10">
-          <div className="py-1">
+          <div className="p-1">
             <button
               onClick={handlePreview}
-              className="w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 flex items-center"
+              className="flex items-center w-full px-3 py-2 text-sm hover:bg-stone-100 rounded-md"
             >
-              <Eye size={16} className="mr-2" /> Preview
+              <Eye size={16} className="mr-2" />
+              Preview
             </button>
             
             <button
               onClick={handleEdit}
-              className="w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 flex items-center"
+              className="flex items-center w-full px-3 py-2 text-sm hover:bg-stone-100 rounded-md"
             >
-              <Edit size={16} className="mr-2" /> Edit
+              <Edit size={16} className="mr-2" />
+              Edit
             </button>
             
             <button
               onClick={handlePublishToggle}
-              className="w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 flex items-center"
+              className="flex items-center w-full px-3 py-2 text-sm hover:bg-stone-100 rounded-md"
               disabled={isLoading}
             >
               {product.isPublic ? (
                 <>
-                  <FileText size={16} className="mr-2" /> Set as Draft
+                  <FileText size={16} className="mr-2" />
+                  Set as Draft
                 </>
               ) : (
                 <>
-                  <Globe size={16} className="mr-2" /> Publish
+                  <Globe size={16} className="mr-2" />
+                  Publish
                 </>
               )}
             </button>
             
             <button
               onClick={handleArchiveToggle}
-              className="w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 flex items-center"
+              className="flex items-center w-full px-3 py-2 text-sm hover:bg-stone-100 rounded-md"
               disabled={isLoading}
             >
               {product.isArchived ? (
                 <>
-                  <RotateCcw size={16} className="mr-2" /> Restore
+                  <RotateCcw size={16} className="mr-2" />
+                  Restore
                 </>
               ) : (
                 <>
-                  <Archive size={16} className="mr-2" /> Archive
+                  <Archive size={16} className="mr-2" />
+                  Archive
                 </>
               )}
             </button>
             
             <button
-              onClick={handleDelete}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+              onClick={handleDeleteClick}
+              className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"
               disabled={isLoading}
             >
-              <Trash2 size={16} className="mr-2" /> Delete
+              <Trash2 size={16} className="mr-2" />
+              Delete
             </button>
           </div>
-        </div>
-      )}
-      
-      {/* Delete confirmation */}
-      {isDeleting && (
-        <div className="absolute right-0 top-8 w-64 bg-white border border-red-200 rounded-lg shadow-md z-10 p-3">
-          <p className="text-sm text-stone-700 mb-3">Are you sure you want to delete this product?</p>
-          <div className="flex justify-between">
-            <button
-              onClick={cancelDelete}
-              className="px-3 py-1 text-xs bg-stone-100 text-stone-700 rounded-md hover:bg-stone-200"
-              disabled={isLoading}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleDelete}
-              className="px-3 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Deleting...' : 'Delete'}
-            </button>
-          </div>
-        </div>
-      )}
-      
-      {/* Error message */}
-      {error && (
-        <div className="absolute right-0 top-8 w-64 bg-white border border-red-200 rounded-lg shadow-md z-10 p-3">
-          <p className="text-sm text-red-600 mb-2">{error}</p>
-          <button
-            onClick={() => setError(null)}
-            className="px-3 py-1 text-xs bg-stone-100 text-stone-700 rounded-md hover:bg-stone-200 w-full"
-          >
-            Dismiss
-          </button>
         </div>
       )}
       
@@ -281,82 +249,82 @@ export default function ProductActions({
               </button>
             </div>
             
-            <div className="p-6">
-              <div className="flex flex-col md:flex-row gap-8">
-                {/* Product image */}
-                <div className="w-full md:w-1/2">
-                  <div className="aspect-square relative rounded-lg overflow-hidden border border-stone-200">
-                    {product.coverImagePath ? (
-                      <Image 
-                        src={
-                          // Handle URLs that start with http:// or https://
-                          product.coverImagePath.startsWith('http') ? product.coverImagePath :
-                          // Handle protocol-relative URLs that start with //
-                          product.coverImagePath.startsWith('//') ? `https:${product.coverImagePath}` :
-                          // Handle absolute paths that start with /
-                          product.coverImagePath.startsWith('/') ? product.coverImagePath :
-                          // Handle relative paths by adding a leading /
-                          `/${product.coverImagePath}`
-                        } 
-                        alt={product.name} 
-                        fill 
-                        className="object-cover"
-                        unoptimized={!product.coverImagePath.startsWith('http')}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-stone-200 flex items-center justify-center">
-                        <span className="text-stone-400">No image</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Product details */}
-                <div className="w-full md:w-1/2">
-                  <h1 className="text-2xl font-medium mb-2">{product.name}</h1>
-                  <div className="flex items-center mb-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                      product.isPublic 
-                        ? 'bg-emerald-100 text-emerald-800' 
-                        : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {product.isPublic ? 'Published' : 'Draft'}
-                    </span>
-                    {product.isArchived && (
-                      <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full bg-stone-100 text-stone-800 text-xs">
-                        Archived
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="text-2xl font-medium mb-6">
-                    {product.currency === 'PHP' ? '₱' : '$'}{product.price.toFixed(2)}
-                  </div>
-                  
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium mb-1">Description</h3>
-                    <p className="text-stone-700 whitespace-pre-wrap">
-                      {product.description || 'No description provided.'}
-                    </p>
-                  </div>
-                  
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium mb-1">Product URL</h3>
-                    <div className="text-stone-700 break-all">
-                      {window.location.origin}/p/{product.slug || product.id}
-                    </div>
-                  </div>
-                  
-                  <Button
-                    onClick={() => setIsPreviewOpen(false)}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                  >
-                    Close Preview
-                  </Button>
-                </div>
+            <div className="p-4">
+              {/* Use the client-page component for preview */}
+              <ClientProductPage 
+                product={{
+                  ...product,
+                  user: { storeName: 'Your Store' },
+                  bestSeller: false,
+                  newRelease: false,
+                  popular: false,
+                  secureCheckout: true,
+                  instantDownload: true,
+                  refundPolicy: false,
+                  customBadges: '[]',
+                  customTrustIndicators: '[]',
+                  whatsIncluded: '[]'
+                }}
+                slug={product.slug || product.id}
+              />
+              
+              <div className="mt-6 flex justify-end">
+                <Button
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Close Preview
+                </Button>
               </div>
             </div>
           </div>
+        </div>
+      )}
+      
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-medium mb-4">Delete Product</h3>
+            <p className="mb-6">Are you sure you want to delete <strong>{product.name}</strong>? This action cannot be undone.</p>
+            
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 border rounded-md"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDeleteProduct}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  'Delete Product'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Error message */}
+      {error && (
+        <div className="absolute right-0 top-8 w-64 bg-white border border-red-200 rounded-lg shadow-md z-10 p-3">
+          <p className="text-sm text-red-600">{error}</p>
+          <button 
+            onClick={() => setError(null)}
+            className="absolute top-2 right-2 text-stone-400 hover:text-stone-600"
+          >
+            <X size={16} />
+          </button>
         </div>
       )}
     </div>
