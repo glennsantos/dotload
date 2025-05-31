@@ -1,9 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ChevronLeft, StoreIcon, UserIcon, CreditCardIcon } from "lucide-react"
+import { ChevronLeft, StoreIcon, UserIcon, CreditCardIcon, ChevronDown } from "lucide-react"
 import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 export default function SettingsLayout({
   children,
@@ -11,12 +13,16 @@ export default function SettingsLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const [isOpen, setIsOpen] = useState(false)
 
   const tabs = [
     { name: "Account", path: "/settings", icon: <UserIcon size={16} /> },
     { name: "Brand Settings", path: "/settings/brand", icon: <StoreIcon size={16} /> },
     { name: "Billing", path: "/settings/billing", icon: <CreditCardIcon size={16} /> },
   ]
+  
+  // Find active tab
+  const activeTab = tabs.find(tab => pathname === tab.path) || tabs[0]
 
   return (
     <>
@@ -50,23 +56,68 @@ export default function SettingsLayout({
       <div className="max-w-7xl mx-auto p-6 mt-32">
 
       {/* Settings Tabs */}
-      <div className="flex bg-white rounded-xl shadow-sm border border-stone-200 mb-8 p-1.5">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.name}
-            href={tab.path}
-            className={`flex-1 px-6 py-2 text-center text-sm font-light rounded-lg ${
-              pathname === tab.path
-                ? "bg-emerald-200 text-emerald-600"
-                : "text-stone-600 hover:text-stone-800 hover:bg-stone-50"
-            }`}
+      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden mb-8">
+        {/* Mobile Dropdown */}
+        <div className="md:hidden relative w-full">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full flex items-center justify-between bg-white px-4 py-2 text-sm font-light rounded-lg"
           >
-            <div className="flex justify-center items-center gap-2">
-              {tab.icon}
-              {tab.name}
+            <div className="flex items-center gap-2">
+              {activeTab.icon}
+              <span>{activeTab.name}</span>
             </div>
-          </Link>
-        ))}
+            <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "transform rotate-180")} />
+          </button>
+          
+          {isOpen && (
+            <div className="mt-1 mx-6 py-1 bg-white rounded-xl border border-stone-200 fixed inset-x-0 mx-2 z-50 px-2 py-2">
+              {tabs.map((tab) => {
+                const isActive = pathname === tab.path
+                
+                return (
+                  <Link
+                    key={tab.name}
+                    href={tab.path}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors w-full",
+                      isActive 
+                        ? "bg-emerald-100 text-emerald-700 rounded-lg" 
+                        : "text-stone-600 hover:text-stone-900 hover:bg-stone-200"
+                    )}
+                  >
+                    {tab.icon}
+                    {tab.name}
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+        
+        {/* Desktop Tabs */}
+        <div className="hidden md:flex overflow-x-auto py-2 px-2 justify-evenly">
+          {tabs.map((tab) => {
+            const isActive = pathname === tab.path
+            
+            return (
+              <Link
+                key={tab.name}
+                href={tab.path}
+                className={cn(
+                  "flex flex-1 justify-center items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors rounded-lg",
+                  isActive 
+                    ? "bg-emerald-100 text-emerald-700" 
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+                )}
+              >
+                {tab.icon}
+                {tab.name}
+              </Link>
+            )
+          })}
+        </div>
       </div>
 
       {/* Page Content */}
