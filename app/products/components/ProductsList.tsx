@@ -328,39 +328,37 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
         {filteredProducts.map((product) => (
           <div 
             key={`mobile-${product.id}`} 
-            className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
-            onClick={() => router.push(`/edit-product/${product.id}`)}
+            className="bg-stone-50 border border-stone-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow relative"
           >
-            <div className="flex gap-4">
+            {/* Menu button at top right */}
+            <div className="absolute top-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
+              <ProductActions 
+                product={product} 
+                onProductUpdate={handleProductUpdate}
+                onProductDelete={handleProductDelete}
+                variant="icon"
+              />
+            </div>
+            
+            <div className="flex gap-4 mr-6" onClick={() => router.push(`/edit-product/${product.id}`)}>
               {/* Product Image */}
               <div className="w-24 h-24 relative overflow-hidden rounded-lg bg-white shrink-0">
                 {renderProductImage(product)}
               </div>
               
               {/* Product Details */}
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-light text-stone-900 line-clamp-2">{product.name}</h3>
-                  <p className="text-sm text-stone-500 mt-1 line-clamp-2">
-                    {stripHTML(product.description)}
-                  </p>
-                </div>
-                
-                <div className="flex justify-between items-center mt-2">
-                  <span className="font-medium text-stone-900">₱{product.price.toFixed(2)}</span>
-                  <div className="flex items-center gap-2">
-                    {renderStatusBadge(product)}
-                    <div className="ml-2">
-                      <ProductActions 
-                        product={product} 
-                        onProductUpdate={handleProductUpdate}
-                        onProductDelete={handleProductDelete}
-                        variant="icon"
-                      />
-                    </div>
-                  </div>
-                </div>
+              <div className="flex-1">
+                <h3 className="font-light text-stone-900 line-clamp-2 pr-6">{product.name}</h3>
+                <p className="text-sm text-stone-500 mt-1 line-clamp-2">
+                  {stripHTML(product.description)}
+                </p>
               </div>
+            </div>
+            
+            {/* Bottom row with price and status */}
+            <div className="flex justify-between items-center mt-3 pt-3">
+              <span className="font-medium text-stone-900">₱{product.price.toFixed(2)}</span>
+              {renderStatusBadge(product)}
             </div>
           </div>
         ))}

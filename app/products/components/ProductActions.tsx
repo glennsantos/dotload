@@ -21,9 +21,10 @@ interface ProductActionsProps {
   product: Product
   onProductUpdate: (updatedProduct: Product) => void
   onProductDelete: (productId: string) => void
+  variant?: 'default' | 'icon'
 }
 
-export default function ProductActions({ product, onProductUpdate, onProductDelete }: ProductActionsProps) {
+export default function ProductActions({ product, onProductUpdate, onProductDelete, variant = 'default' }: ProductActionsProps) {
   const router = useRouter()
   const menuRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
@@ -184,10 +185,10 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
           e.stopPropagation()
           setIsMenuOpen(!isMenuOpen)
         }}
-        className="p-2 rounded-xl hover:bg-stone-100 border border-stone-200"
+        className={`${variant === 'icon' ? 'p-2.5' : 'p-2'} rounded-xl hover:bg-stone-100 border border-stone-200`}
         aria-label="Product actions"
       >
-        <Ellipsis size={16} />
+        <Ellipsis size={variant === 'icon' ? 20 : 18} />
       </button>
       
       {/* Actions menu */}
