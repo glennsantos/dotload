@@ -186,19 +186,25 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
             ))
           }
         </div>
+
+        {/* Powered by alacart footer */}
+        <div className="w-full">
+          <div className="border-t border-gray-200 w-full px-4 py-4 flex flex-col items-center justify-center gap-2 text-gray-500 text-sm">
+            <div>Powered by</div>
+            <Image 
+              src="/logo.png" 
+              alt="Alacart Logo" 
+              width={100}
+              height={28}
+              className="h-10 w-auto sm:h-7"
+              priority
+            />
+          </div>
+        </div>
+      
       </main>
       
-      {/* Powered by alacart footer */}
-      <div className="py-4 text-center border-t text-xs text-gray-400 font-light max-w-3xl mx-auto mb-16 md:mb-4">
-        Powered by <Image 
-                        src="/logo.png" 
-                        alt="Alacart Logo" 
-                        width={100}
-                        height={28}
-                        className="h-6 w-auto sm:h-7"
-                        priority
-                      />
-      </div>
+      
       
       {/* Mobile fixed Buy Now button */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
