@@ -26,8 +26,8 @@ export async function sendVerificationEmail(
       <h2 style="color: #333;">Welcome to alacart${name ? `, ${name}` : ''}!</h2>
       <p>Thank you for registering. Please verify your email address to activate your account.</p>
       <div style="margin: 30px 0;">
-        <a href="${verificationUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-          Verify Email Address
+        <a href="${verificationUrl}" style="background-color: #10b981; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: 300; text-align: center;">
+          <span style="display: inline-block; vertical-align: middle;">Verify Email Address</span>
         </a>
       </div>
       <p>Or copy and paste this link in your browser:</p>
@@ -85,8 +85,8 @@ export async function sendPasswordResetEmail(
       <p>Hello${name ? ` ${name}` : ''},</p>
       <p>We received a request to reset your password. Click the button below to create a new password:</p>
       <div style="margin: 30px 0;">
-        <a href="${resetUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-          Reset Password
+        <a href="${resetUrl}" style="background-color: #10b981; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: 300; text-align: center;">
+          <span style="display: inline-block; vertical-align: middle;">Reset Password</span>
         </a>
       </div>
       <p>Or copy and paste this link in your browser:</p>
