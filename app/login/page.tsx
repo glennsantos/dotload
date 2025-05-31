@@ -72,7 +72,6 @@ export default function LoginPage() {
           
           if (statusResponse.ok) {
             const statusData = await statusResponse.json();
-            console.log('User status:', statusData);
             
             // If the API recommends a different redirect, use that instead
             if (statusData.recommendedRedirect && statusData.recommendedRedirect !== '/dashboard') {

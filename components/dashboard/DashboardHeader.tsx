@@ -32,8 +32,6 @@ export function DashboardHeader() {
         const user = await getClientUser();
         
         if (user) {
-          console.log('user', user);
-          
           setUserData({
             userName: user.name || 'User',
             userEmail: user.email || '',

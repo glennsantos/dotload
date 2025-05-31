@@ -29,7 +29,6 @@ export default function AccountSettingsPage() {
         
         console.log('Response status:', response.status);
         const userData = await response.json();
-        console.log('User data:', userData);
         
         if (response.ok) {
           setFullName(userData.user.name || '');
