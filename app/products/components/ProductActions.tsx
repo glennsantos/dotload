@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { 
   MoreVertical, 
@@ -25,12 +25,34 @@ interface ProductActionsProps {
 
 export default function ProductActions({ product, onProductUpdate, onProductDelete }: ProductActionsProps) {
   const router = useRouter()
+  const menuRef = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Handle clicks outside of menu and modals
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      // Close menu if clicked outside
+      if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+      
+      // Close preview modal if clicked outside
+      if (isPreviewOpen && modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        setIsPreviewOpen(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen, isPreviewOpen])
 
   // Close menu
   const closeMenu = () => setIsMenuOpen(false)
@@ -95,7 +117,8 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
     try {
       // Use the dedicated status endpoint
       const formData = new FormData()
-      formData.append('status', product.isArchived ? 'active' : 'archived')
+      const newStatus = product.status === 'archived' ? 'active' : 'archived'
+      formData.append('status', newStatus)
       
       const response = await fetch(`/api/products/${product.id}/status`, {
         method: 'PUT',
@@ -110,8 +133,8 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
       const data = await response.json()
       onProductUpdate({
         ...product,
-        isArchived: !product.isArchived,
-        status: product.isArchived ? 'active' : 'archived'
+        isArchived: newStatus === 'archived',
+        status: newStatus
       })
     } catch (err) {
       console.error('Error updating product:', err)
@@ -169,7 +192,7 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
       
       {/* Actions menu */}
       {isMenuOpen && (
-        <div className="absolute right-0 top-8 w-48 bg-white border border-stone-200 rounded-lg shadow-md z-10">
+        <div ref={menuRef} className="absolute right-0 top-8 w-48 bg-white border border-stone-200 rounded-lg shadow-md z-10">
           <div className="p-1">
             <button
               onClick={handlePreview}
@@ -238,7 +261,7 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
       {/* Preview modal */}
       {isPreviewOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-auto">
+          <div ref={modalRef} className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-auto">
             <div className="flex justify-between items-center p-4 border-b">
               <h3 className="text-lg font-medium">Product Preview</h3>
               <button 

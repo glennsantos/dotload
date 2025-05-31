@@ -49,12 +49,20 @@ interface ProductsListProps {
   onProductsChange: (products: Product[]) => void
 }
 
+function stripHTML(html: string) {  
+  if (typeof document === 'undefined') return html; // Handle server-side rendering
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
 export default function ProductsList({ products, onProductsChange }: ProductsListProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [localProducts, setLocalProducts] = useState<Product[]>([])
   const [activeFilter, setActiveFilter] = useState<'active' | 'archived'>('active')
-  const [localProducts, setLocalProducts] = useState<Product[]>(products)
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
 
   useEffect(() => {
     async function fetchProducts() {
@@ -88,23 +96,39 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
   
   // Update local products when props change
   useEffect(() => {
-    setLocalProducts(products)
+    if (products) {
+      // Make sure we correctly identify archived products based on status field
+      const productsWithArchiveFlag = products.map(product => ({
+        ...product,
+        isArchived: product.status === 'archived'
+      }))
+      setLocalProducts(productsWithArchiveFlag)
+      setLoading(false)
+    }
   }, [products])
   
+  // Filter products whenever localProducts or activeFilter changes
+  useEffect(() => {
+    const filtered = localProducts.filter(product => 
+      activeFilter === 'archived' ? product.isArchived : !product.isArchived
+    )
+    setFilteredProducts(filtered)
+  }, [localProducts, activeFilter])
+
   // Handle product update
   const handleProductUpdate = (updatedProduct: Product) => {
-    const updatedProducts = localProducts.map(product => 
-      product.id === updatedProduct.id ? updatedProduct : product
+    const updated = localProducts.map(p => 
+      p.id === updatedProduct.id ? updatedProduct : p
     )
-    setLocalProducts(updatedProducts)
-    onProductsChange(updatedProducts)
+    setLocalProducts(updated)
+    onProductsChange(updated)
   }
   
   // Handle product delete
   const handleProductDelete = (productId: string) => {
-    const updatedProducts = localProducts.filter(product => product.id !== productId)
-    setLocalProducts(updatedProducts)
-    onProductsChange(updatedProducts)
+    const updated = localProducts.filter(p => p.id !== productId)
+    setLocalProducts(updated)
+    onProductsChange(updated)
   }
 
   if (loading) {
@@ -199,23 +223,21 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
           <table className="w-full">
             <thead>
               <tr className="border-b bg-white">
-                <th className="text-left py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '250px' }}>Product</th>
-                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '80px' }}>Price</th>
-                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '100px' }}>Status</th>
-                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '60px' }}>Actions</th>
+                <th className="text-left py-3 px-4 font-light text-sm text-stone-700" style={{ minWidth: '250px' }}>Product</th>
+                <th className="text-left py-3 px-4 font-light text-sm text-stone-700" style={{ minWidth: '80px' }}>Price</th>
+                <th className="text-left py-3 px-4 font-light text-sm text-stone-700" style={{ minWidth: '100px' }}>Status</th>
+                <th className="text-left py-3 px-4 font-light text-sm text-stone-700" style={{ minWidth: '60px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-            {localProducts
-              .filter(product => activeFilter === 'archived' ? product.isArchived : !product.isArchived)
-              .map((product) => (
+            {filteredProducts.map((product) => (
               <tr key={product.id} className="border-b hover:bg-stone-50">
                 <td className="py-3 px-4">
                   <div 
                     onClick={() => router.push(`/edit-product/${product.id}`)} 
                     className="flex items-center gap-3 cursor-pointer hover:opacity-80">
                   
-                    <div className="w-12 h-12 relative overflow-hidden rounded">
+                    <div className="w-12 h-12 relative overflow-hidden rounded bg-white shrink-0">
                       {product.coverImagePath ? (
                         <Image 
                           src={
@@ -228,8 +250,8 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                             // Handle relative paths by adding a leading /
                             `/${product.coverImagePath}`
                           } 
-                          alt={product.name} 
-                          fill 
+                          alt={product.name}
+                          fill
                           className="object-cover"
                           unoptimized={!product.coverImagePath.startsWith('http')}
                         />
@@ -241,29 +263,26 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                     </div>
                     <div>
                       <div className="font-light text-stone-800">{product.name}</div>
-                      <div className="text-sm text-stone-500">
-                        {window.location.host}/p/{product.slug || product.id}
+                      <div className="text-sm text-stone-500 line-clamp-1">
+                        {stripHTML(product.description)}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="py-3 px-4 text-right">₱{product.price.toFixed(2)}</td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
+                <td className="py-3 px-4">
+                  <div className="flex items-center">
                     {product.isArchived ? (
                       <>
-                        <span className="inline-block w-2 h-2 rounded-full bg-stone-400 mr-2"></span>
-                        <span className="text-stone-700">Archived</span>
+                        <span className="text-xs bg-stone-100 text-stone-800 px-2 py-0.5 rounded-full">Archived</span>
                       </>
                     ) : product.isPublic ? (
                       <>
-                        <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
-                        <span className="text-stone-700">Published</span>
+                        <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Published</span>
                       </>
                     ) : (
                       <>
-                        <span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
-                        <span className="text-stone-700">Draft</span>
+                        <span className="text-xs bg-stone-100 text-stone-800 px-2 py-0.5 rounded-full">Draft</span>
                       </>
                     )}
                   </div>
