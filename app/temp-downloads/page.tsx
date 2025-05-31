@@ -11,6 +11,10 @@ interface FileInfo {
   id: string;
   filename: string;
   size?: number;
+  downloadRestriction?: {
+    type: 'limit_exceeded' | 'link_expired' | 'unauthorized_access' | null;
+    message: string;
+  };
 }
 
 export default function TempDownloadsPage() {
@@ -23,6 +27,7 @@ export default function TempDownloadsPage() {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [productName, setProductName] = useState<string>('');
   const [downloadStatus, setDownloadStatus] = useState<{[key: string]: 'idle' | 'loading' | 'success' | 'error'}>({});
+  const [errorMessages, setErrorMessages] = useState<{[key: string]: string}>({});
 
   // Format file size
   const formatFileSize = (bytes?: number) => {
@@ -34,6 +39,28 @@ export default function TempDownloadsPage() {
 
   // Handle file download
   const handleDownload = async (fileId: string) => {
+    // Find the file
+    const file = files.find(f => f.id === fileId);
+    
+    // Check if download is restricted
+    if (file?.downloadRestriction) {
+      setErrorMessages(prev => ({ 
+        ...prev, 
+        [fileId]: file.downloadRestriction?.message || 'Download not available'
+      }));
+      
+      // Show error message for a few seconds
+      setTimeout(() => {
+        setErrorMessages(prev => {
+          const newMessages = {...prev};
+          delete newMessages[fileId];
+          return newMessages;
+        });
+      }, 3000);
+      
+      return;
+    }
+    
     try {
       setDownloadStatus(prev => ({ ...prev, [fileId]: 'loading' }));
       
@@ -87,13 +114,24 @@ export default function TempDownloadsPage() {
 
         const data = await response.json();
         
+        // Check for download restrictions in the response
+        const filesWithRestrictions = (data.files || []).map((file: FileInfo) => {
+          // Check if file has download restrictions
+          if (file.downloadRestriction) {
+            return file;
+          }
+          
+          // If no restrictions provided by API, return file as is
+          return file;
+        });
+        
         // Initialize download status for each file
         const initialStatus: {[key: string]: 'idle' | 'loading' | 'success' | 'error'} = {};
-        data.files.forEach((file: FileInfo) => {
+        filesWithRestrictions.forEach((file: FileInfo) => {
           initialStatus[file.id] = 'idle';
         });
         
-        setFiles(data.files || []);
+        setFiles(filesWithRestrictions);
         setProductName(data.productName || 'Your Purchase');
         setDownloadStatus(initialStatus);
       } catch (error) {
@@ -195,10 +233,18 @@ export default function TempDownloadsPage() {
                       </div>
                     </div>
                     
+                    {errorMessages[file.id] && (
+                      <div className="text-xs text-red-500 mt-2 sm:mt-0 mb-2 sm:mb-0">
+                        <AlertCircle className="h-3 w-3 inline mr-1" />
+                        {errorMessages[file.id]}
+                      </div>
+                    )}
                     <Button
                       onClick={() => handleDownload(file.id)}
-                      disabled={downloadStatus[file.id] === 'loading'}
-                      className="rounded-full font-light bg-emerald-600 hover:bg-emerald-700 text-white mt-4 sm:mt-0"
+                      
+                      className={`rounded-full font-light mt-4 sm:mt-0 ${file.downloadRestriction 
+                        ? 'bg-gray-400 hover:bg-gray-400 text-white cursor-not-allowed' 
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
                       size="sm"
                     >
                       {downloadStatus[file.id] === 'loading' ? (
@@ -210,6 +256,11 @@ export default function TempDownloadsPage() {
                         <>
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Downloaded
+                        </>
+                      ) : file.downloadRestriction ? (
+                        <>
+                          <AlertCircle className="h-4 w-4 mr-2" />
+                          Restricted
                         </>
                       ) : (
                         <>

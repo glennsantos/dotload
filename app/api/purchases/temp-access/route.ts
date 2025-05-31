@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import { differenceInDays } from 'date-fns';
 
 /**
  * Generate a temporary access token for a purchase
@@ -66,15 +67,59 @@ export async function POST(request: NextRequest) {
       mimetype?: string;
     }
     
+    // Define download restriction interface
+    interface DownloadRestriction {
+      type: 'limit_exceeded' | 'link_expired' | 'unauthorized_access' | null;
+      message: string;
+    }
+    
+    // Check download restrictions for each file
+    const filesWithRestrictions = await Promise.all((purchase.product?.files || []).map(async (file: FileData) => {
+      // Get product download restrictions
+      const downloadLimit = purchase.product?.downloadLimit || 10;
+      const linkExpiration = purchase.product?.linkExpiration || 30;
+      
+      // Check download limit
+      const previousDownloads = await prisma.fileDownload.count({
+        where: {
+          purchaseId: purchase.id,
+          fileId: file.id
+        }
+      });
+      
+      // Check link expiration
+      const purchaseDate = purchase.createdAt;
+      const currentDate = new Date();
+      const daysSincePurchase = differenceInDays(currentDate, purchaseDate);
+      
+      // Determine if there are any restrictions
+      let downloadRestriction: DownloadRestriction | undefined;
+      
+      if (previousDownloads >= downloadLimit) {
+        downloadRestriction = {
+          type: 'limit_exceeded',
+          message: `Download limit reached (${previousDownloads}/${downloadLimit})`
+        };
+      } else if (daysSincePurchase > linkExpiration) {
+        downloadRestriction = {
+          type: 'link_expired',
+          message: `Download link expired after ${linkExpiration} days`
+        };
+      }
+      
+      return {
+        id: file.id,
+        filename: file.filename,
+        size: file.size,
+        downloadRestriction
+      };
+    }));
+    
     const response = NextResponse.json({
       success: true,
       purchaseId: purchase.id,
       productName: purchase.product?.name,
-      files: purchase.product?.files.map((file: FileData) => ({
-        id: file.id,
-        filename: file.filename,
-        size: file.size
-      })) || []
+      files: filesWithRestrictions
     });
     
     // Add the token cookie to the response
@@ -85,10 +130,9 @@ export async function POST(request: NextRequest) {
       path: '/'
     });
     
-    // Extract file information for the response
-    const files = purchase.product?.files || [];
-    
-    console.log(`[TEMP-ACCESS] Created temporary access for purchase ${purchase.id} with ${files.length} files`);
+    // Log information about the response
+    const restrictedFiles = filesWithRestrictions.filter(f => f.downloadRestriction).length;
+    console.log(`[TEMP-ACCESS] Created temporary access for purchase ${purchase.id} with ${filesWithRestrictions.length} files (${restrictedFiles} restricted)`);
     
     return response;
   } catch (error) {
