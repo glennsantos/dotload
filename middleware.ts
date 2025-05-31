@@ -67,6 +67,10 @@ export function middleware(request: NextRequest) {
   const authHeader = request.headers.get('Authorization');
   debugLog('Authorization header:', authHeader ? 'Present' : 'Not present');
   
+  // Additional debug for cookie issues in production
+  debugLog('Cookie header:', request.headers.get('cookie'));
+  debugLog('Token cookie specifically:', request.cookies.get('token'));
+  
   // Debug logging
   console.log(`Middleware processing path: ${pathname}`);
   console.log(`Token exists: ${!!token}`);
@@ -159,7 +163,9 @@ export function middleware(request: NextRequest) {
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-site navigation
           maxAge: 7 * 24 * 60 * 60, // 7 days
-          path: '/'
+          path: '/',
+          // Ensure domain is set correctly for production
+          domain: process.env.COOKIE_DOMAIN || undefined
         });
         
         // Log cookie setting details
@@ -168,7 +174,8 @@ export function middleware(request: NextRequest) {
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
           maxAge: '7 days',
-          path: '/'
+          path: '/',
+          domain: process.env.COOKIE_DOMAIN || undefined
         });
       }
       
@@ -196,8 +203,8 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all routes except static files, _next, and specific API endpoints
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|_next/data|favicon.ico).*)',
     // Match API routes but exclude specific endpoints
-    '/(api/(?!files/secure-download|files/direct-download|downloads/secure).*)'
+    '/(api/(?!files/secure-download|files/direct-download|downloads/secure|downloads/file).*)'
   ]
 }

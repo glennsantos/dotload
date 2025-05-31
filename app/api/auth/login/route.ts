@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from "@/lib/prisma"
 
 // Enable more verbose logging
-const DEBUG = true;
+const DEBUG = process.env.NODE_ENV === 'production' ? true : true; // Keep debugging enabled in all environments
 const debugLog = (message: string, ...args: any[]) => {
   if (DEBUG) {
     console.log(`[DEBUG] ${message}`, ...args);
@@ -14,6 +14,11 @@ const debugLog = (message: string, ...args: any[]) => {
 };
 
 const JWT_SECRET = process.env.JWT_SECRET!.trim(); // Ensure no whitespace
+
+// Also handle GET requests for direct navigation
+export async function GET(req: NextRequest) {
+  return NextResponse.json({ message: 'Please use POST method for login' }, { status: 405 });
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -153,7 +158,9 @@ export async function POST(req: NextRequest) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-site navigation
         maxAge: 7 * 24 * 60 * 60, // 7 days
-        path: '/'
+        path: '/',
+        // Ensure domain is set correctly for production
+        domain: process.env.COOKIE_DOMAIN || undefined
       });
       
       // Log cookie setting details
@@ -162,7 +169,8 @@ export async function POST(req: NextRequest) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: '7 days',
-        path: '/'
+        path: '/',
+        domain: process.env.COOKIE_DOMAIN || undefined
       });
       
       debugLog('HTTP-only cookie set successfully');
