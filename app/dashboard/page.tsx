@@ -134,7 +134,7 @@ export default async function Dashboard() {
       <DashboardHeader userName={userName} userEmail={user?.email} userLogo={user?.storeLogoPath} />
       
       {/* Horizontal Tab Menu */}
-      <div className="mb-8 mt-4">
+      <div className="mb-8 mt-12">
         <DashboardTabs activeTab="overview" />
       </div>
       
