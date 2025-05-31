@@ -25,7 +25,7 @@ async function getCurrentUser() {
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, name: true, email: true }
+      select: { id: true, name: true, email: true, storeLogoPath: true }
     });
 
     return user;
@@ -123,21 +123,23 @@ export default async function Dashboard() {
     redirect('/login?callbackUrl=/dashboard');
     return null;
   }
+
+  console.log('user', user)
   
   const userName = user.name || "User";
   const stats = await getStats(user.id);
   
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} userEmail={user?.email} />
-
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24 sm:pb-6">
+      <DashboardHeader userName={userName} userEmail={user?.email} userLogo={user?.storeLogoPath} />
+      
       {/* Horizontal Tab Menu */}
       <div className="mb-8 mt-4">
         <DashboardTabs activeTab="overview" />
       </div>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <StatsCard
           title="Total Products"
           value={stats.productCount.toString()}
@@ -172,7 +174,7 @@ export default async function Dashboard() {
       </div>
 
       {/* Recent Sales Section */}
-      <div className="border border-stone-200 rounded-lg shadow-sm p-6 mb-8">
+      <div className="border border-stone-200 rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-medium text-stone-800">Recent Sales</h2>
           <Button asChild variant="outline" size="sm" className="text-sm">
