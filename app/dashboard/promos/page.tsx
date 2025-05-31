@@ -62,8 +62,8 @@ export default function PromosPage() {
         
         // Fetch user data and discount codes in parallel
         const [authResponse, discountCodesResponse] = await Promise.all([
-          fetch('/api/auth/me'),
-          fetch('/api/discount-codes')
+          fetch('/api/auth/me', { credentials: 'include' }),
+          fetch('/api/discount-codes', { credentials: 'include' })
         ]);
         
         if (authResponse.status === 401 || authResponse.status === 403) {
@@ -133,6 +133,7 @@ export default function PromosPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+        credentials: 'include'
       });
       
       if (!response.ok) {
@@ -170,6 +171,7 @@ export default function PromosPage() {
     try {
       const response = await fetch(`/api/discount-codes/${id}`, {
         method: 'DELETE',
+        credentials: 'include'
       });
       
       if (!response.ok) {

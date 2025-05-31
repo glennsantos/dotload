@@ -108,7 +108,9 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
     async function fetchProducts() {
       try {
         setLoading(true)
-        const response = await fetch('/api/products')
+        const response = await fetch('/api/products', {
+          credentials: 'include'
+        })
         
         if (response.status === 401 || response.status === 403) {
           // Redirect to login if unauthorized

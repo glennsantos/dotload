@@ -72,7 +72,9 @@ export default function BuyerDashboardPage() {
             setUserDetails(userData.user)
             
             // After confirming user is logged in, fetch ALL their purchases
-            const allPurchasesResponse = await fetch('/api/purchases')
+            const allPurchasesResponse = await fetch('/api/purchases', {
+              credentials: 'include'
+            })
             
             if (allPurchasesResponse.ok) {
               const allPurchasesData = await allPurchasesResponse.json()
@@ -107,7 +109,9 @@ export default function BuyerDashboardPage() {
           }
         } else {
           // If no access code, fetch all purchases for the logged-in user
-          const response = await fetch('/api/purchases')
+          const response = await fetch('/api/purchases', {
+            credentials: 'include'
+          })
           
           if (!response.ok) {
             throw new Error(`Error: ${response.status}`)

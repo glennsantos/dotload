@@ -78,7 +78,9 @@ export default function PayoutPage() {
         setIsLoading(true);
         
         // Fetch balance data
-        const balanceResponse = await fetch('/api/transactions');
+        const balanceResponse = await fetch('/api/transactions', {
+          credentials: 'include'
+        });
         
         if (!balanceResponse.ok) {
           if (balanceResponse.status === 401) {
@@ -97,7 +99,9 @@ export default function PayoutPage() {
         } : { total: 0, available: 0, pending: 0 });
         
         // Fetch fee configuration
-        const feeResponse = await fetch('/api/fees');
+        const feeResponse = await fetch('/api/fees', {
+          credentials: 'include'
+        });
         
         if (!feeResponse.ok) {
           throw new Error('Failed to fetch fee configuration');
@@ -254,6 +258,7 @@ export default function PayoutPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payoutData),
+        credentials: 'include'
       });
       
       if (!response.ok) {

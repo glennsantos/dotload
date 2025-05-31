@@ -47,7 +47,7 @@ export default function CustomersPage() {
         // Fetch user data and customers in parallel
         const [authResponse, customersResponse] = await Promise.all([
           fetch('/api/auth/me', { credentials: 'include' }),
-          fetch('/api/customers')
+          fetch('/api/customers', { credentials: 'include' })
         ]);
         
         if (authResponse.status === 401 || authResponse.status === 403) {

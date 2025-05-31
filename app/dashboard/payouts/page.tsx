@@ -65,7 +65,9 @@ export default function PayoutsPage() {
   const fetchPayoutData = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/payouts')
+      const response = await fetch('/api/payouts', {
+        credentials: 'include'
+      })
       
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`)
@@ -125,6 +127,7 @@ export default function PayoutsPage() {
           accountNumber,
           accountHolderName,
         }),
+        credentials: 'include'
       })
       
       const data = await response.json()

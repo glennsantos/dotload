@@ -164,7 +164,9 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
         // Add a small delay to prevent rapid consecutive calls
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        const response = await fetch(`/api/products/${productId}`);
+        const response = await fetch(`/api/products/${productId}`, {
+          credentials: 'include'
+        });
         
         if (!isMounted) return;
         
