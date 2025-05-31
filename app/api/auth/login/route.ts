@@ -153,24 +153,24 @@ export async function POST(req: NextRequest) {
 
       // Set the token as an HTTP-only, secure cookie
       // Use sameSite=lax to allow cross-site navigation while still providing CSRF protection
+      const isLocalhost = (process.env.DOMAIN || '').includes('localhost');
       response.cookies.set('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production' && !isLocalhost,
         sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-site navigation
         maxAge: 7 * 24 * 60 * 60, // 7 days
         path: '/',
-        // Only set domain for production, leave undefined for localhost
-        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
+        domain: process.env.NODE_ENV === 'production' && !isLocalhost ? process.env.COOKIE_DOMAIN : undefined
       });
       
       // Log cookie setting details
       debugLog('Setting auth cookie with options:', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production' && !isLocalhost,
         sameSite: 'lax',
         maxAge: '7 days',
         path: '/',
-        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
+        domain: process.env.NODE_ENV === 'production' && !isLocalhost ? process.env.COOKIE_DOMAIN : undefined
       });
       
       debugLog('HTTP-only cookie set successfully');
