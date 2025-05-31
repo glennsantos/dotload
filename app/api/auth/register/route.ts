@@ -1,12 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import * as bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { sendVerificationEmail } from '@/lib/email';
+import { createErrorResponse, createSuccessResponse, ERROR_RESPONSES } from '@/lib/api-utils';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+// Ensure dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,82 +43,98 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password, name } = await req.json();
 
+    // Validate JWT_SECRET
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return ERROR_RESPONSES.serverError('Server configuration error');
+    }
+
     // Validate email
     if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+      return ERROR_RESPONSES.validationError('Invalid email format');
     }
 
     // Validate password strength
     const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.isValid) {
-      return NextResponse.json({ 
-        error: 'Password does not meet strength requirements',
-        requirements: passwordValidation.requirements 
-      }, { status: 400 });
+      return createErrorResponse(
+        'Password does not meet requirements',
+        400,
+        { details: passwordValidation.requirements.join(', '), code: 'PASSWORD_REQUIREMENTS' }
+      );
     }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
+      return createErrorResponse(
+        'Email already in use',
+        400,
+        { code: 'EMAIL_IN_USE' }
+      );
     }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Generate verification token
+    // Create user with email verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-    
-    // Create user with verification token
+
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        name: name || null,  // Allow optional name
-        emailVerified: false,
+        name: name || null,
         verificationToken,
-        verificationTokenExpiry
+        verificationTokenExpiry,
+        emailVerified: false // Explicitly set emailVerified to false
       },
       select: {
         id: true,
         email: true,
-        name: true
+        name: true,
+        verificationToken: true,
+        verificationTokenExpiry: true
       }
     });
-    
-    // Send verification email
-    await sendVerificationEmail(email, verificationToken, name);
 
-    // Create a response with verification message
-    const response = NextResponse.json({
-      message: 'User registered successfully. Please check your email to verify your account.',
-      user,
-      requiresVerification: true
-    }, { status: 201 });
-    
-    // We don't set the authentication cookie until the email is verified
-    // This ensures users verify their email before accessing protected routes
+    // Send verification email in the background
+    sendVerificationEmail(email, verificationToken, name || 'User')
+      .catch(error => {
+        console.error('Failed to send verification email:', error);
+      });
 
-    return response;
+    // Return success response without setting auth cookie
+    return createSuccessResponse(
+      { 
+        message: 'User registered successfully. Please check your email to verify your account.',
+        requiresVerification: true,
+        userId: user.id
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Registration error:', error);
     
     // Handle Prisma-specific errors
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error && typeof error === 'object' && 'code' in error) {
       // Unique constraint violation
       if (error.code === 'P2002') {
-        return NextResponse.json({ 
-          error: 'Email already in use', 
-          details: 'A user with this email already exists' 
-        }, { status: 400 });
+        return createErrorResponse(
+          'Email already in use',
+          400,
+          { 
+            details: 'A user with this email already exists',
+            code: 'EMAIL_ALREADY_EXISTS'
+          }
+        );
       }
     }
 
-    return NextResponse.json({ 
-      error: 'Registration failed', 
-      details: error instanceof Error ? error.message : 'An unexpected error occurred' 
-    }, { status: 500 });
+    return ERROR_RESPONSES.serverError(
+      error instanceof Error ? error.message : 'An unexpected error occurred'
+    );
   }
 }

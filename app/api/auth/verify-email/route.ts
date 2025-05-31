@@ -1,34 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic'; // Prevent static optimization
+
+type ErrorResponse = {
+  error: string;
+  details?: string;
+  code?: string;
+};
+
 export async function GET(req: NextRequest) {
   let token: string | null = null;
+  
   try {
     // Get token from URL
-    const { searchParams } = new URL(req.url);
-    token = searchParams.get('token');
+    const url = new URL(req.url);
+    token = url.searchParams.get('token');
 
     if (!token) {
-      return NextResponse.json({ error: 'Verification token is required' }, { status: 400 });
+      console.error('No token provided in URL');
+      return NextResponse.json<ErrorResponse>(
+        { 
+          error: 'Verification token is required',
+          code: 'MISSING_TOKEN'
+        }, 
+        { status: 400 }
+      );
     }
 
     // Find user with the verification token
-    const user = await prisma.user.findUnique({
-      where: { verificationToken: token },
+    const user = await prisma.user.findFirst({
+      where: { 
+        verificationToken: token
+      },
+      select: {
+        id: true,
+        email: true,
+        emailVerified: true,
+        verificationToken: true,
+        verificationTokenExpiry: true
+      }
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Invalid verification token' }, { status: 400 });
+      console.error('No user found with provided token');
+      return NextResponse.json<ErrorResponse>(
+        { 
+          error: 'Invalid verification token',
+          code: 'INVALID_TOKEN'
+        }, 
+        { status: 400 }
+      );
     }
 
     // Check if token is expired
-    if (user.verificationTokenExpiry && new Date(user.verificationTokenExpiry) < new Date()) {
-      return NextResponse.json({ error: 'Verification token has expired' }, { status: 400 });
+    const now = new Date();
+    if (user.verificationTokenExpiry && user.verificationTokenExpiry < now) {
+      console.error('Token expired for user:', user.id);
+      return NextResponse.json<ErrorResponse>(
+        { 
+          error: 'Verification token has expired',
+          code: 'TOKEN_EXPIRED'
+        }, 
+        { status: 400 }
+      );
     }
 
     try {
-      // Update user to mark email as verified - ensure this completes with explicit await
-      const updatedUser = await prisma.user.update({
+      // Update user to mark email as verified
+      await prisma.user.update({
         where: { id: user.id },
         data: {
           emailVerified: true,
@@ -37,10 +77,13 @@ export async function GET(req: NextRequest) {
         },
       });
       
-      // Return success JSON instead of redirecting
-      return NextResponse.json({ 
+      console.log('Successfully verified email for user:', user.id);
+      
+      // Return success response
+      return NextResponse.json({
         success: true, 
-        message: 'Email verified successfully' 
+        message: 'Email verified successfully',
+        userId: user.id
       }, { status: 200 });
     } catch (dbError) {
       console.error('Database update error:', {

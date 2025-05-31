@@ -1,24 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/prisma";
+import { createErrorResponse, createSuccessResponse, ERROR_RESPONSES } from '@/lib/api-utils';
+
+// Ensure dynamic rendering for this route
+export const dynamic = 'force-dynamic';
 
 // Enable more verbose logging
-const DEBUG = true;
+const DEBUG = process.env.NODE_ENV !== 'production';
 const debugLog = (message: string, ...args: any[]) => {
   if (DEBUG) {
     console.log(`[DEBUG] ${message}`, ...args);
-    // Also log to stderr for better visibility in Next.js logs
-    process.stderr.write(`[DEBUG] ${message} ${args.map(a => JSON.stringify(a)).join(' ')}\n`);
   }
 };
 
-const JWT_SECRET = process.env.JWT_SECRET!.trim(); // Ensure no whitespace
+const JWT_SECRET = process.env.JWT_SECRET?.trim();
 
 export async function POST(req: NextRequest) {
   try {
     debugLog('Login process starting');
     
+    // Validate JWT_SECRET
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return ERROR_RESPONSES.serverError('Server configuration error');
+    }
+
     // Log database connection status
     try {
       debugLog('Attempting to connect to PostgreSQL database');
@@ -27,14 +35,14 @@ export async function POST(req: NextRequest) {
     } catch (connectionError) {
       debugLog('PostgreSQL database connection failed', connectionError);
       console.error('[Prisma] Database connection failed:', connectionError);
-      return NextResponse.json({ error: 'Database connection error' }, { status: 500 });
+      return ERROR_RESPONSES.databaseError('Failed to connect to database');
     }
 
     const { email, password } = await req.json();
 
     // Validate input
     if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+      return ERROR_RESPONSES.validationError('Email and password are required');
     }
 
     // Find user by email
