@@ -172,9 +172,9 @@ export default async function Dashboard() {
       </div>
 
       {/* Recent Sales Section */}
-      <div className="border border-stone-100 rounded-lg shadow-sm p-4 sm:p-6 mb-8">
+      <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium text-stone-800">Recent Sales</h2>
+          <h2 className="text-2xl font-light text-stone-800">Recent Sales</h2>
           <Button asChild variant="outline" size="sm" className="text-sm">
             <Link href="/dashboard/sales" className="flex items-center gap-1">
               View all <ArrowRight size={14} />
@@ -183,7 +183,7 @@ export default async function Dashboard() {
         </div>
         
         {stats.recentTransactions.length === 0 ? (
-          <div className="text-center py-8">
+          <div className="text-center py-8 border border-stone-100 rounded-lg shadow-sm p-4 sm:p-6">
             <ShoppingCart className="mx-auto h-12 w-12 text-stone-300 mb-4" />
             <p className="text-lg font-medium mb-2">No sales yet</p>
             <p className="text-sm text-stone-500 mb-6">Start selling to see transactions here!</p>
@@ -192,38 +192,56 @@ export default async function Dashboard() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {stats.recentTransactions.map((transaction: Purchase) => (
-              <div key={transaction.id} className="border border-stone-200 rounded-lg p-4 hover:bg-stone-50 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="min-w-0 flex-1 pr-4">
-                    <div className="flex items-center space-x-2 flex-wrap gap-y-2">
-                      <h3 className="font-medium truncate text-stone-800">{transaction.product.name}</h3>
-                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-                        Completed
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-stone-500">
-                      {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                    {transaction.email && (
-                      <p className="text-xs text-stone-500 mt-1 truncate">
-                        Customer: {transaction.email}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-lg font-semibold whitespace-nowrap text-green-600">
-                    {formatCurrency(transaction.amount || 0)}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-white">
+                    <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Product</th>
+                    <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Date</th>
+                    <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Status</th>
+                    <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.recentTransactions.map((transaction: Purchase) => (
+                    <tr key={transaction.id} className="border-b hover:bg-stone-50">
+                      <td className="py-3 px-4">
+                        <div>
+                          <div className="font-medium text-stone-800">{transaction.product.name}</div>
+                          {transaction.email && (
+                            <div className="text-xs text-stone-500 mt-1">
+                              Customer: {transaction.email}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm text-stone-600">
+                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                          Completed
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="font-medium text-emerald-700">
+                          {formatCurrency(transaction.amount || 0)}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

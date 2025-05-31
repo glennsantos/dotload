@@ -223,52 +223,66 @@ export default function PurchasesPage() {
                   <p className="text-sm mb-6">You haven't made any purchases yet.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <div className="space-y-4 min-w-[600px]">
-                    {filteredPurchases.map((purchase) => (
-                      <div key={purchase.id} className="border border-stone-200 rounded-lg p-4 hover:bg-stone-50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div className="min-w-0 flex-1 pr-4">
-                            <div className="flex items-center space-x-2 flex-wrap gap-y-2">
-                              <h3 className="font-medium truncate text-stone-800">{purchase.product.name}</h3>
+                <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b bg-white">
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Product</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Date</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Status</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredPurchases.map((purchase) => (
+                          <tr key={purchase.id} className="border-b hover:bg-stone-50">
+                            <td className="py-3 px-4">
+                              <div>
+                                <div className="font-medium text-stone-800">{purchase.product.name}</div>
+                                <div className="text-xs text-stone-500 mt-1">
+                                  Order ID: {purchase.id}
+                                </div>
+                                {/* Display download buttons for completed purchases with files */}
+                                {purchase.status === 'completed' && purchase.product.files && purchase.product.files.length > 0 && (
+                                  <div className="mt-2">
+                                    <div className="flex flex-wrap gap-2">
+                                      {purchase.product.files.map((file) => (
+                                        <Button 
+                                          key={file.id} 
+                                          size="sm" 
+                                          variant="outline" 
+                                          className="text-xs h-7 px-2 py-1 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                                          onClick={() => window.open(`/api/downloads/file/${file.id}`, '_blank')}
+                                        >
+                                          <Download className="h-3 w-3 mr-1" />
+                                          {file.filename}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="text-sm text-stone-600">
+                                {formatDate(purchase.createdAt)}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
                               <Badge className={getStatusBadgeColor(purchase.status)}>
                                 {purchase.status.charAt(0).toUpperCase() + purchase.status.slice(1)}
                               </Badge>
-                            </div>
-                            <p className="text-sm text-stone-500">
-                              {formatDate(purchase.createdAt)}
-                            </p>
-                            <p className="text-xs text-stone-500 mt-1 truncate">
-                              Order ID: {purchase.id}
-                            </p>
-                            
-                            {/* Display download buttons for completed purchases with files */}
-                            {purchase.status === 'completed' && purchase.product.files && purchase.product.files.length > 0 && (
-                              <div className="mt-3">
-                                <p className="text-xs font-medium text-stone-600 mb-2">Download Files:</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {purchase.product.files.map((file) => (
-                                    <Button 
-                                      key={file.id} 
-                                      size="sm" 
-                                      variant="outline" 
-                                      className="text-xs h-8 px-2 py-1 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
-                                      onClick={() => window.open(`/api/downloads/file/${file.id}`, '_blank')}
-                                    >
-                                      <Download className="h-3 w-3 mr-1" />
-                                      {file.filename}
-                                    </Button>
-                                  ))}
-                                </div>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="font-medium text-emerald-700">
+                                {formatCurrency(purchase.amount, purchase.currency)}
                               </div>
-                            )}
-                          </div>
-                          <div className="text-lg font-semibold whitespace-nowrap text-green-600">
-                            {formatCurrency(purchase.amount, purchase.currency)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}

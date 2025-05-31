@@ -186,10 +186,10 @@ export default function CustomersPage() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : (
-          <Card className="border border-stone-100 shadow-sm">
-            <CardHeader>
+          <Card className="border-0 shadow-none">
+            <CardHeader className="px-0">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <CardTitle className="text-xl font-medium text-stone-800">Customer Management</CardTitle>
+                <CardTitle className="text-xl font-medium text-stone-800 px-0">Customer Management</CardTitle>
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-stone-400" />
                   <Input
@@ -205,7 +205,7 @@ export default function CustomersPage() {
                 {filteredCustomers.length} {filteredCustomers.length === 1 ? 'customer' : 'customers'} found
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0">
               {filteredCustomers.length === 0 ? (
                 <div className="text-center py-8 text-stone-500">
                   <Users className="mx-auto h-12 w-12 text-stone-300 mb-4" />
@@ -216,63 +216,65 @@ export default function CustomersPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead className="text-right">Purchases</TableHead>
-                        <TableHead className="text-right">Total Spend</TableHead>
-                        <TableHead className="text-right">Last Purchase</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredCustomers.map((customer) => (
-                        <TableRow key={customer.id} className="hover:bg-stone-50">
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8 bg-stone-200 text-stone-800">
-                                <AvatarFallback>{getInitials(customer.name)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium text-stone-800">{customer.name}</div>
-                                <div className="text-xs text-stone-500">
-                                  Customer since {formatDate(customer.createdAt)}
+                <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b bg-white">
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Customer</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Contact</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Purchases</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Total Spend</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Last Purchase</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredCustomers.map((customer) => (
+                          <tr key={customer.id} className="border-b hover:bg-stone-50">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8 bg-stone-200 text-stone-800">
+                                  <AvatarFallback>{getInitials(customer.name)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <div className="font-medium text-stone-800">{customer.name}</div>
+                                  <div className="text-xs text-stone-500">
+                                    Customer since {formatDate(customer.createdAt)}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center text-sm text-stone-600">
-                                <Mail className="h-3.5 w-3.5 mr-2 text-stone-400" />
-                                {customer.email}
-                              </div>
-                              {customer.phone && (
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col gap-1">
                                 <div className="flex items-center text-sm text-stone-600">
-                                  <Phone className="h-3.5 w-3.5 mr-2 text-stone-400" />
-                                  {customer.phone}
+                                  <Mail className="h-3.5 w-3.5 mr-2 text-stone-400" />
+                                  {customer.email}
                                 </div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="font-medium">{customer.purchaseCount}</div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="font-medium text-emerald-700">{formatCurrency(customer.totalSpend)}</div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end text-sm text-stone-600">
-                              <Calendar className="h-3.5 w-3.5 mr-2 text-stone-400" />
-                              {formatDate(customer.lastPurchaseDate)}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                                {customer.phone && (
+                                  <div className="flex items-center text-sm text-stone-600">
+                                    <Phone className="h-3.5 w-3.5 mr-2 text-stone-400" />
+                                    {customer.phone}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="font-medium">{customer.purchaseCount}</div>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="font-medium text-emerald-700">{formatCurrency(customer.totalSpend)}</div>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex items-center justify-end text-sm text-stone-600">
+                                <Calendar className="h-3.5 w-3.5 mr-2 text-stone-400" />
+                                {formatDate(customer.lastPurchaseDate)}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </CardContent>

@@ -263,7 +263,7 @@ export default function SalesPage() {
       </div>
 
       {/* Transactions Section */}
-      <div className="space-y-6">
+      <div className="space-y-6 m">
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
@@ -274,10 +274,10 @@ export default function SalesPage() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : (
-          <Card className="border border-stone-100 shadow-sm">
-            <CardHeader>
+          <Card className="border-0 shadow-none">
+            <CardHeader className="px-0">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-xl font-medium text-stone-800">All Sales</CardTitle>
+                <CardTitle className="text-2xl font-light text-stone-800 px-0">All Sales</CardTitle>
                 <Select value={filter} onValueChange={handleFilterChange}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by type" />
@@ -294,7 +294,7 @@ export default function SalesPage() {
                 Showing {filteredTransactions.length} of {pagination.total} transactions
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0">
               {filteredTransactions.length === 0 ? (
                 <div className="text-center py-8 text-stone-500">
                   <ShoppingCart className="mx-auto h-12 w-12 text-stone-300 mb-4" />
@@ -305,36 +305,55 @@ export default function SalesPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <div className="space-y-4 min-w-[600px]">
-                    {filteredTransactions.map((transaction) => (
-                      <div key={transaction.id} className="border border-stone-200 rounded-lg p-4 hover:bg-stone-50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div className="min-w-0 flex-1 pr-4">
-                            <div className="flex items-center space-x-2 flex-wrap gap-y-2">
-                              <h3 className="font-medium truncate text-stone-800">{transaction.description}</h3>
+                <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b bg-white">
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Description</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Date</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Type</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Status</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredTransactions.map((transaction) => (
+                          <tr key={transaction.id} className="border-b hover:bg-stone-50">
+                            <td className="py-3 px-4">
+                              <div>
+                                <div className="font-medium text-stone-800">{transaction.description}</div>
+                                {transaction.reference && (
+                                  <div className="text-xs text-stone-500 mt-1">
+                                    Reference: {transaction.reference} ({transaction.referenceType})
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="text-sm text-stone-600">
+                                {formatDate(transaction.createdAt)}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
                               <Badge className={getTypeBadgeColor(transaction.type)}>
                                 {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                               </Badge>
+                            </td>
+                            <td className="py-3 px-4">
                               <Badge className={getStatusBadgeColor(transaction.status)}>
                                 {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                               </Badge>
-                            </div>
-                            <p className="text-sm text-stone-500">
-                              {formatDate(transaction.createdAt)}
-                            </p>
-                            {transaction.reference && (
-                              <p className="text-xs text-stone-500 mt-1 truncate">
-                                Reference: {transaction.reference} ({transaction.referenceType})
-                              </p>
-                            )}
-                          </div>
-                          <div className={`text-lg font-semibold whitespace-nowrap ${getAmountColor(transaction.type)}`}>
-                            {getAmountPrefix(transaction.type)}{formatCurrency(transaction.amount, transaction.currency)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className={`font-medium whitespace-nowrap ${getAmountColor(transaction.type)}`}>
+                                {getAmountPrefix(transaction.type)}{formatCurrency(transaction.amount, transaction.currency)}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}

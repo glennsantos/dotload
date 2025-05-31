@@ -284,8 +284,8 @@ export default function PromosPage() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : (
-          <Card className="border border-stone-100 shadow-sm">
-            <CardHeader>
+          <Card className="border-0 shadow-none">
+            <CardHeader className="px-0">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-xl font-medium text-stone-800">Your Discount Codes</CardTitle>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -405,7 +405,7 @@ export default function PromosPage() {
                 Manage discount codes for your products
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0">
               {discountCodes.length === 0 ? (
                 <div className="text-center py-8 text-stone-500">
                   <Percent className="mx-auto h-12 w-12 text-stone-300 mb-4" />
@@ -419,57 +419,84 @@ export default function PromosPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <div className="space-y-4">
-                    {discountCodes.map((code) => (
-                      <div key={code.id} className="border border-stone-200 rounded-lg p-4 hover:bg-stone-50 transition-colors">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center space-x-2 flex-wrap gap-y-2 mb-2">
-                              <h3 className="font-medium text-stone-800">{code.code}</h3>
+                <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b bg-white">
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Code</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Discount</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Usage</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Status</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {discountCodes.map((code) => (
+                          <tr key={code.id} className="border-b hover:bg-stone-50">
+                            <td className="py-3 px-4">
+                              <div className="font-medium text-stone-800">{code.code}</div>
+                              {code.productName && (
+                                <div className="text-xs text-stone-500 mt-1">
+                                  Product: {code.productName}
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="text-sm text-stone-600">
+                                {formatDiscountValue(code.type, code.value)}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="text-sm text-stone-600">
+                                {code.usedCount}{code.maxUses ? `/${code.maxUses}` : ''} uses
+                                <div className="text-xs text-stone-500 mt-1">
+                                  Expires: {formatDate(code.expiresAt)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
                               <Badge className={code.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-800'}>
                                 {code.isActive ? 'Active' : 'Inactive'}
                               </Badge>
                               {code.productId && (
-                                <Badge className="bg-blue-100 text-blue-800">
-                                  Product Specific
-                                </Badge>
+                                <div className="mt-1">
+                                  <Badge className="bg-blue-100 text-blue-800">
+                                    Product Specific
+                                  </Badge>
+                                </div>
                               )}
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-sm text-stone-500">
-                              <span>Discount: {formatDiscountValue(code.type, code.value)}</span>
-                              <span>Uses: {code.usedCount}{code.maxUses ? `/${code.maxUses}` : ''}</span>
-                              <span>Expires: {formatDate(code.expiresAt)}</span>
-                              {code.productName && <span>Product: {code.productName}</span>}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 self-end sm:self-auto">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 px-2 text-stone-600"
-                              onClick={() => copyToClipboard(code.code)}
-                            >
-                              {copiedCode === code.code ? (
-                                <Check className="h-4 w-4" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                              <span className="sr-only">Copy</span>
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => handleDeleteCode(code.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2 text-stone-600"
+                                  onClick={() => copyToClipboard(code.code)}
+                                >
+                                  {copiedCode === code.code ? (
+                                    <Check className="h-4 w-4" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                  <span className="sr-only">Copy</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => handleDeleteCode(code.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Delete</span>
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
