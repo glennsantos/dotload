@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Product } from './ProductCreationForm'
-import { Upload, X } from 'lucide-react'
+import { RefreshCw, Upload, X } from 'lucide-react'
 import RichTextEditor from '@/components/rich-text-editor'
 
 type ProductInformationProps = {
@@ -129,7 +129,7 @@ export default function ProductInformation({
               }}
               type="button"
             >
-              Generate from name
+              <span className="flex items-center"><RefreshCw className="mr-2 h-4 w-4"/> Generate from name</span>
             </button>
           </div>
           <div className="flex">
