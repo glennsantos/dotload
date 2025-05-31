@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
         { userId: user.id, email: user.email }, 
         JWT_SECRET, 
         { 
-          expiresIn: '7d', // Extend from 24h to 7 days
+          expiresIn: '24h',
           algorithm: 'HS256' // Explicitly set algorithm
         }
       );
@@ -152,28 +152,22 @@ export async function POST(req: NextRequest) {
       }, { status: 200 });
 
       // Set the token as an HTTP-only, secure cookie
-      // Use sameSite=lax to allow cross-site navigation while still providing CSRF protection
-      const isLocalhost = (process.env.DOMAIN || '').includes('localhost');
+      debugLog('About to set auth cookie.');
       response.cookies.set('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' && !isLocalhost,
-        sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-site navigation
-        maxAge: 7 * 24 * 60 * 60, // 7 days
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' && !isLocalhost ? process.env.COOKIE_DOMAIN : undefined
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60, // 24 hours
+        path: '/'
       });
-      
-      // Log cookie setting details
-      debugLog('Setting auth cookie with options:', {
+      debugLog('Auth cookie set. Cookie options:', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' && !isLocalhost,
-        sameSite: 'lax',
-        maxAge: '7 days',
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' && !isLocalhost ? process.env.COOKIE_DOMAIN : undefined
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: '24 hours',
+        path: '/'
       });
-      
-      debugLog('HTTP-only cookie set successfully');
+      debugLog('Returning login response to client.');
       return response;
     } catch (responseError) {
       debugLog('Error creating response', responseError);
