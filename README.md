@@ -1,4 +1,4 @@
-# alaCarte
+# alaCart
 
 A modern, flexible digital product marketplace platform built with Next.js and Prisma.
 
