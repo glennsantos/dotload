@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Product } from './ProductCreationForm'
 import { Trash, Upload, X, Link as LinkIcon, Plus, FileText, Check, Loader2, File as FileIcon, Download } from 'lucide-react'
 
+// Maximum file size in bytes (50MB)
+const MAX_FILE_SIZE = 50 * 1024 * 1024
+
 type ProductFilesProps = {
   productData: Product
   setProductData: (data: Product) => void
@@ -60,6 +63,16 @@ export default function ProductFiles({
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const newFiles = Array.from(e.dataTransfer.files)
+      
+      // Check for files that exceed the maximum size
+      const oversizedFiles = newFiles.filter(file => file.size > MAX_FILE_SIZE)
+      
+      if (oversizedFiles.length > 0) {
+        const fileNames = oversizedFiles.map(f => f.name).join(', ')
+        setError(`The following files exceed the maximum size of 50MB: ${fileNames}`)
+        return
+      }
+      
       setProductData({
         ...productData,
         contentFiles: [...productData.contentFiles, ...newFiles]
@@ -74,6 +87,16 @@ export default function ProductFiles({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
+      
+      // Check for files that exceed the maximum size
+      const oversizedFiles = newFiles.filter(file => file.size > MAX_FILE_SIZE)
+      
+      if (oversizedFiles.length > 0) {
+        const fileNames = oversizedFiles.map(f => f.name).join(', ')
+        setError(`The following files exceed the maximum size of 50MB: ${fileNames}`)
+        return
+      }
+      
       setProductData({
         ...productData,
         contentFiles: [...productData.contentFiles, ...newFiles]

@@ -171,8 +171,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
         if (!isMounted) return;
         
         if (response.status === 401 || response.status === 403) {
-          // Redirect to login if unauthorized
-          router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+          // Let middleware handle the redirect
           return;
         }
         
