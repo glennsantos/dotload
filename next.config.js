@@ -3,18 +3,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const fs = require('fs');
 const path = require('path');
 
-const isDev = process.env.NODE_ENV === 'development';
-
 const nextConfig = {
-  ...(isDev && {
-    // Enable HTTPS only in development
-    server: {
-      https: {
-        key: fs.readFileSync(path.join(__dirname, '.certs/local-key.pem')),
-        cert: fs.readFileSync(path.join(__dirname, '.certs/local-cert.pem')),
-      },
-    },
-  }),
   // Ensure static files are properly served
   output: 'standalone',
   images: {
