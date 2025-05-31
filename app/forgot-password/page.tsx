@@ -59,12 +59,13 @@ export default function ForgotPasswordPage() {
             priority
           />
         </Link>
-        
       </div>
-      <h1 className="text-4xl font-extralight mb-4">Forgot Password</h1>
-      <p className="text-stone-600 font-light w-1/4 text-center mb-6">
-        Enter your email address and we'll send you instructions to reset your password.
-      </p>
+      <div className="text-center w-full max-w-md px-4">
+        <h1 className="text-4xl font-extralight mb-4">Forgot Password</h1>
+        <p className="text-stone-600 font-light mb-6">
+          Enter your email address and we'll send you instructions to reset your password.
+        </p>
+      </div>
       <Card className="w-full max-w-md py-6">
         <CardContent>
           {error && (

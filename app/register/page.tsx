@@ -212,8 +212,6 @@ export default function RegisterPage() {
         </div>
         
         <Card className="w-full max-w-md py-8">
-          <h3 className="text-xl font-light text-center">Account Information</h3>
-          <p className="text-stone-500 font-light mb-4 text-center">Tell us about yourself</p>
           <CardContent>
             {error && (
               <Alert variant="destructive" className="mb-4 rounded-xl">
@@ -224,7 +222,9 @@ export default function RegisterPage() {
             )}
             
             {!showVerificationMessage ? (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit}>
+                <div className="text-xl mb-0 font-light text-center">Account Information</div>
+                <div className="text-stone-500 font-light m-2 px-0 text-center">Tell us about yourself</div>
                 <div className="space-y-4 border-b border-stone-200 pb-12 mb-8">
                   <div>
                     <Label htmlFor="email" className="text-stone-700 font-light">Email</Label>
@@ -276,7 +276,7 @@ export default function RegisterPage() {
                 {/* Brand Information */}
                 <div>
                   <h3 className="text-xl font-light text-center">Brand Settings</h3>
-                  <p className="text-stone-500 font-light mb-4 text-center">Customize your brand's appearance (optional)</p>
+                  <p className="text-stone-500 font-light my-4 text-center">Customize your brand's appearance (optional)</p>
                   
                   <div className="space-y-4">
                     <div className="my-6">
@@ -375,7 +375,7 @@ export default function RegisterPage() {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light" 
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light mt-8" 
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Creating Account...' : 'Create Account'}
