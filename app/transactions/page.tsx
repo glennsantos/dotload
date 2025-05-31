@@ -67,7 +67,9 @@ export default function TransactionsPage() {
     const fetchTransactions = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`);
+        const response = await fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`, {
+          credentials: 'include'
+        });
         
         if (!response.ok) {
           if (response.status === 401) {

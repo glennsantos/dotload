@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Mail, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { setAuthToken } from '@/lib/client-auth';
 import Image from 'next/image';
 import AuthHeader from '@/components/auth/AuthHeader';
 
@@ -55,11 +54,9 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store the token in localStorage for client-side auth
-        if (data.token) {
-          setAuthToken(data.token);
-          console.log('Auth token stored in localStorage');
-        }
+        // The server will set the HTTP-only cookie automatically
+        // No need to store the token in localStorage
+        console.log('Login successful - cookie set by server');
         
         // Dispatch auth:login event to update UI components
         window.dispatchEvent(new CustomEvent('auth:login', {

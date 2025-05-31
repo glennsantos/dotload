@@ -69,8 +69,8 @@ export default function PurchasesPage() {
         
         // Fetch user data and purchases in parallel
         const [authResponse, purchasesResponse] = await Promise.all([
-          fetch('/api/auth/me'),
-          fetch(`/api/purchases?page=${pagination.page}&limit=${pagination.limit}&includeFiles=true`)
+          fetch('/api/auth/me', { credentials: 'include' }),
+          fetch(`/api/purchases?page=${pagination.page}&limit=${pagination.limit}&includeFiles=true`, { credentials: 'include' })
         ]);
         
         if (authResponse.status === 401 || authResponse.status === 403) {

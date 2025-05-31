@@ -159,8 +159,8 @@ export async function POST(req: NextRequest) {
         sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-site navigation
         maxAge: 7 * 24 * 60 * 60, // 7 days
         path: '/',
-        // Ensure domain is set correctly for production
-        domain: process.env.COOKIE_DOMAIN || undefined
+        // Only set domain for production, leave undefined for localhost
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
       });
       
       // Log cookie setting details
@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
         sameSite: 'lax',
         maxAge: '7 days',
         path: '/',
-        domain: process.env.COOKIE_DOMAIN || undefined
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
       });
       
       debugLog('HTTP-only cookie set successfully');

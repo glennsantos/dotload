@@ -65,7 +65,7 @@ export default function BuyerDashboardPage() {
           const data = await response.json()
           
           // Check if user exists or needs to be created
-          const userResponse = await fetch('/api/auth/me')
+          const userResponse = await fetch('/api/auth/me', { credentials: 'include' })
           
           if (userResponse.ok) {
             const userData = await userResponse.json()

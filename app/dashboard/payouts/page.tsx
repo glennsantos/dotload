@@ -47,7 +47,7 @@ export default function PayoutsPage() {
     // Fetch user data for DashboardHeader
     const fetchUserData = async () => {
       try {
-        const authResponse = await fetch('/api/auth/me');
+        const authResponse = await fetch('/api/auth/me', { credentials: 'include' });
         if (authResponse.ok) {
           const userData = await authResponse.json();
           const user = userData.user || userData;

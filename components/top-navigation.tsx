@@ -113,7 +113,9 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
   // Check if user has purchases
   const checkUserPurchases = async (userId: string) => {
     try {
-      const response = await fetch('/api/purchases');
+      const response = await fetch('/api/purchases', {
+        credentials: 'include'
+      });
       if (response.ok) {
         const data = await response.json();
         // Check if data is an array and has items

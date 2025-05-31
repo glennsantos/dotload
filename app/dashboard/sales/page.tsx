@@ -77,8 +77,8 @@ export default function SalesPage() {
         
         // Fetch user data and transactions in parallel
         const [authResponse, transactionsResponse] = await Promise.all([
-          fetch('/api/auth/me'),
-          fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`)
+          fetch('/api/auth/me', { credentials: 'include' }),
+          fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`, { credentials: 'include' })
         ]);
         
         if (authResponse.status === 401 || authResponse.status === 403) {

@@ -21,6 +21,7 @@ export async function getClientUser(): Promise<ClientAuthUser | null> {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
     
     if (!response.ok) {

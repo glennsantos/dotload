@@ -23,8 +23,8 @@ export default function ProductsPage() {
     async function checkAuthAndFetchProducts() {
       try {
         const [authResponse, productsResponse] = await Promise.all([
-          fetch('/api/auth/me'),
-          fetch('/api/products')
+          fetch('/api/auth/me', { credentials: 'include' }),
+          fetch('/api/products', { credentials: 'include' })
         ])
         
         if (authResponse.status === 401 || authResponse.status === 403) {

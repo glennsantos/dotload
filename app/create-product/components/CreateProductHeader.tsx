@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Plus, Menu, ChevronDown, Settings, LogOut, ChevronLeft } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getClientUser } from "@/lib/client-auth-utils";
+import { getCurrentUser } from "@/lib/client-auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function CreateProductHeader() {
+interface CreateProductHeaderProps {
+  isEdit?: boolean;
+}
+
+export default function CreateProductHeader({ isEdit = false }: CreateProductHeaderProps) {
   const [userData, setUserData] = useState({
     userName: "User",
     userEmail: "",
@@ -27,7 +31,7 @@ export default function CreateProductHeader() {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
-        const user = await getClientUser();
+        const user = await getCurrentUser();
         
         if (user) {
           setUserData({
@@ -71,8 +75,10 @@ export default function CreateProductHeader() {
               />
             </Link>
             <div>
-              <h1 className="text-xl sm:text-2xl font-light text-stone-800">Create Product</h1>
-              <p className="hidden sm:block text-xs sm:text-sm text-stone-500 font-light">Build your checkout page</p>
+              <h1 className="text-xl sm:text-2xl font-light text-stone-800">
+                {isEdit ? 'Edit Product' : 'Create Product'}
+              </h1>
+              <p className="hidden sm:block text-xs sm:text-sm text-stone-500 font-light">{isEdit ? 'Edit your product details' : 'Build your checkout page'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">

@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation'
 import ProductCreationForm from '../../create-product/components/ProductCreationForm'
+import CreateProductHeader from '../../create-product/components/CreateProductHeader'
 
 export default function EditProductPage() {
   const params = useParams()
@@ -9,6 +10,7 @@ export default function EditProductPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <CreateProductHeader isEdit={true} />
       <ProductCreationForm isEditing={true} productId={productId} />
     </div>
   )

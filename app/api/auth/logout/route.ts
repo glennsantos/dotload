@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
     response.cookies.set('token', '', {
       httpOnly: true,
       expires: new Date(0), // Set to past date to delete
-      path: '/'
+      path: '/',
+      // Only set domain for production, leave undefined for localhost
+      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
     });
 
     return response;
@@ -43,7 +45,9 @@ export async function POST(request: NextRequest) {
     response.cookies.set('token', '', {
       httpOnly: true,
       expires: new Date(0), // Set to past date to delete
-      path: '/'
+      path: '/',
+      // Only set domain for production, leave undefined for localhost
+      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined
     });
 
     return response;
