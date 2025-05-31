@@ -55,11 +55,12 @@ export default function AccountSettings() {
         credentials: 'include'
       })
       
+      const data = await response.json()
+      
       if (response.ok) {
         setMessage({ type: "success", text: "Account information updated successfully" })
       } else {
-        const errorData = await response.json()
-        setMessage({ type: "error", text: errorData.message || "Failed to update account information" })
+        setMessage({ type: "error", text: data.message || "Failed to update account information" })
       }
     } catch (error) {
       console.error('Error updating account:', error)
@@ -79,6 +80,11 @@ export default function AccountSettings() {
       return
     }
     
+    if (newPassword.length < 8) {
+      setMessage({ type: "error", text: "New password must be at least 8 characters long" })
+      return
+    }
+    
     setMessage({ type: "", text: "" })
     setIsLoading(true)
     
@@ -95,14 +101,15 @@ export default function AccountSettings() {
         credentials: 'include'
       })
       
+      const data = await response.json()
+      
       if (response.ok) {
         setMessage({ type: "success", text: "Password updated successfully" })
         setCurrentPassword("")
         setNewPassword("")
         setConfirmPassword("")
       } else {
-        const errorData = await response.json()
-        setMessage({ type: "error", text: errorData.message || "Failed to update password" })
+        setMessage({ type: "error", text: data.message || "Failed to update password" })
       }
     } catch (error) {
       console.error('Error updating password:', error)
@@ -268,7 +275,7 @@ export default function AccountSettings() {
               className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
               disabled={isLoading}
             >
-              Update Account
+              Change Password
             </button>
           </div>
         </form>
