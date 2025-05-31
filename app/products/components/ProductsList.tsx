@@ -113,8 +113,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
         })
         
         if (response.status === 401 || response.status === 403) {
-          // Redirect to login if unauthorized
-          window.location.href = `/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`
+          // Let middleware handle the redirect
           return
         }
         

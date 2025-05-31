@@ -73,8 +73,7 @@ export default function TransactionsPage() {
         
         if (!response.ok) {
           if (response.status === 401) {
-            // Redirect to login if unauthorized
-            router.push('/login');
+            // Let middleware handle the redirect
             return;
           }
           throw new Error('Failed to fetch transactions data');

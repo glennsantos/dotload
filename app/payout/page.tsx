@@ -84,8 +84,7 @@ export default function PayoutPage() {
         
         if (!balanceResponse.ok) {
           if (balanceResponse.status === 401) {
-            // Redirect to login if unauthorized
-            router.push('/login');
+            // Let middleware handle the redirect
             return;
           }
           throw new Error('Failed to fetch balance data');

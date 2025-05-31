@@ -74,8 +74,7 @@ export default function PurchasesPage() {
         ]);
         
         if (authResponse.status === 401 || authResponse.status === 403) {
-          // Redirect to login if unauthorized
-          router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+          // Let middleware handle the redirect
           return;
         }
         
