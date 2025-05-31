@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { DashboardTabs } from '@/components/ui/dashboard-tabs';
 import { StatsCard } from '@/components/ui/stats-card';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { fetchWithAuth } from '@/lib/client-auth';
 
 // Define types for our data
 type Transaction = {
@@ -77,8 +78,8 @@ export default function SalesPage() {
         
         // Fetch user data and transactions in parallel
         const [authResponse, transactionsResponse] = await Promise.all([
-          fetch('/api/auth/me', { credentials: 'include' }),
-          fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`, { credentials: 'include' })
+          fetchWithAuth('/api/auth/me'),
+          fetchWithAuth(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`)
         ]);
         
         if (authResponse.status === 401 || authResponse.status === 403) {

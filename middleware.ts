@@ -41,11 +41,16 @@ const AUTH_ONLY_ROUTES = [
 ];
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('token')?.value;
   const pathname = request.nextUrl.pathname;
 
   // Debug logging for all requests
   console.log(`[MIDDLEWARE] Processing request to: ${pathname}`);
+  
+  // Check if the route is public FIRST - don't process auth for public routes
+  if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route))) {
+    console.log(`[MIDDLEWARE] Public route, skipping auth check: ${pathname}`);
+    return NextResponse.next();
+  }
   
   // Explicitly allow secure download routes (both old and new endpoints)
   if (pathname.startsWith('/api/files/secure-download') || 
@@ -55,13 +60,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check if the route is public
-  if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route))) {
-    return NextResponse.next();
-  }
-
+  const token = request.cookies.get('token')?.value;
+  console.log(`[MIDDLEWARE] Token present: ${!!token}, pathname: ${pathname}`);
+  
   // If no token, redirect to login with return URL
   if (!token) {
+    console.log(`[MIDDLEWARE] No token found, redirecting to login`);
     const url = new URL('/login', request.url);
     url.searchParams.set('callbackUrl', encodeURI(pathname === '/dashboard' ? '/products' : pathname));
     return NextResponse.redirect(url);
@@ -70,8 +74,7 @@ export function middleware(request: NextRequest) {
   // Verify token
   try {
     // Log token details for debugging
-    console.log('Middleware JWT Secret:', JWT_SECRET);
-    console.log('Middleware Token Value:', token);
+    console.log('Middleware JWT Secret available:', !!JWT_SECRET);
     console.log('Middleware Token Length:', token?.length);
     
     // Decode the token to get user information
@@ -83,7 +86,9 @@ export function middleware(request: NextRequest) {
     // Additional validation
     if (!decoded.userId || !decoded.email) {
       console.error('Invalid token payload');
-      return NextResponse.redirect(new URL('/login', request.url));
+      const url = new URL('/login', request.url);
+      url.searchParams.set('callbackUrl', encodeURI(pathname));
+      return NextResponse.redirect(url);
     }
     
     // Log decoded token details
@@ -103,9 +108,11 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/verify-email', request.url));
     }
     
+    console.log(`[MIDDLEWARE] Auth successful for: ${pathname}`);
     return NextResponse.next();
   } catch (error) {
     // Invalid token, redirect to login
+    console.log(`[MIDDLEWARE] Token verification failed:`, error);
     const url = new URL('/login', request.url);
     url.searchParams.set('callbackUrl', encodeURI(request.nextUrl.pathname));
     return NextResponse.redirect(url);
@@ -115,9 +122,20 @@ export function middleware(request: NextRequest) {
 // Specify which routes this middleware should run on
 export const config = {
   matcher: [
-    // Match all routes except static files, _next, and specific API endpoints
-    '/((?!_next/static|_next/image|_next/data|favicon.ico).*)',
-    // Match API routes but exclude specific endpoints
-    '/(api/(?!files/secure-download|files/direct-download|downloads/secure|downloads/file).*)'
+    // Only match protected routes - exclude all public routes
+    '/dashboard/:path*',
+    '/products/:path*',
+    '/transactions/:path*',
+    '/purchases/:path*',
+    '/settings/:path*',
+    '/buyer-dashboard/:path*',
+    '/create-product/:path*',
+    // API routes that need auth (exclude public auth endpoints)
+    '/api/products/:path*',
+    '/api/transactions/:path*',
+    '/api/purchases/:path*',
+    '/api/auth/me',
+    '/api/auth/user-status',
+    '/api/auth/create-from-purchase'
   ]
 }

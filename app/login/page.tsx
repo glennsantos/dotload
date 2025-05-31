@@ -54,9 +54,18 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // The server will set the HTTP-only cookie automatically
-        // No need to store the token in localStorage
+        // Store token in localStorage as fallback
+        if (data.token) {
+          localStorage.setItem('auth_token', data.token);
+        }
+        
         console.log('Login successful - cookie set by server');
+        
+        // Debug: Check if cookie was actually set
+        setTimeout(() => {
+          console.log('All cookies after login:', document.cookie);
+          console.log('localStorage token:', localStorage.getItem('auth_token'));
+        }, 100);
         
         // Dispatch auth:login event to update UI components
         window.dispatchEvent(new CustomEvent('auth:login', {
@@ -75,8 +84,8 @@ export default function LoginPage() {
             
             // If the API recommends a different redirect, use that instead
             if (statusData.recommendedRedirect && statusData.recommendedRedirect !== '/dashboard') {
-              // Use window.location for a full page reload to ensure clean state
-              window.location.href = statusData.recommendedRedirect;
+              // Use router.push instead of window.location for better cookie preservation
+              router.push(statusData.recommendedRedirect);
               return;
             }
           }
@@ -86,8 +95,8 @@ export default function LoginPage() {
         }
         
         // Default redirect behavior if status check fails or no special redirect needed
-        // Use window.location for a full page reload to ensure clean state
-        window.location.href = decodeURI(callbackUrl);
+        // Use router.push instead of window.location.href to preserve cookies
+        router.push(decodeURI(callbackUrl));
       } else if (response.status === 403 && data.requiresVerification) {
         // Handle unverified email
         setIsVerificationNeeded(true);

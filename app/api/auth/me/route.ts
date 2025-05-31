@@ -17,13 +17,20 @@ const debugLog = (message: string, ...args: any[]) => {
 export async function GET(request: NextRequest) {
   try {
     // Get token from cookies
-    debugLog('Checking for auth token...');
+    debugLog('=== AUTH/ME REQUEST START ===');
+    debugLog('Request URL:', request.url);
+    debugLog('Request headers:', Object.fromEntries(request.headers.entries()));
+    
     const cookieStore = await cookies();
     const allCookies = cookieStore.getAll();
-    debugLog('All cookies:', allCookies.map(c => c.name));
+    debugLog('All cookies received:', allCookies.map(c => ({ name: c.name, value: c.value?.substring(0, 20) + '...', hasValue: !!c.value })));
     
     const token = cookieStore.get('token');
-    debugLog('Token found:', token ? 'Yes' : 'No');
+    debugLog('Token cookie found:', token ? 'Yes' : 'No');
+    if (token) {
+      debugLog('Token value length:', token.value?.length);
+      debugLog('Token value preview:', token.value?.substring(0, 50) + '...');
+    }
     
     // Also check for token in Authorization header as fallback
     const authHeader = request.headers.get('Authorization');

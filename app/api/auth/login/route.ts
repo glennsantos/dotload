@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
           email: user.email,
           name: user.name
         },
-        token: token
+        token: token // Return token so client can store in localStorage as fallback
       }, { status: 200 });
 
       // Set the token as an HTTP-only, secure cookie

@@ -145,6 +145,13 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
+      // Clear localStorage token
+      try {
+        localStorage.removeItem('auth_token');
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+      
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
         headers: {
@@ -164,8 +171,8 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
         
         // Use the redirectUrl from the response if available, otherwise fallback to /login
         if (data.redirectUrl) {
-          // Use window.location for a full page reload to ensure clean state
-          window.location.href = data.redirectUrl
+          // Use router.push instead of window.location for better cookie handling
+          router.push('/login')
         } else {
           router.push('/login')
         }

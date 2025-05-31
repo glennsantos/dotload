@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Client-side authentication utilities
+ * Client-side authentication utilities with localStorage fallback
  * This file contains utilities for managing authentication state on the client side
  * Note: We use HTTP-only cookies for authentication, so tokens are not accessible via JavaScript
  */
@@ -10,17 +10,66 @@
 const isBrowser = typeof window !== 'undefined';
 
 /**
- * Check if the user is authenticated by making a request to the server
- * Since we use HTTP-only cookies, we can't access the token directly
+ * Get token from localStorage (fallback when cookies fail)
+ */
+function getTokenFromStorage(): string | null {
+  if (!isBrowser) return null;
+  try {
+    return localStorage.getItem('auth_token');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Set token in localStorage (fallback when cookies fail)
+ */
+function setTokenInStorage(token: string): void {
+  if (!isBrowser) return;
+  try {
+    localStorage.setItem('auth_token', token);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+/**
+ * Remove token from localStorage
+ */
+function removeTokenFromStorage(): void {
+  if (!isBrowser) return;
+  try {
+    localStorage.removeItem('auth_token');
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+/**
+ * Make authenticated requests with both cookies and Authorization header
+ */
+export function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = getTokenFromStorage();
+  
+  return fetch(url, {
+    ...options,
+    credentials: 'include', // Include cookies
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }), // Add token from localStorage
+      ...options.headers
+    }
+  });
+}
+
+/**
+ * Check if the user is authenticated
  */
 export async function isAuthenticated(): Promise<boolean> {
   if (!isBrowser) return false;
   
   try {
-    const response = await fetch('/api/auth/me', {
-      method: 'GET',
-      credentials: 'include', // Include cookies
-    });
+    const response = await fetchWithAuth('/api/auth/me');
     return response.ok;
   } catch {
     return false;
@@ -34,10 +83,7 @@ export async function getCurrentUser(): Promise<any | null> {
   if (!isBrowser) return null;
   
   try {
-    const response = await fetch('/api/auth/me', {
-      method: 'GET',
-      credentials: 'include', // Include cookies
-    });
+    const response = await fetchWithAuth('/api/auth/me');
     
     if (response.ok) {
       const data = await response.json();
@@ -50,25 +96,29 @@ export async function getCurrentUser(): Promise<any | null> {
 }
 
 /**
- * Make authenticated requests using cookies
+ * Store auth token after login
  */
-export function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-  // Since we use HTTP-only cookies, just ensure credentials are included
-  return fetch(url, {
-    ...options,
-    credentials: 'include', // Include cookies
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers
-    }
-  });
+export function storeAuthToken(token: string): void {
+  setTokenInStorage(token);
 }
 
 /**
- * Initialize auth - just check if user is authenticated
+ * Clear auth token on logout
  */
-export async function initAuth(): Promise<any | null> {
+export function clearAuthToken(): void {
+  removeTokenFromStorage();
+}
+
+/**
+ * Initialize auth - check if user is authenticated and store token if provided
+ */
+export async function initAuth(token?: string): Promise<any | null> {
   if (!isBrowser) return null;
+  
+  // If token provided (from login), store it
+  if (token) {
+    storeAuthToken(token);
+  }
   
   try {
     return await getCurrentUser();
