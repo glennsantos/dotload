@@ -1,40 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-}
+import { useAuthState } from '@/hooks/use-auth-state';
 
 export function HeroSection() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const response = await fetch('/api/auth/check-session');
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user || null);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error fetching user session:', error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUser();
-  }, []);
+  const { user, loading } = useAuthState();
 
   return (
     <section className="py-32 text-center">

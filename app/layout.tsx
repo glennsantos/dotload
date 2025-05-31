@@ -6,7 +6,8 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 // Import the client component wrapper instead of directly importing with ssr: false
-import ClientDebugWrapper from '@/components/client-debug-wrapper'
+import ClientDebugWrapper from '@/components/client-debug-wrapper';
+import { AuthProviderWrapper } from '@/components/providers/auth-provider-wrapper';
 
 // Import the fonts
 import { inter } from './fonts'
@@ -55,7 +56,9 @@ export default async function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="font-inter">
         <div className="flex flex-col h-screen">
-          <main className="flex-1 overflow-auto">{children}</main>
+          <AuthProviderWrapper initialUser={currentUser}>
+            <main className="flex-1 overflow-auto">{children}</main>
+          </AuthProviderWrapper>
           <ClientDebugWrapper />
         </div>
       </body>
