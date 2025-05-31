@@ -56,6 +56,46 @@ function stripHTML(html: string) {
   return div.textContent || div.innerText || "";
 }
 
+// Helper component to render product image
+const renderProductImage = (product: Product) => {
+  if (product.coverImagePath) {
+    return (
+      <Image 
+        src={
+          // Handle URLs that start with http:// or https://
+          product.coverImagePath.startsWith('http') ? product.coverImagePath :
+          // Handle protocol-relative URLs that start with //
+          product.coverImagePath.startsWith('//') ? `https:${product.coverImagePath}` :
+          // Handle absolute paths that start with /
+          product.coverImagePath.startsWith('/') ? product.coverImagePath :
+          // Handle relative paths by adding a leading /
+          `/${product.coverImagePath}`
+        } 
+        alt={product.name}
+        fill
+        className="object-cover"
+        unoptimized={!product.coverImagePath.startsWith('http')}
+      />
+    )
+  }
+  return (
+    <div className="w-full h-full bg-stone-100 flex items-center justify-center">
+      <span className="text-stone-400 text-xs">No image</span>
+    </div>
+  )
+}
+
+// Helper component to render status badge
+const renderStatusBadge = (product: Product) => {
+  if (product.isArchived) {
+    return <span className="text-xs bg-stone-100 text-stone-800 px-2 py-1 rounded-full">Archived</span>
+  }
+  if (product.isPublic) {
+    return <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">Published</span>
+  }
+  return <span className="text-xs bg-stone-100 text-stone-800 px-2 py-1 rounded-full">Draft</span>
+}
+
 export default function ProductsList({ products, onProductsChange }: ProductsListProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -235,8 +275,8 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
         </div>
       </div>
       
-      {/* Products Table */}
-      <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+      {/* Desktop Table */}
+      <div className="hidden md:block border border-stone-100 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -248,75 +288,82 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
               </tr>
             </thead>
             <tbody>
-            {filteredProducts.map((product) => (
-              <tr key={product.id} className="border-b hover:bg-stone-50">
-                <td className="py-3 px-4">
-                  <div 
-                    onClick={() => router.push(`/edit-product/${product.id}`)} 
-                    className="flex items-center gap-3 cursor-pointer hover:opacity-80">
-                  
-                    <div className="w-12 h-12 relative overflow-hidden rounded bg-white shrink-0">
-                      {product.coverImagePath ? (
-                        <Image 
-                          src={
-                            // Handle URLs that start with http:// or https://
-                            product.coverImagePath.startsWith('http') ? product.coverImagePath :
-                            // Handle protocol-relative URLs that start with //
-                            product.coverImagePath.startsWith('//') ? `https:${product.coverImagePath}` :
-                            // Handle absolute paths that start with /
-                            product.coverImagePath.startsWith('/') ? product.coverImagePath :
-                            // Handle relative paths by adding a leading /
-                            `/${product.coverImagePath}`
-                          } 
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                          unoptimized={!product.coverImagePath.startsWith('http')}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-stone-200 flex items-center justify-center">
-                          <span className="text-stone-400 text-xs">No image</span>
+              {filteredProducts.map((product) => (
+                <tr key={`desktop-${product.id}`} className="border-b hover:bg-stone-50">
+                  <td className="py-3 px-4">
+                    <div 
+                      onClick={() => router.push(`/edit-product/${product.id}`)} 
+                      className="flex items-center gap-3 cursor-pointer hover:opacity-80">
+                      <div className="w-12 h-12 relative overflow-hidden rounded bg-white shrink-0">
+                        {renderProductImage(product)}
+                      </div>
+                      <div>
+                        <div className="font-light text-stone-800">{product.name}</div>
+                        <div className="text-sm text-stone-500 line-clamp-1">
+                          {stripHTML(product.description)}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-light text-stone-800">{product.name}</div>
-                      <div className="text-sm text-stone-500 line-clamp-1">
-                        {stripHTML(product.description)}
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">₱{product.price.toFixed(2)}</td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center">
-                    {product.isArchived ? (
-                      <>
-                        <span className="text-xs bg-stone-100 text-stone-800 px-2 py-0.5 rounded-full">Archived</span>
-                      </>
-                    ) : product.isPublic ? (
-                      <>
-                        <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Published</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-xs bg-stone-100 text-stone-800 px-2 py-0.5 rounded-full">Draft</span>
-                      </>
-                    )}
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <ProductActions 
-                    product={product} 
-                    onProductUpdate={handleProductUpdate}
-                    onProductDelete={handleProductDelete}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                  <td className="py-3 px-4 text-right">₱{product.price.toFixed(2)}</td>
+                  <td className="py-3 px-4">
+                    {renderStatusBadge(product)}
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <ProductActions 
+                      product={product} 
+                      onProductUpdate={handleProductUpdate}
+                      onProductDelete={handleProductDelete}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {filteredProducts.map((product) => (
+          <div 
+            key={`mobile-${product.id}`} 
+            className="bg-white border border-stone-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+            onClick={() => router.push(`/edit-product/${product.id}`)}
+          >
+            <div className="flex gap-4">
+              {/* Product Image */}
+              <div className="w-24 h-24 relative overflow-hidden rounded-lg bg-white shrink-0">
+                {renderProductImage(product)}
+              </div>
+              
+              {/* Product Details */}
+              <div className="flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-light text-stone-900 line-clamp-2">{product.name}</h3>
+                  <p className="text-sm text-stone-500 mt-1 line-clamp-2">
+                    {stripHTML(product.description)}
+                  </p>
+                </div>
+                
+                <div className="flex justify-between items-center mt-2">
+                  <span className="font-medium text-stone-900">₱{product.price.toFixed(2)}</span>
+                  <div className="flex items-center gap-2">
+                    {renderStatusBadge(product)}
+                    <div className="ml-2">
+                      <ProductActions 
+                        product={product} 
+                        onProductUpdate={handleProductUpdate}
+                        onProductDelete={handleProductDelete}
+                        variant="icon"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
