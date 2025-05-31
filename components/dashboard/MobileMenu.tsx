@@ -58,8 +58,16 @@ export function MobileMenu({ isOpen, onClose, userName, userEmail, userLogo }: M
         {/* User Profile */}
         <div className="px-6 py-4">
           <div className="flex items-center">
-            <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-medium text-lg">
-              {userName?.[0]?.toUpperCase() || 'T'}
+            <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-medium text-lg overflow-hidden">
+              {userLogo ? (
+                <img 
+                  src={userLogo} 
+                  alt="User Logo" 
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                userName?.[0]?.toUpperCase() || 'T'
+              )}
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-stone-900">{userName}</p>
