@@ -23,16 +23,15 @@ async function HeroSection() {
           {user ? (
             <>
               <Button asChild variant="default" size="lg" className="text-lg py-6 px-8">
-                <Link href="/products/new" className="flex items-center gap-2">
+                <Link href="/create-product" className="flex items-center gap-2">
                   Create New Product <ArrowRight size={18} />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="text-lg py-6 px-8">
                 <Link href="/dashboard" className="flex items-center gap-2">
-                  View Dashboard
+                  View Dashboard 
                 </Link>
               </Button>
-              
             </>
           ) : (
             <>
@@ -47,6 +46,33 @@ async function HeroSection() {
             </>
           )}
         </div>
+      </div>
+    </section>
+  );
+}
+
+async function CTASection() {
+  const user = await getCurrentUser();
+  
+  return (
+    <section className="py-16 bg-stone-900 text-white text-center">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl font-light mb-4">
+          Ready to Start Selling?
+        </h2>
+        <p className="mb-8">
+          Join thousands of creators already using Alacart
+        </p>
+        <Button
+          asChild
+          variant="default" 
+          size="lg" 
+          className="text-lg py-6 px-8"
+        >
+          <Link href={user ? "/create-product" : "/register"} className="flex items-center gap-2">
+            {user ? 'Create New Product' : 'Get Started Free'} <ArrowRight size={18} />
+          </Link>
+        </Button>
       </div>
     </section>
   );
@@ -178,20 +204,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-stone-900 text-white text-center">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-light mb-4">Ready to Start Selling?</h2>
-          <p className="mb-8">Join thousands of creators already using Alacart</p>
-          <Button
-            asChild
-            variant="default" size="lg" className="text-lg py-6 px-8"
-          >
-            <Link href="/register">
-              Get Started Free <ArrowRight size={14} />
-            </Link>
-          </Button>
-        </div>
-      </section>
+      <CTASection />
 
       {/* Footer */}
       <footer className="py-8 border-t border-stone-200 text-center text-stone-500 text-sm">

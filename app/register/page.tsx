@@ -197,22 +197,23 @@ export default function RegisterPage() {
             <Image 
               src="/logo.png" 
               alt="Alacart Logo" 
-              width={160} 
-              height={42.67} 
+              width={100} 
+              height={21} 
               className="h-auto"
               priority
             />
           </Link>
-        </div>
-        
-        <Card className="w-full max-w-md">
           {!showVerificationMessage &&         
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-light mb-1">Get Started</CardTitle>
-              <CardDescription className="text-stone-500 font-light">Create your account to continue</CardDescription>
+              <CardTitle className="text-3xl font-light mb-1">Get Started</CardTitle>
+              <CardDescription className="text-xl text-stone-500 font-light">Create your account to continue</CardDescription>
             </CardHeader>
           }
-          
+        </div>
+        
+        <Card className="w-full max-w-md py-8">
+          <h3 className="text-xl font-light text-center">Account Information</h3>
+          <p className="text-stone-500 font-light mb-4 text-center">Tell us about yourself</p>
           <CardContent>
             {error && (
               <Alert variant="destructive" className="mb-4 rounded-xl">
@@ -224,7 +225,7 @@ export default function RegisterPage() {
             
             {!showVerificationMessage ? (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-4">
+                <div className="space-y-4 border-b border-stone-200 pb-12 mb-8">
                   <div>
                     <Label htmlFor="email" className="text-stone-700 font-light">Email</Label>
                     <Input
@@ -256,7 +257,7 @@ export default function RegisterPage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="name" className="text-stone-700 font-light">Name (Optional)</Label>
+                    <Label htmlFor="name" className="text-stone-700 font-light">Full Name (Optional)</Label>
                     <Input
                       id="name"
                       type="text"
@@ -272,14 +273,13 @@ export default function RegisterPage() {
                     />
                   </div>
                 </div>
-                
                 {/* Brand Information */}
                 <div>
-                  <h3 className="text-xl font-light mb-4">Brand Information</h3>
-                  <p className="text-stone-600 font-light mb-4">Customize your brand's appearance (optional)</p>
+                  <h3 className="text-xl font-light text-center">Brand Settings</h3>
+                  <p className="text-stone-500 font-light mb-4 text-center">Customize your brand's appearance (optional)</p>
                   
                   <div className="space-y-4">
-                    <div>
+                    <div className="my-6">
                       <Label htmlFor="brand-name" className="text-stone-700 font-light mb-2 block">Brand Name</Label>
                       <Input 
                         id="brand-name" 
@@ -294,22 +294,31 @@ export default function RegisterPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label className="text-stone-700 font-light mb-2 block">Brand Logo</Label>
-                        <div className="border border-dashed border-stone-300 rounded-2xl p-4 flex flex-col items-center justify-center">
-                          {brandLogo ? (
-                            <div className="relative w-28 h-28 mb-2">
-                              <Image 
-                                src={brandLogo} 
-                                alt="Brand logo" 
-                                fill 
-                                className="object-cover rounded-xl" 
-                                unoptimized={brandLogo.startsWith('data:')} 
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-28 h-28 bg-stone-100 rounded-xl flex items-center justify-center mb-2">
-                              <Store className="h-10 w-10 text-stone-400" />
-                            </div>
-                          )}
+                        <div className="border border-dashed border-stone-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 transition-colors"
+                             onClick={() => logoInputRef.current?.click()}>
+                          <div className="relative w-28 h-28 mb-2 group">
+                            {brandLogo ? (
+                              <>
+                                <Image 
+                                  src={brandLogo} 
+                                  alt="Brand logo" 
+                                  fill 
+                                  className="object-cover rounded-xl group-hover:opacity-80 transition-opacity" 
+                                  unoptimized={brandLogo.startsWith('data:')} 
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="bg-black bg-opacity-50 text-white text-xs rounded-lg px-2 py-1">
+                                    Change Logo
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="w-full h-full bg-stone-100 rounded-xl flex flex-col items-center justify-center group-hover:bg-stone-200 transition-colors">
+                                <Store className="h-10 w-10 text-stone-400 mb-2 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs text-stone-500">Upload Logo</span>
+                              </div>
+                            )}
+                          </div>
                           <input
                             type="file"
                             ref={logoInputRef}
@@ -317,35 +326,38 @@ export default function RegisterPage() {
                             accept="image/jpeg,image/png,image/webp"
                             className="hidden"
                           />
-                          <button
-                            type="button"
-                            onClick={() => logoInputRef.current?.click()}
-                            className="mt-2 px-4 py-2 bg-white border border-stone-300 rounded-xl text-sm font-light text-stone-700 hover:bg-stone-50"
-                          >
-                            Upload Logo
-                          </button>
-                          <p className="text-xs text-stone-500 mt-1">JPG, PNG, WebP (max 2MB)</p>
+                          <p className="text-xs text-stone-500 mt-2">JPG, PNG, WebP</p>
+                          <p className="text-xs text-stone-500">(max 2MB)</p>
                         </div>
                       </div>
                       
                       <div>
                         <Label className="text-stone-700 font-light mb-2 block">Header Image</Label>
-                        <div className="border border-dashed border-stone-300 rounded-2xl p-4 flex flex-col items-center justify-center">
-                          {headerImage ? (
-                            <div className="relative w-full h-28 mb-2">
-                              <Image 
-                                src={headerImage} 
-                                alt="Header image" 
-                                fill 
-                                className="object-cover rounded-xl" 
-                                unoptimized={headerImage.startsWith('data:')} 
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-full h-28 bg-stone-100 rounded-xl flex items-center justify-center mb-2">
-                              <Upload className="h-10 w-10 text-stone-400" />
-                            </div>
-                          )}
+                        <div className="border border-dashed border-stone-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 transition-colors"
+                             onClick={() => headerInputRef.current?.click()}>
+                          <div className="relative w-full h-28 mb-2 group">
+                            {headerImage ? (
+                              <>
+                                <Image 
+                                  src={headerImage} 
+                                  alt="Header image" 
+                                  fill 
+                                  className="object-cover rounded-xl group-hover:opacity-80 transition-opacity" 
+                                  unoptimized={headerImage.startsWith('data:')} 
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="bg-black bg-opacity-50 text-white text-xs rounded-lg px-2 py-1">
+                                    Change Header
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="w-full h-full bg-stone-100 rounded-xl flex flex-col items-center justify-center group-hover:bg-stone-200 transition-colors">
+                                <Upload className="h-10 w-10 text-stone-400 mb-2 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs text-stone-500">Upload Header</span>
+                              </div>
+                            )}
+                          </div>
                           <input
                             type="file"
                             ref={headerInputRef}
@@ -353,14 +365,8 @@ export default function RegisterPage() {
                             accept="image/jpeg,image/png,image/webp"
                             className="hidden"
                           />
-                          <button
-                            type="button"
-                            onClick={() => headerInputRef.current?.click()}
-                            className="mt-2 px-4 py-2 bg-white border border-stone-300 rounded-xl text-sm font-light text-stone-700 hover:bg-stone-50"
-                          >
-                            Upload Header
-                          </button>
-                          <p className="text-xs text-stone-500 mt-1">JPG, PNG, WebP (max 2MB)</p>
+                          <p className="text-xs text-stone-500 mt-2">JPG, PNG, WebP</p>
+                          <p className="text-xs text-stone-500">(max 2MB)</p>
                         </div>
                       </div>
                     </div>
@@ -417,7 +423,7 @@ export default function RegisterPage() {
             <div className="mt-4 text-center text-sm text-stone-600 font-light">
               Already have an account?{' '}
               <Link href="/login" className="text-emerald-600 hover:text-emerald-700 font-light">
-                Log in
+                Sign in
               </Link>
             </div>
           </CardContent>

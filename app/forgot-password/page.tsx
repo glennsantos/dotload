@@ -53,20 +53,19 @@ export default function ForgotPasswordPage() {
           <Image 
             src="/logo.png" 
             alt="Alacart Logo" 
-            width={160} 
-            height={42.67} 
+            width={100} 
+            height={21} 
             className="h-auto"
             priority
           />
         </Link>
+        
       </div>
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-stone-800">Forgot Password</CardTitle>
-          <CardDescription className="text-stone-600 font-light">
-            Enter your email address and we'll send you instructions to reset your password.
-          </CardDescription>
-        </CardHeader>
+      <h1 className="text-4xl font-extralight mb-4">Forgot Password</h1>
+      <p className="text-stone-600 font-light w-1/4 text-center mb-6">
+        Enter your email address and we'll send you instructions to reset your password.
+      </p>
+      <Card className="w-full max-w-md py-6">
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4 rounded-xl">

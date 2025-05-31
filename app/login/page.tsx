@@ -145,8 +145,8 @@ export default function LoginPage() {
           <Image 
             src="/logo.png" 
             alt="Alacart Logo" 
-            width={160} 
-            height={42.67} 
+            width={100} 
+            height={21} 
             className="h-auto mb-8"
             priority
           />
