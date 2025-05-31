@@ -44,8 +44,13 @@ export async function GET(req: NextRequest) {
     // Determine recommended redirect
     let recommendedRedirect = '/dashboard';
     
+    // If user has no products, redirect them to create a product
+    if (productCount === 0) {
+      debugLog('User has no products, recommending product creation page');
+      recommendedRedirect = '/create-product';
+    }
     // If user has purchases but no products, they're primarily a buyer
-    if (purchaseCount > 0 && productCount === 0) {
+    else if (purchaseCount > 0 && productCount === 0) {
       debugLog('User identified as primarily a buyer, recommending purchases page');
       recommendedRedirect = '/dashboard/purchases';
     }
