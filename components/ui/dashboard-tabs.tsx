@@ -37,11 +37,6 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
       href: "/products"
     },
     {
-      label: "Purchases",
-      icon: <ShoppingBag className="h-4 w-4" />,
-      href: "/dashboard/purchases"
-    },
-    {
       label: "Promos",
       icon: <Percent className="h-4 w-4" />,
       href: "/dashboard/promos"
@@ -54,7 +49,7 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden mb-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden mb-12">
       <div className="flex overflow-x-auto py-2 px-2 justify-evenly">
         {tabs.map((tab) => {
           // Check if this tab is active based on the current pathname
@@ -70,7 +65,7 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
               className={cn(
                 "flex flex-1 justify-center items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors rounded-lg",
                 isActive 
-                  ? "bg-emerald-100 text-emerald-600" 
+                  ? "bg-emerald-100 text-emerald-700" 
                   : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
               )}
             >

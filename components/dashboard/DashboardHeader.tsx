@@ -18,28 +18,32 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ userName, userEmail }: DashboardHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-6">
-      <div className="flex items-center space-x-4">
+    <>
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-stone-200 px-4 sm:px-6 lg:px-8 py-2">
+      <div className="flex justify-between items-center h-16">
+        <div className="flex items-center space-x-4">
         <Link href="/" className="block">
           <Image 
             src="/logo.png" 
             alt="Alacart Logo" 
             width={120} 
             height={32} 
-            className="h-8 w-auto"
+            className="h-7 w-auto"
             priority
           />
         </Link>
         <div>
-          <h1 className="text-3xl font-light text-stone-800">Dashboard</h1>
-          <p className="text-stone-600 font-light">Welcome back, {userName}</p>
+          <h1 className="text-2xl font-light text-stone-800">Dashboard</h1>
+          <p className="text-sm text-stone-500 font-light">Welcome back, {userName}</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
         <Button
-          asChild variant="default"
+          asChild 
+          variant="default"
+          className="h-9 px-4 text-sm font-light"
         >
-          <Link href="/create-product">
+          <Link href="/create-product" className="flex items-center gap-1">
             <Plus size={16} /> Create Product
           </Link>
         </Button>
@@ -47,10 +51,11 @@ export function DashboardHeader({ userName, userEmail }: DashboardHeaderProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button 
-              variant="default" size="lg"
-              className="h-10 w-10 p-0 rounded-full flex items-center justify-center relative overflow-hidden bg-emerald-200"
+              variant="ghost" 
+              size="icon"
+              className="h-9 w-9 rounded-full relative overflow-hidden hover:bg-stone-100"
             >
-              <div className="h-10 w-10 rounded-full flex items-center justify-center text-emerald-600 font-medium">
+              <div className="h-9 w-9 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 font-medium text-sm">
                 {userName ? userName.charAt(0).toUpperCase() : 'U'}
               </div>
             </Button>
@@ -80,7 +85,10 @@ export function DashboardHeader({ userName, userEmail }: DashboardHeaderProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
-    </div>
+      </div>
+      <div className="h-16"></div>
+    </>
   );
 }

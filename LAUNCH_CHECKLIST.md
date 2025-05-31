@@ -1,4 +1,4 @@
-# alaCarte Launch Checklist
+# alacart Launch Checklist
 
 ## Resolve Issues
 *Note: more issues listed in Github*
