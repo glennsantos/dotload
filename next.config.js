@@ -5,11 +5,15 @@ const nextConfig = {
   logging: {
     level: 'verbose'
   },
-  api: {
-    bodyParser: {
-      sizeLimit: '100mb', // Increase the API body size limit to 100MB
-    },
+  // The 'api' config is no longer supported in newer Next.js versions
+  // Moving relevant settings to serverRuntimeConfig
+  serverRuntimeConfig: {
+    // Server-side only config
+    bodySizeLimit: '100mb',
     responseLimit: false,
+  },
+  publicRuntimeConfig: {
+    // Config accessible on both server and client
   },
   images: {
     domains: [
