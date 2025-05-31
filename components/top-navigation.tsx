@@ -191,7 +191,7 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/products" className="text-2xl font-bold mr-8">
-            alaCart
+            alacart
           </Link>
         </div>
 

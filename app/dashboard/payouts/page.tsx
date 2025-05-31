@@ -15,7 +15,8 @@ export default function PayoutsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showRequestForm, setShowRequestForm] = useState(false)
-  const [userName, setUserName] = useState("User"); // Add userName state
+  const [userName, setUserName] = useState("User");
+  const [userEmail, setUserEmail] = useState("");
   
   // Form state
   const [amount, setAmount] = useState("")
@@ -48,9 +49,9 @@ export default function PayoutsPage() {
         const authResponse = await fetch('/api/auth/me');
         if (authResponse.ok) {
           const userData = await authResponse.json();
-          if (userData.user && userData.user.name) {
-            setUserName(userData.user.name);
-          }
+          const user = userData.user || userData;
+          setUserName(user.name || 'User');
+          setUserEmail(user.email || '');
         }
       } catch (err) {
         console.error('Error fetching user data:', err);
@@ -203,7 +204,7 @@ export default function PayoutsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <DashboardHeader userName={userName} />
+      <DashboardHeader userName={userName} userEmail={userEmail} />
       
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

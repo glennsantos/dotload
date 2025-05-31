@@ -1,10 +1,10 @@
-# alaCarte
+# alacart
 
 A modern, flexible digital product marketplace platform built with Next.js and Prisma.
 
 ## Overview
 
-alaCarte is an innovative platform for creators to sell digital products, offering flexible product variations, seamless file uploads, and easy payment configuration.
+alacart is an innovative platform for creators to sell digital products, offering flexible product variations, seamless file uploads, and easy payment configuration.
 
 ## Table of Contents
 
@@ -433,7 +433,7 @@ To access Prisma Studio in the EC2 instance:
 
 ## Simple EC2 Deployment Guide with AWS CLI
 
-This guide provides a simpler approach to deploy alaCarte to an EC2 instance using AWS CLI and `pnpm dev` or `pnpm start`.
+This guide provides a simpler approach to deploy alacart to an EC2 instance using AWS CLI and `pnpm dev` or `pnpm start`.
 
 ### Deployment Checklist
 
@@ -484,7 +484,7 @@ chmod 400 alacarte-key.pem
 # Create security group for EC2
 aws ec2 create-security-group \
   --group-name alacarte-ec2-sg \
-  --description "Security group for alaCarte EC2 instance"
+  --description "Security group for alacart EC2 instance"
 
 # Get your public IP
 MY_IP=$(curl -s https://checkip.amazonaws.com)/32
@@ -912,7 +912,7 @@ XENDIT_WEBHOOK_SECRET=YourXenditWebhookSecret
 AWS_REGION=ap-southeast-1
 AWS_ACCESS_KEY_ID=your_access_key_id
 AWS_SECRET_ACCESS_KEY=your_secret_access_key
-EMAIL_FROM=alaCarte <no-reply@example.com>
+EMAIL_FROM=alacart <no-reply@example.com>
 
 ### Email Configuration
 

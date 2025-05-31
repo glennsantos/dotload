@@ -129,7 +129,7 @@ export default async function Dashboard() {
   
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} />
+      <DashboardHeader userName={userName} userEmail={user?.email} />
 
       {/* Horizontal Tab Menu */}
       <div className="mb-8">

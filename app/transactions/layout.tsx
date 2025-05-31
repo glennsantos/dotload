@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from "@/lib/prisma"
 
 export const metadata: Metadata = {
-  title: 'Transactions | alaCart',
+  title: 'Transactions | alacart',
   description: 'Track your income and payouts',
 };
 

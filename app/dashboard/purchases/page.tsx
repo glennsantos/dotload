@@ -58,6 +58,7 @@ export default function PurchasesPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [userName, setUserName] = useState("User");
+  const [userEmail, setUserEmail] = useState("");
 
   // Fetch purchases data and user data
   useEffect(() => {
@@ -80,9 +81,9 @@ export default function PurchasesPage() {
         // Get user data for welcome message
         if (authResponse.ok) {
           const userData = await authResponse.json();
-          if (userData.user && userData.user.name) {
-            setUserName(userData.user.name);
-          }
+          const user = userData.user || userData;
+          setUserName(user.name || 'User');
+          setUserEmail(user.email || '');
         }
         
         if (!purchasesResponse.ok) {
@@ -169,7 +170,7 @@ export default function PurchasesPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} />
+      <DashboardHeader userName={userName} userEmail={userEmail} />
 
       {/* Horizontal Tab Menu */}
       <div className="mb-8">

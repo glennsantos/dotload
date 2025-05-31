@@ -14,6 +14,7 @@ export default function ProductsPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [userName, setUserName] = useState("User")
+  const [userEmail, setUserEmail] = useState("")
   
   // Check authentication on page load and fetch products
   useEffect(() => {
@@ -34,9 +35,9 @@ export default function ProductsPage() {
         // Get user data for welcome message
         if (authResponse.ok) {
           const userData = await authResponse.json()
-          if (userData.user && userData.user.name) {
-            setUserName(userData.user.name)
-          }
+          const user = userData.user || userData;
+          setUserName(user.name || 'User')
+          setUserEmail(user.email || '')
         }
         
         if (productsResponse.ok) {
@@ -52,7 +53,7 @@ export default function ProductsPage() {
   }, [router])
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} />
+      <DashboardHeader userName={userName} userEmail={userEmail} />
       
       {/* Horizontal Tab Menu */}
       <div className="mb-8">

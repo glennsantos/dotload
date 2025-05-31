@@ -13,7 +13,7 @@ import { inter } from './fonts'
 
 
 export const metadata: Metadata = {
-  title: "alaCart",
+  title: "alacart",
   description: "A digital product marketplace platform",
     generator: 'Glenn Santos'
 }

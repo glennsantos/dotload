@@ -34,6 +34,7 @@ export default function CustomersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userName, setUserName] = useState("User");
+  const [userEmail, setUserEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState('');
   
   // Fetch customers data and user data
@@ -57,9 +58,8 @@ export default function CustomersPage() {
         // Get user data for welcome message
         if (authResponse.ok) {
           const userData = await authResponse.json();
-          if (userData.user && userData.user.name) {
-            setUserName(userData.user.name);
-          }
+          setUserName(userData.name || 'User');
+          setUserEmail(userData.email || '');
         }
         
         if (!customersResponse.ok) {
@@ -155,7 +155,7 @@ export default function CustomersPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} />
+      <DashboardHeader userName={userName} userEmail={userEmail} />
       
       {/* Horizontal Tab Menu */}
       <div className="mb-8">
