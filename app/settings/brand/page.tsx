@@ -191,15 +191,22 @@ export default function BrandSettingsPage() {
                 </label>
                 <div className="border-2 border-dashed border-stone-300 rounded-lg p-4 flex flex-col items-center justify-center h-48">
                   {logoPreview ? (
-                    <div className="relative w-full h-full flex items-center justify-center">
+                    <div 
+                      className="relative w-full h-full flex items-center justify-center cursor-pointer"
+                      onClick={() => {
+                        if (logoInputRef.current) logoInputRef.current.click()
+                      }}
+                    >
                       <img
                         src={logoPreview}
-                        alt="Brand logo preview"
+                        alt="Logo preview"
                         className="max-h-full max-w-full object-contain"
+                        title="Click to change logo"
                       />
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           if (logoInputRef.current) logoInputRef.current.click()
                         }}
                         className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow-md hover:bg-stone-100"
@@ -240,15 +247,22 @@ export default function BrandSettingsPage() {
                 </label>
                 <div className="border-2 border-dashed border-stone-300 rounded-lg p-4 flex flex-col items-center justify-center h-48">
                   {headerPreview ? (
-                    <div className="relative w-full h-full flex items-center justify-center">
+                    <div 
+                      className="relative w-full h-full flex items-center justify-center cursor-pointer"
+                      onClick={() => {
+                        if (headerInputRef.current) headerInputRef.current.click()
+                      }}
+                    >
                       <img
                         src={headerPreview}
                         alt="Header image preview"
                         className="max-h-full max-w-full object-contain"
+                        title="Click to change header image"
                       />
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           if (headerInputRef.current) headerInputRef.current.click()
                         }}
                         className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow-md hover:bg-stone-100"

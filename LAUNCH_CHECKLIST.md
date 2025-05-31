@@ -3,6 +3,9 @@
 ## Resolve Issues
 *Note: more issues listed in Github*
 - [ ] review mobile responsive version
+- [ ] fix profile update
+- [ ] fix password update
+
 # purchases
   - [ ] reinstate the hidden download settings. whenever there is a download, that should tick down. the purchase should only be downloadable a fixed number of times
   - [ ] also track link expiration in the purchase
