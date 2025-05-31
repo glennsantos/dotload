@@ -172,7 +172,7 @@ export default async function Dashboard() {
       </div>
 
       {/* Recent Sales Section */}
-      <div className="border border-stone-200 rounded-lg shadow-sm p-4 sm:p-6 mb-8">
+      <div className="border border-stone-100 rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-medium text-stone-800">Recent Sales</h2>
           <Button asChild variant="outline" size="sm" className="text-sm">

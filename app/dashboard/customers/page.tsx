@@ -186,7 +186,7 @@ export default function CustomersPage() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : (
-          <Card className="border border-stone-200 shadow-sm">
+          <Card className="border border-stone-100 shadow-sm">
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <CardTitle className="text-xl font-medium text-stone-800">Customer Management</CardTitle>

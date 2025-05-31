@@ -178,7 +178,7 @@ export default function PurchasesPage() {
       {/* Purchases Section */}
       <div className="space-y-6">
         {isLoading ? (
-          <Card className="border border-stone-200 shadow-sm">
+          <Card className="border border-stone-50 shadow-sm">
             <CardContent className="p-6">
               <div className="flex justify-center items-center h-40">
                 <div className="animate-pulse flex flex-col items-center">

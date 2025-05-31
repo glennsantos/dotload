@@ -147,7 +147,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
   return (
     <div className="space-y-8">
       {/* Products Table */}
-      <div className="border border-stone-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

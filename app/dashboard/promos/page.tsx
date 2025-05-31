@@ -284,7 +284,7 @@ export default function PromosPage() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : (
-          <Card className="border border-stone-200 shadow-sm">
+          <Card className="border border-stone-100 shadow-sm">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-xl font-medium text-stone-800">Your Discount Codes</CardTitle>
