@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Plus, Info, ShoppingCart, DollarSign, Users, UserCheck, Archive } from "lucide-react"
 import { StatsCard } from "@/components/ui/stats-card"
 import { Button } from "@/components/ui/button"
+import ProductActions from "./ProductActions"
 
 interface ProductFile {
   id: string
@@ -39,6 +40,7 @@ export interface Product {
   files: ProductFile[]
   variations: ProductVariation[]
   isArchived?: boolean
+  isPublic?: boolean
 }
 
 interface ProductsListProps {
@@ -51,6 +53,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeFilter, setActiveFilter] = useState<'active' | 'archived'>('active')
+  const [localProducts, setLocalProducts] = useState<Product[]>(products)
 
   useEffect(() => {
     async function fetchProducts() {
@@ -67,6 +70,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
         if (response.ok) {
           const data = await response.json()
           onProductsChange(data)
+          setLocalProducts(data)
         } else {
           setError('Failed to fetch products')
         }
@@ -80,6 +84,27 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
 
     fetchProducts()
   }, [onProductsChange])
+  
+  // Update local products when props change
+  useEffect(() => {
+    setLocalProducts(products)
+  }, [products])
+  
+  // Handle product update
+  const handleProductUpdate = (updatedProduct: Product) => {
+    const updatedProducts = localProducts.map(product => 
+      product.id === updatedProduct.id ? updatedProduct : product
+    )
+    setLocalProducts(updatedProducts)
+    onProductsChange(updatedProducts)
+  }
+  
+  // Handle product delete
+  const handleProductDelete = (productId: string) => {
+    const updatedProducts = localProducts.filter(product => product.id !== productId)
+    setLocalProducts(updatedProducts)
+    onProductsChange(updatedProducts)
+  }
 
   if (loading) {
     return (
@@ -176,10 +201,11 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                 <th className="text-left py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '250px' }}>Product</th>
                 <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '80px' }}>Price</th>
                 <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '100px' }}>Status</th>
+                <th className="text-right py-3 px-4 font-medium text-sm text-stone-700" style={{ minWidth: '60px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-            {products
+            {localProducts
               .filter(product => activeFilter === 'archived' ? product.isArchived : !product.isArchived)
               .map((product) => (
               <tr key={product.id} className="border-b hover:bg-stone-50">
@@ -223,9 +249,30 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                 <td className="py-3 px-4 text-right">₱{product.price.toFixed(2)}</td>
                 <td className="py-3 px-4 text-right">
                   <div className="flex items-center justify-end">
-                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
-                    <span className="text-stone-700">Published</span>
+                    {product.isArchived ? (
+                      <>
+                        <span className="inline-block w-2 h-2 rounded-full bg-stone-400 mr-2"></span>
+                        <span className="text-stone-700">Archived</span>
+                      </>
+                    ) : product.isPublic ? (
+                      <>
+                        <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
+                        <span className="text-stone-700">Published</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="inline-block w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
+                        <span className="text-stone-700">Draft</span>
+                      </>
+                    )}
                   </div>
+                </td>
+                <td className="py-3 px-4 text-right">
+                  <ProductActions 
+                    product={product} 
+                    onProductUpdate={handleProductUpdate}
+                    onProductDelete={handleProductDelete}
+                  />
                 </td>
               </tr>
             ))}
