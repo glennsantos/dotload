@@ -55,24 +55,10 @@ export default function ProductsPage() {
   }, [router])
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <DashboardHeader userName={userName} userEmail={userEmail} userLogo={userLogo} />
+      <DashboardHeader />
       
       {/* Horizontal Tab Menu */}
       <DashboardTabs activeTab="products" />
-      
-      {/* Mobile Search - Only visible on small screens */}
-      <div className="md:hidden mb-6">
-        <div className="relative w-full">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search size={16} className="text-stone-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search products"
-            className="pl-10 pr-4 py-2 border border-stone-300 rounded-md w-full focus:outline-none focus:ring-1 focus:ring-emerald-500"
-          />
-        </div>
-      </div>
       
       <ProductsList products={products} onProductsChange={setProducts} />
     </div>

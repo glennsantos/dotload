@@ -199,9 +199,27 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
   return (
     <div className="space-y-8">
       {/* Products Header */}
-      <div className="flex items-center mb-4 gap-4">
-        <h2 className="text-2xl font-light text-stone-800">Your Products</h2>
-        <div className="flex rounded-xl overflow-hidden border border-stone-200 shadow-none">
+      <div className="flex flex-col md:flex-row md:items-center mb-4 md:gap-4">
+        <h2 className="text-2xl font-light text-stone-800 mb-4 md:mb-0">Your Products</h2>
+        
+        {/* Mobile view tabs - visible only on mobile */}
+        <div className="flex md:hidden w-full rounded-xl overflow-hidden border border-stone-200 mb-2">
+          <button 
+            className={`m-1 flex-1 py-3 text-sm font-light rounded-xl ${activeFilter === 'active' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600'}`}
+            onClick={() => setActiveFilter('active')}
+          >
+            Active ({products.filter(p => p.status !== 'archived').length})
+          </button>
+          <button 
+            className={`m-1 flex-1 py-3 text-sm font-light rounded-xl ${activeFilter === 'archived' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600'}`}
+            onClick={() => setActiveFilter('archived')}
+          >
+            <span className="flex items-center justify-center"><Archive className="mr-2 h-4 w-4" /> Archived ({products.filter(p => p.status === 'archived').length})</span>
+          </button>
+        </div>
+        
+        {/* Desktop view tabs - hidden on mobile */}
+        <div className="hidden md:flex rounded-xl overflow-hidden border border-stone-200 shadow-none">
           <button 
             className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'active' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100'}`}
             onClick={() => setActiveFilter('active')}
