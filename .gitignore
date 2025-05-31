@@ -76,3 +76,4 @@ certificates
 .certs/local-cert.pem
 .certs/local-key.pem
 .certs/mkcert
+ecosystem.config.js
