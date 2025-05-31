@@ -130,13 +130,11 @@ export default async function Dashboard() {
   const stats = await getStats(user.id);
   
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24 sm:pb-6">
+    <div className="max-w-7xl mx-auto p-6">
       <DashboardHeader userName={userName} userEmail={user?.email} userLogo={user?.storeLogoPath} />
       
       {/* Horizontal Tab Menu */}
-      <div className="mb-8 mt-12">
-        <DashboardTabs activeTab="overview" />
-      </div>
+      <DashboardTabs activeTab="overview" />
       
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">

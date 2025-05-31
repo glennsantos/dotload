@@ -228,9 +228,7 @@ export default function SalesPage() {
       <DashboardHeader userName={userName} userEmail={userEmail} />
 
       {/* Horizontal Tab Menu */}
-      <div className="mb-8">
-        <DashboardTabs activeTab="sales" />
-      </div>
+      <DashboardTabs activeTab="sales" />
 
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

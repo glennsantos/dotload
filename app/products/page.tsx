@@ -56,9 +56,8 @@ export default function ProductsPage() {
       <DashboardHeader userName={userName} userEmail={userEmail} />
       
       {/* Horizontal Tab Menu */}
-      <div className="mb-8">
-        <DashboardTabs activeTab="products" />
-      </div>
+      <DashboardTabs activeTab="products" />
+      
       {/* Mobile Search - Only visible on small screens */}
       <div className="md:hidden mb-6">
         <div className="relative w-full">

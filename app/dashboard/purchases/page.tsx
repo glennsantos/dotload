@@ -173,9 +173,7 @@ export default function PurchasesPage() {
       <DashboardHeader userName={userName} userEmail={userEmail} />
 
       {/* Horizontal Tab Menu */}
-      <div className="mb-8">
-        <DashboardTabs activeTab="purchases" />
-      </div>
+      <DashboardTabs activeTab="purchases" />
 
       {/* Purchases Section */}
       <div className="space-y-6">

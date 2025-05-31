@@ -158,9 +158,7 @@ export default function CustomersPage() {
       <DashboardHeader userName={userName} userEmail={userEmail} />
       
       {/* Horizontal Tab Menu */}
-      <div className="mb-8">
-        <DashboardTabs activeTab="customers" />
-      </div>
+      <DashboardTabs activeTab="customers" />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
