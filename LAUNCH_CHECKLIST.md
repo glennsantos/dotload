@@ -2,13 +2,6 @@
 
 ## Resolve Issues
 *Note: more issues listed in Github*
-- [ ] review mobile responsive version
-
-# purchases
-  - [ ] reinstate the hidden download settings. whenever there is a download, that should tick down. the purchase should only be downloadable a fixed number of times
-  - [ ] also track link expiration in the purchase
-  - [ ] remove the need for the buyer to register 
-- [] update shipping and fulfillment
 
 ## Site Setup
 - [x] Attach domain to dev server
@@ -29,7 +22,6 @@
 
 ## Perform QA Testing
 - [ ] Get QA assistance for the rest of the testing
-- [ ] Check marco's alacart github for the tests
 - [ ] Document happy path 
   - [ ] Execute happy path and note any issues
   - [ ] For showstoppers, list and address
