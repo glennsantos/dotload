@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { verify, JwtPayload } from 'jsonwebtoken';
+import { jwtVerify, type JWTPayload } from 'jose';
 import { prisma } from './prisma';
 import { headers } from 'next/headers';
 import { NextRequest } from 'next/server';
@@ -90,8 +90,16 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       return null;
     }
     
-    // Verify and decode the token
-    const decoded = verify(token, JWT_SECRET) as JwtPayload & { 
+    // Create secret key for jose
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    
+    // Verify and decode the token using jose
+    const { payload } = await jwtVerify(token, secret, {
+      algorithms: ['HS256'],
+    });
+    
+    // Cast payload to include our custom fields
+    const decoded = payload as JWTPayload & { 
       userId: string; 
       email: string;
     };
@@ -121,8 +129,16 @@ export async function getAuthUserId(): Promise<string | null> {
       return null;
     }
     
-    // Verify and decode the token
-    const decoded = verify(token, JWT_SECRET) as JwtPayload & { 
+    // Create secret key for jose
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    
+    // Verify and decode the token using jose
+    const { payload } = await jwtVerify(token, secret, {
+      algorithms: ['HS256'],
+    });
+    
+    // Cast payload to include our custom fields
+    const decoded = payload as JWTPayload & { 
       userId: string; 
     };
     

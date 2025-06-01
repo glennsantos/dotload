@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 import { prisma } from "@/lib/prisma"
 
 // Enable more verbose logging
@@ -108,14 +108,15 @@ export async function POST(req: NextRequest) {
       console.log('Token Generation - JWT Secret:', JWT_SECRET);
       console.log('Token Generation - JWT Secret Length:', JWT_SECRET.length);
       
-      token = jwt.sign(
-        { userId: user.id, email: user.email }, 
-        JWT_SECRET, 
-        { 
-          expiresIn: '24h',
-          algorithm: 'HS256' // Explicitly set algorithm
-        }
-      );
+      // Create secret key for jose
+      const secret = new TextEncoder().encode(JWT_SECRET);
+      
+      // Generate token using jose
+      token = await new SignJWT({ userId: user.id, email: user.email })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('24h')
+        .sign(secret);
       
       // Log token details after generation
       console.log('Generated Token:', token);
@@ -156,14 +157,14 @@ export async function POST(req: NextRequest) {
       response.cookies.set('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60, // 24 hours
         path: '/'
       });
       debugLog('Auth cookie set. Cookie options:', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: '24 hours',
         path: '/'
       });

@@ -285,6 +285,25 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   // Handle form submission
   const handleSubmit = async () => {
     try {
+      // Proactive authentication check before form submission
+      console.log('Checking authentication before form submission...');
+      const authResponse = await fetch('/api/auth/me', { 
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+      
+      if (!authResponse.ok) {
+        console.log('Authentication check failed, redirecting to login');
+        // User is not authenticated, redirect to login with current page as callback
+        const currentPath = window.location.pathname;
+        router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
+        return;
+      }
+      
+      console.log('Authentication check passed, proceeding with form submission');
+      
       // Validate form before submission
       if (!validateForm()) {
         // Scroll to the top to show validation errors

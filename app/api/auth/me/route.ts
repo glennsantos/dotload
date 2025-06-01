@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import jwt from 'jsonwebtoken'
+import { jwtVerify, type JWTPayload } from 'jose'
 import { prisma } from "@/lib/prisma"
 
 // Enable debugging
@@ -66,45 +66,43 @@ export async function GET(request: NextRequest) {
     
     console.log('JWT_SECRET available');
     try {
-      // First verify the token and then cast to the expected type
-      const decodedToken = jwt.verify(tokenValue, JWT_SECRET);
+      // Create secret key for jose
+      const secret = new TextEncoder().encode(JWT_SECRET);
       
-      // Ensure the decoded token has the expected structure
-      if (typeof decodedToken === 'object' && decodedToken !== null && 'userId' in decodedToken && 'email' in decodedToken) {
-        const decoded = decodedToken as { userId: string, email: string };
-        debugLog('Token verified, userId:', decoded.userId);
-        
-        // Get user from database
-        debugLog('Fetching user from database...');
-        const user = await prisma.user.findUnique({
-          where: { id: decoded.userId },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            storeLogoPath: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        });
-        
-        if (!user) {
-          debugLog('User not found in database for id:', decoded.userId);
-          return NextResponse.json(
-            { message: 'User not found' },
-            { status: 404 }
-          );
+      // Verify the token using jose
+      const { payload } = await jwtVerify(tokenValue, secret, {
+        algorithms: ['HS256'],
+      });
+      
+      // Cast payload to include our custom fields
+      const decoded = payload as JWTPayload & { userId: string, email: string };
+      
+      debugLog('Token verified, userId:', decoded.userId);
+      
+      // Get user from database
+      debugLog('Fetching user from database...');
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          storeLogoPath: true,
+          createdAt: true,
+          updatedAt: true
         }
-        
-        debugLog('User found:', user);
-        return NextResponse.json({ user }, { status: 200 });
-      } else {
-        debugLog('Token structure invalid');
+      });
+      
+      if (!user) {
+        debugLog('User not found in database for id:', decoded.userId);
         return NextResponse.json(
-          { message: 'Invalid token structure' },
-          { status: 401 }
+          { message: 'User not found' },
+          { status: 404 }
         );
       }
+      
+      debugLog('User found:', user);
+      return NextResponse.json({ user }, { status: 200 });
     } catch (tokenError) {
       debugLog('Token verification failed:', tokenError);
       return NextResponse.json(

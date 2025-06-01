@@ -136,6 +136,7 @@ export const config = {
     '/settings',
     '/settings/:path*',
     '/buyer-dashboard/:path*',
+    '/create-product',
     '/create-product/:path*',
     // API routes that need auth (exclude public auth endpoints)
     '/api/products/:path*',
