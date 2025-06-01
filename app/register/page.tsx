@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2, Mail, Upload, Store } from 'lucide-react';
+import { Mail, Upload, Store } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import AlertModal from '@/components/AlertModal';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -21,6 +21,10 @@ export default function RegisterPage() {
   const [headerImage, setHeaderImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'error' | 'success'>('error');
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
@@ -134,6 +138,19 @@ export default function RegisterPage() {
     }
   };
 
+  // Show modal with error or success message
+  const showModal = (type: 'error' | 'success', title: string, message: string) => {
+    setModalType(type);
+    setModalTitle(title);
+    setModalMessage(message);
+    setIsModalOpen(true);
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,7 +191,8 @@ export default function RegisterPage() {
       setShowVerificationMessage(true);
     } catch (error) {
       console.error('Registration error:', error);
-      setError(error instanceof Error ? error.message : 'Registration failed. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
+      showModal('error', 'Registration Error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -202,16 +220,10 @@ export default function RegisterPage() {
         const data = await response.json();
         throw new Error(data.error || 'Failed to resend verification email');
       }
-      
-      setSuccess('Verification email has been resent');
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => {
-        setSuccess(null);
-      }, 5000);
     } catch (error) {
       console.error('Resend verification error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to resend verification email');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to resend verification email';
+      showModal('error', 'Error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -231,24 +243,16 @@ export default function RegisterPage() {
               priority
             />
           </Link>
-          {!showVerificationMessage &&         
+          {!showVerificationMessage && (
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-light mb-1">Get Started</CardTitle>
               <CardDescription className="text-xl text-stone-500 font-light">Create your account to continue</CardDescription>
             </CardHeader>
-          }
+          )}
         </div>
         
         <Card className="w-full max-w-md py-8">
           <CardContent>
-            {error && (
-              <Alert variant="destructive" className="mb-4 rounded-xl">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
             {!showVerificationMessage ? (
               <form onSubmit={handleSubmit}>
                 <div className="text-xl mb-0 font-light text-center">Account Information</div>
@@ -416,27 +420,6 @@ export default function RegisterPage() {
                 </div>
                 <h3 className="text-xl font-light text-stone-800 mb-2">Check your email</h3>
                 <p className="text-stone-600 mb-6">We've sent a verification link to <span className="font-medium">{registeredEmail}</span></p>
-                
-                {success && (
-                  <Alert className="mb-4 bg-emerald-50 border-emerald-200">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                    <AlertTitle className="text-emerald-600 font-normal">Success</AlertTitle>
-                    <AlertDescription className="text-emerald-700 font-light">
-                      {success}
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                {error && (
-                  <Alert className="mb-4 bg-red-50 border-red-200">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
-                    <AlertTitle className="text-red-600 font-normal">Error</AlertTitle>
-                    <AlertDescription className="text-red-700 font-light">
-                      {error}
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
                 <div className="flex flex-col space-y-4">
                   <Button
                     onClick={handleResendVerification}
@@ -459,6 +442,14 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
       </div>
+      
+      <AlertModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        type={modalType}
+        title={modalTitle}
+        message={modalMessage}
+      />
     </div>
   );
 }
