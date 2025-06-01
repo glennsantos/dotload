@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Plus, AlertCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, AlertCircle, X } from 'lucide-react'
 import ErrorModal from '@/app/components/ErrorModal'
 import { validateProductForm } from '@/lib/form-validation'
 import ProductTypeSelection from './ProductTypeSelection'
@@ -579,48 +579,96 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
             </h1>
           </header>
           
-          <div className="p-6 max-w-3xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-xl font-light mb-4">Product {isEditing ? 'Updated' : 'Created'} Successfully!</h2>
-              <p className="font-light text-gray-600 mb-4">Your product has been published and is now available for purchase.</p>
-              
-              <div className="p-4 border rounded-3xl mb-4">
-                <h3 className="font-light mb-2">Product URL</h3>
-                <div className="flex mb-4">
-                  <input
-                    type="text"
-                    value={`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`}
-                    readOnly
-                    className="flex-1 p-2 border rounded-l-2xl bg-gray-100"
-                  />
-                  <button 
-                    onClick={() => {
-                      const url = `${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`;
-                      if (navigator?.clipboard) {
-                        navigator.clipboard.writeText(url)
-                          .then(() => alert('URL copied to clipboard'))
-                          .catch(() => alert('Failed to copy URL'));
-                      }
-                    }}
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-r-2xl"
-                  >
-                    Copy
-                  </button>
+          <div className="p-6 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Left side - Success message and actions */}
+              <div className="lg:col-span-5">
+                <div className="mb-6">
+                  <h2 className="text-xl font-light mb-4">Product {isEditing ? 'Updated' : 'Created'} Successfully!</h2>
+                  <p className="font-light text-gray-600 mb-6">Your product has been published and is now available for purchase.</p>
+                  
+                  <div className="p-4 border rounded-3xl mb-6">
+                    <h3 className="font-light mb-2">Product URL</h3>
+                    <div className="flex mb-4">
+                      <input
+                        type="text"
+                        value={`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`}
+                        readOnly
+                        className="flex-1 p-2 border rounded-l-2xl bg-gray-100"
+                      />
+                      <button 
+                        onClick={() => {
+                          const url = `${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`;
+                          if (navigator?.clipboard) {
+                            navigator.clipboard.writeText(url)
+                              .then(() => alert('URL copied to clipboard'))
+                              .catch(() => alert('Failed to copy URL'));
+                          }
+                        }}
+                        className="px-4 py-2 bg-emerald-600 text-white rounded-r-2xl"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Share Buttons */}
+                  <div className="p-4 border rounded-3xl mb-6">
+                    <h3 className="font-light mb-3">Share Your Product</h3>
+                    <p className="text-sm text-gray-600 mb-4">Share your product on social media</p>
+                    <div className="flex gap-3 flex-wrap">
+                      <button 
+                        onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}&text=${encodeURIComponent(`Check out ${createdProduct.name}`)}`, '_blank')} 
+                        className="px-4 py-2 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors"
+                      >
+                        X (Twitter)
+                      </button>
+                      <button 
+                        onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} 
+                        className="px-4 py-2 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-colors"
+                      >
+                        Facebook
+                      </button>
+                      <button 
+                        onClick={() => {
+                          // Instagram doesn't have a direct share URL, so we copy the link and suggest manual sharing
+                          const url = `${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`;
+                          if (navigator?.clipboard) {
+                            navigator.clipboard.writeText(url)
+                              .then(() => alert('Link copied! You can now paste it in your Instagram story or bio.'))
+                              .catch(() => alert('Failed to copy URL'));
+                          }
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-colors"
+                      >
+                        Instagram
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-4 mt-8 font-light flex-wrap">
+                    <Link href={`/p/${createdProduct.slug}`} className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 transition-colors">
+                      View Live Product
+                    </Link>
+                    {isEditing && (
+                      <button onClick={() => window.location.reload()} className="px-4 py-2 border rounded-2xl hover:bg-gray-50 transition-colors">
+                        Continue Editing
+                      </button>
+                    )}
+                    <Link href="/products" className="px-4 py-2 border rounded-2xl hover:bg-gray-50 transition-colors">
+                      Back to Products
+                    </Link>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex gap-4 mt-8 font-light">
-                <Link href={`/p/${createdProduct.slug}`} className="px-4 py-2 bg-emerald-600 text-white rounded-2xl">
-                  View Product
-                </Link>
-                {isEditing && (
-                  <button onClick={() => window.location.reload()} className="px-4 py-2 border rounded-2xl">
-                    Continue Editing
-                  </button>
-                )}
-                <Link href="/products" className="px-4 py-2 border rounded-2xl">
-                  Back to Products
-                </Link>
+
+              {/* Right side - Product Preview */}
+              <div className="lg:col-span-7">
+                <div className="mb-4">
+                  <h3 className="text-lg font-light">Product Preview</h3>
+                  <p className="text-sm text-gray-600">This is how your product will appear to customers</p>
+                </div>
+                <ProductPreview productData={createdProduct} variant="success" />
               </div>
             </div>
           </div>

@@ -9,9 +9,10 @@ import ClientProductPage from '@/app/p/[slug]/client-page'
 
 type ProductPreviewProps = {
   productData: Product
+  variant?: 'default' | 'success'
 }
 
-export default function ProductPreview({ productData }: ProductPreviewProps) {
+export default function ProductPreview({ productData, variant = 'default' }: ProductPreviewProps) {
   const [userData, setUserData] = useState({
     userName: "Your Store",
     storeLogoPath: ""
@@ -89,7 +90,19 @@ export default function ProductPreview({ productData }: ProductPreviewProps) {
     );
   }
 
-  // Regular preview
+  // Success page variant - full size, no sticky positioning
+  if (variant === 'success') {
+    return (
+      <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+        <ClientProductPage 
+          product={transformedProduct} 
+          slug="preview" 
+        />
+      </div>
+    );
+  }
+
+  // Default variant - sticky with scaling
   return (
     <div className="sticky top-4">
       <div className="flex justify-between items-center mb-2">
