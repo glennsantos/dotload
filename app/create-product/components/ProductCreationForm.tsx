@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Plus, AlertCircle, X } from 'lucide-react'
 import ErrorModal from '@/app/components/ErrorModal'
+import SuccessModal from '@/app/components/SuccessModal'
 import { validateProductForm } from '@/lib/form-validation'
 import ProductTypeSelection from './ProductTypeSelection'
 import ProductInformation from './ProductInformation'
@@ -83,6 +84,8 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   const [showValidationErrors, setShowValidationErrors] = useState(false)
   const [errorModalOpen, setErrorModalOpen] = useState(false)
   const [errorModalMessage, setErrorModalMessage] = useState('')
+  const [successModalOpen, setSuccessModalOpen] = useState(false)
+  const [successModalMessage, setSuccessModalMessage] = useState('')
   const prevCreatedProduct = useRef<Product | null>(null);
   
   // Initialize product data with default values
@@ -125,6 +128,16 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
     }
   })
 
+  const showError = (message: string) => {
+    setErrorModalMessage(message)
+    setErrorModalOpen(true)
+  }
+
+  const showSuccess = (message: string) => {
+    setSuccessModalMessage(message)
+    setSuccessModalOpen(true)
+  }
+
   // Handle tab switching
   const handleTabChange = (tab: string) => {
     setActiveTab(tab)
@@ -146,8 +159,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
     // If not valid, show error modal with first error
     if (!isValid) {
       const firstError = Object.values(errors)[0]
-      setErrorModalMessage(firstError)
-      setErrorModalOpen(true)
+      showError(firstError)
     }
     
     return isValid
@@ -284,12 +296,19 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   
   // Handle form submission
   const handleSubmit = async () => {
+    console.log('[FORM] === FORM SUBMISSION START ===');
+    console.log('[FORM] 🚀 Starting form submission...');
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      console.log('[FORM] ❌ Form validation failed');
+      return
+    }
+    
+    setIsSubmitting(true)
+    
     try {
       // Proactive authentication check before form submission
-      console.log('[FORM] === FORM SUBMISSION START ===');
-      console.log('[FORM] Current page:', window.location.pathname);
-      console.log('[FORM] Current URL:', window.location.href);
-      console.log('[FORM] Timestamp:', new Date().toISOString());
       console.log('[FORM] 🔍 Starting proactive authentication check before form submission...');
       
       // Check if cookies are available
@@ -343,18 +362,6 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       console.log('[FORM] Authenticated user:', authData.user?.email);
       console.log('[FORM] User ID:', authData.user?.id);
       console.log('[FORM] Proceeding with form submission...');
-      
-      // Validate form before submission
-      if (!validateForm()) {
-        console.log('[FORM] ❌ Form validation failed');
-        // Scroll to the top to show validation errors
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-        console.log('[FORM] === FORM SUBMISSION END (VALIDATION FAILED) ===');
-        return
-      }
-      
-      console.log('[FORM] ✅ Form validation passed');
-      setIsSubmitting(true)
       
       // Prepare form data for product creation or update
       const formData = new FormData()
@@ -518,9 +525,9 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       console.error('[FORM] ❌ Product submission error:', error)
       console.log('[FORM] === FORM SUBMISSION END (ERROR) ===');
       if (error instanceof Error) {
-        alert(`Error: ${error.message}`)
+        showError(`Error: ${error.message}`)
       } else {
-        alert('An unknown error occurred')
+        showError('An unknown error occurred')
       }
       setIsSubmitting(false)
     }
@@ -528,7 +535,13 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   
   useEffect(() => {
     if (createdProduct && !prevCreatedProduct.current) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Use setTimeout to ensure the DOM has updated before scrolling
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Also try scrolling to the document element for better browser compatibility
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 100);
     }
     prevCreatedProduct.current = createdProduct;
   }, [createdProduct]);
@@ -539,8 +552,16 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       <ErrorModal
         isOpen={errorModalOpen}
         onClose={() => setErrorModalOpen(false)}
-        title="Validation Error"
+        title="Error"
         message={errorModalMessage}
+      />
+      
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+        title="Success"
+        message={successModalMessage}
       />
       {!createdProduct ? (
         <div>
@@ -685,8 +706,8 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                           const url = `${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`;
                           if (navigator?.clipboard) {
                             navigator.clipboard.writeText(url)
-                              .then(() => alert('URL copied to clipboard'))
-                              .catch(() => alert('Failed to copy URL'));
+                              .then(() => showSuccess('URL copied to clipboard'))
+                              .catch(() => showError('Failed to copy URL'));
                           }
                         }}
                         className="px-4 py-2 bg-emerald-600 text-white rounded-r-2xl"
@@ -719,8 +740,8 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                           const url = `${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`;
                           if (navigator?.clipboard) {
                             navigator.clipboard.writeText(url)
-                              .then(() => alert('Link copied! You can now paste it in your Instagram story or bio.'))
-                              .catch(() => alert('Failed to copy URL'));
+                              .then(() => showSuccess('Link copied! You can now paste it in your Instagram story or bio.'))
+                              .catch(() => showError('Failed to copy URL'));
                           }
                         }}
                         className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-colors"

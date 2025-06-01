@@ -85,7 +85,7 @@ export default function ProductStockPricing({
           <div className="relative">
             <input
               id="stock-quantity"
-              type="number"
+              type="text"
               min="0"
               value={productData.stockQuantity || 0}
               onChange={handleStockQuantityChange}

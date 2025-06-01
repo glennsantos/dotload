@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Product } from './ProductCreationForm'
 import { Trash, Upload, X, Link as LinkIcon, Plus, FileText, Check, Loader2, File as FileIcon, Download } from 'lucide-react'
+import ErrorModal from '@/app/components/ErrorModal'
+import SuccessModal from '@/app/components/SuccessModal'
 
 // Maximum file size in bytes (50MB)
 const MAX_FILE_SIZE = 50 * 1024 * 1024
@@ -23,7 +25,20 @@ export default function ProductFiles({
   const [newLink, setNewLink] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorModalOpen, setErrorModalOpen] = useState(false)
+  const [errorModalMessage, setErrorModalMessage] = useState('')
+  const [successModalOpen, setSuccessModalOpen] = useState(false)
+  const [successModalMessage, setSuccessModalMessage] = useState('')
+
+  const showError = (message: string) => {
+    setErrorModalMessage(message)
+    setErrorModalOpen(true)
+  }
+
+  const showSuccess = (message: string) => {
+    setSuccessModalMessage(message)
+    setSuccessModalOpen(true)
+  }
 
   // Initialize existingFiles if it doesn't exist
   React.useEffect(() => {
@@ -69,7 +84,7 @@ export default function ProductFiles({
       
       if (oversizedFiles.length > 0) {
         const fileNames = oversizedFiles.map(f => f.name).join(', ')
-        setError(`The following files exceed the maximum size of 50MB: ${fileNames}`)
+        showError(`The following files exceed the maximum size of 50MB: ${fileNames}`)
         return
       }
       
@@ -78,8 +93,7 @@ export default function ProductFiles({
         contentFiles: [...productData.contentFiles, ...newFiles]
       })
       setError(null)
-      setUploadSuccess(true)
-      setTimeout(() => setUploadSuccess(false), 3000)
+      showSuccess('Files added successfully!')
     }
   }
 
@@ -93,7 +107,7 @@ export default function ProductFiles({
       
       if (oversizedFiles.length > 0) {
         const fileNames = oversizedFiles.map(f => f.name).join(', ')
-        setError(`The following files exceed the maximum size of 50MB: ${fileNames}`)
+        showError(`The following files exceed the maximum size of 50MB: ${fileNames}`)
         return
       }
       
@@ -102,8 +116,7 @@ export default function ProductFiles({
         contentFiles: [...productData.contentFiles, ...newFiles]
       })
       setError(null)
-      setUploadSuccess(true)
-      setTimeout(() => setUploadSuccess(false), 3000)
+      showSuccess('Files added successfully!')
     }
   }
 
@@ -125,7 +138,7 @@ export default function ProductFiles({
     try {
       new URL(newLink)
     } catch (e) {
-      setError('Please enter a valid URL')
+      showError('Please enter a valid URL')
       return
     }
     
@@ -161,24 +174,26 @@ export default function ProductFiles({
 
   return (
     <div>
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModalOpen}
+        onClose={() => setErrorModalOpen(false)}
+        title="Upload Error"
+        message={errorModalMessage}
+      />
+      
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+        title="Upload Success"
+        message={successModalMessage}
+      />
+
       <div className="mb-6">
         <h3 className="tracking-tight text-xl font-light text-stone-900">Digital Files</h3>
         <p className="text-sm text-gray-500 mb-4">Upload files customers will download after purchase</p>
       </div>
-
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 mb-6 rounded-md flex items-center">
-          <X size={16} className="mr-2 flex-shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {uploadSuccess && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
-          <Check size={16} className="mr-2 flex-shrink-0" />
-          <span>Files added successfully!</span>
-        </div>
-      )}
 
       {/* File upload area */}
       <div 
@@ -232,7 +247,7 @@ export default function ProductFiles({
                             window.open(`/api/downloads/file/${file.id}`, '_blank', 'noopener,noreferrer');
                           } catch (error) {
                             console.error('Error downloading file:', error);
-                            alert('Failed to download file. Please try again.');
+                            showError('Failed to download file. Please try again.');
                           }
                         }}
                         className="text-sm font-light text-emerald-600 hover:text-emerald-700 hover:underline"
@@ -261,9 +276,9 @@ export default function ProductFiles({
                   </div>
                   <button 
                     onClick={() => handleRemoveFile(index)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-700 p-1"
                   >
-                    <X size={16} />
+                    <Trash size={16} />
                   </button>
                 </li>
               ))}

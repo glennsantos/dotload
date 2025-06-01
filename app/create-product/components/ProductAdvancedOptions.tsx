@@ -183,8 +183,7 @@ export default function ProductAdvancedOptions({
             <div>
               <label className="block text-sm mb-1">Download Limit</label>
               <input
-                type="number"
-                min="1"
+                type="text"
                 value={productData.downloadSettings.downloadLimit}
                 onChange={(e) => setProductData({
                   ...productData,
@@ -201,8 +200,7 @@ export default function ProductAdvancedOptions({
             <div>
               <label className="block text-sm mb-1">Link Expiration (days)</label>
               <input
-                type="number"
-                min="1"
+                type="text"
                 value={productData.downloadSettings.linkExpiration}
                 onChange={(e) => setProductData({
                   ...productData,

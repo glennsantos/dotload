@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Product } from './ProductCreationForm'
 import { RefreshCw, Upload, X } from 'lucide-react'
 import RichTextEditor from '@/components/rich-text-editor'
+import ErrorModal from '@/app/components/ErrorModal'
 
 type ProductInformationProps = {
   productData: Product
@@ -15,7 +16,14 @@ export default function ProductInformation({
   setProductData 
 }: ProductInformationProps) {
   const [isPriceFocused, setIsPriceFocused] = useState(false)
-  const [priceInput, setPriceInput] = useState<string | number>('')
+  const [priceInput, setPriceInput] = useState(productData.price.toString())
+  const [errorModalOpen, setErrorModalOpen] = useState(false)
+  const [errorModalMessage, setErrorModalMessage] = useState('')
+
+  const showError = (message: string) => {
+    setErrorModalMessage(message)
+    setErrorModalOpen(true)
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -24,11 +32,10 @@ export default function ProductInformation({
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    // Update the input value for display
     setPriceInput(value)
     
-    // Only update the form data if it's a valid number
-    if (value === '') {
+    // Only update productData if it's a valid number or empty
+    if (value === '' || value === '0') {
       setProductData({ ...productData, price: 0 })
     } else {
       const numValue = parseFloat(value)
@@ -40,18 +47,14 @@ export default function ProductInformation({
 
   const handlePriceFocus = () => {
     setIsPriceFocused(true)
-    // Clear the input when focused if the value is 0
-    if (productData.price === 0) {
-      setPriceInput('')
-    } else {
-      setPriceInput(productData.price.toString())
-    }
+    // Show the raw input value when focused
+    setPriceInput(productData.price.toString())
   }
 
   const handlePriceBlur = () => {
     setIsPriceFocused(false)
-    // If input is empty after blur, set it back to 0
-    if (priceInput === '') {
+    // Validate and format the price when focus is lost
+    if (priceInput === '' || priceInput === '0') {
       setProductData({ ...productData, price: 0 })
       setPriceInput('0')
     } else {
@@ -65,6 +68,23 @@ export default function ProductInformation({
         setProductData({ ...productData, price: 0 })
         setPriceInput('0')
       }
+    }
+  }
+
+  const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      
+      // Check file size (10MB limit)
+      const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB in bytes
+      if (file.size > MAX_FILE_SIZE) {
+        showError(`File size exceeds 10MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB. Please choose a smaller image.`)
+        // Clear the file input
+        e.target.value = ''
+        return
+      }
+      
+      setProductData({...productData, coverImage: file})
     }
   }
 
@@ -83,6 +103,14 @@ export default function ProductInformation({
 
   return (
     <div>
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModalOpen}
+        onClose={() => setErrorModalOpen(false)}
+        title="Upload Error"
+        message={errorModalMessage}
+      />
+
       <div className="mb-6">
         <h3 className="tracking-tight text-xl font-light text-stone-900">Product Information</h3>
         <p className="text-sm text-gray-500 mb-4">Essential details about your product</p>
@@ -107,7 +135,7 @@ export default function ProductInformation({
           <label className="block mb-2 text-sm">Description</label>
           <RichTextEditor
             value={productData.description || ''}
-            onChange={(value) => setProductData({ ...productData, description: value })}
+            onChange={(value: string) => setProductData({ ...productData, description: value })}
             placeholder="Describe your product..."
           />
         </div>
@@ -158,15 +186,14 @@ export default function ProductInformation({
               {getCurrencySymbol(productData.currency)}
             </span>
             <input
-              type="number"
+              type="text"
               value={isPriceFocused ? priceInput : productData.price}
               onChange={handlePriceChange}
               onFocus={handlePriceFocus}
               onBlur={handlePriceBlur}
               className="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-r-none"
-              placeholder="0.00"
+              placeholder="0"
               min="0"
-              step="0.01"
             />
             <select 
               className="border-l-0 rounded-r-md border-gray-300 bg-stone-50 text-gray-700 py-2 pl-3 pr-8 text-sm focus:ring-emerald-500 focus:border-emerald-500 border"
@@ -234,11 +261,7 @@ export default function ProductInformation({
                 id="cover-image"
                 className="hidden"
                 accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setProductData({...productData, coverImage: e.target.files[0]});
-                  }
-                }}
+                onChange={handleCoverImageUpload}
               />
               <label htmlFor="cover-image" className="cursor-pointer flex flex-col items-center justify-center py-6">
                 <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-2">
