@@ -87,6 +87,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   const [errorModalMessage, setErrorModalMessage] = useState('')
   const [successModalOpen, setSuccessModalOpen] = useState(false)
   const [successModalMessage, setSuccessModalMessage] = useState('')
+  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false)
   const prevCreatedProduct = useRef<Product | null>(null);
   
   // Initialize product data with default values
@@ -718,6 +719,9 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                         Continue Editing
                       </Button>
                     )}
+                    <Button onClick={() => setIsPreviewFullscreen(true)} variant="outline">
+                      Preview Product
+                    </Button>
                     <Button onClick={() => router.push('/products')} variant="default">
                       <span className="flex items-center gap-2">
                         <ChevronLeft /> Back to Products
@@ -762,8 +766,13 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
               </div>
 
               {/* Right side - Product Preview */}
-              <div className="lg:col-span-7">
-                <ProductPreview productData={createdProduct} variant="success" />
+              <div className={`lg:col-span-7 ${isPreviewFullscreen ? 'flex' : 'hidden'}`}>
+                <ProductPreview 
+                  productData={createdProduct} 
+                  variant="success" 
+                  externalFullscreen={isPreviewFullscreen}
+                  onToggleFullscreen={() => setIsPreviewFullscreen(!isPreviewFullscreen)}
+                />
               </div>
             </div>
           </div>

@@ -10,14 +10,24 @@ import ClientProductPage from '@/app/p/[slug]/client-page'
 type ProductPreviewProps = {
   productData: Product
   variant?: 'default' | 'success'
+  externalFullscreen?: boolean
+  onToggleFullscreen?: () => void
 }
 
-export default function ProductPreview({ productData, variant = 'default' }: ProductPreviewProps) {
+export default function ProductPreview({ 
+  productData, 
+  variant = 'default', 
+  externalFullscreen = false, 
+  onToggleFullscreen 
+}: ProductPreviewProps) {
   const [userData, setUserData] = useState({
     userName: "Your Store",
     storeLogoPath: ""
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
+  
+  // Use external fullscreen state if provided, otherwise use internal state
+  const fullscreenState = onToggleFullscreen ? externalFullscreen : isFullscreen;
   
   useEffect(() => {
     const fetchUserData = async () => {
@@ -39,7 +49,11 @@ export default function ProductPreview({ productData, variant = 'default' }: Pro
   }, []);
 
   const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+    if (onToggleFullscreen) {
+      onToggleFullscreen();
+    } else {
+      setIsFullscreen(!isFullscreen);
+    }
   };
 
   // Helper function to safely get array data
@@ -100,7 +114,7 @@ export default function ProductPreview({ productData, variant = 'default' }: Pro
   };
 
   // Render the fullscreen preview
-  if (isFullscreen) {
+  if (fullscreenState) {
     return (
       <div className="fixed inset-0 bg-white z-50 overflow-auto">
         <div className="flex justify-between items-center p-4 border-b">
