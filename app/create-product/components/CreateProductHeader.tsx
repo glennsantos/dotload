@@ -121,10 +121,23 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/api/auth/logout" className="cursor-pointer flex items-center">
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/auth/logout', { method: 'POST' });
+                          if (response.ok) {
+                            window.location.href = '/login';
+                          }
+                        } catch (error) {
+                          console.error('Logout error:', error);
+                          window.location.href = '/login';
+                        }
+                      }}
+                      className="cursor-pointer flex items-center"
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </Link>
+                      Logout
+                    </button>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

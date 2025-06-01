@@ -131,10 +131,23 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </Link>
             </li>
             <li>
-              <Link href="/api/auth/logout" className="cursor-pointer flex items-center">
+              <button 
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/auth/logout', { method: 'POST' });
+                    if (response.ok) {
+                      window.location.href = '/login';
+                    }
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                    window.location.href = '/login';
+                  }
+                }}
+                className="cursor-pointer flex items-center"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </Link>
+                Logout
+              </button>
             </li>
           </ul>
         </div>

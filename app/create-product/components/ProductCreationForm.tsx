@@ -286,31 +286,74 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   const handleSubmit = async () => {
     try {
       // Proactive authentication check before form submission
-      console.log('Checking authentication before form submission...');
+      console.log('[FORM] === FORM SUBMISSION START ===');
+      console.log('[FORM] Current page:', window.location.pathname);
+      console.log('[FORM] Current URL:', window.location.href);
+      console.log('[FORM] Timestamp:', new Date().toISOString());
+      console.log('[FORM] 🔍 Starting proactive authentication check before form submission...');
+      
+      // Check if cookies are available
+      const allCookies = document.cookie;
+      console.log('[FORM] All cookies available:', allCookies ? 'Yes' : 'No');
+      console.log('[FORM] Cookie string length:', allCookies.length);
+      
+      // Check for token cookie specifically
+      const tokenCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('token='));
+      console.log('[FORM] Token cookie found:', tokenCookie ? 'Yes' : 'No');
+      if (tokenCookie) {
+        console.log('[FORM] Token cookie preview:', tokenCookie.substring(0, 50) + '...');
+      }
+      
       const authResponse = await fetch('/api/auth/me', { 
         credentials: 'include',
         headers: {
-          'Cache-Control': 'no-cache'
+          'Cache-Control': 'no-cache',
+          'Content-Type': 'application/json'
         }
       });
       
+      console.log('[FORM] Auth check response status:', authResponse.status);
+      console.log('[FORM] Auth check response ok:', authResponse.ok);
+      
       if (!authResponse.ok) {
-        console.log('Authentication check failed, redirecting to login');
+        console.log('[FORM] ❌ Authentication check failed');
+        console.log('[FORM] Response status:', authResponse.status);
+        console.log('[FORM] Response statusText:', authResponse.statusText);
+        
+        try {
+          const errorData = await authResponse.json();
+          console.log('[FORM] Error response data:', errorData);
+        } catch (e) {
+          console.log('[FORM] Could not parse error response as JSON');
+        }
+        
         // User is not authenticated, redirect to login with current page as callback
         const currentPath = window.location.pathname;
+        console.log('[FORM] Redirecting to login with callback:', currentPath);
+        console.log('[FORM] === FORM SUBMISSION END (AUTH FAILED) ===');
         router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
         return;
       }
       
-      console.log('Authentication check passed, proceeding with form submission');
+      // Parse the auth response
+      const authData = await authResponse.json();
+      console.log('[FORM] ✅ Authentication check passed');
+      console.log('[FORM] Authenticated user:', authData.user?.email);
+      console.log('[FORM] User ID:', authData.user?.id);
+      console.log('[FORM] Proceeding with form submission...');
       
       // Validate form before submission
       if (!validateForm()) {
+        console.log('[FORM] ❌ Form validation failed');
         // Scroll to the top to show validation errors
         window.scrollTo({ top: 0, behavior: 'smooth' })
+        console.log('[FORM] === FORM SUBMISSION END (VALIDATION FAILED) ===');
         return
       }
       
+      console.log('[FORM] ✅ Form validation passed');
       setIsSubmitting(true)
       
       // Prepare form data for product creation or update
@@ -388,24 +431,35 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       const url = isEditing ? `/api/products/${productId}` : '/api/products'
       const method = isEditing ? 'PUT' : 'POST'
       
+      console.log('[FORM] 🔍 Submitting product to backend...');
+      console.log('[FORM] URL:', url);
+      console.log('[FORM] Method:', method);
+      
       const response = await fetch(url, {
         method,
         body: formData,
         credentials: 'include'
       })
       
+      console.log('[FORM] Product submission response status:', response.status);
+      console.log('[FORM] Product submission response ok:', response.ok);
+      
       if (!response.ok) {
         const errorData = await response.json()
+        console.log('[FORM] ❌ Product submission failed:', errorData);
+        console.log('[FORM] === FORM SUBMISSION END (SUBMISSION FAILED) ===');
         throw new Error(errorData.details || `Failed to ${isEditing ? 'update' : 'create'} product`)
       }
       
       // Get the created/updated product data
       const responseData = await response.json()
+      console.log('[FORM] ✅ Product submission successful');
       setCreatedProduct(responseData.product || responseData)
       
       // Upload content files if any
       if (productData.contentFiles.length > 0) {
         try {
+          console.log('[FORM] 🔍 Starting file upload...');
           // Check file sizes before uploading
           const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
           const largeFiles = productData.contentFiles.filter(file => file.size > MAX_FILE_SIZE);
@@ -430,7 +484,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
             filesFormData.append(`contentFile${i}`, productData.contentFiles[i])
           }
           
-          console.log(`Uploading ${productData.contentFiles.length} files for product ${newProductId}`)
+          console.log(`[FORM] Uploading ${productData.contentFiles.length} files for product ${newProductId}`)
           
           // Send files to the product endpoint (same approach for both create and edit modes)
           const filesResponse = await fetch(`/api/products/${newProductId}`, {
@@ -441,25 +495,28 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
           
           if (!filesResponse.ok) {
             const errorData = await filesResponse.json()
-            console.error('Failed to upload content files:', errorData)
+            console.error('[FORM] Failed to upload content files:', errorData)
             // Continue anyway, the product was created/updated successfully
           } else {
-            console.log('Successfully uploaded content files')
+            console.log('[FORM] ✅ Successfully uploaded content files')
           }
         } catch (fileError) {
-          console.error('Error during file upload:', fileError)
+          console.error('[FORM] Error during file upload:', fileError)
           // Continue anyway, the product was created/updated successfully
         }
       }
       
       // Success - update UI
       setIsSubmitting(false)
+      console.log('[FORM] ✅ Form submission completed successfully');
+      console.log('[FORM] === FORM SUBMISSION END (SUCCESS) ===');
       
       if (isEditing) {
         router.push(`/edit-product/${productId}`)
       }
     } catch (error: unknown) {
-      console.error('Product submission error:', error)
+      console.error('[FORM] ❌ Product submission error:', error)
+      console.log('[FORM] === FORM SUBMISSION END (ERROR) ===');
       if (error instanceof Error) {
         alert(`Error: ${error.message}`)
       } else {
