@@ -119,7 +119,14 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">alacart</h1>
+          <Image 
+            src="/logo.png" 
+            alt="Alacart Logo" 
+            width={100}
+            height={28}
+            className="h-6 w-auto sm:h-7"
+            priority
+          />
         </div>
       </header>
 
@@ -146,11 +153,6 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
             <div className="flex items-center justify-between mb-4">
               <span className="font-light text-gray-600">Amount:</span>
               <span className="font-light">{purchase.currency} {purchase.amount.toFixed(2)}</span>
-            </div>
-            
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-light text-gray-600">Payment Method:</span>
-              <span className="font-light">{purchase.paymentMethod}</span>
             </div>
             
             <div className="flex items-center justify-between">
