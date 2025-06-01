@@ -52,7 +52,7 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
   return (
     <div className="min-h-screen bg-white pb-20 md:pb-0">
       {/* Product Preview Header */}
-      <div className="bg-white border-b flex justify-between items-center p-4">
+      <div className="bg-white border-b flex justify-between items-center py-4 px-6">
         <div className="flex items-center gap-2">
           {product.user?.storeLogoPath ? (
             <Image 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verify, JwtPayload } from 'jsonwebtoken';
+import { jwtVerify, type JWTPayload } from 'jose';
 
 // Enable more verbose logging
 const DEBUG = true;
@@ -40,7 +40,7 @@ const AUTH_ONLY_ROUTES = [
   '/verify-email'
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Debug logging for all requests
@@ -67,21 +67,26 @@ export function middleware(request: NextRequest) {
   if (!token) {
     console.log(`[MIDDLEWARE] No token found, redirecting to login`);
     const url = new URL('/login', request.url);
-    url.searchParams.set('callbackUrl', encodeURI(pathname === '/dashboard' ? '/products' : pathname));
+    url.searchParams.set('callbackUrl', encodeURI(pathname));
     return NextResponse.redirect(url);
   }
 
-  // Verify token
+  // Verify token using jose
   try {
     // Log token details for debugging
     console.log('Middleware JWT Secret available:', !!JWT_SECRET);
     console.log('Middleware Token Length:', token?.length);
     
-    // Decode the token to get user information
-    const decoded = verify(token, JWT_SECRET, {
+    // Create secret key for jose
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    
+    // Verify the token using jose
+    const { payload } = await jwtVerify(token, secret, {
       algorithms: ['HS256'], // Specify the expected algorithm
-      maxAge: '24h' // Match the token expiration from login route
-    }) as JwtPayload & { userId: string; email: string; emailVerified?: boolean };
+    });
+    
+    // Cast payload to include our custom fields
+    const decoded = payload as JWTPayload & { userId: string; email: string; emailVerified?: boolean };
     
     // Additional validation
     if (!decoded.userId || !decoded.email) {
@@ -123,10 +128,12 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Only match protected routes - exclude all public routes
+    '/dashboard',
     '/dashboard/:path*',
     '/products/:path*',
     '/transactions/:path*',
     '/purchases/:path*',
+    '/settings',
     '/settings/:path*',
     '/buyer-dashboard/:path*',
     '/create-product/:path*',
