@@ -34,9 +34,9 @@ export default function AlertModal({ isOpen, onClose, title, message, type }: Al
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-8 sm:pt-16 p-4 bg-black bg-opacity-50">
       <div 
-        className="relative w-full max-w-md bg-white rounded-2xl p-6 shadow-xl"
+        className="relative w-full max-w-md bg-white rounded-2xl p-6 shadow-xl animate-in fade-in-0 slide-in-from-top-4 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <button

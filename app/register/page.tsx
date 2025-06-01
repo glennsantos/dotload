@@ -19,8 +19,6 @@ export default function RegisterPage() {
   const [brandName, setBrandName] = useState('');
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [headerImage, setHeaderImage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'error' | 'success'>('error');
   const [modalTitle, setModalTitle] = useState('');
@@ -94,20 +92,27 @@ export default function RegisterPage() {
     if (file) {
       // Validate file type
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        setError('Logo must be JPG, PNG, or WebP format');
+        showModal('error', 'Invalid File Type', 'Logo must be JPG, PNG, or WebP format');
+        // Clear the input
+        if (logoInputRef.current) {
+          logoInputRef.current.value = '';
+        }
         return;
       }
       
       // Validate file size (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
-        setError('Logo must be less than 2MB');
+        showModal('error', 'File Too Large', 'Logo must be less than 2MB');
+        // Clear the input
+        if (logoInputRef.current) {
+          logoInputRef.current.value = '';
+        }
         return;
       }
       
       const reader = new FileReader();
       reader.onloadend = () => {
         setBrandLogo(reader.result as string);
-        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -119,20 +124,27 @@ export default function RegisterPage() {
     if (file) {
       // Validate file type
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        setError('Header image must be JPG, PNG, or WebP format');
+        showModal('error', 'Invalid File Type', 'Header image must be JPG, PNG, or WebP format');
+        // Clear the input
+        if (headerInputRef.current) {
+          headerInputRef.current.value = '';
+        }
         return;
       }
       
       // Validate file size (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
-        setError('Header image must be less than 2MB');
+        showModal('error', 'File Too Large', 'Header image must be less than 2MB');
+        // Clear the input
+        if (headerInputRef.current) {
+          headerInputRef.current.value = '';
+        }
         return;
       }
       
       const reader = new FileReader();
       reader.onloadend = () => {
         setHeaderImage(reader.result as string);
-        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -155,7 +167,6 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError(null);
 
     try {
       const formData = new FormData();
@@ -202,13 +213,10 @@ export default function RegisterPage() {
   const handleResendVerification = async () => {
     if (!registeredEmail) return;
     
-    // Clear any previous messages
-    setError(null);
-    setSuccess(null);
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('/api/auth/resend-verification', {
+      const response = await fetch('/api/auth/verify-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,6 +228,8 @@ export default function RegisterPage() {
         const data = await response.json();
         throw new Error(data.error || 'Failed to resend verification email');
       }
+      
+      showModal('success', 'Email Sent', 'Verification email has been resent successfully. Please check your inbox.');
     } catch (error) {
       console.error('Resend verification error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to resend verification email';
@@ -424,15 +434,16 @@ export default function RegisterPage() {
                   <Button
                     onClick={handleResendVerification}
                     disabled={isSubmitting}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light"
+                    variant="outline-emerald"
+                    className="rounded-2xl h-12 font-light"
                   >
                     {isSubmitting ? 'Sending...' : 'Resend Verification Email'}
                   </Button>
                   
                   <Button
-                    variant="outline"
+                    variant="default"
                     onClick={() => router.push('/login')}
-                    className="border-stone-300 text-stone-700 rounded-2xl h-12 font-light hover:bg-stone-50"
+                    className="rounded-2xl h-12 font-light"
                   >
                     Back to Login
                   </Button>
