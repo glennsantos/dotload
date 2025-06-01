@@ -10,9 +10,10 @@ import RichTextRenderer from "@/components/rich-text-renderer"
 interface ClientProductPageProps {
   product: any | null
   slug: string
+  isPreview?: boolean
 }
 
-export default function ClientProductPage({ product, slug }: ClientProductPageProps) {
+export default function ClientProductPage({ product, slug, isPreview = false }: ClientProductPageProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -141,11 +142,17 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
         <div className="hidden sm:block mb-8 text-center">
           <p className="text-2xl font-light mb-4">₱{product.price.toFixed(2)}</p>
           <button
-            onClick={handlePurchase}
-            disabled={loading}
-            className="w-full bg-emerald-500 text-white px-6 py-3 rounded-md font-normal text-xl hover:bg-emerald-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            onClick={isPreview ? undefined : handlePurchase}
+            disabled={loading || isPreview}
+            className={`w-full px-6 py-3 rounded-md font-normal text-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${
+              isPreview 
+                ? 'bg-gray-400 text-white cursor-not-allowed' 
+                : 'bg-emerald-500 text-white hover:bg-emerald-600'
+            }`}
           >
-            {loading ? (
+            {isPreview ? (
+              <>Preview Mode - Buy Now Off</>
+            ) : loading ? (
               <>
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent inline-block mr-2"></div>
                 <span>Processing...</span>
@@ -230,11 +237,17 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
       {/* Mobile fixed Buy Now button */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
         <button
-          onClick={handlePurchase}
-          disabled={loading}
-          className="w-full bg-emerald-500 text-white px-6 py-3 rounded-md font-medium hover:bg-emerald-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          onClick={isPreview ? undefined : handlePurchase}
+          disabled={loading || isPreview}
+          className={`w-full px-6 py-3 rounded-md font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${
+            isPreview 
+              ? 'bg-gray-400 text-white cursor-not-allowed' 
+              : 'bg-emerald-500 text-white hover:bg-emerald-600'
+          }`}
         >
-          {loading ? (
+          {isPreview ? (
+            <>Preview Mode - Buy Now Off</>
+          ) : loading ? (
             <>
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent inline-block mr-2"></div>
               <span>Processing...</span>

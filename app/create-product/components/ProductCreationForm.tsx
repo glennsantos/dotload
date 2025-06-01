@@ -678,20 +678,14 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
           </div>
         </div>
       ) : (
-        <div>
-          <header className="mt-10 p-6 flex justify-center items-center">
-            <h1 className="text-3xl font-light truncate">
-              {createdProduct.name}
-            </h1>
-          </header>
-          
+        <div>          
           <div className="p-6 max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Left side - Success message and actions */}
               <div className="lg:col-span-5">
                 <div className="mb-6">
                   <h2 className="text-xl font-light mb-4">Product {isEditing ? 'Updated' : 'Created'} Successfully!</h2>
-                  <p className="font-light text-gray-600 mb-6">Your product has been published and is now available for purchase.</p>
+                  <p className="font-light text-gray-600 mb-6">Your product is now available for purchase.</p>
                   
                   <div className="p-4 border rounded-3xl mb-6">
                     <h3 className="font-light mb-2">Product URL</h3>
@@ -716,6 +710,19 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                         Copy
                       </button>
                     </div>
+                  </div>
+                  
+                  <div className="flex gap-4 mt-8 font-light flex-wrap mb-4">
+                    {isEditing && (
+                      <Button onClick={() => window.location.reload()} variant="outline">
+                        Continue Editing
+                      </Button>
+                    )}
+                    <Button onClick={() => router.push('/products')} variant="default">
+                      <span className="flex items-center gap-2">
+                        <ChevronLeft /> Back to Products
+                      </span>
+                    </Button>
                   </div>
 
                   {/* Share Buttons */}
@@ -751,28 +758,11 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                       </button>
                     </div>
                   </div>
-                  
-                  <div className="flex gap-4 mt-8 font-light flex-wrap">
-                    {isEditing && (
-                      <Button onClick={() => window.location.reload()} variant="outline">
-                        Continue Editing
-                      </Button>
-                    )}
-                    <Button onClick={() => router.push('/products')} variant="default">
-                      <span className="flex items-center gap-2">
-                        <ChevronLeft /> Back to Products
-                      </span>
-                    </Button>
-                  </div>
                 </div>
               </div>
 
               {/* Right side - Product Preview */}
               <div className="lg:col-span-7">
-                <div className="mb-4">
-                  <h3 className="text-lg font-light">Product Preview</h3>
-                  <p className="text-sm text-gray-600">This is how your product will appear to customers</p>
-                </div>
                 <ProductPreview productData={createdProduct} variant="success" />
               </div>
             </div>

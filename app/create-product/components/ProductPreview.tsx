@@ -117,6 +117,7 @@ export default function ProductPreview({ productData, variant = 'default' }: Pro
           <ClientProductPage 
             product={transformedProduct} 
             slug="preview" 
+            isPreview={true}
           />
         </div>
       </div>
@@ -145,6 +146,7 @@ export default function ProductPreview({ productData, variant = 'default' }: Pro
           <ClientProductPage 
             product={transformedProduct} 
             slug="preview" 
+            isPreview={true}
           />
         </div>
       </div>

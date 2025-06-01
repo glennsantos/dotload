@@ -290,6 +290,7 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
                   whatsIncluded: '[]'
                 }}
                 slug={product.slug || product.id}
+                isPreview={true}
               />
               
               <div className="mt-6 flex justify-end">
