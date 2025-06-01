@@ -74,7 +74,7 @@ export default function ProductVariations({
       <header className="p-6 border-b">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-normal truncate">
-            {productData.name || "Solo Travel to Japan in Your 20s: A Comprehensive Guide"}
+            {productData.name}
           </h1>
           <div className="hidden sm:flex gap-2">
             <button 

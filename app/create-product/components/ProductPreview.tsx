@@ -123,18 +123,6 @@ export default function ProductPreview({ productData, variant = 'default' }: Pro
     );
   }
 
-  // Success page variant - full size, no sticky positioning
-  if (variant === 'success') {
-    return (
-      <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
-        <ClientProductPage 
-          product={transformedProduct} 
-          slug="preview" 
-        />
-      </div>
-    );
-  }
-
   // Default variant - sticky with scaling
   return (
     <div className="sticky top-4">

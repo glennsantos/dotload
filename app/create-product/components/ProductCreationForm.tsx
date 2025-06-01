@@ -13,6 +13,7 @@ import ProductFiles from './ProductFiles'
 import ProductPreview from './ProductPreview'
 import ProductAdvancedOptions from './ProductAdvancedOptions'
 import ProductStockPricing from './ProductStockPricing'
+import { Button } from '@/components/ui/button'
 
 // Define the Product type
 export type Product = {
@@ -653,13 +654,13 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
               <div className="flex justify-between mt-8">
                 <button 
                   onClick={() => router.push('/products')} 
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md"
+                  className="hidden sm:flex px-4 py-2 text-gray-600 border border-gray-300 rounded-md"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleSubmit} 
-                  className="px-4 py-2 bg-emerald-500 text-white rounded-md"
+                  className="hidden sm:flex px-4 py-2 bg-emerald-500 text-white rounded-md"
                   disabled={isSubmitting}
                 >
                   {isSubmitting 
@@ -721,16 +722,16 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                   <div className="p-4 border rounded-3xl mb-6">
                     <h3 className="font-light mb-3">Share Your Product</h3>
                     <p className="text-sm text-gray-600 mb-4">Share your product on social media</p>
-                    <div className="flex gap-3 flex-wrap">
+                    <div className="flex gap-2 sm:gap-3 flex-wrap">
                       <button 
                         onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}&text=${encodeURIComponent(`Check out ${createdProduct.name}`)}`, '_blank')} 
-                        className="px-4 py-2 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors"
+                        className="px-2 py-2 sm:px-4 bg-black text-white rounded-xl sm:rounded-2xl hover:bg-gray-800 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
                       >
                         X (Twitter)
                       </button>
                       <button 
                         onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} 
-                        className="px-4 py-2 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-colors"
+                        className="px-2 py-2 sm:px-4 bg-blue-600 text-white rounded-xl sm:rounded-2xl hover:bg-blue-700 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
                       >
                         Facebook
                       </button>
@@ -744,7 +745,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                               .catch(() => showError('Failed to copy URL'));
                           }
                         }}
-                        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-colors"
+                        className="px-2 py-2 sm:px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl sm:rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
                       >
                         Instagram
                       </button>
@@ -752,17 +753,16 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                   </div>
                   
                   <div className="flex gap-4 mt-8 font-light flex-wrap">
-                    <Link href={`/p/${createdProduct.slug}`} className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 transition-colors">
-                      View Live Product
-                    </Link>
                     {isEditing && (
-                      <button onClick={() => window.location.reload()} className="px-4 py-2 border rounded-2xl hover:bg-gray-50 transition-colors">
+                      <Button onClick={() => window.location.reload()} variant="outline">
                         Continue Editing
-                      </button>
+                      </Button>
                     )}
-                    <Link href="/products" className="px-4 py-2 border rounded-2xl hover:bg-gray-50 transition-colors">
-                      Back to Products
-                    </Link>
+                    <Button onClick={() => router.push('/products')} variant="default">
+                      <span className="flex items-center gap-2">
+                        <ChevronLeft /> Back to Products
+                      </span>
+                    </Button>
                   </div>
                 </div>
               </div>
