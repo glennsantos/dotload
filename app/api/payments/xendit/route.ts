@@ -13,6 +13,19 @@ import {
 } from '@/lib/xendit-client';
 import { prisma } from '@/lib/prisma';
 
+// Enhanced logging utility for debugging
+const logApiStep = (step: string, data?: any, error?: any) => {
+  const timestamp = new Date().toISOString();
+  const logPrefix = `[XenditAPI][${timestamp}]`;
+  
+  if (error) {
+    console.error(`${logPrefix} ERROR in ${step}:`, error);
+    if (data) console.error(`${logPrefix} Context data:`, data);
+  } else {
+    console.log(`${logPrefix} ${step}`, data ? data : '');
+  }
+};
+
 // Xendit API base URL
 const XENDIT_API_URL = 'https://api.xendit.co';
 
@@ -34,9 +47,38 @@ type TransactionMetadata = {
 }
 
 export async function POST(request: NextRequest) {
-  console.log('[Xendit Payment] Starting payment process');
+  logApiStep('API_REQUEST_START', {
+    url: request.url,
+    method: request.method,
+    headers: Object.fromEntries(request.headers.entries())
+  });
+  
   try {
-    const body = await request.json();
+    // Parse request body with error handling
+    let body;
+    try {
+      const rawBody = await request.text();
+      logApiStep('RAW_REQUEST_BODY', { 
+        length: rawBody.length,
+        preview: rawBody.substring(0, 200) + (rawBody.length > 200 ? '...' : '')
+      });
+      
+      body = JSON.parse(rawBody);
+      logApiStep('REQUEST_BODY_PARSED', {
+        keys: Object.keys(body),
+        purchaseId: body.purchaseId,
+        paymentMethod: body.paymentMethod,
+        amount: body.amount,
+        currency: body.currency
+      });
+    } catch (parseError) {
+      logApiStep('REQUEST_BODY_PARSE_ERROR', {}, parseError);
+      return NextResponse.json({ 
+        error: 'Invalid JSON in request body',
+        details: parseError instanceof Error ? parseError.message : 'Unknown parsing error'
+      }, { status: 400 });
+    }
+    
     const { 
       purchaseId, 
       paymentMethod, 
@@ -50,10 +92,18 @@ export async function POST(request: NextRequest) {
       cardName
     } = body;
     
-    console.log(`[Xendit Payment] Request received for purchase ${purchaseId}, method: ${paymentMethod}, amount: ${amount} ${currency}`);
+    logApiStep('REQUEST_VALIDATION_START', {
+      purchaseId,
+      paymentMethod,
+      hasMobileNumber: !!mobileNumber,
+      amount,
+      currency,
+      channelCode,
+      hasCardDetails: !!(cardNumber && cardExpiry && cardCvc && cardName)
+    });
     
     if (!purchaseId || !paymentMethod || !amount) {
-      console.log('[Xendit Payment] Missing required fields', { purchaseId, paymentMethod, amount });
+      logApiStep('VALIDATION_FAILED_MISSING_FIELDS', { purchaseId, paymentMethod, amount });
       return NextResponse.json({ 
         error: 'Missing required fields',
         details: 'Purchase ID, payment method, and amount are required'
@@ -61,7 +111,7 @@ export async function POST(request: NextRequest) {
     }
     
     if (paymentMethod.startsWith('ewallet') && !mobileNumber) {
-      console.log('[Xendit Payment] Missing mobile number for e-wallet payment');
+      logApiStep('VALIDATION_FAILED_MISSING_MOBILE', { paymentMethod });
       return NextResponse.json({ 
         error: 'Missing mobile number',
         details: 'Mobile number is required for e-wallet payments'
@@ -69,7 +119,12 @@ export async function POST(request: NextRequest) {
     }
     
     if (paymentMethod === 'card' && (!cardNumber || !cardExpiry || !cardCvc || !cardName)) {
-      console.log('[Xendit Payment] Missing card details for card payment');
+      logApiStep('VALIDATION_FAILED_MISSING_CARD_DETAILS', { 
+        hasCardNumber: !!cardNumber,
+        hasCardExpiry: !!cardExpiry,
+        hasCardCvc: !!cardCvc,
+        hasCardName: !!cardName
+      });
       return NextResponse.json({ 
         error: 'Missing card details',
         details: 'Card number, expiry, CVC, and name are required for card payments'
@@ -77,11 +132,27 @@ export async function POST(request: NextRequest) {
     }
     
     // Find the purchase
-    console.log(`[Xendit Payment] Fetching purchase with ID: ${purchaseId}`);
-    const purchase = await getPurchaseById(purchaseId);
+    logApiStep('PURCHASE_LOOKUP_START', { purchaseId });
+    let purchase;
+    try {
+      purchase = await getPurchaseById(purchaseId);
+      logApiStep('PURCHASE_LOOKUP_SUCCESS', {
+        purchaseId: purchase?.id,
+        productId: purchase?.productId,
+        amount: purchase?.amount,
+        status: purchase?.status,
+        email: purchase?.email
+      });
+    } catch (dbError) {
+      logApiStep('PURCHASE_LOOKUP_ERROR', { purchaseId }, dbError);
+      return NextResponse.json({ 
+        error: 'Database error while fetching purchase',
+        details: dbError instanceof Error ? dbError.message : 'Unknown database error'
+      }, { status: 500 });
+    }
     
     if (!purchase) {
-      console.log(`[Xendit Payment] Purchase not found with ID: ${purchaseId}`);
+      logApiStep('PURCHASE_NOT_FOUND', { purchaseId });
       return NextResponse.json({ 
         error: 'Purchase not found',
         details: 'The requested purchase does not exist'
@@ -115,11 +186,22 @@ export async function POST(request: NextRequest) {
     
     // Handle different payment methods
     if (paymentMethod === 'ewallet-onetime') {
-      // One-time payment flow using Xendit's payment_requests endpoint
-      console.log(`[Xendit Payment] Processing one-time e-wallet payment with channel code: ${channelCode}`);
+      logApiStep('EWALLET_ONETIME_PAYMENT_START', {
+        channelCode,
+        mobileNumber,
+        amount,
+        currency
+      });
       
       try {
         // Create a transaction record
+        logApiStep('TRANSACTION_CREATE_START', {
+          amount,
+          currency,
+          purchaseId: purchase.id,
+          userId: purchase.product.userId
+        });
+        
         const transaction = await prisma.transaction.create({
           data: {
             amount,
@@ -140,13 +222,26 @@ export async function POST(request: NextRequest) {
           }
         });
         
-        console.log(`[Xendit Payment] Transaction created with ID: ${transaction.id}`);
+        logApiStep('TRANSACTION_CREATE_SUCCESS', {
+          transactionId: transaction.id,
+          status: transaction.status
+        });
         
         try {
           // Generate a unique reference ID for this payment
           const referenceId = `purchase_${purchase.id}_${Date.now()}`;
+          logApiStep('REFERENCE_ID_GENERATED', { referenceId });
           
           // Create the one-time payment request
+          logApiStep('ONE_TIME_PAYMENT_CREATE_START', {
+            referenceId,
+            amount,
+            currency,
+            channelCode,
+            customerEmail: purchase.email,
+            customerName: purchase.name || purchase.email
+          });
+          
           const paymentData = await createOneTimePayment({
             referenceId,
             amount,
@@ -163,27 +258,61 @@ export async function POST(request: NextRequest) {
             }
           });
           
-          console.log(`[Xendit Payment] One-time payment request created:`, paymentData);
+          logApiStep('ONE_TIME_PAYMENT_CREATE_SUCCESS', {
+            paymentId: paymentData.id,
+            status: paymentData.status,
+            hasActions: !!(paymentData.actions && paymentData.actions.length > 0),
+            actionsCount: paymentData.actions?.length || 0
+          });
           
           // Extract the redirect URL from the actions array
           let redirectUrl = '';
           
           // The response will contain actions array with redirect URLs
           if (paymentData.actions && Array.isArray(paymentData.actions)) {
+            logApiStep('PAYMENT_ACTIONS_PROCESSING', {
+              actionsCount: paymentData.actions.length,
+              actions: paymentData.actions.map((action: any) => ({
+                action: action.action,
+                url_type: action.url_type,
+                hasUrl: !!action.url
+              }))
+            });
+            
             const checkoutAction = paymentData.actions.find(
               (action: any) => action.action === 'AUTH'
             );
             
             if (checkoutAction && checkoutAction.url) {
               redirectUrl = checkoutAction.url;
+              logApiStep('REDIRECT_URL_FOUND', { 
+                redirectUrl,
+                actionType: checkoutAction.action,
+                urlType: checkoutAction.url_type
+              });
+            } else {
+              logApiStep('NO_AUTH_ACTION_FOUND', {
+                availableActions: paymentData.actions.map((a: any) => a.action)
+              });
             }
+          } else {
+            logApiStep('NO_ACTIONS_ARRAY', {
+              hasActions: !!paymentData.actions,
+              actionsType: typeof paymentData.actions
+            });
           }
           
           if (!redirectUrl) {
+            logApiStep('NO_REDIRECT_URL_ERROR', { paymentData });
             throw new Error('No redirect URL found in payment response');
           }
           
           // Update the transaction with payment request details
+          logApiStep('TRANSACTION_UPDATE_START', {
+            transactionId: transaction.id,
+            paymentId: paymentData.id
+          });
+          
           await prisma.transaction.update({
             where: { id: transaction.id },
             data: {
@@ -199,12 +328,24 @@ export async function POST(request: NextRequest) {
             }
           });
           
+          logApiStep('TRANSACTION_UPDATE_SUCCESS');
+          
           // Update purchase status to pending
+          logApiStep('PURCHASE_STATUS_UPDATE_START', {
+            purchaseId: purchase.id,
+            paymentId: paymentData.id
+          });
+          
           await updatePurchaseStatus(purchase.id, 'pending', paymentData.id);
+          
+          logApiStep('PURCHASE_STATUS_UPDATE_SUCCESS');
           
           // Send pending payment email notification
           try {
-            const productSlug = purchase.product.slug || purchase.product.id;
+            logApiStep('EMAIL_NOTIFICATION_START', {
+              email: purchase.email,
+              productName: purchase.product.name
+            });
             
             await sendPurchaseConfirmationEmail(
               purchase.email,
@@ -216,20 +357,28 @@ export async function POST(request: NextRequest) {
               'pending' // Indicate that this is a pending payment
             );
             
-            console.log(`[Xendit Payment] Pending payment notification email sent to ${purchase.email}`);
+            logApiStep('EMAIL_NOTIFICATION_SUCCESS');
           } catch (emailError) {
-            console.error('[Xendit Payment] Error sending pending payment notification email:', emailError);
+            logApiStep('EMAIL_NOTIFICATION_ERROR', {}, emailError);
             // Continue processing even if email fails
           }
           
           // Return the redirect URL to the client
+          logApiStep('API_RESPONSE_SUCCESS', {
+            actionUrl: redirectUrl,
+            paymentId: paymentData.id
+          });
+          
           return NextResponse.json({
             success: true,
             actionUrl: redirectUrl,
             paymentId: paymentData.id
           });
+          
         } catch (paymentError) {
-          console.error('[Xendit Payment] One-time payment creation error:', paymentError);
+          logApiStep('ONE_TIME_PAYMENT_CREATE_ERROR', {
+            transactionId: transaction.id
+          }, paymentError);
           
           // Update transaction to failed status
           await prisma.transaction.update({
@@ -259,11 +408,17 @@ export async function POST(request: NextRequest) {
           }, { status: 500 });
         }
       } catch (error) {
-        console.error('[Xendit Payment] Error creating transaction record for e-wallet payment:', error);
-        throw error;
+        logApiStep('TRANSACTION_CREATE_ERROR', { purchaseId: purchase.id }, error);
+        return NextResponse.json({ 
+          error: 'Failed to create transaction record', 
+          details: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
       }
     } else if (paymentMethod === 'ewallet-flow') {
-      console.log(`[Xendit Payment] Processing eWallet payment flow`);
+      logApiStep('EWALLET_FLOW_PAYMENT_START', {
+        channelCode,
+        mobileNumber
+      });
       
       try {
         // Step 1: Create a Customer Object
@@ -274,7 +429,7 @@ export async function POST(request: NextRequest) {
           givenNames: purchase.email.split('@')[0] || 'Customer' // Use part of email as name if available
         });
         
-        console.log(`[Xendit Payment] Created customer with ID: ${customer.id}`);
+        logApiStep('EWALLET_CUSTOMER_CREATED', { customerId: customer.id });
         
         // Step 2: Create an eWallet Payment Method
         // Determine the country based on channel code
@@ -285,7 +440,11 @@ export async function POST(request: NextRequest) {
           country = 'PH'; // Philippines for GRABPAY
         }
         
-        console.log(`[Xendit Payment] Creating eWallet payment method with channel: ${channelCode}, country: ${country}`);
+        logApiStep('EWALLET_PAYMENT_METHOD_CREATE_START', {
+          customerId: customer.id,
+          channelCode,
+          country
+        });
         
         const paymentMethodResponse = await createEWalletPaymentMethod({
           customerId: customer.id,
@@ -296,7 +455,10 @@ export async function POST(request: NextRequest) {
           country: country // Add country parameter
         });
         
-        console.log(`[Xendit Payment] Created payment method with ID: ${paymentMethodResponse.id}`);
+        logApiStep('EWALLET_PAYMENT_METHOD_CREATED', {
+          paymentMethodId: paymentMethodResponse.id,
+          status: paymentMethodResponse.status
+        });
         
         // Check if payment method requires action (most likely it will)
         if (paymentMethodResponse.status === 'REQUIRES_ACTION' && paymentMethodResponse.actions && paymentMethodResponse.actions.length > 0) {
@@ -478,18 +640,21 @@ export async function POST(request: NextRequest) {
         throw new Error('Unexpected payment flow state');
         
       } catch (error) {
-        console.error('[Xendit Payment] Error in eWallet payment flow:', error);
+        logApiStep('EWALLET_FLOW_ERROR', {}, error);
         return NextResponse.json({ 
           error: 'Failed to process eWallet payment', 
           details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 });
       }
     } else if (paymentMethod.startsWith('ewallet')) {
-      console.log(`[Xendit Payment] Processing e-wallet payment with ${paymentMethod}`);
+      logApiStep('EWALLET_TOKENIZED_PAYMENT_START', {
+        paymentMethod,
+        mobileNumber
+      });
       
       // Extract the specific wallet type (gcash, grabpay, etc.)
       const walletType = paymentMethod.split('-')[1]?.toUpperCase() || 'GCASH';
-      console.log(`[Xendit Payment] E-wallet type: ${walletType}`);
+      logApiStep('EWALLET_TYPE_EXTRACTED', { walletType });
       
       // Map to the correct Xendit channel code - ensure we only use supported types
       let channelCode: 'GCASH' | 'GRABPAY' | 'SHOPEEPAY' | 'PAYMAYA';
@@ -499,11 +664,15 @@ export async function POST(request: NextRequest) {
       else if (walletType === 'PAYMAYA') channelCode = 'PAYMAYA';
       else channelCode = 'GCASH'; // Default to GCASH for unsupported types
       
-      console.log(`[Xendit Payment] Using channel code: ${channelCode}`);
+      logApiStep('CHANNEL_CODE_MAPPED', { channelCode });
       
       try {
         // Create customer in Xendit
-        console.log(`[Xendit Payment] Creating customer for purchase ${purchaseId}`);        
+        logApiStep('CUSTOMER_CREATE_START', {
+          purchaseId: purchase.id,
+          email: purchase.email
+        });
+        
         const customer = await createCustomer({
           referenceId: `customer_${purchase.id}`,
           email: purchase.email,
@@ -511,10 +680,14 @@ export async function POST(request: NextRequest) {
           mobileNumber: mobileNumber
         });
         
-        console.log(`[Xendit Payment] Customer created with ID: ${customer.id}`);
+        logApiStep('CUSTOMER_CREATE_SUCCESS', { customerId: customer.id });
         
         // Create payment method for the customer
-        console.log(`[Xendit Payment] Creating payment method for customer ${customer.id}`);
+        logApiStep('PAYMENT_METHOD_CREATE_START', {
+          customerId: customer.id,
+          ewalletType: walletType
+        });
+        
         let paymentMethodResponse;
         
         // Extract the redirect URL and actions from the payment response
@@ -522,6 +695,7 @@ export async function POST(request: NextRequest) {
         let requiresAction = false;
         let actionUrl = '';
         let actionType = '';
+        
         try {
           paymentMethodResponse = await createPaymentMethod({
             customerId: customer.id,
@@ -535,11 +709,14 @@ export async function POST(request: NextRequest) {
             cancelRedirectUrl: cancelUrl
           });
           
-          console.log(`[Xendit Payment] Payment method status: ${paymentMethodResponse.status}`);
+          logApiStep('PAYMENT_METHOD_CREATE_SUCCESS', {
+            paymentMethodId: paymentMethodResponse.id,
+            status: paymentMethodResponse.status
+          });
           
           // If payment method is active, proceed with creating the e-wallet payment
           if (paymentMethodResponse.status === 'ACTIVE') {
-            console.log(`[Xendit Payment] Payment method is active, creating e-wallet payment`);
+            logApiStep('PAYMENT_METHOD_ACTIVE_CREATING_PAYMENT');
             
             // Create a transaction record for the payment attempt
             await prisma.transaction.create({
@@ -570,6 +747,12 @@ export async function POST(request: NextRequest) {
             });
             
             // Create the actual payment using the payment method
+            logApiStep('EWALLET_PAYMENT_CREATE_START', {
+              paymentMethodId: paymentMethodResponse.id,
+              amount,
+              currency
+            });
+            
             const ewalletPayment = await createPayment({
               referenceId: purchase.id,
               amount: amount,
@@ -584,7 +767,10 @@ export async function POST(request: NextRequest) {
               }
             });
             
-            console.log(`[Xendit Payment] E-wallet payment created:`, ewalletPayment);
+            logApiStep('EWALLET_PAYMENT_CREATE_SUCCESS', {
+              paymentId: ewalletPayment.id,
+              status: ewalletPayment.status
+            });
             
             // Update payment method response with payment information
             paymentMethodResponse = {
@@ -592,12 +778,23 @@ export async function POST(request: NextRequest) {
               payment: ewalletPayment
             };
           } else if (paymentMethodResponse.status === 'REQUIRES_ACTION') {
-            console.log(`[Xendit Payment] Payment method requires action, redirecting user to action URL`);
+            logApiStep('PAYMENT_METHOD_REQUIRES_ACTION', {
+              hasActions: !!(paymentMethodResponse.actions && paymentMethodResponse.actions.length > 0),
+              actionsCount: paymentMethodResponse.actions?.length || 0
+            });
             
             // Reset the action URL before extracting from the payment method response
             actionUrl = '';
             
             if (paymentMethodResponse.actions && paymentMethodResponse.actions.length > 0) {
+              logApiStep('PROCESSING_PAYMENT_ACTIONS', {
+                actions: paymentMethodResponse.actions.map((action: PaymentAction) => ({
+                  action: action.action,
+                  url_type: action.url_type,
+                  hasUrl: !!action.url
+                }))
+              });
+              
               // Find the appropriate action URL - prefer mobile if available
               const mobileAction = paymentMethodResponse.actions.find((action: PaymentAction) => 
                 action.url_type === 'MOBILE'
@@ -610,16 +807,23 @@ export async function POST(request: NextRequest) {
               const action = mobileAction || webAction;
               if (action) {
                 actionUrl = action.url || '';
+                logApiStep('ACTION_URL_FOUND', {
+                  actionUrl,
+                  actionType: action.url_type
+                });
+              } else {
+                logApiStep('NO_SUITABLE_ACTION_FOUND');
               }
             }
             
             // If there's a direct action URL in the response, use that
             if (paymentMethodResponse.redirect_url && !actionUrl) {
               actionUrl = paymentMethodResponse.redirect_url;
+              logApiStep('USING_REDIRECT_URL_AS_ACTION', { actionUrl });
             }
             
             if (!actionUrl) {
-              console.log(`[Xendit Payment] Error: No action URL found in payment method response`);
+              logApiStep('NO_ACTION_URL_ERROR', { paymentMethodResponse });
               throw new Error('No action URL found in payment method response requiring action');
             }
             
@@ -657,13 +861,22 @@ export async function POST(request: NextRequest) {
             redirectUrl = actionUrl;
           }
         } catch (paymentMethodError: any) {
-          console.log(`[Xendit] Payment method creation error:`, paymentMethodError);
+          logApiStep('PAYMENT_METHOD_CREATE_ERROR', {
+            errorCode: paymentMethodError?.error_code,
+            errorMessage: paymentMethodError?.message
+          }, paymentMethodError);
           
           // If we get LINKED_ACCOUNT_NOT_FOUND_ERROR, proceed with direct e-wallet payment
           if (paymentMethodError?.error_code === 'LINKED_ACCOUNT_NOT_FOUND_ERROR') {
-            console.log(`[Xendit Payment] Linked account not found, proceeding with direct e-wallet payment`);
+            logApiStep('LINKED_ACCOUNT_NOT_FOUND_USING_DIRECT_PAYMENT');
             
             // Use direct e-wallet payment instead (without tokenization)
+            logApiStep('DIRECT_PAYMENT_API_CALL_START', {
+              walletType,
+              amount,
+              currency
+            });
+            
             const directPaymentResponse = await fetch(`${XENDIT_API_URL}/ewallets/charges`, {
               method: 'POST',
               headers: {
@@ -689,21 +902,57 @@ export async function POST(request: NextRequest) {
               })
             });
             
+            logApiStep('DIRECT_PAYMENT_API_RESPONSE', {
+              status: directPaymentResponse.status,
+              statusText: directPaymentResponse.statusText,
+              ok: directPaymentResponse.ok
+            });
+            
             if (!directPaymentResponse.ok) {
-              const errorData = await directPaymentResponse.json();
-              console.error('[Xendit] Direct payment creation error:', errorData);
+              const errorText = await directPaymentResponse.text();
+              logApiStep('DIRECT_PAYMENT_API_ERROR', {
+                status: directPaymentResponse.status,
+                statusText: directPaymentResponse.statusText,
+                errorText
+              });
+              
+              let errorData;
+              try {
+                errorData = JSON.parse(errorText);
+              } catch (parseError) {
+                logApiStep('DIRECT_PAYMENT_ERROR_PARSE_FAILED', { errorText }, parseError);
+                errorData = { message: 'Failed to parse error response', raw: errorText };
+              }
+              
               throw new Error(`Failed to create direct payment: ${directPaymentResponse.status} ${directPaymentResponse.statusText}`);
             }
             
-            paymentMethodResponse = await directPaymentResponse.json();
-            console.log(`[Xendit] Direct payment created with ID: ${paymentMethodResponse.id}`);
+            const responseText = await directPaymentResponse.text();
+            logApiStep('DIRECT_PAYMENT_RESPONSE_TEXT', {
+              length: responseText.length,
+              preview: responseText.substring(0, 200) + (responseText.length > 200 ? '...' : '')
+            });
+            
+            try {
+              paymentMethodResponse = JSON.parse(responseText);
+              logApiStep('DIRECT_PAYMENT_PARSE_SUCCESS', {
+                paymentId: paymentMethodResponse.id,
+                status: paymentMethodResponse.status
+              });
+            } catch (parseError) {
+              logApiStep('DIRECT_PAYMENT_PARSE_ERROR', { responseText }, parseError);
+              throw new Error('Failed to parse direct payment response');
+            }
           } else {
             // If it's a different error, rethrow it
             throw paymentMethodError;
           }
         }
         
-        console.log(`[Xendit Payment] Payment method created with ID: ${paymentMethodResponse.id}`);
+        logApiStep('PAYMENT_METHOD_FINAL_RESULT', {
+          paymentMethodId: paymentMethodResponse.id,
+          status: paymentMethodResponse.status
+        });
         
         // Update purchase status to pending
         await updatePurchaseStatus(purchase.id, 'pending', paymentMethodResponse.id);
@@ -728,9 +977,19 @@ export async function POST(request: NextRequest) {
         });
         
         // Reset variables before processing payment response
+        logApiStep('EXTRACTING_REDIRECT_URL_FROM_RESPONSE');
         
-        console.log(`[Xendit Payment] Extracting redirect URL from payment response`);
         if (paymentMethodResponse.actions && paymentMethodResponse.actions.length > 0) {
+          logApiStep('PROCESSING_RESPONSE_ACTIONS', {
+            actionsCount: paymentMethodResponse.actions.length,
+            actions: paymentMethodResponse.actions.map((action: PaymentAction) => ({
+              action: action.action,
+              url_type: action.url_type,
+              method: action.method,
+              hasUrl: !!action.url
+            }))
+          });
+          
           // Find the appropriate action URL - prefer mobile if available
           const mobileAction = paymentMethodResponse.actions.find((action: PaymentAction) => 
             action.url_type === 'MOBILE'
@@ -746,12 +1005,19 @@ export async function POST(request: NextRequest) {
             actionUrl = action.url || '';
             actionType = action.url_type || 'WEB';
             
+            logApiStep('ACTION_DETAILS', {
+              actionUrl,
+              actionType,
+              method: action.method
+            });
+            
             // Check if this is a verification action or a redirect
             if (action.method === 'GET' && (actionUrl.includes('authorize') || actionUrl.includes('verification'))) {
               requiresAction = true;
-              console.log(`[Xendit Payment] Payment requires user verification action: ${actionType}`);
+              logApiStep('PAYMENT_REQUIRES_USER_VERIFICATION', { actionType });
             } else {
               redirectUrl = actionUrl;
+              logApiStep('PAYMENT_REDIRECT_URL_SET', { redirectUrl });
             }
           }
         }
@@ -759,24 +1025,33 @@ export async function POST(request: NextRequest) {
         // If there's a direct redirect URL in the response, use that
         if (paymentMethodResponse.redirect_url && !redirectUrl) {
           redirectUrl = paymentMethodResponse.redirect_url;
+          logApiStep('USING_DIRECT_REDIRECT_URL', { redirectUrl });
         }
         
         // If we have neither a redirect URL nor an action URL, check if there's a status that indicates success
         if (!redirectUrl && !requiresAction) {
           if (paymentMethodResponse.status === 'SUCCEEDED' || paymentMethodResponse.status === 'COMPLETED') {
-            console.log(`[Xendit Payment] Payment already succeeded, no redirect needed`);
+            logApiStep('PAYMENT_ALREADY_SUCCEEDED');
             // If payment already succeeded, redirect to success URL
             redirectUrl = successUrl;
           } else if (!actionUrl) {
-            console.log(`[Xendit Payment] Error: No redirect URL or action found in payment response`);
+            logApiStep('NO_REDIRECT_OR_ACTION_URL_ERROR', { paymentMethodResponse });
             throw new Error('No redirect URL or action found in payment response');
           }
         }
         
-        console.log(`[Xendit Payment] Payment request successful, ${requiresAction ? 'action required' : 'redirecting to'}: ${requiresAction ? actionUrl : redirectUrl}`);
+        logApiStep('PAYMENT_REQUEST_SUCCESSFUL', {
+          requiresAction,
+          finalUrl: requiresAction ? actionUrl : redirectUrl
+        });
         
         // Send purchase confirmation email immediately
         try {
+          logApiStep('SENDING_CONFIRMATION_EMAIL', {
+            email: purchase.email,
+            productName: purchase.product.name
+          });
+          
           const productSlug = purchase.product.slug || purchase.product.id;
           
           await sendPurchaseConfirmationEmail(
@@ -788,9 +1063,9 @@ export async function POST(request: NextRequest) {
             purchase.currency
           );
           
-          console.log(`[Xendit Payment] Purchase confirmation email sent to ${purchase.email}`);
+          logApiStep('CONFIRMATION_EMAIL_SENT');
         } catch (emailError) {
-          console.error('[Xendit Payment] Error sending purchase confirmation email:', emailError);
+          logApiStep('CONFIRMATION_EMAIL_ERROR', {}, emailError);
           // Continue processing even if email fails
         }
         
@@ -798,14 +1073,20 @@ export async function POST(request: NextRequest) {
         const finalRedirectUrl = requiresAction ? actionUrl : redirectUrl;
         
         if (!finalRedirectUrl) {
-          console.error('[Xendit Payment] No redirect URL available');
+          logApiStep('NO_FINAL_REDIRECT_URL_ERROR');
           return NextResponse.json({
             success: false,
             error: 'No redirect URL available'
           }, { status: 400 });
         }
         
-        console.log(`[Xendit Payment] Returning redirect URL: ${finalRedirectUrl}`);
+        logApiStep('RETURNING_FINAL_RESPONSE', {
+          finalRedirectUrl,
+          paymentId: paymentMethodResponse.id,
+          paymentStatus: paymentMethodResponse.status || 'PENDING',
+          requiresAction,
+          tokenized: paymentMethodResponse.payment_method_id ? true : false
+        });
         
         // Return a JSON response with the redirect URL and a flag to indicate redirection is needed
         // The client-side code will handle the actual redirection
@@ -821,7 +1102,7 @@ export async function POST(request: NextRequest) {
         });
         
       } catch (error) {
-        console.error('[Xendit Payment] Error in tokenized payment flow:', error);
+        logApiStep('EWALLET_TOKENIZED_PAYMENT_ERROR', {}, error);
         return NextResponse.json({ 
           error: 'Failed to create tokenized payment', 
           details: error instanceof Error ? error.message : 'Unknown error'
@@ -829,11 +1110,18 @@ export async function POST(request: NextRequest) {
       }
 
     } else if (paymentMethod === 'card') {
-      console.log(`[Xendit Payment] Processing card payment for purchase ${purchaseId}`);
-      console.log(`[Xendit Payment] Card details received: ${cardNumber ? 'Card number provided' : 'No card number'}, ${cardExpiry ? 'Expiry provided' : 'No expiry'}, ${cardCvc ? 'CVC provided' : 'No CVC'}, ${cardName ? 'Name provided' : 'No name'}`);
+      logApiStep('CARD_PAYMENT_START', {
+        purchaseId,
+        hasCardNumber: !!cardNumber,
+        hasCardExpiry: !!cardExpiry,
+        hasCardCvc: !!cardCvc,
+        hasCardName: !!cardName
+      });
       
       // Create a transaction record for the payment attempt
       try {
+        logApiStep('CARD_TRANSACTION_CREATE_START');
+        
         const transaction = await prisma.transaction.create({
           data: {
             userId: purchase.product.userId,
@@ -851,7 +1139,7 @@ export async function POST(request: NextRequest) {
           }
         });
         
-        console.log(`[Xendit Payment] Transaction record created for card payment with ID: ${transaction.id}`);
+        logApiStep('CARD_TRANSACTION_CREATE_SUCCESS', { transactionId: transaction.id });
         
         // Update purchase status to pending
         await prisma.purchase.update({
@@ -862,11 +1150,11 @@ export async function POST(request: NextRequest) {
           }
         });
         
-        console.log(`[Xendit Payment] Purchase updated with card payment method`);
+        logApiStep('CARD_PURCHASE_STATUS_UPDATED');
         
         // Process the card payment using our new function
         try {
-          console.log(`[Xendit Payment] Processing card payment with Xendit`);
+          logApiStep('CARD_PAYMENT_PROCESSING_START');
           
           // Create metadata for the payment
           const metadata = {
@@ -877,6 +1165,12 @@ export async function POST(request: NextRequest) {
           
           // Generate a unique external ID for this payment
           const externalId = `purchase_${purchase.id}_${Date.now()}`;
+          
+          logApiStep('CARD_PAYMENT_XENDIT_CALL_START', {
+            externalId,
+            amount,
+            currency
+          });
           
           // Process the card payment (tokenize + charge)
           const paymentResult = await processCardPayment({
@@ -890,7 +1184,10 @@ export async function POST(request: NextRequest) {
             metadata
           });
           
-          console.log(`[Xendit Payment] Card payment successful with ID: ${paymentResult.paymentId}`);
+          logApiStep('CARD_PAYMENT_XENDIT_CALL_SUCCESS', {
+            paymentId: paymentResult.paymentId,
+            status: paymentResult.status
+          });
           
           // Update the transaction record with the payment ID
           await prisma.transaction.update({
@@ -912,6 +1209,8 @@ export async function POST(request: NextRequest) {
           
           // Send purchase confirmation email
           try {
+            logApiStep('CARD_CONFIRMATION_EMAIL_START');
+            
             const productSlug = purchase.product.slug || purchase.product.id;
             
             await sendPurchaseConfirmationEmail(
@@ -923,13 +1222,18 @@ export async function POST(request: NextRequest) {
               purchase.currency
             );
             
-            console.log(`[Xendit Payment] Purchase confirmation email sent to ${purchase.email}`);
+            logApiStep('CARD_CONFIRMATION_EMAIL_SUCCESS');
           } catch (emailError) {
-            console.error('[Xendit Payment] Error sending purchase confirmation email:', emailError);
+            logApiStep('CARD_CONFIRMATION_EMAIL_ERROR', {}, emailError);
             // Continue processing even if email fails
           }
           
           // Return success response with access code
+          logApiStep('CARD_PAYMENT_SUCCESS_RESPONSE', {
+            accessCode: purchase.accessCode,
+            paymentId: paymentResult.paymentId
+          });
+          
           return NextResponse.json({
             success: true,
             accessCode: purchase.accessCode,
@@ -938,7 +1242,9 @@ export async function POST(request: NextRequest) {
           });
           
         } catch (paymentError) {
-          console.error('[Xendit Payment] Card payment processing error:', paymentError);
+          logApiStep('CARD_PAYMENT_PROCESSING_ERROR', {
+            transactionId: transaction.id
+          }, paymentError);
           
           // Update transaction to failed status
           await prisma.transaction.update({
@@ -967,12 +1273,15 @@ export async function POST(request: NextRequest) {
           }, { status: 500 });
         }
       } catch (error) {
-        console.error('[Xendit Payment] Error creating transaction record for card payment:', error);
-        throw error;
+        logApiStep('CARD_TRANSACTION_CREATE_ERROR', { purchaseId: purchase.id }, error);
+        return NextResponse.json({ 
+          error: 'Failed to create transaction record for card payment', 
+          details: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
       }
     } else {
       // Handle other payment methods if needed
-      console.log(`[Xendit Payment] Unsupported payment method: ${paymentMethod}`);
+      logApiStep('UNSUPPORTED_PAYMENT_METHOD', { paymentMethod });
       return NextResponse.json({ 
         error: 'Unsupported payment method',
         details: 'Only e-wallet payments are supported at this time'
@@ -980,9 +1289,13 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error('[Xendit Payment] Payment creation error:', error);
+    logApiStep('API_REQUEST_ERROR', {
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined
+    }, error);
+    
     return NextResponse.json({ 
-      error: 'Failed to create payment', 
+      error: 'Payment processing failed', 
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
