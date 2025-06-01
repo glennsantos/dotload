@@ -84,7 +84,7 @@ export default function CreditCardForm({
     script.onload = () => {
       console.log('[CreditCardForm] Xendit.js loaded successfully');
       // Get the public key from environment variable
-      const publicKey = process.env.XENDIT_PUBLIC_KEY;
+      const publicKey = process.env.NEXT_PUBLIC_XENDIT_PUBLIC_KEY;
       if (publicKey) {
         console.log('[CreditCardForm] Setting Xendit publishable key');
         window.Xendit.setPublishableKey(publicKey);
