@@ -227,11 +227,12 @@ export default function BrandSettingsPage() {
                     </button>
                   )}
                   <input
-                    ref={logoInputRef}
-                    id="brand-logo"
                     type="file"
-                    accept="image/jpeg,image/png,image/webp"
+                    id="brand-logo"
+                    name="logoFile"
+                    ref={logoInputRef}
                     onChange={handleLogoChange}
+                    accept="image/jpeg, image/png, image/webp"
                     className="hidden"
                   />
                 </div>
@@ -283,11 +284,12 @@ export default function BrandSettingsPage() {
                     </button>
                   )}
                   <input
-                    ref={headerInputRef}
-                    id="header-image"
                     type="file"
-                    accept="image/jpeg,image/png,image/webp"
+                    id="header-image"
+                    name="headerFile"
+                    ref={headerInputRef}
                     onChange={handleHeaderChange}
+                    accept="image/jpeg, image/png, image/webp"
                     className="hidden"
                   />
                 </div>

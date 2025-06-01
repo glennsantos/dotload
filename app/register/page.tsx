@@ -88,9 +88,22 @@ export default function RegisterPage() {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        setError('Logo must be JPG, PNG, or WebP format');
+        return;
+      }
+      
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setError('Logo must be less than 2MB');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setBrandLogo(reader.result as string);
+        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -100,9 +113,22 @@ export default function RegisterPage() {
   const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        setError('Header image must be JPG, PNG, or WebP format');
+        return;
+      }
+      
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setError('Header image must be less than 2MB');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setHeaderImage(reader.result as string);
+        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -119,16 +145,18 @@ export default function RegisterPage() {
       formData.append('email', email);
       formData.append('password', password);
       formData.append('name', name);
-      formData.append('brandName', brandName);
+      formData.append('storeName', brandName);
       
-      if (brandLogo) {
-        const logoFile = logoInputRef.current?.files?.[0];
-        if (logoFile) formData.append('logoFile', logoFile);
+      // Add logo file if selected
+      const logoFile = logoInputRef.current?.files?.[0];
+      if (logoFile) {
+        formData.append('logoFile', logoFile);
       }
       
-      if (headerImage) {
-        const headerFile = headerInputRef.current?.files?.[0];
-        if (headerFile) formData.append('headerFile', headerFile);
+      // Add header file if selected
+      const headerFile = headerInputRef.current?.files?.[0];
+      if (headerFile) {
+        formData.append('headerFile', headerFile);
       }
 
       const response = await fetch('/api/auth/register', {
@@ -321,13 +349,13 @@ export default function RegisterPage() {
                           </div>
                           <input
                             type="file"
+                            name="logoFile"
                             ref={logoInputRef}
                             onChange={handleLogoChange}
-                            accept="image/jpeg,image/png,image/webp"
+                            accept="image/jpeg, image/png, image/webp"
                             className="hidden"
                           />
-                          <p className="text-xs text-stone-500 mt-2">JPG, PNG, WebP</p>
-                          <p className="text-xs text-stone-500">(max 2MB)</p>
+                          <p className="text-xs text-stone-500 mt-2">JPG, PNG, WebP (max 2MB)</p>
                         </div>
                       </div>
                       
@@ -360,13 +388,13 @@ export default function RegisterPage() {
                           </div>
                           <input
                             type="file"
+                            name="headerFile"
                             ref={headerInputRef}
                             onChange={handleHeaderChange}
-                            accept="image/jpeg,image/png,image/webp"
+                            accept="image/jpeg, image/png, image/webp"
                             className="hidden"
                           />
-                          <p className="text-xs text-stone-500 mt-2">JPG, PNG, WebP</p>
-                          <p className="text-xs text-stone-500">(max 2MB)</p>
+                          <p className="text-xs text-stone-500 mt-2">JPG, PNG, WebP (max 2MB)</p>
                         </div>
                       </div>
                     </div>
@@ -409,23 +437,25 @@ export default function RegisterPage() {
                   </Alert>
                 )}
                 
-                <Button 
-                  variant="outline" 
-                  onClick={handleResendVerification}
-                  className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
-                  disabled={isSubmitting}
-                >
-                  Resend verification email
-                </Button>
+                <div className="flex flex-col space-y-4">
+                  <Button
+                    onClick={handleResendVerification}
+                    disabled={isSubmitting}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light"
+                  >
+                    {isSubmitting ? 'Sending...' : 'Resend Verification Email'}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push('/login')}
+                    className="border-stone-300 text-stone-700 rounded-2xl h-12 font-light hover:bg-stone-50"
+                  >
+                    Back to Login
+                  </Button>
+                </div>
               </div>
             )}
-            
-            <div className="mt-4 text-center text-sm text-stone-600 font-light">
-              Already have an account?{' '}
-              <Link href="/login" className="text-emerald-600 hover:text-emerald-700 font-light">
-                Sign in
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>
