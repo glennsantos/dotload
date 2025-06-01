@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Menu, ChevronDown, Settings, LogOut, ChevronLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getCurrentUser } from "@/lib/client-auth";
+import { MobileMenu } from "@/components/dashboard/MobileMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ interface CreateProductHeaderProps {
 }
 
 export default function CreateProductHeader({ isEdit = false }: CreateProductHeaderProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userData, setUserData] = useState({
     userName: "User",
     userEmail: "",
@@ -54,6 +56,11 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
 
   return (
     <>
+      <MobileMenu 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)}
+      />
+      
       <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-sm border-b border-stone-200 py-2">
         {/* Back to Dashboard button */}
         <Link href="/products" className="text-sm text-stone-500 hover:text-stone-700">
@@ -124,15 +131,15 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
             </div>
             {/* Mobile profile button */}
             <div className="md:hidden">
-              <Button 
-                variant="ghost" 
-                size="icon"
+              <button 
+                onClick={() => setIsMenuOpen(true)}
                 className="h-9 w-9 rounded-full relative overflow-hidden hover:bg-stone-100"
+                aria-label="Profile menu"
               >
                 <div className="h-12 w-12 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 font-medium text-sm">
                   {userData.userLogo ? <Image src={userData.userLogo} alt="User Logo" width={40} height={40} className="h-full w-full object-cover" /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}
                 </div>
-              </Button>
+              </button>
             </div>
           </div>
         </div>
