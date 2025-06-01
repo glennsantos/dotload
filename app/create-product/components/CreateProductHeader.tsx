@@ -92,7 +92,7 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
                     className="h-9 w-9 rounded-full relative overflow-hidden hover:bg-stone-100"
                   >
                     <div className="h-9 w-9 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 font-medium text-sm">
-                      {userData.userLogo ? <Image src={userData.userLogo} alt="User Logo" width={40} height={40} /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}
+                      {userData.userLogo ? <Image src={userData.userLogo} alt="User Logo" width={40} height={40} className="h-full w-full object-cover" /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
@@ -129,8 +129,8 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
                 size="icon"
                 className="h-9 w-9 rounded-full relative overflow-hidden hover:bg-stone-100"
               >
-                <div className="h-9 w-9 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 font-medium text-sm">
-                  {userData.userLogo ? <Image src={userData.userLogo} alt="User Logo" width={40} height={40} /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}
+                <div className="h-12 w-12 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 font-medium text-sm">
+                  {userData.userLogo ? <Image src={userData.userLogo} alt="User Logo" width={40} height={40} className="h-full w-full object-cover" /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}
                 </div>
               </Button>
             </div>
