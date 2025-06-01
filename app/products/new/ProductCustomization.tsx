@@ -3,8 +3,10 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
-import { X, Upload, ChevronLeft } from "lucide-react"
+import { X, Upload, ChevronLeft, AlertCircle } from "lucide-react"
 import NextImage from "next/image"
+
+const MAX_FILE_SIZE_MB = 50; // 50MB max file size
 
 export default function ProductCustomization({
   productData,
@@ -20,11 +22,26 @@ export default function ProductCustomization({
   onCancel: () => void
 }) {
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0]
+      
+      // Check file size (50MB limit)
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        setError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit`)
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+        return
+      }
+      
+      // Clear any previous errors
+      setError(null)
+      
       setProductData({
         ...productData,
         coverImage: file,
@@ -101,6 +118,12 @@ export default function ProductCustomization({
 
               <div className="mb-6">
                 <label className="block mb-2 font-medium">Cover Image</label>
+                {error && (
+                  <div className="flex items-center gap-2 text-red-500 text-sm mb-2">
+                    <AlertCircle size={16} />
+                    <span>{error}</span>
+                  </div>
+                )}
                 <div className="border-2 border-dashed rounded-md p-6 text-center">
                   {coverImagePreview ? (
                     <div className="relative">
