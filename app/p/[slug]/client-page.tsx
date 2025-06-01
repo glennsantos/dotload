@@ -41,13 +41,34 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
   }
   
   // Parse whatsIncluded from JSON if it exists
-  const whatsIncluded = product.whatsIncluded ? JSON.parse(product.whatsIncluded) : []
+  let whatsIncluded = [];
+  try {
+    whatsIncluded = product.whatsIncluded ? JSON.parse(product.whatsIncluded) : [];
+    if (!Array.isArray(whatsIncluded)) whatsIncluded = [];
+  } catch (error) {
+    console.error('Error parsing whatsIncluded:', error);
+    whatsIncluded = [];
+  }
   
   // Parse customTrustIndicators from JSON if it exists
-  const trustIndicators = product.customTrustIndicators ? JSON.parse(product.customTrustIndicators) : []
+  let trustIndicators = [];
+  try {
+    trustIndicators = product.customTrustIndicators ? JSON.parse(product.customTrustIndicators) : [];
+    if (!Array.isArray(trustIndicators)) trustIndicators = [];
+  } catch (error) {
+    console.error('Error parsing customTrustIndicators:', error);
+    trustIndicators = [];
+  }
   
   // Parse customBadges from JSON if it exists
-  const customBadges = product.customBadges ? JSON.parse(product.customBadges) : []
+  let customBadges = [];
+  try {
+    customBadges = product.customBadges ? JSON.parse(product.customBadges) : [];
+    if (!Array.isArray(customBadges)) customBadges = [];
+  } catch (error) {
+    console.error('Error parsing customBadges:', error);
+    customBadges = [];
+  }
 
   return (
     <div className="min-h-screen bg-white pb-20 md:pb-0">
@@ -100,7 +121,7 @@ export default function ClientProductPage({ product, slug }: ClientProductPagePr
             )}
             
             {/* Custom Badges */}
-            {product.customBadges && JSON.parse(product.customBadges || '[]').map((badge: string, index: number) => (
+            {customBadges && customBadges.length > 0 && customBadges.map((badge: string, index: number) => (
               <span key={`badge-${index}`} className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">{badge}</span>
             ))}
           </div>

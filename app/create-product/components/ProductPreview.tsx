@@ -42,24 +42,57 @@ export default function ProductPreview({ productData, variant = 'default' }: Pro
     setIsFullscreen(!isFullscreen);
   };
 
+  // Helper function to safely get array data
+  const safeGetArray = (data: any): any[] => {
+    if (Array.isArray(data)) return data;
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  // Helper function to safely stringify array data
+  const safeStringifyArray = (data: any): string => {
+    const arrayData = safeGetArray(data);
+    return JSON.stringify(arrayData);
+  };
+
+  // Helper function to safely get boolean values
+  const safeGetBoolean = (value: any): boolean => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value === 'true';
+    if (typeof value === 'number') return value !== 0;
+    return false;
+  };
+
   // Transform the productData to match the format expected by ClientProductPage
   const transformedProduct = {
     id: productData.id || 'preview',
     name: productData.name || 'Product Name',
     slug: productData.slug || 'preview',
     description: productData.description || 'Product description will appear here.',
-    price: productData.price || 0,
+    price: Number(productData.price) || 0,
     coverImagePath: productData.coverImagePath || (productData.coverImage ? URL.createObjectURL(productData.coverImage) : '/placeholder.jpg'),
     type: productData.type || 'digital_product',
-    whatsIncluded: JSON.stringify(productData.whatsIncluded || []),
-    customTrustIndicators: JSON.stringify(productData.trustIndicators?.custom || []),
-    customBadges: JSON.stringify(productData.badges?.custom || []),
-    bestSeller: productData.badges?.bestSeller || false,
-    newRelease: productData.badges?.newRelease || false,
-    popular: productData.badges?.popular || false,
-    secureCheckout: productData.trustIndicators?.secureCheckout || false,
-    instantDownload: productData.trustIndicators?.instantDownload || false,
-    refundPolicy: productData.trustIndicators?.refundPolicy || false,
+    
+    // Safely handle arrays that might be strings or objects from API response
+    whatsIncluded: safeStringifyArray(productData.whatsIncluded),
+    customTrustIndicators: safeStringifyArray(productData.trustIndicators?.custom),
+    customBadges: safeStringifyArray(productData.badges?.custom),
+    
+    // Handle boolean values safely
+    bestSeller: safeGetBoolean(productData.badges?.bestSeller),
+    newRelease: safeGetBoolean(productData.badges?.newRelease),
+    popular: safeGetBoolean(productData.badges?.popular),
+    secureCheckout: safeGetBoolean(productData.trustIndicators?.secureCheckout),
+    instantDownload: safeGetBoolean(productData.trustIndicators?.instantDownload),
+    refundPolicy: safeGetBoolean(productData.trustIndicators?.refundPolicy),
+    
     user: {
       storeName: userData.userName,
       storeLogoPath: userData.storeLogoPath
