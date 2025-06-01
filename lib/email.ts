@@ -1,13 +1,7 @@
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { Resend } from 'resend';
 
-// Create an SES client
-const sesClient = new SESClient({
-  region: process.env.AWS_REGION || 'ap-southeast-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
-  }
-});
+// Create a Resend client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email sender address
 const fromEmail = process.env.EMAIL_FROM || 'alacart <noreply@alacart.store>';
@@ -36,36 +30,22 @@ export async function sendVerificationEmail(
     </div>
   `;
 
-  const textBody = `
-    Welcome to alacart${name ? `, ${name}` : ''}!
-    
-    Thank you for registering. Please verify your email address to activate your account.
-    
-    Verify your email by clicking this link: ${verificationUrl}
-    
-    If you did not create an account, no further action is required.
-  `;
-
-  const params = {
-    Source: fromEmail,
-    Destination: { ToAddresses: [to] },
-    Message: {
-      Subject: { Data: 'Verify your alacart account' },
-      Body: {
-        Html: { Data: htmlBody },
-        Text: { Data: textBody }
-      }
-    }
-  };
-
   try {
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject: 'Verify your alacart account',
+      html: htmlBody,
+    });
 
-    
-    // Attempt to send the actual email
-    return await sesClient.send(new SendEmailCommand(params));
+    if (error) {
+      console.error('Error sending verification email:', error);
+      throw error;
+    }
+
+    return data;
   } catch (error) {
     console.error('Error sending verification email:', error);
-    
     throw error;
   }
 }
@@ -95,37 +75,22 @@ export async function sendPasswordResetEmail(
     </div>
   `;
 
-  const textBody = `
-    Reset Your Password
-    
-    Hello${name ? ` ${name}` : ''},
-    
-    We received a request to reset your password. Click the link below to create a new password:
-    
-    ${resetUrl}
-    
-    If you did not request a password reset, please ignore this email.
-  `;
-
-  const params = {
-    Source: fromEmail,
-    Destination: { ToAddresses: [to] },
-    Message: {
-      Subject: { Data: 'Reset your alacart password' },
-      Body: {
-        Html: { Data: htmlBody },
-        Text: { Data: textBody }
-      }
-    }
-  };
-
   try {
-    
-    // Attempt to send the actual email
-    return await sesClient.send(new SendEmailCommand(params));
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject: 'Reset your alacart password',
+      html: htmlBody,
+    });
+
+    if (error) {
+      console.error('Error sending password reset email:', error);
+      throw error;
+    }
+
+    return data;
   } catch (error) {
     console.error('Error sending password reset email:', error);
-    
     throw error;
   }
 }
@@ -147,7 +112,6 @@ export async function sendPurchaseConfirmationEmail(
 
   let subject = '';
   let htmlBody = '';
-  let textBody = '';
 
   // Different email content based on purchase status
   if (status === 'pending') {
@@ -166,20 +130,6 @@ export async function sendPurchaseConfirmationEmail(
         
         <p style="margin-top: 30px; color: #666; font-size: 14px;">If you have any questions, please contact our support team.</p>
       </div>
-    `;
-
-    textBody = `
-      Thank You for Your Purchase!
-      
-      Hello${name ? ` ${name}` : ''},
-      
-      Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} is currently being processed.
-      
-      Payment Status: Pending
-      
-      We'll send you another email with access to your purchase once the payment is confirmed.
-      
-      If you have any questions, please contact our support team.
     `;
   } else {
     // Default completed status
@@ -204,39 +154,24 @@ export async function sendPurchaseConfirmationEmail(
         <p style="margin-top: 30px; color: #666; font-size: 14px;">Keep this email for your records. The link above provides permanent access to your purchased content.</p>
       </div>
     `;
-
-    textBody = `
-      Thank You for Your Purchase!
-      
-      Hello${name ? ` ${name}` : ''},
-      
-      Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} has been successfully processed.
-      
-      Access Your Content: ${tempDownloadsUrl}
-      
-      Keep this email for your records. The link above provides permanent access to your purchased content.
-    `;
   }
 
-  const params = {
-    Source: fromEmail,
-    Destination: { ToAddresses: [to] },
-    Message: {
-      Subject: { Data: subject },
-      Body: {
-        Html: { Data: htmlBody },
-        Text: { Data: textBody }
-      }
-    }
-  };
-
   try {
-    
-    // Attempt to send the actual email
-    return await sesClient.send(new SendEmailCommand(params));
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject: subject,
+      html: htmlBody,
+    });
+
+    if (error) {
+      console.error('Error sending purchase confirmation email:', error);
+      throw error;
+    }
+
+    return data;
   } catch (error) {
     console.error('Error sending purchase confirmation email:', error);
-    
     throw error;
   }
 }
@@ -244,10 +179,8 @@ export async function sendPurchaseConfirmationEmail(
 // Test the email configuration
 export async function testEmailConfig() {
   try {
-    // SES doesn't have a direct verify method like nodemailer,
-    // so we'll check if we can instantiate the client
-    if (!sesClient) {
-      throw new Error('SES client not initialized');
+    if (!resend) {
+      throw new Error('Resend client not initialized');
     }
     return { success: true };
   } catch (error) {
