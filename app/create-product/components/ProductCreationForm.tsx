@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Plus, AlertCircle, X } from 'lucide-react'
@@ -83,6 +83,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   const [showValidationErrors, setShowValidationErrors] = useState(false)
   const [errorModalOpen, setErrorModalOpen] = useState(false)
   const [errorModalMessage, setErrorModalMessage] = useState('')
+  const prevCreatedProduct = useRef<Product | null>(null);
   
   // Initialize product data with default values
   const [productData, setProductData] = useState<Product>({
@@ -448,6 +449,13 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
       setIsSubmitting(false)
     }
   }
+  
+  useEffect(() => {
+    if (createdProduct && !prevCreatedProduct.current) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    prevCreatedProduct.current = createdProduct;
+  }, [createdProduct]);
   
   return (
     <div className="min-h-screen bg-white mt-20">
