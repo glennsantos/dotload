@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-06-01
+
 ### Fixed
 - **Nginx File Upload Size Limit**: Fixed `413 Request Entity Too Large` error when uploading files larger than 1MB by setting `client_max_body_size 100M` in nginx configuration files. This allows file uploads up to 100MB to pass through nginx to the application, while application-level validation still enforces specific limits (50MB for content files, 10MB for cover images).
 
