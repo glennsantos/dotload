@@ -32,6 +32,8 @@ const PUBLIC_ROUTES = [
   // Product pages (public)
   '/p',
   '/p/*',
+  // Purchase creation (public - used during checkout)
+  '/api/purchases',
   // Old download endpoints (deprecated)
   '/api/files/secure-download',
   '/api/files/secure-download/*',
@@ -193,8 +195,6 @@ export const config = {
     '/api/products/:path*',
     '/api/transactions',
     '/api/transactions/:path*',
-    '/api/purchases',
-    '/api/purchases/:path*',
     '/api/auth/me',
     '/api/auth/user-status',
     '/api/auth/create-from-purchase',
