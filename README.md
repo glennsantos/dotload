@@ -1437,3 +1437,44 @@ The email service implementation has been migrated from Nodemailer/Mailtrap to A
      --port 22 \
      --cidr $CURRENT_IP
    ```
+
+### 2025-06-01: Fixed Nginx File Upload Size Limit
+
+1. **Issue Identified**:
+   - Users experiencing `413 Request Entity Too Large` error when uploading files larger than 1MB
+   - Nginx default `client_max_body_size` is 1MB, but application supports up to 100MB uploads
+   - Error occurred during product creation with file uploads
+
+2. **Changes Made**:
+   - Updated `nginx.conf` to set global `client_max_body_size 100M`
+   - Updated `alacarte-nginx-https.conf` to set `client_max_body_size 100M` in both HTTP and HTTPS server blocks
+   - Updated `alacarte.conf` to set `client_max_body_size 100M` in HTTP server block
+
+3. **Files Modified**:
+   - `nginx.conf`: Added global setting in http block
+   - `alacarte-nginx-https.conf`: Added setting to both server blocks
+   - `alacarte.conf`: Added setting to server block
+
+4. **Deployment Steps**:
+   ```bash
+   # Connect to EC2 server
+   ssh -F ssh_config alacarte-ec2
+   
+   # Copy updated nginx configuration files to server
+   sudo cp /path/to/nginx.conf /etc/nginx/nginx.conf
+   sudo cp /path/to/alacarte-nginx-https.conf /etc/nginx/conf.d/
+   
+   # Test nginx configuration
+   sudo nginx -t
+   
+   # Reload nginx to apply changes
+   sudo systemctl reload nginx
+   
+   # Verify the configuration is active
+   sudo nginx -T | grep client_max_body_size
+   ```
+
+5. **Verification**:
+   - Test file uploads up to 100MB should now work without 413 errors
+   - Both HTTP and HTTPS requests should support large file uploads
+   - Application-level file size validation (50MB for content files, 10MB for cover images) remains in effect
