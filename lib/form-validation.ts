@@ -1,6 +1,82 @@
 // Form validation utility functions
 
 /**
+ * Validates price input specifically for integer values between 1-500000
+ * @param price The price value to validate
+ * @returns An object with validation results
+ */
+export const validatePrice = (price: any) => {
+  if (price === undefined || price === null || price === '') {
+    return { isValid: false, error: 'Price is required' };
+  }
+
+  const numValue = Number(price);
+  
+  if (isNaN(numValue)) {
+    return { isValid: false, error: 'Price must be a valid number' };
+  }
+
+  // Check if it's an integer
+  if (!Number.isInteger(numValue)) {
+    return { isValid: false, error: 'Price must be a whole number (no decimals)' };
+  }
+
+  // Check range
+  if (numValue < 1) {
+    return { isValid: false, error: 'Price must be at least ₱1' };
+  }
+
+  if (numValue > 500000) {
+    return { isValid: false, error: 'Price cannot exceed ₱500,000' };
+  }
+
+  return { isValid: true, error: null };
+};
+
+/**
+ * Validates discount amount based on discount type
+ * @param amount The discount amount to validate
+ * @param type The discount type ('percentage' or 'fixed')
+ * @returns An object with validation results
+ */
+export const validateDiscountAmount = (amount: any, type: 'percentage' | 'fixed') => {
+  if (amount === undefined || amount === null || amount === '') {
+    return { isValid: false, error: 'Discount amount is required' };
+  }
+
+  const numValue = Number(amount);
+  
+  if (isNaN(numValue)) {
+    return { isValid: false, error: 'Discount amount must be a valid number' };
+  }
+
+  // Check if it's an integer
+  if (!Number.isInteger(numValue)) {
+    return { isValid: false, error: 'Discount amount must be a whole number (no decimals)' };
+  }
+
+  if (type === 'percentage') {
+    // For percentage discounts, validate range 1-100
+    if (numValue < 1) {
+      return { isValid: false, error: 'Percentage discount must be at least 1%' };
+    }
+    if (numValue > 100) {
+      return { isValid: false, error: 'Percentage discount cannot exceed 100%' };
+    }
+  } else if (type === 'fixed') {
+    // For fixed discounts, use same validation as product prices
+    if (numValue < 1) {
+      return { isValid: false, error: 'Fixed discount must be at least ₱1' };
+    }
+    if (numValue > 500000) {
+      return { isValid: false, error: 'Fixed discount cannot exceed ₱500,000' };
+    }
+  }
+
+  return { isValid: true, error: null };
+};
+
+/**
  * Validates product form data
  * @param formData The product form data to validate
  * @returns An object with validation results
@@ -19,16 +95,10 @@ export const validateProductForm = (formData: any) => {
     errors.type = 'Product type is required';
   }
   
-  // Validate price
-  if (formData.price === undefined || formData.price === null || formData.price === '') {
-    errors.price = 'Price is required';
-  } else {
-    const price = parseFloat(formData.price);
-    if (isNaN(price)) {
-      errors.price = 'Price must be a valid number';
-    } else if (price < 0) {
-      errors.price = 'Price cannot be negative';
-    }
+  // Validate price using the new price validation function
+  const priceValidation = validatePrice(formData.price);
+  if (!priceValidation.isValid) {
+    errors.price = priceValidation.error!;
   }
   
   // Validate description

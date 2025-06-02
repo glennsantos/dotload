@@ -7,6 +7,7 @@ import Image from "next/image"
 import { ArrowLeft, Save, ChevronRight } from "lucide-react"
 import RichTextEditor from "@/components/rich-text-editor"
 import { isAllowedDigitalFile } from '@/lib/file-validation'
+import { validatePrice, validateDiscountAmount } from '@/lib/form-validation'
 
 // Variation Item Component for managing individual variations
 const VariationItem = ({ variation, index, onUpdate, onDelete }: { 
@@ -595,15 +596,38 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                       ₱
                     </span>
                     <input
-                      type="number"
+                      type="text"
                       id="price"
                       name="price"
                       value={formData.price}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        // Only allow integers (no decimals)
+                        const integerRegex = /^\d*$/
+                        if (value === '' || integerRegex.test(value)) {
+                          setFormData({ ...formData, price: value })
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value
+                        if (value !== '') {
+                          const numValue = parseInt(value, 10)
+                          const validation = validatePrice(numValue)
+                          if (!validation.isValid) {
+                            alert(validation.error!) // Simple alert for now, could be improved with modal
+                            // Reset to valid range
+                            if (numValue < 1) {
+                              setFormData({ ...formData, price: '1' })
+                            } else if (numValue > 500000) {
+                              setFormData({ ...formData, price: '500000' })
+                            }
+                          }
+                        }
+                      }}
                       className="w-full p-3 border rounded-r-md"
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
+                      placeholder="1"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                     />
                   </div>
                 </div>
@@ -1059,13 +1083,32 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                           <div>
                             <label className="block text-sm font-medium mb-1">Discount Amount</label>
                             <input 
-                              type="number" 
+                              type="text" 
                               value={editingDiscount.code.amount}
-                              onChange={(e) => setEditingDiscount({
-                                ...editingDiscount, 
-                                code: {...editingDiscount.code, amount: e.target.value}
-                              })}
+                              onChange={(e) => {
+                                const value = e.target.value
+                                // Only allow integers (no decimals)
+                                const integerRegex = /^\d*$/
+                                if (value === '' || integerRegex.test(value)) {
+                                  setEditingDiscount({
+                                    ...editingDiscount, 
+                                    code: {...editingDiscount.code, amount: value}
+                                  })
+                                }
+                              }}
+                              onBlur={(e) => {
+                                const value = e.target.value
+                                if (value !== '') {
+                                  const validation = validateDiscountAmount(value, editingDiscount.code.type as 'percentage' | 'fixed')
+                                  if (!validation.isValid) {
+                                    alert(validation.error!) // Simple alert for now
+                                  }
+                                }
+                              }}
                               className="w-full p-2 border rounded"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              placeholder={editingDiscount.code.type === 'percentage' ? 'e.g. 20' : 'e.g. 100'}
                             />
                           </div>
                           <div>
@@ -1124,6 +1167,13 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                           </button>
                           <button 
                             onClick={() => {
+                              // Validate before saving
+                              const validation = validateDiscountAmount(editingDiscount.code.amount, editingDiscount.code.type as 'percentage' | 'fixed')
+                              if (!validation.isValid) {
+                                alert(validation.error!)
+                                return;
+                              }
+
                               // Update the discount code
                               const updatedCodes = [...discountCodes];
                               updatedCodes[editingDiscount.index] = editingDiscount.code;
@@ -1282,11 +1332,29 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                         <div>
                           <label className="block text-sm font-medium mb-1">Discount Amount</label>
                           <input 
-                            type="number" 
+                            type="text" 
                             value={newDiscountCode.amount}
-                            onChange={(e) => setNewDiscountCode({...newDiscountCode, amount: e.target.value})}
-                            placeholder="e.g. 20" 
+                            onChange={(e) => {
+                              const value = e.target.value
+                              // Only allow integers (no decimals)
+                              const integerRegex = /^\d*$/
+                              if (value === '' || integerRegex.test(value)) {
+                                setNewDiscountCode({...newDiscountCode, amount: value})
+                              }
+                            }}
+                            onBlur={(e) => {
+                              const value = e.target.value
+                              if (value !== '') {
+                                const validation = validateDiscountAmount(value, newDiscountCode.type as 'percentage' | 'fixed')
+                                if (!validation.isValid) {
+                                  alert(validation.error!) // Simple alert for now
+                                }
+                              }
+                            }}
+                            placeholder={newDiscountCode.type === 'percentage' ? 'e.g. 20' : 'e.g. 100'} 
                             className="w-full p-2 border rounded"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                           />
                         </div>
                         <div>
@@ -1331,6 +1399,13 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                         onClick={() => {
                           if (!newDiscountCode.code || !newDiscountCode.amount) {
                             alert('Please enter a discount code and amount');
+                            return;
+                          }
+
+                          // Validate discount amount
+                          const validation = validateDiscountAmount(newDiscountCode.amount, newDiscountCode.type as 'percentage' | 'fixed')
+                          if (!validation.isValid) {
+                            alert(validation.error!)
                             return;
                           }
                           

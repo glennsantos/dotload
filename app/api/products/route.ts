@@ -98,18 +98,33 @@ export async function POST(request: NextRequest) {
     
     // Validate price
     const parsedPrice = parseFloat(price);
-    if (isNaN(parsedPrice) || parsedPrice < 0) {
+    if (isNaN(parsedPrice)) {
       return NextResponse.json({ 
         error: 'Invalid price', 
-        details: 'Price must be a non-negative number' 
+        details: 'Price must be a valid number' 
       }, { status: 400 });
     }
-    
-    // Additional price validation - ensure it's not empty or zero
-    if (parsedPrice === 0) {
+
+    // Check if it's an integer
+    if (!Number.isInteger(parsedPrice)) {
       return NextResponse.json({ 
         error: 'Invalid price', 
-        details: 'Price must be greater than zero' 
+        details: 'Price must be a whole number (no decimals)' 
+      }, { status: 400 });
+    }
+
+    // Check range: must be between 1 and 500000
+    if (parsedPrice < 1) {
+      return NextResponse.json({ 
+        error: 'Invalid price', 
+        details: 'Price must be at least ₱1' 
+      }, { status: 400 });
+    }
+
+    if (parsedPrice > 500000) {
+      return NextResponse.json({ 
+        error: 'Invalid price', 
+        details: 'Price cannot exceed ₱500,000' 
       }, { status: 400 });
     }
     

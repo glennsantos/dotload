@@ -4,6 +4,7 @@ import { useState } from "react"
 import { X, ChevronRight, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import ErrorModal from '@/app/components/ErrorModal'
+import { validateDiscountAmount } from '@/lib/form-validation'
 
 export default function PaymentOptions({
   productData,
@@ -182,13 +183,32 @@ export default function PaymentOptions({
                           <div>
                             <label className="block text-sm font-medium mb-1">Discount Amount</label>
                             <input 
-                              type="number" 
+                              type="text" 
                               value={editingDiscount.code.amount}
-                              onChange={(e) => setEditingDiscount({
-                                ...editingDiscount, 
-                                code: {...editingDiscount.code, amount: e.target.value}
-                              })}
+                              onChange={(e) => {
+                                const value = e.target.value
+                                // Only allow integers (no decimals)
+                                const integerRegex = /^\d*$/
+                                if (value === '' || integerRegex.test(value)) {
+                                  setEditingDiscount({
+                                    ...editingDiscount, 
+                                    code: {...editingDiscount.code, amount: value}
+                                  })
+                                }
+                              }}
+                              onBlur={(e) => {
+                                const value = e.target.value
+                                if (value !== '') {
+                                  const validation = validateDiscountAmount(value, editingDiscount.code.type as 'percentage' | 'fixed')
+                                  if (!validation.isValid) {
+                                    showError(validation.error!)
+                                  }
+                                }
+                              }}
                               className="w-full p-2 border rounded"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              placeholder={editingDiscount.code.type === 'percentage' ? 'e.g. 20' : 'e.g. 100'}
                             />
                           </div>
                           <div>
@@ -247,6 +267,13 @@ export default function PaymentOptions({
                           </button>
                           <button 
                             onClick={() => {
+                              // Validate before saving
+                              const validation = validateDiscountAmount(editingDiscount.code.amount, editingDiscount.code.type as 'percentage' | 'fixed')
+                              if (!validation.isValid) {
+                                showError(validation.error!)
+                                return;
+                              }
+
                               // Update the discount code
                               const updatedCodes = [...discountCodes];
                               updatedCodes[editingDiscount.index] = editingDiscount.code;
@@ -378,11 +405,45 @@ export default function PaymentOptions({
                       <div>
                         <label className="block text-sm font-medium mb-1">Discount Amount</label>
                         <input 
-                          type="number" 
+                          type="text" 
                           value={newDiscountCode.amount}
-                          onChange={(e) => setNewDiscountCode({...newDiscountCode, amount: e.target.value})}
-                          placeholder="e.g. 20" 
+                          onChange={(e) => {
+                            const value = e.target.value
+                            // Only allow integers (no decimals)
+                            const integerRegex = /^\d*$/
+                            if (value === '' || integerRegex.test(value)) {
+                              setNewDiscountCode({...newDiscountCode, amount: value})
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value
+                            if (value !== '') {
+                              const validation = validateDiscountAmount(value, newDiscountCode.type as 'percentage' | 'fixed')
+                              if (!validation.isValid) {
+                                showError(validation.error!)
+                                // Reset to valid range
+                                if (newDiscountCode.type === 'percentage') {
+                                  const numValue = parseInt(value, 10)
+                                  if (numValue < 1) {
+                                    setNewDiscountCode({...newDiscountCode, amount: '1'})
+                                  } else if (numValue > 100) {
+                                    setNewDiscountCode({...newDiscountCode, amount: '100'})
+                                  }
+                                } else {
+                                  const numValue = parseInt(value, 10)
+                                  if (numValue < 1) {
+                                    setNewDiscountCode({...newDiscountCode, amount: '1'})
+                                  } else if (numValue > 500000) {
+                                    setNewDiscountCode({...newDiscountCode, amount: '500000'})
+                                  }
+                                }
+                              }
+                            }
+                          }}
+                          placeholder={newDiscountCode.type === 'percentage' ? 'e.g. 20' : 'e.g. 100'} 
                           className="w-full p-2 border rounded"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                         />
                       </div>
                       <div>
@@ -427,6 +488,13 @@ export default function PaymentOptions({
                       onClick={() => {
                         if (!newDiscountCode.code || !newDiscountCode.amount) {
                           showError('Please enter a discount code and amount');
+                          return;
+                        }
+                        
+                        // Validate discount amount
+                        const validation = validateDiscountAmount(newDiscountCode.amount, newDiscountCode.type as 'percentage' | 'fixed')
+                        if (!validation.isValid) {
+                          showError(validation.error!)
                           return;
                         }
                         
