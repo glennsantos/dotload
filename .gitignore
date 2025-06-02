@@ -77,3 +77,5 @@ certificates
 .certs/local-key.pem
 .certs/mkcert
 ecosystem.config.js
+tests/reports/
+coverage/
