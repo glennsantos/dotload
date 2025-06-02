@@ -19,18 +19,35 @@ export const validateMobileNumber = (number: string): boolean => {
  * @returns The final price after discount
  */
 export const calculateFinalPrice = (product: Product, appliedDiscount: Discount | null): number => {
-  if (!product) return 0;
+  if (!product || typeof product.price !== 'number') return 0;
   
   let price = product.price;
   
   if (appliedDiscount) {
+    let discountValue = 0;
+    
+    // Handle both old and new field formats
+    if (appliedDiscount.value !== undefined) {
+      // New format uses 'value' field
+      discountValue = Number(appliedDiscount.value);
+    } else if (appliedDiscount.amount !== undefined) {
+      // Legacy format uses 'amount' field
+      discountValue = Number(appliedDiscount.amount);
+    }
+    
+    // Validate discount value is a valid number
+    if (isNaN(discountValue) || discountValue < 0) {
+      console.warn('Invalid discount value:', appliedDiscount);
+      return price;
+    }
+    
     if (appliedDiscount.type === 'percentage') {
       // Apply percentage discount
-      const discountAmount = (parseFloat(appliedDiscount.amount) / 100) * price;
+      const discountAmount = (discountValue / 100) * price;
       price = price - discountAmount;
     } else if (appliedDiscount.type === 'fixed') {
       // Apply fixed amount discount
-      price = price - parseFloat(appliedDiscount.amount);
+      price = price - discountValue;
     }
     
     // Ensure price doesn't go below zero
@@ -38,6 +55,30 @@ export const calculateFinalPrice = (product: Product, appliedDiscount: Discount 
   }
   
   return price;
+};
+
+/**
+ * Checks if a product has any discount codes available
+ * @param product The product to check
+ * @returns Boolean indicating if the product has discount codes
+ */
+export const hasDiscountCodes = (product: Product): boolean => {
+  if (!product || !product.discountCodes) {
+    return false;
+  }
+  
+  try {
+    // Parse discount codes from product
+    const discountCodes = typeof product.discountCodes === 'string' ? 
+      JSON.parse(product.discountCodes) : 
+      product.discountCodes;
+    
+    // Check if there are any valid discount codes
+    return Array.isArray(discountCodes) && discountCodes.length > 0;
+  } catch (err) {
+    console.error('Error parsing discount codes:', err);
+    return false;
+  }
 };
 
 /**
@@ -71,13 +112,34 @@ export const validateDiscountCode = (discountCode: string, product: Product): {
       return { appliedDiscount: null, error: "Invalid discount code" };
     }
     
+    // Check if discount is active
+    if (matchedDiscount.isActive === false) {
+      return { appliedDiscount: null, error: "Discount code is not active" };
+    }
+    
+    // Check usage limits
+    if (matchedDiscount.maxUses && matchedDiscount.usedCount >= matchedDiscount.maxUses) {
+      return { appliedDiscount: null, error: "Discount code usage limit exceeded" };
+    }
+    
     // Check if discount is within valid date range
     const currentDate = new Date();
-    const startDate = matchedDiscount.startDate ? new Date(matchedDiscount.startDate) : null;
-    const endDate = matchedDiscount.endDate ? new Date(matchedDiscount.endDate) : null;
     
-    if ((startDate && currentDate < startDate) || (endDate && currentDate > endDate)) {
-      return { appliedDiscount: null, error: "Discount code is not valid at this time" };
+    // Handle legacy startDate/endDate format
+    if (matchedDiscount.startDate) {
+      const startDate = new Date(matchedDiscount.startDate);
+      if (currentDate < startDate) {
+        return { appliedDiscount: null, error: "Discount code is not valid yet" };
+      }
+    }
+    
+    // Handle both legacy endDate and new expiresAt format
+    const expirationDate = matchedDiscount.expiresAt || matchedDiscount.endDate;
+    if (expirationDate) {
+      const expDate = new Date(expirationDate);
+      if (currentDate > expDate) {
+        return { appliedDiscount: null, error: "Discount code has expired" };
+      }
     }
     
     // Apply the discount

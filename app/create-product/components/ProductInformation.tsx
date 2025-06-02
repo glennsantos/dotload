@@ -5,6 +5,7 @@ import { Product } from './ProductCreationForm'
 import { RefreshCw, Upload, X } from 'lucide-react'
 import RichTextEditor from '@/components/rich-text-editor'
 import ErrorModal from '@/app/components/ErrorModal'
+import { validatePrice } from '@/lib/form-validation'
 
 type ProductInformationProps = {
   productData: Product
@@ -32,17 +33,32 @@ export default function ProductInformation({
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    setPriceInput(value)
     
-    // Only update productData if it's a valid number or empty
-    if (value === '' || value === '0') {
-      setProductData({ ...productData, price: 0 })
-    } else {
-      const numValue = parseFloat(value)
-      if (!isNaN(numValue) && numValue >= 1 && numValue <= 500000) {
-        setProductData({ ...productData, price: numValue })
+    // Only allow integers (no decimals)
+    const integerRegex = /^\d*$/
+    if (value === '' || integerRegex.test(value)) {
+      setPriceInput(value)
+      
+      // Validate and update productData if it's a valid integer in range
+      if (value === '') {
+        setProductData({ ...productData, price: 0 })
+      } else {
+        const numValue = parseInt(value, 10)
+        const validation = validatePrice(numValue)
+        
+        if (validation.isValid) {
+          setProductData({ ...productData, price: numValue })
+        } else if (numValue > 500000) {
+          // Show error for values exceeding max limit
+          showError(validation.error!)
+          // Keep the input but don't update productData
+        } else {
+          // For values less than 1, update productData but show error on blur
+          setProductData({ ...productData, price: numValue })
+        }
       }
     }
+    // If the input contains non-integer characters, ignore the change
   }
 
   const handlePriceFocus = () => {
@@ -53,20 +69,29 @@ export default function ProductInformation({
 
   const handlePriceBlur = () => {
     setIsPriceFocused(false)
-    // Validate and format the price when focus is lost
-    if (priceInput === '' || priceInput === '0') {
+    
+    // Validate the final price when focus is lost
+    if (priceInput === '') {
       setProductData({ ...productData, price: 0 })
       setPriceInput('0')
+      showError('Price is required')
     } else {
-      // Ensure we have a valid number
-      const numValue = parseFloat(priceInput.toString())
-      if (!isNaN(numValue) && numValue >= 0) {
+      const numValue = parseInt(priceInput, 10)
+      const validation = validatePrice(numValue)
+      
+      if (!validation.isValid) {
+        showError(validation.error!)
+        // Reset to minimum valid value or keep current valid value
+        if (numValue < 1) {
+          setProductData({ ...productData, price: 1 })
+          setPriceInput('1')
+        } else if (numValue > 500000) {
+          setProductData({ ...productData, price: 500000 })
+          setPriceInput('500000')
+        }
+      } else {
         setProductData({ ...productData, price: numValue })
         setPriceInput(numValue.toString())
-      } else {
-        // Fallback to 0 if invalid
-        setProductData({ ...productData, price: 0 })
-        setPriceInput('0')
       }
     }
   }
@@ -107,7 +132,7 @@ export default function ProductInformation({
       <ErrorModal
         isOpen={errorModalOpen}
         onClose={() => setErrorModalOpen(false)}
-        title="Upload Error"
+        title="Invalid Price"
         message={errorModalMessage}
       />
 
@@ -192,8 +217,9 @@ export default function ProductInformation({
               onFocus={handlePriceFocus}
               onBlur={handlePriceBlur}
               className="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-r-none"
-              placeholder="0"
-              min="0"
+              placeholder="1"
+              inputMode="numeric"
+              pattern="[0-9]*"
             />
             <select 
               className="border-l-0 rounded-r-md border-gray-300 bg-stone-50 text-gray-700 py-2 pl-3 pr-8 text-sm focus:ring-emerald-500 focus:border-emerald-500 border"
@@ -212,7 +238,7 @@ export default function ProductInformation({
       {/* Thumbnail Upload */}
       <div className="mt-8 mb-6">
         <h3 className="text-xl font-light mb-2">Product Photo</h3>
-        <p className="text-sm text-gray-500 mb-4">Upload a high-quality photos of your physical product</p>
+        <p className="text-sm text-gray-500 mb-4">Upload a high-quality photo of your physical product</p>
         
         <div className="border border-dashed rounded-md p-4 flex flex-col items-center justify-center mb-4">
           {productData.coverImage ? (

@@ -18,6 +18,7 @@ import {
   validateMobileNumber,
   calculateFinalPrice,
   validateDiscountCode,
+  hasDiscountCodes,
   Discount,
   Product
 } from "./components"

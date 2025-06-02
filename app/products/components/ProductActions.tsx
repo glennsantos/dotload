@@ -26,14 +26,44 @@ interface ProductActionsProps {
 
 export default function ProductActions({ product, onProductUpdate, onProductDelete, variant = 'default' }: ProductActionsProps) {
   const router = useRouter()
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Calculate menu position when opening
+  const calculateMenuPosition = () => {
+    if (!buttonRef.current) return { top: 0, left: 0 }
+    
+    const buttonRect = buttonRef.current.getBoundingClientRect()
+    const menuWidth = 192 // w-48 = 12rem = 192px
+    const menuHeight = 200 // Approximate height of menu
+    
+    let top = buttonRect.bottom + 4 // 4px gap below button
+    let left = buttonRect.right - menuWidth // Align right edge with button
+    
+    // Adjust if menu would go off-screen
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    
+    // Adjust horizontal position if menu goes off right edge
+    if (left < 8) {
+      left = 8 // 8px margin from left edge
+    }
+    
+    // Adjust vertical position if menu goes off bottom edge
+    if (top + menuHeight > viewportHeight - 8) {
+      top = buttonRect.top - menuHeight - 4 // Position above button instead
+    }
+    
+    return { top, left }
+  }
   
   // Handle clicks outside of menu and modals
   useEffect(() => {
@@ -57,6 +87,16 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
 
   // Close menu
   const closeMenu = () => setIsMenuOpen(false)
+
+  // Handle menu toggle with position calculation
+  const handleMenuToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isMenuOpen) {
+      const position = calculateMenuPosition()
+      setMenuPosition(position)
+    }
+    setIsMenuOpen(!isMenuOpen)
+  }
 
   // Preview product
   const handlePreview = (e: React.MouseEvent) => {
@@ -181,19 +221,24 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
     <div className="relative">
       {/* Actions button */}
       <button
-        onClick={(e) => {
-          e.stopPropagation()
-          setIsMenuOpen(!isMenuOpen)
-        }}
+        ref={buttonRef}
+        onClick={handleMenuToggle}
         className={`${variant === 'icon' ? 'p-2.5' : 'p-2'} rounded-xl hover:bg-stone-100 border border-stone-200`}
         aria-label="Product actions"
       >
         <Ellipsis size={variant === 'icon' ? 20 : 18} />
       </button>
       
-      {/* Actions menu */}
+      {/* Actions menu - now using fixed positioning */}
       {isMenuOpen && (
-        <div ref={menuRef} className="absolute right-0 top-8 w-48 bg-white border border-stone-200 rounded-lg shadow-md z-10">
+        <div 
+          ref={menuRef} 
+          className="fixed w-48 bg-white border border-stone-200 rounded-lg shadow-lg z-50"
+          style={{
+            top: `${menuPosition.top}px`,
+            left: `${menuPosition.left}px`
+          }}
+        >
           <div className="p-1">
             <button
               onClick={handlePreview}
@@ -340,9 +385,15 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
         </div>
       )}
       
-      {/* Error message */}
+      {/* Error message - also using fixed positioning */}
       {error && (
-        <div className="absolute right-0 top-8 w-64 bg-white border border-red-200 rounded-lg shadow-md z-10 p-3">
+        <div 
+          className="fixed w-64 bg-white border border-red-200 rounded-lg shadow-lg z-50 p-3"
+          style={{
+            top: `${menuPosition.top}px`,
+            left: `${menuPosition.left}px`
+          }}
+        >
           <p className="text-sm text-red-600">{error}</p>
           <button 
             onClick={() => setError(null)}

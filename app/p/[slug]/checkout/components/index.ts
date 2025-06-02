@@ -5,5 +5,5 @@ export { default as ErrorState } from './ErrorState';
 export { default as LoadingState } from './LoadingState';
 export { default as OrderSummary } from './OrderSummary';
 export { default as PaymentMethodSelector } from './PaymentMethodSelector';
-export { calculateFinalPrice, validateMobileNumber, validateDiscountCode } from './utils';
+export { calculateFinalPrice, validateMobileNumber, validateDiscountCode, hasDiscountCodes } from './utils';
 export { fetchUserData, fetchProduct, createPurchase, processPayment } from './api';

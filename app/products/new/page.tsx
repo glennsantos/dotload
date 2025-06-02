@@ -13,6 +13,7 @@ import ContentUpload from "./ContentUpload"
 import RichTextEditor from "@/components/rich-text-editor"
 import ErrorModal from '@/app/components/ErrorModal'
 import SuccessModal from '@/app/components/SuccessModal'
+import { validatePrice } from '@/lib/form-validation'
 
 // Define the Product type
 type Product = {
@@ -82,22 +83,36 @@ export default function NewProduct() {
   }
 
   const [isPriceFocused, setIsPriceFocused] = useState(false)
-  const [priceInput, setPriceInput] = useState<string | number>('')
+  const [priceInput, setPriceInput] = useState<string>('')
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    // Update the input value for display
-    setPriceInput(value)
     
-    // Only update the form data if it's a valid number
-    if (value === '') {
-      setProductData({ ...productData, price: 0 })
-    } else {
-      const numValue = parseFloat(value)
-      if (!isNaN(numValue) && numValue >= 0) {
-        setProductData({ ...productData, price: numValue })
+    // Only allow integers (no decimals)
+    const integerRegex = /^\d*$/
+    if (value === '' || integerRegex.test(value)) {
+      setPriceInput(value)
+      
+      // Validate and update productData if it's a valid integer in range
+      if (value === '') {
+        setProductData({ ...productData, price: 0 })
+      } else {
+        const numValue = parseInt(value, 10)
+        const validation = validatePrice(numValue)
+        
+        if (validation.isValid) {
+          setProductData({ ...productData, price: numValue })
+        } else if (numValue > 500000) {
+          // Show error for values exceeding max limit
+          showError(validation.error!)
+          // Keep the input but don't update productData
+        } else {
+          // For values less than 1, update productData but show error on blur
+          setProductData({ ...productData, price: numValue })
+        }
       }
     }
+    // If the input contains non-integer characters, ignore the change
   }
 
   const handlePriceFocus = () => {
@@ -112,20 +127,29 @@ export default function NewProduct() {
 
   const handlePriceBlur = () => {
     setIsPriceFocused(false)
-    // If input is empty after blur, set it back to 0
+    
+    // Validate the final price when focus is lost
     if (priceInput === '') {
       setProductData({ ...productData, price: 0 })
       setPriceInput('0')
+      showError('Price is required')
     } else {
-      // Ensure we have a valid number
-      const numValue = parseFloat(priceInput.toString())
-      if (!isNaN(numValue) && numValue >= 0) {
+      const numValue = parseInt(priceInput, 10)
+      const validation = validatePrice(numValue)
+      
+      if (!validation.isValid) {
+        showError(validation.error!)
+        // Reset to minimum valid value or keep current valid value
+        if (numValue < 1) {
+          setProductData({ ...productData, price: 1 })
+          setPriceInput('1')
+        } else if (numValue > 500000) {
+          setProductData({ ...productData, price: 500000 })
+          setPriceInput('500000')
+        }
+      } else {
         setProductData({ ...productData, price: numValue })
         setPriceInput(numValue.toString())
-      } else {
-        // Fallback to 0 if invalid
-        setProductData({ ...productData, price: 0 })
-        setPriceInput('0')
       }
     }
   }
@@ -371,15 +395,15 @@ export default function NewProduct() {
                       ₱
                     </span>
                     <input
-                      type="number"
+                      type="text"
                       value={priceInput}
                       onChange={handlePriceChange}
                       onFocus={handlePriceFocus}
                       onBlur={handlePriceBlur}
                       className="w-full p-3 border rounded-r-md [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
+                      placeholder="1"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                     />
                   </div>
                 </div>

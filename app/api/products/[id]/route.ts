@@ -7,6 +7,7 @@ import { cwd } from 'process';
 import * as fs from 'fs';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { apiConfig, checkFileSizeLimit, formatFileSize } from '../../config';
+import { isAllowedDigitalFile } from '@/lib/file-validation';
 
 // Ensure uploads directory exists with proper structure
 async function ensureUploadsDir(userId: string, productId: string) {
@@ -71,6 +72,12 @@ async function processFiles(formData: FormData, userId: string, productId: strin
       if (!checkFileSizeLimit(value, MAX_FILE_SIZE_MB)) {
         throw new Error(`File ${value.name} exceeds the maximum size limit of ${MAX_FILE_SIZE_MB}MB. File size: ${formatFileSize(value.size)}`);
       }
+      
+      // Check file type
+      if (!isAllowedDigitalFile(value.name, value.type)) {
+        throw new Error(`File ${value.name} is not an allowed file type. Please upload only supported file formats.`);
+      }
+      
       contentFiles.push(value);
     }
   }
@@ -645,12 +652,36 @@ export async function PUT(
       // Parse price if provided
       if (jsonData.price !== undefined) {
         const parsedPrice = parseFloat(jsonData.price);
-        if (isNaN(parsedPrice) || parsedPrice < 0) {
+        if (isNaN(parsedPrice)) {
           return NextResponse.json({ 
             error: 'Invalid price', 
-            details: 'Price must be a positive number'
+            details: 'Price must be a valid number'
           }, { status: 400 });
         }
+
+        // Check if it's an integer
+        if (!Number.isInteger(parsedPrice)) {
+          return NextResponse.json({ 
+            error: 'Invalid price', 
+            details: 'Price must be a whole number (no decimals)' 
+          }, { status: 400 });
+        }
+
+        // Check range: must be between 1 and 500000
+        if (parsedPrice < 1) {
+          return NextResponse.json({ 
+            error: 'Invalid price', 
+            details: 'Price must be at least ₱1' 
+          }, { status: 400 });
+        }
+
+        if (parsedPrice > 500000) {
+          return NextResponse.json({ 
+            error: 'Invalid price', 
+            details: 'Price cannot exceed ₱500,000' 
+          }, { status: 400 });
+        }
+
         jsonData.price = parsedPrice;
       }
       

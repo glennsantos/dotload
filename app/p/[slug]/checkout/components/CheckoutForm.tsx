@@ -4,7 +4,7 @@ import { Discount, Product } from "./types";
 import PaymentMethodSelector from "./PaymentMethodSelector";
 import CardDetailsForm from "./CardDetailsForm";
 import CreditCardForm from "@/components/payment/CreditCardForm";
-import { calculateFinalPrice, validateDiscountCode } from "./utils";
+import { calculateFinalPrice, validateDiscountCode, hasDiscountCodes } from "./utils";
 
 interface CheckoutFormProps {
   product: Product;
@@ -143,33 +143,37 @@ export default function CheckoutForm({
       )}
       
       {/* Discount Code field */}
-      <div className="mb-6">
-        <label htmlFor="discountCode" className="block text-md font-light text-gray-700 mb-1">Discount Code</label>
-        <div className="flex">
-          <input
-            type="text"
-            id="discountCode"
-            name="discountCode"
-            value={discountCode}
-            onChange={(e) => setDiscountCode(e.target.value)}
-            className="flex-1 p-3 border border-gray-300 rounded-l-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter discount code"
-          />
-          <button
-            type="button"
-            onClick={() => handleValidateDiscountCode()}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 rounded-r-2xl flex items-center"
-          >
-            <Tag className="h-4 w-4 mr-1" />
-            Apply
-          </button>
-        </div>
-        {appliedDiscount && (
-          <div className="mt-2 text-sm text-green-600">
-            Discount applied: {appliedDiscount.type === 'percentage' ? `${appliedDiscount.amount}%` : `${product.currency} ${appliedDiscount.amount}`} off
+      {hasDiscountCodes(product) && (
+        <div className="mb-6">
+          <label htmlFor="discountCode" className="block text-md font-light text-gray-700 mb-1">Discount Code</label>
+          <div className="flex">
+            <input
+              type="text"
+              id="discountCode"
+              name="discountCode"
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              className="flex-1 p-3 border border-gray-300 rounded-l-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter discount code"
+            />
+            <button
+              type="button"
+              onClick={() => handleValidateDiscountCode()}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 rounded-r-2xl flex items-center"
+            >
+              <Tag className="h-4 w-4 mr-1" />
+              Apply
+            </button>
           </div>
-        )}
-      </div>
+          {appliedDiscount && (
+            <div className="mt-2 text-sm text-green-600">
+              Discount applied: {appliedDiscount.type === 'percentage' ? 
+                `${appliedDiscount.value || appliedDiscount.amount}%` : 
+                `${product.currency} ${appliedDiscount.value || appliedDiscount.amount}`} off
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Payment Method Selector */}
       <PaymentMethodSelector

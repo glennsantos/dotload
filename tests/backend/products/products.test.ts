@@ -154,9 +154,10 @@ describe('Product Management API Tests', () => {
             const data: Record<string, string> = {
               'name': 'Test Digital Product',
               'type': 'digital_product',
-              'price': '29.99',
+              'price': '30', // Integer price (no decimals)
               'currency': 'PHP',
-              'description': 'Test description'
+              'description': 'Test description',
+              'contentLinks': JSON.stringify(['https://example.com/file1.pdf']) // Add content links for digital product
             };
             return data[key] || null;
           })
@@ -200,7 +201,7 @@ describe('Product Management API Tests', () => {
             const data: Record<string, string> = {
               'name': 'Test Physical Product',
               'type': 'physical_product',
-              'price': '49.99'
+              'price': '50' // Integer price (no decimals)
             };
             return data[key] || null;
           })
@@ -231,7 +232,7 @@ describe('Product Management API Tests', () => {
             const data: Record<string, string> = {
               'name': 'Test Product',
               'type': 'digital_product',
-              'price': '29.99'
+              'price': '30' // Integer price (no decimals)
             };
             return data[key] || null;
           })
@@ -366,7 +367,8 @@ describe('Product Management API Tests', () => {
             const data: Record<string, string> = {
               'name': 'Test Product',
               'type': 'digital_product',
-              'price': '29.99'
+              'price': '30', // Integer price (no decimals)
+              'contentLinks': JSON.stringify(['https://example.com/file1.pdf']) // Add content links for digital product
               // No slug key at all, should trigger generation
             };
             return data[key] || null;

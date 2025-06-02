@@ -36,6 +36,7 @@ export default function PromosPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>([]);
+  const [products, setProducts] = useState<Array<{id: string, name: string}>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userName, setUserName] = useState("User");
@@ -60,10 +61,11 @@ export default function PromosPage() {
       try {
         setIsLoading(true);
         
-        // Fetch user data and discount codes in parallel
-        const [authResponse, discountCodesResponse] = await Promise.all([
+        // Fetch user data, discount codes, and products in parallel
+        const [authResponse, discountCodesResponse, productsResponse] = await Promise.all([
           fetch('/api/auth/me', { credentials: 'include' }),
-          fetch('/api/discount-codes', { credentials: 'include' })
+          fetch('/api/discount-codes', { credentials: 'include' }),
+          fetch('/api/products', { credentials: 'include' })
         ]);
         
         if (authResponse.status === 401 || authResponse.status === 403) {
@@ -85,13 +87,33 @@ export default function PromosPage() {
           throw new Error('Failed to fetch discount codes');
         }
         
-        const data = await discountCodesResponse.json();
-        setDiscountCodes(data || []);
+        const discountData = await discountCodesResponse.json();
+        setDiscountCodes(discountData || []);
+
+        // Fetch products for the dropdown
+        if (productsResponse.ok) {
+          const productsData = await productsResponse.json();
+          if (Array.isArray(productsData)) {
+            setProducts(productsData.map(product => ({
+              id: product.id,
+              name: product.name
+            })));
+          }
+        }
+
+        // Check for product query parameter and pre-select it
+        const urlParams = new URLSearchParams(window.location.search);
+        const productParam = urlParams.get('product');
+        if (productParam) {
+          setNewCode(prev => ({ ...prev, productId: productParam }));
+          // Auto-open the dialog if coming from a product page
+          setIsDialogOpen(true);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
         toast({
           title: 'Error',
-          description: 'Failed to load discount codes',
+          description: 'Failed to load data',
           variant: 'destructive',
         });
       } finally {
@@ -394,7 +416,11 @@ export default function PromosPage() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="all">All Products</SelectItem>
-                              {/* We would fetch and map products here */}
+                              {products.map((product) => (
+                                <SelectItem key={product.id} value={product.id}>
+                                  {product.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>

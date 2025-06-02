@@ -10,10 +10,12 @@
  * - Product publishing
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import '@testing-library/jest-dom';
+import { ALLOWED_EXTENSIONS_FOR_HTML_ACCEPT } from '@/lib/file-validation';
 
 // Mock Next.js router
 const mockPush = jest.fn();
@@ -154,7 +156,7 @@ const MockProductForm = () => {
               multiple
               onChange={handleFileChange}
               data-testid="file-input"
-              accept=".pdf,.zip,.mp4,.mp3,.jpg,.png"
+              accept={ALLOWED_EXTENSIONS_FOR_HTML_ACCEPT}
             />
             {formData.files.length > 0 && (
               <div data-testid="file-list">

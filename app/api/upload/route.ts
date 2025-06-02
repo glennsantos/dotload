@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { getAuthUserId } from '@/lib/auth-utils';
+import { isAllowedDigitalFile, ALLOWED_DIGITAL_FILE_EXTENSIONS } from '@/lib/file-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,6 +32,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         error: 'No product ID provided',
         details: 'Please provide a product ID'
+      }, { status: 400 });
+    }
+
+    // Validate file type using the allowed file types from file-utils
+    if (!isAllowedDigitalFile(file.name, file.type)) {
+      return NextResponse.json({
+        error: 'File type not allowed',
+        details: `Only the following file types are allowed: ${ALLOWED_DIGITAL_FILE_EXTENSIONS.join(', ')}`
       }, { status: 400 });
     }
 
