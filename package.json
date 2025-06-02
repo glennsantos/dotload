@@ -3,13 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
     "dev": "next dev",
-    "dev:http": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:backend": "jest tests/backend",
+    "test:frontend": "jest tests/frontend",
+    "test:integration": "jest tests/integration",
+    "test:e2e": "jest tests/e2e",
+    "test:ci": "jest --ci --coverage --watchAll=false",
     "seed": "tsx ./scripts/seed-test-data.ts"
   },
   "dependencies": {
@@ -105,6 +110,13 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.19.4",
     "typescript": "^5",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "@jest/globals": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.1.0",
+    "@testing-library/user-event": "^14.5.0",
+    "eslint": "^8",
+    "eslint-config-next": "15.2.4"
   }
 }

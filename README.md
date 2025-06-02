@@ -9,6 +9,7 @@ alacart is an innovative platform for creators to sell digital products, offerin
 ## Table of Contents
 
 - [Local Development](#local-development)
+- [Testing](#testing)
 - [Deployment Process](#deployment-process)
   - [Database Setup](#database-setup)
   - [AWS Infrastructure](#aws-infrastructure)
@@ -103,6 +104,123 @@ This will populate your database with test data. The script will log its progres
 - Start production server: `pnpm start`
 - Lint the project: `pnpm lint`
 - Run tests: `pnpm test`
+
+## Testing
+
+### Test Structure
+
+The project includes comprehensive test coverage organized by feature area:
+
+```
+tests/
+├── setup.ts                    # Jest configuration and global mocks
+├── backend/                    # Backend API tests
+│   ├── auth/
+│   │   └── auth.test.ts       # Authentication API tests
+│   ├── products/
+│   │   └── products.test.ts   # Product management tests
+│   ├── purchases/
+│   │   └── purchases.test.ts  # Purchase and payment tests
+│   └── payouts/
+│       └── payouts.test.ts    # Payout system tests
+├── frontend/                   # Frontend component tests
+│   ├── auth/
+│   │   └── login.test.tsx     # Login component tests
+│   ├── products/
+│   │   └── product-form.test.tsx
+│   └── dashboard/
+│       └── dashboard.test.tsx
+├── integration/                # Integration tests
+│   └── user-journey.test.ts   # End-to-end user flows
+└── e2e/                       # End-to-end tests
+    └── purchase-flow.test.ts  # Complete purchase scenarios
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm run test:watch
+
+# Run tests with coverage report
+pnpm run test:coverage
+
+# Run specific test suites
+pnpm run test:backend      # Backend API tests only
+pnpm run test:frontend     # Frontend component tests only
+pnpm run test:integration  # Integration tests only
+pnpm run test:e2e         # End-to-end tests only
+
+# Run tests for CI/CD
+pnpm run test:ci
+```
+
+### Test Categories
+
+#### Backend Tests
+- **Authentication**: Login, registration, session management, password reset
+- **Product Management**: CRUD operations, file uploads, validation, slug generation
+- **Purchase Processing**: Payment flows, discount codes, order fulfillment
+- **Payout System**: Balance calculations, fee processing, bank transfers
+- **Error Handling**: Input validation, authorization, external service failures
+
+#### Frontend Tests
+- **Component Rendering**: UI components render correctly with props
+- **User Interactions**: Form submissions, button clicks, navigation
+- **Form Validation**: Client-side validation and error display
+- **State Management**: Component state updates and side effects
+- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+
+#### Integration Tests
+- **API Integration**: Frontend components with backend APIs
+- **Database Operations**: Data persistence and retrieval
+- **External Services**: Payment gateways, email services, file storage
+- **User Journeys**: Complete workflows from start to finish
+
+#### End-to-End Tests
+- **Purchase Flow**: Complete customer purchase journey
+- **Seller Workflow**: Product creation to payout process
+- **Authentication Flow**: Registration, verification, login
+- **Error Scenarios**: Network failures, payment errors, validation failures
+
+### Test Coverage Requirements
+
+- **Unit Tests**: 90% code coverage minimum
+- **Integration Tests**: All API endpoints covered
+- **E2E Tests**: All critical user journeys covered
+- **Error Scenarios**: All error paths tested
+
+### Testing Guidelines
+
+1. **Test Structure**: Follow AAA pattern (Arrange, Act, Assert)
+2. **Mocking**: Mock external dependencies and services
+3. **Data**: Use realistic test data that matches production scenarios
+4. **Isolation**: Each test should be independent and not rely on others
+5. **Performance**: Tests should complete within reasonable time limits
+6. **Maintenance**: Keep tests updated with feature changes
+
+### Mock Services
+
+The test suite includes comprehensive mocking for:
+
+- **Database**: Prisma client with realistic data responses
+- **Payment Gateway**: Xendit API responses and webhooks
+- **File Storage**: Cloudinary upload and management
+- **Email Service**: Email delivery and templates
+- **Authentication**: JWT token generation and validation
+
+### Continuous Integration
+
+Tests are automatically run on:
+- Pull request creation and updates
+- Merge to main branch
+- Scheduled daily runs
+- Release deployments
+
+Coverage reports are generated and tracked over time to ensure quality standards are maintained.
 
 ## Deployment Process
 
