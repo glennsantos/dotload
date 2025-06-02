@@ -21,9 +21,8 @@ jest.mock('@/lib/fee-utils', () => ({
   calculateProcessingFee: jest.fn(),
   calculateNetAmount: jest.fn(),
   DEFAULT_PAYOUT_FEE_CONFIG: {
-    percentage: 2.5,
-    fixed: 15,
-    minimum: 15,
+    percentageFee: 0.05,
+    fixedFee: 15,
   },
 }));
 
@@ -41,6 +40,9 @@ jest.mock('jsonwebtoken', () => ({
 jest.mock('next/headers', () => ({
   cookies: jest.fn(),
 }));
+
+// Mock global fetch
+global.fetch = jest.fn() as jest.MockedFunction<any>;
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 
@@ -89,9 +91,6 @@ const mockCookies = {
   get: jest.fn() as jest.MockedFunction<any>,
 };
 
-// Mock fetch for Xendit API calls
-global.fetch = jest.fn() as jest.MockedFunction<any>;
-
 jest.mock('@/lib/prisma', () => ({
   prisma: mockPrisma,
 }));
@@ -113,6 +112,9 @@ describe('Payout Management API Tests', () => {
     
     // Mock cookies function
     require('next/headers').cookies.mockResolvedValue(mockCookies);
+    
+    // Mock the auth module
+    require('@/lib/auth').getCurrentUser = mockAuth.getCurrentUser;
     
     // Mock fee calculations
     mockFeeUtils.calculateProcessingFee.mockReturnValue(75); // 2.5% + 15 PHP
@@ -138,6 +140,9 @@ describe('Payout Management API Tests', () => {
 
   describe('GET /api/payouts - Balance and History', () => {
     it('should successfully retrieve payout data and balance', async () => {
+      // Ensure authentication mock is set up
+      mockAuth.getCurrentUser.mockResolvedValue(mockUser);
+      
       const mockPayouts = [
         {
           id: 'payout1',
@@ -156,8 +161,12 @@ describe('Payout Management API Tests', () => {
 
       const { GET } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts');
-      const response = await GET(request);
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        nextUrl: new URL('http://localhost:3000/api/payouts')
+      };
+
+      const response = await GET(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -172,8 +181,12 @@ describe('Payout Management API Tests', () => {
 
       const { GET } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts');
-      const response = await GET(request);
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        nextUrl: new URL('http://localhost:3000/api/payouts')
+      };
+
+      const response = await GET(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -181,12 +194,19 @@ describe('Payout Management API Tests', () => {
     });
 
     it('should handle database errors gracefully', async () => {
+      // Ensure authentication mock is set up
+      mockAuth.getCurrentUser.mockResolvedValue(mockUser);
+      
       mockPrisma.$queryRaw.mockRejectedValue(new Error('Database error'));
 
       const { GET } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts');
-      const response = await GET(request);
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        nextUrl: new URL('http://localhost:3000/api/payouts')
+      };
+
+      const response = await GET(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -219,20 +239,20 @@ describe('Payout Management API Tests', () => {
 
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      // Mock request with json() method
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 3000,
           bankCode: 'BDO',
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -244,20 +264,19 @@ describe('Payout Management API Tests', () => {
 
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 3000,
           bankCode: 'BDO',
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -267,18 +286,17 @@ describe('Payout Management API Tests', () => {
     it('should reject payout creation with missing required fields', async () => {
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 3000,
           // Missing bankCode, accountNumber, accountHolderName
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -297,20 +315,19 @@ describe('Payout Management API Tests', () => {
 
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 5000, // More than available balance
           bankCode: 'BDO',
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -331,20 +348,19 @@ describe('Payout Management API Tests', () => {
 
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 3000,
           bankCode: 'BDO',
           accountNumber: 'invalid',
           accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -356,20 +372,19 @@ describe('Payout Management API Tests', () => {
     it('should validate bank codes', async () => {
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 3000,
           bankCode: 'INVALID_BANK', // Invalid bank code
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -392,20 +407,19 @@ describe('Payout Management API Tests', () => {
 
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 3000,
           bankCode: 'BDO',
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
 
       expect(mockFeeUtils.calculateProcessingFee).toHaveBeenCalledWith(3000);
       expect(mockFeeUtils.calculateNetAmount).toHaveBeenCalledWith(3000);
@@ -433,20 +447,19 @@ describe('Payout Management API Tests', () => {
 
         const { POST } = await import('@/app/api/payouts/route');
 
-        const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-          method: 'POST',
-          body: JSON.stringify({
+        const mockRequest = {
+          url: 'http://localhost:3000/api/payouts',
+          headers: new Map([['content-type', 'application/json']]),
+          // @ts-ignore
+          json: jest.fn().mockResolvedValue({
             amount: 3000,
             bankCode,
             accountNumber: '1234567890',
             accountHolderName: 'Test Seller',
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+          })
+        };
 
-        const response = await POST(request);
+        const response = await POST(mockRequest as any);
         expect(response.status).toBe(200);
       }
     });
@@ -460,20 +473,19 @@ describe('Payout Management API Tests', () => {
 
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 3000,
           bankCode: 'BDO',
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -495,20 +507,19 @@ describe('Payout Management API Tests', () => {
 
       const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
-        method: 'POST',
-        body: JSON.stringify({
+      const mockRequest = {
+        url: 'http://localhost:3000/api/payouts',
+        headers: new Map([['content-type', 'application/json']]),
+        // @ts-ignore
+        json: jest.fn().mockResolvedValue({
           amount: 3000,
           bankCode: 'BDO',
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        })
+      };
 
-      const response = await POST(request);
+      const response = await POST(mockRequest as any);
       const data = await response.json();
 
       expect(response.status).toBe(500);

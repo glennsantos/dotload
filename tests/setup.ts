@@ -125,6 +125,9 @@ function createMockNextRequest(url: string, init?: any) {
     },
     
     async formData() {
+      if (this.body && (this.body instanceof FormData || (this.body.get && this.body.entries))) {
+        return this.body;
+      }
       return new FormData();
     },
     
@@ -212,11 +215,20 @@ if (!global.FormData) {
     }
     
     get(name: string) {
-      return this.data.get(name);
+      return this.data.get(name) || null;
+    }
+    
+    getAll(name: string) {
+      const value = this.data.get(name);
+      return value ? [value] : [];
     }
     
     has(name: string) {
       return this.data.has(name);
+    }
+    
+    set(name: string, value: any) {
+      this.data.set(name, value);
     }
     
     delete(name: string) {
@@ -225,6 +237,18 @@ if (!global.FormData) {
     
     entries() {
       return this.data.entries();
+    }
+    
+    keys() {
+      return this.data.keys();
+    }
+    
+    values() {
+      return this.data.values();
+    }
+    
+    forEach(callback: (value: any, key: string) => void) {
+      this.data.forEach(callback);
     }
   } as any;
 }

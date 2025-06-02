@@ -16,9 +16,13 @@ jest.mock('jose', () => ({
     setProtectedHeader: jest.fn().mockReturnThis(),
     setIssuedAt: jest.fn().mockReturnThis(),
     setExpirationTime: jest.fn().mockReturnThis(),
+    // @ts-ignore
     sign: jest.fn().mockResolvedValue('mock_jwt_token'),
   })),
-  jwtVerify: jest.fn(),
+  // @ts-ignore
+  jwtVerify: jest.fn().mockResolvedValue({
+    payload: { userId: 'user123', email: 'test@example.com' }
+  }),
 }));
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
