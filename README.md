@@ -2,6 +2,8 @@
 
 A modern, flexible digital product marketplace platform built with Next.js and Prisma.
 
+Made by (c) Glenn Santos
+
 ## Overview
 
 alacart is an innovative platform for creators to sell digital products, offering flexible product variations, seamless file uploads, and easy payment configuration.
