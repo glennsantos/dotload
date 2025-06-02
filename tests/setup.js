@@ -7,6 +7,48 @@ jest.mock('jose', () => ({
   SignJWT: jest.fn(),
 }));
 
+// Mock cloudinary library
+jest.mock('cloudinary', () => ({
+  v2: {
+    config: jest.fn(),
+    uploader: {
+      upload: jest.fn().mockResolvedValue({
+        public_id: 'mock_public_id',
+        secure_url: 'https://res.cloudinary.com/test/image/upload/mock_image.jpg',
+        url: 'https://res.cloudinary.com/test/image/upload/mock_image.jpg',
+        bytes: 1024,
+        format: 'jpg'
+      }),
+      upload_stream: jest.fn().mockImplementation((options, callback) => {
+        // Mock the upload_stream method
+        const mockResult = {
+          public_id: 'mock_public_id',
+          secure_url: 'https://res.cloudinary.com/test/image/upload/mock_image.jpg',
+          url: 'https://res.cloudinary.com/test/image/upload/mock_image.jpg',
+          bytes: 1024,
+          format: 'jpg'
+        };
+        
+        // Return a mock stream object
+        return {
+          end: jest.fn((buffer) => {
+            // Simulate successful upload
+            setTimeout(() => callback(null, mockResult), 0);
+          })
+        };
+      }),
+      destroy: jest.fn().mockResolvedValue({
+        result: 'ok'
+      })
+    },
+    api: {
+      delete_resources: jest.fn().mockResolvedValue({
+        deleted: ['mock_public_id']
+      })
+    }
+  }
+}));
+
 // Mock Next.js server components and Web APIs
 // Note: Don't override global.Request directly as Next.js 15+ has read-only properties
 // Instead, we'll mock it in individual tests where needed
@@ -195,6 +237,11 @@ if (!global.Headers) {
 // Mock Request if not already available
 if (!global.Request) {
   global.Request = TestRequest;
+}
+
+// Mock Response if not already available - this is the key fix
+if (!global.Response) {
+  global.Response = TestResponse;
 }
 
 // Mock FormData if not already available

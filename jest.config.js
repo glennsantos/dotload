@@ -15,14 +15,18 @@ const customJestConfig = {
   
   // Module name mapping for absolute imports and static assets
   moduleNameMapper: {
+    // Specific mock mappings - these need to come before the general @/ mapping
+    '^@/lib/discount-utils$': '<rootDir>/tests/__mocks__/discount-utils.js',
+    '^jose$': '<rootDir>/tests/__mocks__/jose.js',
+    '^cloudinary$': '<rootDir>/tests/__mocks__/cloudinary.js',
+    // General path mappings
     '^@/(.*)$': '<rootDir>/$1',
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/lib/(.*)$': '<rootDir>/lib/$1',
     '^@/app/(.*)$': '<rootDir>/app/$1',
     '^@/types/(.*)$': '<rootDir>/types/$1',
     '^@/utils/(.*)$': '<rootDir>/utils/$1',
-    '^@/lib/discount-utils$': '<rootDir>/tests/__mocks__/discount-utils.js',
-    '^jose$': '<rootDir>/tests/__mocks__/jose.js',
+    // Asset mappings
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/tests/__mocks__/fileMock.js',
   },

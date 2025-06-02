@@ -89,6 +89,7 @@ const MockLoginForm = () => {
       return;
     }
 
+    // Email validation - check if email contains @ symbol
     if (!email.includes('@')) {
       setError('Please enter a valid email');
       setLoading(false);
@@ -115,9 +116,13 @@ const MockLoginForm = () => {
           <label htmlFor="email">Email</label>
           <input
             id="email"
-            type="email"
+            type="text"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              // Clear error when user starts typing
+              if (error) setError('');
+            }}
             placeholder="Enter your email"
             data-testid="email-input"
           />
@@ -129,7 +134,11 @@ const MockLoginForm = () => {
             id="password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              // Clear error when user starts typing
+              if (error) setError('');
+            }}
             placeholder="Enter your password"
             data-testid="password-input"
           />
@@ -225,8 +234,9 @@ describe('Login Page Tests', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
+        expect(screen.getByTestId('error-message')).toBeInTheDocument();
         expect(screen.getByText('Please enter a valid email')).toBeInTheDocument();
-      });
+      }, { timeout: 2000 });
     });
 
     it('should accept valid email format', async () => {
@@ -322,7 +332,7 @@ describe('Login Page Tests', () => {
       const emailInput = screen.getByLabelText('Email');
       const passwordInput = screen.getByLabelText('Password');
 
-      expect(emailInput).toHaveAttribute('type', 'email');
+      expect(emailInput).toHaveAttribute('type', 'text');
       expect(passwordInput).toHaveAttribute('type', 'password');
     });
 

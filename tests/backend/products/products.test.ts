@@ -1,15 +1,53 @@
 /**
  * ============================================================================
- * BACKEND TESTS - PRODUCT MANAGEMENT
+ * BACKEND TESTS - PRODUCT MANAGEMENT API
  * ============================================================================
  * 
- * Tests for product API endpoints including:
+ * Tests for product management API endpoints including:
  * - Product creation (digital and physical)
- * - Product editing and updates
- * - File upload functionality
- * - Product validation
- * - Slug generation and uniqueness
+ * - Product updates and deletion
+ * - File upload handling
+ * - Validation and error scenarios
  */
+
+// Mock cloudinary before any imports
+jest.mock('cloudinary', () => ({
+  v2: {
+    config: jest.fn(),
+    uploader: {
+      upload: jest.fn().mockResolvedValue({
+        public_id: 'mock_public_id',
+        secure_url: 'https://res.cloudinary.com/test/image/upload/mock_image.jpg',
+        url: 'https://res.cloudinary.com/test/image/upload/mock_image.jpg',
+        bytes: 1024,
+        format: 'jpg'
+      }),
+      upload_stream: jest.fn().mockImplementation((options, callback) => {
+        const mockResult = {
+          public_id: 'mock_public_id',
+          secure_url: 'https://res.cloudinary.com/test/image/upload/mock_image.jpg',
+          url: 'https://res.cloudinary.com/test/image/upload/mock_image.jpg',
+          bytes: 1024,
+          format: 'jpg'
+        };
+        
+        return {
+          end: jest.fn((buffer) => {
+            setTimeout(() => callback(null, mockResult), 0);
+          })
+        };
+      }),
+      destroy: jest.fn().mockResolvedValue({
+        result: 'ok'
+      })
+    },
+    api: {
+      delete_resources: jest.fn().mockResolvedValue({
+        deleted: ['mock_public_id']
+      })
+    }
+  }
+}));
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 
@@ -54,10 +92,6 @@ const mockAuth = {
 
 jest.mock('@/lib/prisma', () => ({
   prisma: mockPrisma,
-}));
-
-jest.mock('cloudinary', () => ({
-  v2: mockCloudinary,
 }));
 
 jest.mock('@/lib/auth', () => mockAuth);
