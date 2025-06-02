@@ -10,6 +10,10 @@
  * - Error handling
  */
 
+// Polyfill for TextEncoder/TextDecoder in Node.js test environment
+global.TextEncoder = require('util').TextEncoder;
+global.TextDecoder = require('util').TextDecoder;
+
 // Mock jose before any imports
 jest.mock('jose', () => ({
   SignJWT: jest.fn().mockImplementation(() => ({
@@ -86,6 +90,7 @@ describe('Authentication API Tests', () => {
     mockBcrypt.hash.mockResolvedValue('hashed_password');
     mockBcrypt.compare.mockResolvedValue(true);
     mockPrisma.$connect.mockResolvedValue(undefined);
+    mockPrisma.$disconnect.mockResolvedValue(undefined);
     
     // Set up default user for tests
     authenticatedUser = {
