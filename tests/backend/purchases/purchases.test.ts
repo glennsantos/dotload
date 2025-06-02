@@ -105,6 +105,9 @@ describe('Purchase Management API Tests', () => {
     
     // Mock jsonwebtoken module
     require('jsonwebtoken').verify = mockJwt.verify;
+    
+    // Mock purchase-utils module
+    require('@/lib/purchase-utils').createPurchase = mockPurchaseUtils.createPurchase;
   });
 
   afterEach(() => {
@@ -224,6 +227,7 @@ describe('Purchase Management API Tests', () => {
           email: 'buyer@example.com',
           amount: 29.99,
           currency: 'PHP',
+          paymentMethod: 'pending',
         }))
       };
 
@@ -271,6 +275,7 @@ describe('Purchase Management API Tests', () => {
           productId: 'product123',
           email: 'buyer@example.com',
           amount: 29.99,
+          paymentMethod: 'pending',
         }))
       };
 
@@ -295,6 +300,7 @@ describe('Purchase Management API Tests', () => {
           productId: 'nonexistent',
           email: 'buyer@example.com',
           amount: 29.99,
+          paymentMethod: 'pending',
         }))
       };
 
@@ -310,6 +316,11 @@ describe('Purchase Management API Tests', () => {
     it('should validate email format', async () => {
       // Mock product exists first (validation order)
       mockPrisma.product.findUnique.mockResolvedValue(mockProduct);
+      mockPurchaseUtils.createPurchase.mockResolvedValue({
+        id: 'purchase123',
+        accessCode: 'ABC123',
+        status: 'pending',
+      });
 
       const { POST } = await import('@/app/api/purchases/route');
 
@@ -322,6 +333,7 @@ describe('Purchase Management API Tests', () => {
           productId: 'product123',
           email: 'invalid-email', // Invalid email format
           amount: 29.99,
+          paymentMethod: 'pending',
         }))
       };
 
@@ -329,13 +341,17 @@ describe('Purchase Management API Tests', () => {
       const data = await response.json();
 
       // Since the API doesn't validate email format, this will succeed
-      // or we need to check if the API actually validates email format
       expect(response.status).toBe(200);
     });
 
     it('should validate amount is positive', async () => {
       // Mock product exists first
       mockPrisma.product.findUnique.mockResolvedValue(mockProduct);
+      mockPurchaseUtils.createPurchase.mockResolvedValue({
+        id: 'purchase123',
+        accessCode: 'ABC123',
+        status: 'pending',
+      });
 
       const { POST } = await import('@/app/api/purchases/route');
 
@@ -348,6 +364,7 @@ describe('Purchase Management API Tests', () => {
           productId: 'product123',
           email: 'buyer@example.com',
           amount: -10, // Negative amount
+          paymentMethod: 'pending',
         }))
       };
 
@@ -355,7 +372,6 @@ describe('Purchase Management API Tests', () => {
       const data = await response.json();
 
       // Since the API doesn't validate amount positivity, this will succeed
-      // or we need to check if the API actually validates amount
       expect(response.status).toBe(200);
     });
 
@@ -382,6 +398,7 @@ describe('Purchase Management API Tests', () => {
           amount: 23.99,
           discountCode: 'SAVE20',
           discountAmount: 6.00,
+          paymentMethod: 'pending',
         }))
       };
 
@@ -430,10 +447,15 @@ describe('Purchase Management API Tests', () => {
     });
 
     it('should handle JWT verification errors', async () => {
-      // Set up JWT mock to throw error
+      // Set up JWT mock to throw error with correct name
       mockJwt.verify.mockImplementation(() => {
-        throw new Error('JsonWebTokenError');
+        const error = new Error('Invalid token');
+        error.name = 'JsonWebTokenError';
+        throw error;
       });
+      
+      // Override the require mock for this test
+      require('jsonwebtoken').verify = mockJwt.verify;
 
       const { GET } = await import('@/app/api/purchases/route');
 
