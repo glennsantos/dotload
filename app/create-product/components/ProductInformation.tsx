@@ -39,7 +39,7 @@ export default function ProductInformation({
       setProductData({ ...productData, price: 0 })
     } else {
       const numValue = parseFloat(value)
-      if (!isNaN(numValue) && numValue >= 0) {
+      if (!isNaN(numValue) && numValue >= 1 && numValue <= 500000) {
         setProductData({ ...productData, price: numValue })
       }
     }
