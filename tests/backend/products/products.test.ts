@@ -12,40 +12,44 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { NextRequest } from 'next/server';
+
+// Declare global helper function
+declare global {
+  var createMockNextRequest: (url: string, init?: any) => any;
+}
 
 // Mock Prisma client
 const mockPrisma = {
   product: {
-    create: jest.fn(),
-    findUnique: jest.fn(),
-    findMany: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
+    create: jest.fn() as jest.MockedFunction<any>,
+    findUnique: jest.fn() as jest.MockedFunction<any>,
+    findMany: jest.fn() as jest.MockedFunction<any>,
+    update: jest.fn() as jest.MockedFunction<any>,
+    delete: jest.fn() as jest.MockedFunction<any>,
   },
   user: {
-    findUnique: jest.fn(),
+    findUnique: jest.fn() as jest.MockedFunction<any>,
   },
   file: {
-    create: jest.fn(),
-    findMany: jest.fn(),
-    delete: jest.fn(),
+    create: jest.fn() as jest.MockedFunction<any>,
+    findMany: jest.fn() as jest.MockedFunction<any>,
+    delete: jest.fn() as jest.MockedFunction<any>,
   },
-  $transaction: jest.fn(),
+  $transaction: jest.fn() as jest.MockedFunction<any>,
 };
 
 // Mock Cloudinary
 const mockCloudinary = {
   uploader: {
-    upload: jest.fn(),
-    destroy: jest.fn(),
+    upload: jest.fn() as jest.MockedFunction<any>,
+    destroy: jest.fn() as jest.MockedFunction<any>,
   },
 };
 
 // Mock auth utilities
 const mockAuth = {
-  getCurrentUser: jest.fn(),
-  getAuthUserId: jest.fn(),
+  getCurrentUser: jest.fn() as jest.MockedFunction<any>,
+  getAuthUserId: jest.fn() as jest.MockedFunction<any>,
 };
 
 jest.mock('@/lib/prisma', () => ({
@@ -101,7 +105,7 @@ describe('Product Management API Tests', () => {
       formData.append('currency', 'PHP');
       formData.append('description', 'Test description');
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -162,7 +166,7 @@ describe('Product Management API Tests', () => {
         },
       ]));
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -202,7 +206,7 @@ describe('Product Management API Tests', () => {
       formData.append('price', '19.99');
       formData.append('contentFile0', mockFile);
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -223,7 +227,7 @@ describe('Product Management API Tests', () => {
       const formData = new FormData();
       formData.append('name', 'Test Product');
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -241,7 +245,7 @@ describe('Product Management API Tests', () => {
       const formData = new FormData();
       // Missing name and price
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -260,7 +264,7 @@ describe('Product Management API Tests', () => {
       formData.append('name', 'Test Product');
       formData.append('price', 'invalid-price');
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -292,7 +296,7 @@ describe('Product Management API Tests', () => {
       formData.append('price', '19.99');
       formData.append('contentFile0', mockFile);
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -329,7 +333,7 @@ describe('Product Management API Tests', () => {
       formData.append('name', 'Updated Product');
       formData.append('price', '29.99');
 
-      const request = new NextRequest('http://localhost:3000/api/products/product123', {
+      const request = createMockNextRequest('http://localhost:3000/api/products/product123', {
         method: 'PUT',
         body: formData,
       });
@@ -358,7 +362,7 @@ describe('Product Management API Tests', () => {
       const formData = new FormData();
       formData.append('name', 'Updated Product');
 
-      const request = new NextRequest('http://localhost:3000/api/products/nonexistent', {
+      const request = createMockNextRequest('http://localhost:3000/api/products/nonexistent', {
         method: 'PUT',
         body: formData,
       });
@@ -384,7 +388,7 @@ describe('Product Management API Tests', () => {
       const formData = new FormData();
       formData.append('name', 'Updated Product');
 
-      const request = new NextRequest('http://localhost:3000/api/products/product123', {
+      const request = createMockNextRequest('http://localhost:3000/api/products/product123', {
         method: 'PUT',
         body: formData,
       });
@@ -416,7 +420,7 @@ describe('Product Management API Tests', () => {
 
       const { GET } = await import('@/app/api/products/[id]/route');
 
-      const request = new NextRequest('http://localhost:3000/api/products/product123');
+      const request = createMockNextRequest('http://localhost:3000/api/products/product123');
       const response = await GET(request, { params: { id: 'product123' } });
       const data = await response.json();
 
@@ -438,7 +442,7 @@ describe('Product Management API Tests', () => {
 
       const { GET } = await import('@/app/api/products/[id]/route');
 
-      const request = new NextRequest('http://localhost:3000/api/products/nonexistent');
+      const request = createMockNextRequest('http://localhost:3000/api/products/nonexistent');
       const response = await GET(request, { params: { id: 'nonexistent' } });
       const data = await response.json();
 
@@ -464,7 +468,7 @@ describe('Product Management API Tests', () => {
 
       const { DELETE } = await import('@/app/api/products/[id]/route');
 
-      const request = new NextRequest('http://localhost:3000/api/products/product123');
+      const request = createMockNextRequest('http://localhost:3000/api/products/product123');
       const response = await DELETE(request, { params: { id: 'product123' } });
       const data = await response.json();
 
@@ -487,7 +491,7 @@ describe('Product Management API Tests', () => {
 
       const { DELETE } = await import('@/app/api/products/[id]/route');
 
-      const request = new NextRequest('http://localhost:3000/api/products/product123');
+      const request = createMockNextRequest('http://localhost:3000/api/products/product123');
       const response = await DELETE(request, { params: { id: 'product123' } });
       const data = await response.json();
 
@@ -522,7 +526,7 @@ describe('Product Management API Tests', () => {
       formData.append('type', 'digital_product');
       formData.append('price', '19.99');
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -544,7 +548,7 @@ describe('Product Management API Tests', () => {
       formData.append('price', '19.99');
       formData.append('contentFile0', invalidFile);
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });
@@ -570,7 +574,7 @@ describe('Product Management API Tests', () => {
       formData.append('price', '19.99');
       formData.append('contentFile0', largeFile);
 
-      const request = new NextRequest('http://localhost:3000/api/products', {
+      const request = createMockNextRequest('http://localhost:3000/api/products', {
         method: 'POST',
         body: formData,
       });

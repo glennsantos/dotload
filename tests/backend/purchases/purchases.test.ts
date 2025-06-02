@@ -12,7 +12,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { NextRequest } from 'next/server';
+// Declare global helper function
+declare global {
+  var createMockNextRequest: (url: string, init?: any) => any;
+}
 
 // Mock Prisma client
 const mockPrisma = {
@@ -143,7 +146,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -216,7 +219,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -268,7 +271,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -332,7 +335,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -366,7 +369,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'nonexistent',
@@ -395,7 +398,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -425,7 +428,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -452,7 +455,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -484,7 +487,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -507,7 +510,7 @@ describe('Purchase & Payment Processing API Tests', () => {
     it('should validate required customer information', async () => {
       const { POST } = await import('@/app/api/purchases/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases', {
+      const request = createMockNextRequest('http://localhost:3000/api/purchases', {
         method: 'POST',
         body: JSON.stringify({
           productId: 'product123',
@@ -553,7 +556,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/webhooks/xendit/route');
 
-      const request = new NextRequest('http://localhost:3000/api/webhooks/xendit', {
+      const request = createMockNextRequest('http://localhost:3000/api/webhooks/xendit', {
         method: 'POST',
         body: JSON.stringify(webhookPayload),
         headers: {
@@ -597,7 +600,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { POST } = await import('@/app/api/webhooks/xendit/route');
 
-      const request = new NextRequest('http://localhost:3000/api/webhooks/xendit', {
+      const request = createMockNextRequest('http://localhost:3000/api/webhooks/xendit', {
         method: 'POST',
         body: JSON.stringify(webhookPayload),
         headers: {
@@ -620,7 +623,7 @@ describe('Purchase & Payment Processing API Tests', () => {
     it('should reject webhooks with invalid tokens', async () => {
       const { POST } = await import('@/app/api/webhooks/xendit/route');
 
-      const request = new NextRequest('http://localhost:3000/api/webhooks/xendit', {
+      const request = createMockNextRequest('http://localhost:3000/api/webhooks/xendit', {
         method: 'POST',
         body: JSON.stringify({ id: 'test' }),
         headers: {
@@ -649,7 +652,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { GET } = await import('@/app/api/purchases/[id]/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases/purchase123');
+      const request = createMockNextRequest('http://localhost:3000/api/purchases/purchase123');
       const response = await GET(request, { params: { id: 'purchase123' } });
       const data = await response.json();
 
@@ -667,7 +670,7 @@ describe('Purchase & Payment Processing API Tests', () => {
 
       const { GET } = await import('@/app/api/purchases/[id]/route');
 
-      const request = new NextRequest('http://localhost:3000/api/purchases/nonexistent');
+      const request = createMockNextRequest('http://localhost:3000/api/purchases/nonexistent');
       const response = await GET(request, { params: { id: 'nonexistent' } });
       const data = await response.json();
 

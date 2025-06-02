@@ -12,32 +12,36 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { NextRequest } from 'next/server';
+
+// Declare global helper function
+declare global {
+  var createMockNextRequest: (url: string, init?: any) => any;
+}
 
 // Mock Prisma client
 const mockPrisma = {
   transaction: {
-    create: jest.fn(),
-    findMany: jest.fn(),
-    findFirst: jest.fn(),
-    update: jest.fn(),
+    create: jest.fn() as jest.MockedFunction<any>,
+    findMany: jest.fn() as jest.MockedFunction<any>,
+    findFirst: jest.fn() as jest.MockedFunction<any>,
+    update: jest.fn() as jest.MockedFunction<any>,
   },
   user: {
-    findUnique: jest.fn(),
+    findUnique: jest.fn() as jest.MockedFunction<any>,
   },
-  $queryRaw: jest.fn(),
+  $queryRaw: jest.fn() as jest.MockedFunction<any>,
 };
 
 // Mock auth utilities
 const mockAuth = {
-  getCurrentUser: jest.fn(),
-  getAuthUserId: jest.fn(),
+  getCurrentUser: jest.fn() as jest.MockedFunction<any>,
+  getAuthUserId: jest.fn() as jest.MockedFunction<any>,
 };
 
 // Mock fee utilities
 const mockFeeUtils = {
-  calculateProcessingFee: jest.fn(),
-  calculateNetAmount: jest.fn(),
+  calculateProcessingFee: jest.fn() as jest.MockedFunction<any>,
+  calculateNetAmount: jest.fn() as jest.MockedFunction<any>,
   DEFAULT_PAYOUT_FEE_CONFIG: {
     percentageFee: 0.05, // 5%
     fixedFee: 15, // PHP 15
@@ -46,14 +50,14 @@ const mockFeeUtils = {
 
 // Mock transaction utilities
 const mockTransactionUtils = {
-  createTransaction: jest.fn(),
-  createPayoutTransaction: jest.fn(),
+  createTransaction: jest.fn() as jest.MockedFunction<any>,
+  createPayoutTransaction: jest.fn() as jest.MockedFunction<any>,
 };
 
 // Mock Xendit client
 const mockXendit = {
-  createPayout: jest.fn(),
-  checkPayoutStatus: jest.fn(),
+  createPayout: jest.fn() as jest.MockedFunction<any>,
+  checkPayoutStatus: jest.fn() as jest.MockedFunction<any>,
 };
 
 jest.mock('@/lib/prisma', () => ({
@@ -140,7 +144,7 @@ describe('Payout & Financial Management API Tests', () => {
 
       const { GET } = await import('@/app/api/payouts/route');
 
-      const request = new NextRequest('http://localhost:3000/api/payouts');
+      const request = createMockNextRequest('http://localhost:3000/api/payouts');
       const response = await GET(request);
       const data = await response.json();
 
@@ -158,7 +162,7 @@ describe('Payout & Financial Management API Tests', () => {
 
       const { GET } = await import('@/app/api/payouts/route');
 
-      const request = new NextRequest('http://localhost:3000/api/payouts');
+      const request = createMockNextRequest('http://localhost:3000/api/payouts');
       const response = await GET(request);
       const data = await response.json();
 
@@ -187,6 +191,7 @@ describe('Payout & Financial Management API Tests', () => {
         status: 'PENDING',
       };
 
+      // @ts-ignore - Mock for testing
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockXenditResponse),
@@ -214,7 +219,7 @@ describe('Payout & Financial Management API Tests', () => {
 
       const { POST } = await import('@/app/api/transactions/payout/route');
 
-      const request = new NextRequest('http://localhost:3000/api/transactions/payout', {
+      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
         method: 'POST',
         body: JSON.stringify({
           amount: payoutAmount,
@@ -303,7 +308,7 @@ describe('Payout & Financial Management API Tests', () => {
 
       const { POST } = await import('@/app/api/transactions/payout/route');
 
-      const request = new NextRequest('http://localhost:3000/api/transactions/payout', {
+      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
         method: 'POST',
         body: JSON.stringify({
           amount: payoutAmount,
@@ -328,7 +333,7 @@ describe('Payout & Financial Management API Tests', () => {
     it('should reject payout request with missing required fields', async () => {
       const { POST } = await import('@/app/api/transactions/payout/route');
 
-      const request = new NextRequest('http://localhost:3000/api/transactions/payout', {
+      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
         method: 'POST',
         body: JSON.stringify({
           amount: 5000,
@@ -358,7 +363,7 @@ describe('Payout & Financial Management API Tests', () => {
 
       const { POST } = await import('@/app/api/transactions/payout/route');
 
-      const request = new NextRequest('http://localhost:3000/api/transactions/payout', {
+      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
         method: 'POST',
         body: JSON.stringify({
           amount: 5000,
@@ -389,6 +394,7 @@ describe('Payout & Financial Management API Tests', () => {
         .mockResolvedValueOnce([{ sum: 0 }]); // Total payments
 
       // Mock Xendit API failure
+      // @ts-ignore - Mock for testing
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 400,
@@ -398,7 +404,7 @@ describe('Payout & Financial Management API Tests', () => {
 
       const { POST } = await import('@/app/api/transactions/payout/route');
 
-      const request = new NextRequest('http://localhost:3000/api/transactions/payout', {
+      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
         method: 'POST',
         body: JSON.stringify({
           amount: 5000,
@@ -424,7 +430,7 @@ describe('Payout & Financial Management API Tests', () => {
 
       const { POST } = await import('@/app/api/transactions/payout/route');
 
-      const request = new NextRequest('http://localhost:3000/api/transactions/payout', {
+      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
         method: 'POST',
         body: JSON.stringify({
           amount: 5000,
@@ -449,7 +455,7 @@ describe('Payout & Financial Management API Tests', () => {
     it('should return current fee configuration', async () => {
       const { GET } = await import('@/app/api/fee-config/route');
 
-      const request = new NextRequest('http://localhost:3000/api/fee-config');
+      const request = createMockNextRequest('http://localhost:3000/api/fee-config');
       const response = await GET();
       const data = await response.json();
 

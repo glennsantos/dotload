@@ -1,6 +1,5 @@
 // Test setup file for Jest
-import { jest } from '@jest/globals';
-import '@testing-library/jest-dom';
+require('@testing-library/jest-dom');
 
 // Mock jose library before any imports that might use it
 jest.mock('jose', () => ({
@@ -14,16 +13,12 @@ jest.mock('jose', () => ({
 
 // Create a custom Request class for tests that don't conflict with Next.js
 class TestRequest {
-  constructor(input: any, init?: any) {
+  constructor(input, init) {
     this.url = typeof input === 'string' ? input : input.url;
     this.method = init?.method || 'GET';
     this.headers = new Headers(init?.headers);
     this.body = init?.body;
   }
-  url: string;
-  method: string;
-  headers: Headers;
-  body: any;
   
   async json() {
     return this.body ? JSON.parse(this.body) : {};
@@ -48,18 +43,13 @@ class TestRequest {
 
 // Create a custom Response class for tests
 class TestResponse {
-  constructor(body?: any, init?: any) {
+  constructor(body, init) {
     this.body = body;
     this.status = init?.status || 200;
     this.statusText = init?.statusText || 'OK';
     this.headers = new Headers(init?.headers);
     this.ok = this.status >= 200 && this.status < 300;
   }
-  body: any;
-  status: number;
-  statusText: string;
-  headers: Headers;
-  ok: boolean;
   
   async json() {
     return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
@@ -69,7 +59,7 @@ class TestResponse {
     return typeof this.body === 'string' ? this.body : JSON.stringify(this.body);
   }
   
-  static json(data: any, init?: any) {
+  static json(data, init) {
     return new TestResponse(JSON.stringify(data), {
       ...init,
       headers: {
@@ -79,7 +69,7 @@ class TestResponse {
     });
   }
   
-  static redirect(url: string, status = 302) {
+  static redirect(url, status = 302) {
     return new TestResponse(null, {
       status,
       headers: { Location: url }
@@ -88,11 +78,11 @@ class TestResponse {
 }
 
 // Helper function to create mock NextRequest objects for testing
-function createMockNextRequest(url: string, init?: any) {
+function createMockNextRequest(url, init) {
   const headersMap = new Map();
   if (init?.headers) {
     Object.entries(init.headers).forEach(([key, value]) => {
-      headersMap.set(key.toLowerCase(), value as string);
+      headersMap.set(key.toLowerCase(), value);
     });
   }
   
@@ -105,11 +95,11 @@ function createMockNextRequest(url: string, init?: any) {
     // Mock the headers.get method
     get headers() {
       return {
-        get: (name: string) => headersMap.get(name.toLowerCase()) || null,
-        has: (name: string) => headersMap.has(name.toLowerCase()),
-        set: (name: string, value: string) => headersMap.set(name.toLowerCase(), value),
-        delete: (name: string) => headersMap.delete(name.toLowerCase()),
-        forEach: (callback: (value: string, key: string) => void) => headersMap.forEach(callback),
+        get: (name) => headersMap.get(name.toLowerCase()) || null,
+        has: (name) => headersMap.has(name.toLowerCase()),
+        set: (name, value) => headersMap.set(name.toLowerCase(), value),
+        delete: (name) => headersMap.delete(name.toLowerCase()),
+        forEach: (callback) => headersMap.forEach(callback),
         entries: () => headersMap.entries(),
         keys: () => headersMap.keys(),
         values: () => headersMap.values(),
@@ -141,19 +131,19 @@ function createMockNextRequest(url: string, init?: any) {
 }
 
 // Make test classes and helpers available globally for tests
-(global as any).TestRequest = TestRequest;
-(global as any).TestResponse = TestResponse;
-(global as any).createMockNextRequest = createMockNextRequest;
+global.TestRequest = TestRequest;
+global.TestResponse = TestResponse;
+global.createMockNextRequest = createMockNextRequest;
 
 // Mock Headers if not already available
 if (!global.Headers) {
   global.Headers = class MockHeaders {
-    private headers: Map<string, string> = new Map();
-    
-    constructor(init?: any) {
+    constructor(init) {
+      this.headers = new Map();
+      
       if (init) {
         if (init instanceof Headers) {
-          init.forEach((value: string, key: string) => {
+          init.forEach((value, key) => {
             this.headers.set(key.toLowerCase(), value);
           });
         } else if (Array.isArray(init)) {
@@ -162,29 +152,29 @@ if (!global.Headers) {
           });
         } else if (typeof init === 'object') {
           Object.entries(init).forEach(([key, value]) => {
-            this.headers.set(key.toLowerCase(), value as string);
+            this.headers.set(key.toLowerCase(), value);
           });
         }
       }
     }
     
-    get(name: string) {
+    get(name) {
       return this.headers.get(name.toLowerCase()) || null;
     }
     
-    set(name: string, value: string) {
+    set(name, value) {
       this.headers.set(name.toLowerCase(), value);
     }
     
-    has(name: string) {
+    has(name) {
       return this.headers.has(name.toLowerCase());
     }
     
-    delete(name: string) {
+    delete(name) {
       this.headers.delete(name.toLowerCase());
     }
     
-    forEach(callback: (value: string, key: string) => void) {
+    forEach(callback) {
       this.headers.forEach(callback);
     }
     
@@ -199,34 +189,41 @@ if (!global.Headers) {
     values() {
       return this.headers.values();
     }
-  } as any;
+  };
+}
+
+// Mock Request if not already available
+if (!global.Request) {
+  global.Request = TestRequest;
 }
 
 // Mock FormData if not already available
 if (!global.FormData) {
   global.FormData = class MockFormData {
-    private data: Map<string, any> = new Map();
+    constructor() {
+      this.data = new Map();
+    }
     
-    append(name: string, value: any) {
+    append(name, value) {
       this.data.set(name, value);
     }
     
-    get(name: string) {
+    get(name) {
       return this.data.get(name);
     }
     
-    has(name: string) {
+    has(name) {
       return this.data.has(name);
     }
     
-    delete(name: string) {
+    delete(name) {
       this.data.delete(name);
     }
     
     entries() {
       return this.data.entries();
     }
-  } as any;
+  };
 }
 
 // Mock environment variables for testing
@@ -238,7 +235,7 @@ process.env.CLOUDINARY_API_KEY = 'test-api-key';
 process.env.CLOUDINARY_API_SECRET = 'test-api-secret';
 
 // Mock fetch globally for API tests
-(global as any).fetch = jest.fn(() => 
+global.fetch = jest.fn(() => 
   Promise.resolve(new TestResponse('{}', { status: 200 }))
 );
 
@@ -259,7 +256,7 @@ const localStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-global.localStorage = localStorageMock as any;
+global.localStorage = localStorageMock;
 
 // Mock window object for browser environment tests
 global.window = {
@@ -273,4 +270,4 @@ global.window = {
   dispatchEvent: jest.fn(),
   addEventListener: jest.fn(),
   removeEventListener: jest.fn(),
-} as any; 
+}; 

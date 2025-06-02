@@ -8,7 +8,7 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   
   // Test environment
   testEnvironment: 'jest-environment-jsdom',
@@ -21,9 +21,16 @@ const customJestConfig = {
     '^@/app/(.*)$': '<rootDir>/app/$1',
     '^@/types/(.*)$': '<rootDir>/types/$1',
     '^@/utils/(.*)$': '<rootDir>/utils/$1',
+    '^@/lib/discount-utils$': '<rootDir>/tests/__mocks__/discount-utils.js',
+    '^jose$': '<rootDir>/tests/__mocks__/jose.js',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/tests/__mocks__/fileMock.js',
   },
+  
+  // Transform ignore patterns - allow transformation of ESM modules
+  transformIgnorePatterns: [
+    'node_modules/(?!(jose|@next|next)/)',
+  ],
   
   // Test file patterns
   testMatch: [

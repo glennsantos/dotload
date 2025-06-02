@@ -109,120 +109,63 @@ This will populate your database with test data. The script will log its progres
 
 ## Testing
 
-### Test Structure
-
-The project includes comprehensive test coverage organized by feature area:
-
-```
-tests/
-├── setup.ts                    # Jest configuration and global mocks
-├── backend/                    # Backend API tests
-│   ├── auth/
-│   │   └── auth.test.ts       # Authentication API tests
-│   ├── products/
-│   │   └── products.test.ts   # Product management tests
-│   ├── purchases/
-│   │   └── purchases.test.ts  # Purchase and payment tests
-│   └── payouts/
-│       └── payouts.test.ts    # Payout system tests
-├── frontend/                   # Frontend component tests
-│   ├── auth/
-│   │   └── login.test.tsx     # Login component tests
-│   ├── products/
-│   │   └── product-form.test.tsx
-│   └── dashboard/
-│       └── dashboard.test.tsx
-├── integration/                # Integration tests
-│   └── user-journey.test.ts   # End-to-end user flows
-└── e2e/                       # End-to-end tests
-    └── purchase-flow.test.ts  # Complete purchase scenarios
-```
-
 ### Running Tests
+
+The test suite is configured to work with Next.js 15+ and Node.js 22.x. Tests are organized by environment and feature area.
 
 ```bash
 # Run all tests
+npm test
+# or
 pnpm test
 
 # Run tests in watch mode
+npm run test:watch
+# or
 pnpm run test:watch
 
 # Run tests with coverage report
+npm run test:coverage
+# or
 pnpm run test:coverage
 
 # Run specific test suites
-pnpm run test:backend      # Backend API tests only
-pnpm run test:frontend     # Frontend component tests only
-pnpm run test:integration  # Integration tests only
-pnpm run test:e2e         # End-to-end tests only
+npm run test:backend      # Backend API tests only (Node.js environment)
+npm run test:frontend     # Frontend component tests only (jsdom environment)
+npm run test:integration  # Integration tests only (Node.js environment)
+npm run test:e2e         # End-to-end tests only
 
-# Run tests for CI/CD
+# Run tests for CI/CD (non-interactive)
+npm run test:ci
+# or
 pnpm run test:ci
+
+# Generate test report
+npm run test:report
+# or
+pnpm run test:report
 ```
 
-### Test Categories
+### Test Environment Configuration
 
-#### Backend Tests
-- **Authentication**: Login, registration, session management, password reset
-- **Product Management**: CRUD operations, file uploads, validation, slug generation
-- **Purchase Processing**: Payment flows, discount codes, order fulfillment
-- **Payout System**: Balance calculations, fee processing, bank transfers
-- **Error Handling**: Input validation, authorization, external service failures
+The test suite uses different environments for different test types:
+- **Frontend tests**: jsdom environment for React component testing
+- **Backend tests**: Node.js environment for API route testing
+- **Integration tests**: Node.js environment for full-stack testing
 
-#### Frontend Tests
-- **Component Rendering**: UI components render correctly with props
-- **User Interactions**: Form submissions, button clicks, navigation
-- **Form Validation**: Client-side validation and error display
-- **State Management**: Component state updates and side effects
-- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+### Prerequisites for Testing
 
-#### Integration Tests
-- **API Integration**: Frontend components with backend APIs
-- **Database Operations**: Data persistence and retrieval
-- **External Services**: Payment gateways, email services, file storage
-- **User Journeys**: Complete workflows from start to finish
+1. **Node.js 22.x**: Ensure you're using the correct Node.js version
+2. **Dependencies**: All test dependencies are installed with `npm install` or `pnpm install`
+3. **Environment**: Test environment variables are automatically configured in `tests/setup.ts`
 
-#### End-to-End Tests
-- **Purchase Flow**: Complete customer purchase journey
-- **Seller Workflow**: Product creation to payout process
-- **Authentication Flow**: Registration, verification, login
-- **Error Scenarios**: Network failures, payment errors, validation failures
+### Test Compatibility
 
-### Test Coverage Requirements
-
-- **Unit Tests**: 90% code coverage minimum
-- **Integration Tests**: All API endpoints covered
-- **E2E Tests**: All critical user journeys covered
-- **Error Scenarios**: All error paths tested
-
-### Testing Guidelines
-
-1. **Test Structure**: Follow AAA pattern (Arrange, Act, Assert)
-2. **Mocking**: Mock external dependencies and services
-3. **Data**: Use realistic test data that matches production scenarios
-4. **Isolation**: Each test should be independent and not rely on others
-5. **Performance**: Tests should complete within reasonable time limits
-6. **Maintenance**: Keep tests updated with feature changes
-
-### Mock Services
-
-The test suite includes comprehensive mocking for:
-
-- **Database**: Prisma client with realistic data responses
-- **Payment Gateway**: Xendit API responses and webhooks
-- **File Storage**: Cloudinary upload and management
-- **Email Service**: Email delivery and templates
-- **Authentication**: JWT token generation and validation
-
-### Continuous Integration
-
-Tests are automatically run on:
-- Pull request creation and updates
-- Merge to main branch
-- Scheduled daily runs
-- Release deployments
-
-Coverage reports are generated and tracked over time to ensure quality standards are maintained.
+The test suite has been updated to handle:
+- **ESM modules**: Proper handling of ES modules like `jose` library
+- **Next.js 15+**: Compatible with latest Next.js features and APIs
+- **TypeScript**: Full TypeScript support with proper type checking
+- **Mock compatibility**: Updated mocks for Next.js Request/Response objects
 
 ## Deployment Process
 
