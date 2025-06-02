@@ -238,7 +238,7 @@ export default function ProductInformation({
       {/* Thumbnail Upload */}
       <div className="mt-8 mb-6">
         <h3 className="text-xl font-light mb-2">Product Photo</h3>
-        <p className="text-sm text-gray-500 mb-4">Upload a high-quality photos of your physical product</p>
+        <p className="text-sm text-gray-500 mb-4">Upload a high-quality photo of your physical product</p>
         
         <div className="border border-dashed rounded-md p-4 flex flex-col items-center justify-center mb-4">
           {productData.coverImage ? (
