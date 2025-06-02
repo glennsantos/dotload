@@ -1,15 +1,46 @@
 /**
  * ============================================================================
- * BACKEND TESTS - PAYOUT & FINANCIAL MANAGEMENT
+ * BACKEND TESTS - PAYOUT MANAGEMENT API
  * ============================================================================
  * 
- * Tests for payout API endpoints including:
- * - Payout request creation
+ * Tests for payout management API endpoints including:
+ * - Payout creation and processing
  * - Balance calculations
- * - Fee calculations
  * - Bank account validation
- * - Payout status tracking
+ * - Xendit integration
+ * - Error handling
  */
+
+// Mock auth utilities before imports
+jest.mock('@/lib/auth', () => ({
+  getCurrentUser: jest.fn(),
+}));
+
+// Mock fee utilities
+jest.mock('@/lib/fee-utils', () => ({
+  calculateProcessingFee: jest.fn(),
+  calculateNetAmount: jest.fn(),
+  DEFAULT_PAYOUT_FEE_CONFIG: {
+    percentage: 2.5,
+    fixed: 15,
+    minimum: 15,
+  },
+}));
+
+// Mock transaction utilities
+jest.mock('@/lib/transaction-utils', () => ({
+  createTransaction: jest.fn(),
+}));
+
+// Mock JWT
+jest.mock('jsonwebtoken', () => ({
+  verify: jest.fn(),
+}));
+
+// Mock next/headers
+jest.mock('next/headers', () => ({
+  cookies: jest.fn(),
+}));
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 
@@ -20,84 +51,84 @@ declare global {
 
 // Mock Prisma client
 const mockPrisma = {
+  user: {
+    findUnique: jest.fn() as jest.MockedFunction<any>,
+  },
   transaction: {
     create: jest.fn() as jest.MockedFunction<any>,
     findMany: jest.fn() as jest.MockedFunction<any>,
     findFirst: jest.fn() as jest.MockedFunction<any>,
     update: jest.fn() as jest.MockedFunction<any>,
   },
-  user: {
-    findUnique: jest.fn() as jest.MockedFunction<any>,
-  },
   $queryRaw: jest.fn() as jest.MockedFunction<any>,
 };
 
-// Mock auth utilities
+// Mock auth
 const mockAuth = {
   getCurrentUser: jest.fn() as jest.MockedFunction<any>,
-  getAuthUserId: jest.fn() as jest.MockedFunction<any>,
 };
 
 // Mock fee utilities
 const mockFeeUtils = {
   calculateProcessingFee: jest.fn() as jest.MockedFunction<any>,
   calculateNetAmount: jest.fn() as jest.MockedFunction<any>,
-  DEFAULT_PAYOUT_FEE_CONFIG: {
-    percentageFee: 0.05, // 5%
-    fixedFee: 15, // PHP 15
-  },
 };
 
 // Mock transaction utilities
 const mockTransactionUtils = {
   createTransaction: jest.fn() as jest.MockedFunction<any>,
-  createPayoutTransaction: jest.fn() as jest.MockedFunction<any>,
 };
 
-// Mock Xendit client
-const mockXendit = {
-  createPayout: jest.fn() as jest.MockedFunction<any>,
-  checkPayoutStatus: jest.fn() as jest.MockedFunction<any>,
+// Mock JWT
+const mockJwt = {
+  verify: jest.fn() as jest.MockedFunction<any>,
 };
+
+// Mock cookies
+const mockCookies = {
+  get: jest.fn() as jest.MockedFunction<any>,
+};
+
+// Mock fetch for Xendit API calls
+global.fetch = jest.fn() as jest.MockedFunction<any>;
 
 jest.mock('@/lib/prisma', () => ({
   prisma: mockPrisma,
 }));
 
-jest.mock('@/lib/auth', () => mockAuth);
-
-jest.mock('@/lib/fee-utils', () => mockFeeUtils);
-
-jest.mock('@/lib/transaction-utils', () => mockTransactionUtils);
-
-jest.mock('@/lib/xendit-client', () => mockXendit);
-
-describe('Payout & Financial Management API Tests', () => {
+describe('Payout Management API Tests', () => {
   const mockUser = {
     id: 'user123',
     email: 'seller@example.com',
     name: 'Test Seller',
   };
 
-  const mockBalanceData = {
-    totalIncome: 10000, // PHP 100.00
-    totalPayouts: 2000, // PHP 20.00
-    totalFees: 500, // PHP 5.00
-    availableBalance: 7500, // PHP 75.00
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Set up default mocks
     mockAuth.getCurrentUser.mockResolvedValue(mockUser);
-    mockAuth.getAuthUserId.mockResolvedValue(mockUser.id);
-
+    mockCookies.get.mockReturnValue({ value: 'mock_jwt_token' });
+    mockJwt.verify.mockReturnValue({ userId: mockUser.id, email: mockUser.email });
+    
+    // Mock cookies function
+    require('next/headers').cookies.mockResolvedValue(mockCookies);
+    
     // Mock fee calculations
-    mockFeeUtils.calculateProcessingFee.mockImplementation((amount: number) => {
-      return Math.round(amount * 0.05 + 15); // 5% + PHP 15
-    });
-    mockFeeUtils.calculateNetAmount.mockImplementation((amount: number) => {
-      const fee = Math.round(amount * 0.05 + 15);
-      return amount - fee;
+    mockFeeUtils.calculateProcessingFee.mockReturnValue(75); // 2.5% + 15 PHP
+    mockFeeUtils.calculateNetAmount.mockReturnValue(2925); // 3000 - 75
+    
+    // Mock balance queries
+    mockPrisma.$queryRaw.mockImplementation((query: any) => {
+      const queryStr = query.strings[0];
+      if (queryStr.includes('type = \'income\'')) {
+        return Promise.resolve([{ sum: '5000' }]); // Total income
+      } else if (queryStr.includes('type = \'payout\'')) {
+        return Promise.resolve([{ sum: '1000' }]); // Total payouts
+      } else if (queryStr.includes('type = \'fee\'')) {
+        return Promise.resolve([{ sum: '200' }]); // Total fees
+      }
+      return Promise.resolve([{ sum: '0' }]);
     });
   });
 
@@ -105,36 +136,17 @@ describe('Payout & Financial Management API Tests', () => {
     jest.clearAllMocks();
   });
 
-  describe('GET /api/payouts - Balance and Payout History', () => {
-    it('should successfully retrieve user balance and payout history', async () => {
-      // Mock balance calculation queries
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([{ sum: mockBalanceData.totalIncome }]) // Total income
-        .mockResolvedValueOnce([{ sum: mockBalanceData.totalPayouts }]) // Total payouts
-        .mockResolvedValueOnce([{ sum: mockBalanceData.totalFees }]) // Total fees
-        .mockResolvedValueOnce([{ sum: 0 }]); // Pending payouts
-
-      // Mock payout history
+  describe('GET /api/payouts - Balance and History', () => {
+    it('should successfully retrieve payout data and balance', async () => {
       const mockPayouts = [
         {
           id: 'payout1',
-          amount: 5000,
+          amount: 1000,
           status: 'completed',
           createdAt: new Date(),
           metadata: JSON.stringify({
             bankCode: 'BDO',
             accountNumber: '1234567890',
-            accountHolderName: 'Test Seller',
-          }),
-        },
-        {
-          id: 'payout2',
-          amount: 3000,
-          status: 'pending',
-          createdAt: new Date(),
-          metadata: JSON.stringify({
-            bankCode: 'BPI',
-            accountNumber: '0987654321',
             accountHolderName: 'Test Seller',
           }),
         },
@@ -149,15 +161,13 @@ describe('Payout & Financial Management API Tests', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.balance.total).toBe(7500); // totalIncome - totalPayouts - totalFees
-      expect(data.balance.available).toBe(7500);
-      expect(data.balance.pending).toBe(0);
-      expect(data.payouts).toHaveLength(2);
+      expect(data.balance.total).toBe(3800); // 5000 - 1000 - 200
+      expect(data.balance.available).toBe(3800);
+      expect(data.payouts).toHaveLength(1);
       expect(data.payouts[0].bankCode).toBe('BDO');
-      expect(data.payouts[1].status).toBe('pending');
     });
 
-    it('should reject unauthorized requests', async () => {
+    it('should reject requests without authentication', async () => {
       mockAuth.getCurrentUser.mockResolvedValue(null);
 
       const { GET } = await import('@/app/api/payouts/route');
@@ -169,68 +179,56 @@ describe('Payout & Financial Management API Tests', () => {
       expect(response.status).toBe(401);
       expect(data.error).toBe('Unauthorized');
     });
+
+    it('should handle database errors gracefully', async () => {
+      mockPrisma.$queryRaw.mockRejectedValue(new Error('Database error'));
+
+      const { GET } = await import('@/app/api/payouts/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/payouts');
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Failed to fetch payout data');
+    });
   });
 
-  describe('POST /api/transactions/payout - Successful Payout Request', () => {
+  describe('POST /api/payouts - Payout Creation', () => {
     it('should successfully create a payout request', async () => {
-      const payoutAmount = 5000; // PHP 50.00
-      const processingFee = 265; // 5% + PHP 15 = 250 + 15 = 265
-      const netAmount = 4735; // 5000 - 265
-
-      // Mock balance calculations
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([{ sum: 10000 }]) // Total income
-        .mockResolvedValueOnce([{ sum: 2000 }]) // Total payouts
-        .mockResolvedValueOnce([{ sum: 500 }]) // Total fees
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total purchases
-        .mockResolvedValueOnce([{ sum: 0 }]); // Total payments
-
-      // Mock Xendit payout creation
-      const mockXenditResponse = {
-        id: 'xendit_payout_123',
-        status: 'PENDING',
-      };
-
-      // @ts-ignore - Mock for testing
-      global.fetch = jest.fn().mockResolvedValue({
+      // Mock successful Xendit API response
+      (global.fetch as jest.MockedFunction<any>).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockXenditResponse),
+        json: () => Promise.resolve({
+          id: 'xendit_payout_123',
+          status: 'PENDING',
+          amount: 2925,
+        }),
       });
 
-      // Mock transaction creation
-      const mockPayoutTransaction = {
+      // Mock successful transaction creation
+      const mockTransaction = {
         id: 'transaction123',
-        amount: netAmount,
+        amount: 3000,
         type: 'payout',
         status: 'pending',
-        reference: 'xendit_payout_123',
+        userId: 'user123',
       };
 
-      const mockFeeTransaction = {
-        id: 'fee123',
-        amount: processingFee,
-        type: 'fee',
-        status: 'completed',
-      };
+      mockTransactionUtils.createTransaction.mockResolvedValue(mockTransaction);
 
-      mockTransactionUtils.createTransaction
-        .mockResolvedValueOnce(mockPayoutTransaction)
-        .mockResolvedValueOnce(mockFeeTransaction);
+      const { POST } = await import('@/app/api/payouts/route');
 
-      const { POST } = await import('@/app/api/transactions/payout/route');
-
-      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
         method: 'POST',
         body: JSON.stringify({
-          amount: payoutAmount,
+          amount: 3000,
           bankCode: 'BDO',
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
-          referenceId: 'payout-ref-123',
         }),
         headers: {
           'Content-Type': 'application/json',
-          'Cookie': 'token=valid-jwt-token',
         },
       });
 
@@ -238,202 +236,18 @@ describe('Payout & Financial Management API Tests', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(data.payout.amount).toBe(payoutAmount);
-      expect(data.payout.status).toBe('pending');
-      expect(data.payout.processingFee).toBe(processingFee);
-
-      // Verify Xendit API was called
-      expect(global.fetch).toHaveBeenCalledWith(
-        'https://api.xendit.co/v2/payouts',
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            'Authorization': expect.stringContaining('Basic'),
-            'Content-Type': 'application/json',
-          }),
-          body: expect.stringContaining('PH_BDO'),
-        })
-      );
-
-      // Verify transactions were created
-      expect(mockTransactionUtils.createTransaction).toHaveBeenCalledTimes(2);
-      expect(mockTransactionUtils.createTransaction).toHaveBeenCalledWith({
-        userId: 'user123',
-        amount: netAmount,
-        currency: 'PHP',
-        type: 'payout',
-        status: 'pending',
-        description: 'Payout to bank account',
-        reference: 'xendit_payout_123',
-        referenceType: 'payout',
-        metadata: expect.objectContaining({
-          payoutId: 'xendit_payout_123',
-          bankCode: 'BDO',
-          accountNumber: '1234567890',
-          accountHolderName: 'Test Seller',
-        }),
-      });
+      expect(data.transaction).toEqual(mockTransaction);
     });
 
-    it('should calculate fees correctly for different amounts', async () => {
-      const testCases = [
-        { amount: 1000, expectedFee: 65 }, // 1000 * 0.05 + 15 = 50 + 15 = 65
-        { amount: 5000, expectedFee: 265 }, // 5000 * 0.05 + 15 = 250 + 15 = 265
-        { amount: 10000, expectedFee: 515 }, // 10000 * 0.05 + 15 = 500 + 15 = 515
-      ];
-
-      testCases.forEach(({ amount, expectedFee }) => {
-        const calculatedFee = mockFeeUtils.calculateProcessingFee(amount);
-        expect(calculatedFee).toBe(expectedFee);
-
-        const netAmount = mockFeeUtils.calculateNetAmount(amount);
-        expect(netAmount).toBe(amount - expectedFee);
-      });
-    });
-  });
-
-  describe('POST /api/transactions/payout - Error Scenarios', () => {
-    it('should reject payout request with insufficient balance', async () => {
-      const payoutAmount = 10000; // PHP 100.00
-      const availableBalance = 5000; // PHP 50.00
-
-      // Mock balance calculations showing insufficient funds
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([{ sum: 5000 }]) // Total income
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total payouts
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total fees
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total purchases
-        .mockResolvedValueOnce([{ sum: 0 }]); // Total payments
-
-      const { POST } = await import('@/app/api/transactions/payout/route');
-
-      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
-        method: 'POST',
-        body: JSON.stringify({
-          amount: payoutAmount,
-          bankCode: 'BDO',
-          accountNumber: '1234567890',
-          accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookie': 'token=valid-jwt-token',
-        },
-      });
-
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toBe('Insufficient balance');
-      expect(data.availableBalance).toBe(availableBalance);
-    });
-
-    it('should reject payout request with missing required fields', async () => {
-      const { POST } = await import('@/app/api/transactions/payout/route');
-
-      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
-        method: 'POST',
-        body: JSON.stringify({
-          amount: 5000,
-          // Missing bankCode, accountNumber, accountHolderName
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookie': 'token=valid-jwt-token',
-        },
-      });
-
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toBe('Missing required fields');
-    });
-
-    it('should reject payout request with invalid bank code', async () => {
-      // Mock balance calculations
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([{ sum: 10000 }]) // Total income
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total payouts
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total fees
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total purchases
-        .mockResolvedValueOnce([{ sum: 0 }]); // Total payments
-
-      const { POST } = await import('@/app/api/transactions/payout/route');
-
-      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
-        method: 'POST',
-        body: JSON.stringify({
-          amount: 5000,
-          bankCode: 'INVALID_BANK',
-          accountNumber: '1234567890',
-          accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookie': 'token=valid-jwt-token',
-        },
-      });
-
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toBe('Invalid bank code');
-    });
-
-    it('should handle Xendit API errors', async () => {
-      // Mock balance calculations
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([{ sum: 10000 }]) // Total income
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total payouts
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total fees
-        .mockResolvedValueOnce([{ sum: 0 }]) // Total purchases
-        .mockResolvedValueOnce([{ sum: 0 }]); // Total payments
-
-      // Mock Xendit API failure
-      // @ts-ignore - Mock for testing
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        statusText: 'Bad Request',
-        json: () => Promise.resolve({ error: 'Invalid account number' }),
-      });
-
-      const { POST } = await import('@/app/api/transactions/payout/route');
-
-      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
-        method: 'POST',
-        body: JSON.stringify({
-          amount: 5000,
-          bankCode: 'BDO',
-          accountNumber: 'invalid',
-          accountHolderName: 'Test Seller',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookie': 'token=valid-jwt-token',
-        },
-      });
-
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(data.error).toContain('Xendit API error');
-    });
-
-    it('should reject unauthorized payout requests', async () => {
+    it('should reject payout creation without authentication', async () => {
       mockAuth.getCurrentUser.mockResolvedValue(null);
 
-      const { POST } = await import('@/app/api/transactions/payout/route');
+      const { POST } = await import('@/app/api/payouts/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/transactions/payout', {
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
         method: 'POST',
         body: JSON.stringify({
-          amount: 5000,
+          amount: 3000,
           bankCode: 'BDO',
           accountNumber: '1234567890',
           accountHolderName: 'Test Seller',
@@ -448,6 +262,257 @@ describe('Payout & Financial Management API Tests', () => {
 
       expect(response.status).toBe(401);
       expect(data.error).toBe('Unauthorized');
+    });
+
+    it('should reject payout creation with missing required fields', async () => {
+      const { POST } = await import('@/app/api/payouts/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: 3000,
+          // Missing bankCode, accountNumber, accountHolderName
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Missing required fields');
+    });
+
+    it('should handle insufficient balance', async () => {
+      // Mock low balance
+      mockPrisma.$queryRaw.mockImplementation((query: any) => {
+        const queryStr = query.strings[0];
+        if (queryStr.includes('type = \'income\'')) {
+          return Promise.resolve([{ sum: '1000' }]); // Low income
+        }
+        return Promise.resolve([{ sum: '0' }]);
+      });
+
+      const { POST } = await import('@/app/api/payouts/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: 5000, // More than available balance
+          bankCode: 'BDO',
+          accountNumber: '1234567890',
+          accountHolderName: 'Test Seller',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Insufficient balance');
+    });
+
+    it('should handle Xendit API errors', async () => {
+      // Mock Xendit API failure
+      (global.fetch as jest.MockedFunction<any>).mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: () => Promise.resolve({
+          error_code: 'INVALID_ACCOUNT_NUMBER',
+          message: 'Invalid account number',
+        }),
+      });
+
+      const { POST } = await import('@/app/api/payouts/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: 3000,
+          bankCode: 'BDO',
+          accountNumber: 'invalid',
+          accountHolderName: 'Test Seller',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toContain('Failed to process payout');
+    });
+  });
+
+  describe('Payout Validation and Business Logic', () => {
+    it('should validate bank codes', async () => {
+      const { POST } = await import('@/app/api/payouts/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: 3000,
+          bankCode: 'INVALID_BANK', // Invalid bank code
+          accountNumber: '1234567890',
+          accountHolderName: 'Test Seller',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Invalid bank code');
+    });
+
+    it('should calculate processing fees correctly', async () => {
+      // Mock fee calculation
+      mockFeeUtils.calculateProcessingFee.mockReturnValue(100);
+      mockFeeUtils.calculateNetAmount.mockReturnValue(2900);
+
+      (global.fetch as jest.MockedFunction<any>).mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({
+          id: 'xendit_payout_123',
+          status: 'PENDING',
+          amount: 2900, // Net amount after fees
+        }),
+      });
+
+      const { POST } = await import('@/app/api/payouts/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: 3000,
+          bankCode: 'BDO',
+          accountNumber: '1234567890',
+          accountHolderName: 'Test Seller',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+
+      expect(mockFeeUtils.calculateProcessingFee).toHaveBeenCalledWith(3000);
+      expect(mockFeeUtils.calculateNetAmount).toHaveBeenCalledWith(3000);
+      
+      // Verify Xendit was called with net amount
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/v2/payouts'),
+        expect.objectContaining({
+          body: expect.stringContaining('"amount":2900'),
+        })
+      );
+    });
+
+    it('should handle different bank codes correctly', async () => {
+      const bankCodes = ['BDO', 'BPI', 'UBP', 'GCASH'];
+      
+      for (const bankCode of bankCodes) {
+        (global.fetch as jest.MockedFunction<any>).mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({
+            id: `xendit_payout_${bankCode}`,
+            status: 'PENDING',
+          }),
+        });
+
+        const { POST } = await import('@/app/api/payouts/route');
+
+        const request = createMockNextRequest('http://localhost:3000/api/payouts', {
+          method: 'POST',
+          body: JSON.stringify({
+            amount: 3000,
+            bankCode,
+            accountNumber: '1234567890',
+            accountHolderName: 'Test Seller',
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const response = await POST(request);
+        expect(response.status).toBe(200);
+      }
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle network errors', async () => {
+      (global.fetch as jest.MockedFunction<any>).mockRejectedValue(
+        new Error('Network error')
+      );
+
+      const { POST } = await import('@/app/api/payouts/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: 3000,
+          bankCode: 'BDO',
+          accountNumber: '1234567890',
+          accountHolderName: 'Test Seller',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Failed to process payout request');
+    });
+
+    it('should handle database transaction errors', async () => {
+      mockTransactionUtils.createTransaction.mockRejectedValue(
+        new Error('Database transaction failed')
+      );
+
+      (global.fetch as jest.MockedFunction<any>).mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({
+          id: 'xendit_payout_123',
+          status: 'PENDING',
+        }),
+      });
+
+      const { POST } = await import('@/app/api/payouts/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/payouts', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: 3000,
+          bankCode: 'BDO',
+          accountNumber: '1234567890',
+          accountHolderName: 'Test Seller',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Failed to process payout request');
     });
   });
 

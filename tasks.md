@@ -593,3 +593,37 @@ reference repo: /home/aryeh/dev/alacart.store
     - Dependencies: 7.11
     - Priority: Low
     - Test Strategy: Verify that password fields are empty when the page loads.
+
+## Frontend Testing
+
+1. **Create User Registration Tests** ✅
+   - Task ID: 9.1
+   - Description: Create comprehensive frontend tests for user registration flow including form validation, error handling, and successful registration.
+   - Dependencies: 1.2
+   - Priority: High
+   - Test Strategy: Test form rendering, email validation, password confirmation, terms agreement, successful registration, existing email errors, network errors, and loading states.
+   - Implementation: Created `tests/frontend/auth/registration.test.tsx` with 13 passing tests covering all registration scenarios.
+
+2. **Create Settings Update Tests** ✅
+   - Task ID: 9.2
+   - Description: Create comprehensive frontend tests for settings updates including profile management and password changes.
+   - Dependencies: 7.3, 7.9, 7.11
+   - Priority: High
+   - Test Strategy: Test tab navigation, form rendering, field validation, username format rules, successful updates, duplicate username handling, password requirements, and error handling.
+   - Implementation: Created `tests/frontend/settings/settings.test.tsx` with 16 passing tests covering profile and password management.
+
+3. **Create Product Editing Tests** ✅
+   - Task ID: 9.3
+   - Description: Create comprehensive frontend tests for product editing functionality including form validation, image management, and product deletion.
+   - Dependencies: 8.2
+   - Priority: High
+   - Test Strategy: Test form rendering with existing data, validation of required fields, successful updates, error handling, image uploads, removing images, product deletion with confirmation, and navigation.
+   - Implementation: Created `tests/frontend/products/product-edit.test.tsx` with 17 passing tests covering all product editing scenarios.
+
+4. **Update Test Infrastructure** ✅
+   - Task ID: 9.4
+   - Description: Update package.json and test runner scripts to support the new frontend tests.
+   - Dependencies: 9.1, 9.2, 9.3
+   - Priority: Medium
+   - Test Strategy: Ensure all tests can be run individually and as part of a test suite.
+   - Implementation: Added test scripts to package.json and updated `tests/run-frontend-journey.js` to include new tests.

@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mock services for external dependencies (Prisma, Xendit, Cloudinary, Email)
 - Test documentation and guidelines in README.md
 - Package.json scripts for different test scenarios
+- **Frontend User Journey Tests**: Comprehensive test coverage for critical user flows
+  - User registration tests (13 test cases) covering form validation, error handling, and successful registration
+  - Settings update tests (16 test cases) covering profile management and password changes with tab navigation
+  - Product editing tests (17 test cases) covering form validation, image management, and product deletion
+  - Test infrastructure updates with individual test scripts and journey runner integration
 
 ### Changed
 - Updated README.md with detailed testing section

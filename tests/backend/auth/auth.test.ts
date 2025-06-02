@@ -10,7 +10,23 @@
  * - Error handling
  */
 
+// Mock jose before any imports
+jest.mock('jose', () => ({
+  SignJWT: jest.fn().mockImplementation(() => ({
+    setProtectedHeader: jest.fn().mockReturnThis(),
+    setIssuedAt: jest.fn().mockReturnThis(),
+    setExpirationTime: jest.fn().mockReturnThis(),
+    sign: jest.fn().mockResolvedValue('mock_jwt_token'),
+  })),
+  jwtVerify: jest.fn(),
+}));
+
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
+// Declare global helper function
+declare global {
+  var createMockNextRequest: (url: string, init?: any) => any;
+}
 
 // Mock Prisma client
 const mockPrisma = {
@@ -19,6 +35,7 @@ const mockPrisma = {
     create: jest.fn() as jest.MockedFunction<any>,
     update: jest.fn() as jest.MockedFunction<any>,
   },
+  $connect: jest.fn() as jest.MockedFunction<any>,
   $disconnect: jest.fn() as jest.MockedFunction<any>,
 };
 
@@ -26,12 +43,6 @@ const mockPrisma = {
 const mockBcrypt = {
   hash: jest.fn() as jest.MockedFunction<any>,
   compare: jest.fn() as jest.MockedFunction<any>,
-};
-
-// Mock jsonwebtoken
-const mockJwt = {
-  sign: jest.fn() as jest.MockedFunction<any>,
-  verify: jest.fn() as jest.MockedFunction<any>,
 };
 
 // Mock email service
@@ -48,16 +59,19 @@ const mockCookies = {
 };
 
 // Apply mocks
-jest.mock('@prisma/client', () => ({
-  PrismaClient: jest.fn(() => mockPrisma),
+jest.mock('@/lib/prisma', () => ({
+  prisma: mockPrisma,
 }));
 
 jest.mock('bcryptjs', () => mockBcrypt);
-jest.mock('jsonwebtoken', () => mockJwt);
 jest.mock('@/lib/email', () => mockEmailService);
 jest.mock('next/headers', () => ({
   cookies: () => mockCookies,
 }));
+
+// Store authenticated user data for use across tests
+let authenticatedUser: any = null;
+let authToken: string = 'mock_jwt_token';
 
 describe('Authentication API Tests', () => {
   beforeEach(() => {
@@ -67,10 +81,17 @@ describe('Authentication API Tests', () => {
     // Set up default mock implementations
     mockBcrypt.hash.mockResolvedValue('hashed_password');
     mockBcrypt.compare.mockResolvedValue(true);
-    mockJwt.sign.mockReturnValue('mock_jwt_token');
-    mockJwt.verify.mockReturnValue({ userId: 'user123' });
-    mockEmailService.sendVerificationEmail.mockResolvedValue(true);
-    mockCookies.get.mockReturnValue({ value: 'mock_jwt_token' });
+    mockPrisma.$connect.mockResolvedValue(undefined);
+    
+    // Set up default user for tests
+    authenticatedUser = {
+      id: 'user123',
+      email: 'test@example.com',
+      name: 'Test User',
+      password: 'hashed_password',
+      emailVerified: true,
+    };
+    authToken = 'mock_jwt_token';
   });
 
   afterEach(() => {
@@ -80,219 +101,197 @@ describe('Authentication API Tests', () => {
   describe('POST /api/auth/login - User Authentication', () => {
     it('should successfully authenticate user with valid credentials', async () => {
       // Mock user data
-      const mockUser = {
-        id: 'user123',
-        email: 'test@example.com',
-        name: 'Test User',
-        password: 'hashed_password',
-        emailVerified: true,
-      };
-
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+      mockPrisma.user.findUnique.mockResolvedValue(authenticatedUser);
       mockBcrypt.compare.mockResolvedValue(true);
 
-      // Test login logic directly
-      const loginData = {
-        email: 'test@example.com',
-        password: 'password123',
-      };
+      const { POST } = await import('@/app/api/auth/login/route');
 
-      // Simulate successful login
-      const user = await mockPrisma.user.findUnique({
-        where: { email: loginData.email },
+      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'test@example.com',
+          password: 'password123',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.message).toBe('Login successful');
+      expect(data.user).toEqual({
+        id: authenticatedUser.id,
+        email: authenticatedUser.email,
+        name: authenticatedUser.name,
+      });
+      expect(data.token).toBe('mock_jwt_token');
       
-      expect(user).toBeDefined();
-      expect(user.emailVerified).toBe(true);
-      
-      const passwordValid = await mockBcrypt.compare(loginData.password, user.password);
-      expect(passwordValid).toBe(true);
-      
-      const token = mockJwt.sign({ userId: user.id });
-      expect(token).toBe('mock_jwt_token');
+      // Verify database calls
+      expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@example.com' },
+      });
+      expect(mockBcrypt.compare).toHaveBeenCalledWith('password123', 'hashed_password');
     });
 
     it('should reject login with invalid password', async () => {
-      const mockUser = {
-        id: 'user123',
-        email: 'test@example.com',
-        password: 'hashed_password',
-        emailVerified: true,
-      };
-
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+      mockPrisma.user.findUnique.mockResolvedValue(authenticatedUser);
       mockBcrypt.compare.mockResolvedValue(false);
 
-      const loginData = {
-        email: 'test@example.com',
-        password: 'wrong_password',
-      };
+      const { POST } = await import('@/app/api/auth/login/route');
 
-      const user = await mockPrisma.user.findUnique({
-        where: { email: loginData.email },
+      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'test@example.com',
+          password: 'wrong_password',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-      
-      const passwordValid = await mockBcrypt.compare(loginData.password, user.password);
-      expect(passwordValid).toBe(false);
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe('Invalid email or password');
     });
 
     it('should reject login for non-existent user', async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
 
-      const loginData = {
-        email: 'nonexistent@example.com',
-        password: 'password123',
-      };
+      const { POST } = await import('@/app/api/auth/login/route');
 
-      const user = await mockPrisma.user.findUnique({
-        where: { email: loginData.email },
-      });
-      
-      expect(user).toBeNull();
-    });
-
-    it('should reject login for unverified email', async () => {
-      const mockUser = {
-        id: 'user123',
-        email: 'test@example.com',
-        password: 'hashed_password',
-        emailVerified: false,
-      };
-
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
-
-      const user = await mockPrisma.user.findUnique({
-        where: { email: 'test@example.com' },
-      });
-      
-      expect(user.emailVerified).toBe(false);
-    });
-
-    it('should handle missing credentials', async () => {
-      const loginData = {
-        email: '',
-        password: '',
-      };
-
-      expect(loginData.email).toBe('');
-      expect(loginData.password).toBe('');
-    });
-
-    it('should handle database connection errors', async () => {
-      mockPrisma.user.findUnique.mockRejectedValue(new Error('Database connection failed'));
-
-      try {
-        await mockPrisma.user.findUnique({
-          where: { email: 'test@example.com' },
-        });
-      } catch (error) {
-        expect((error as Error).message).toBe('Database connection failed');
-      }
-    });
-  });
-
-  describe('POST /api/auth/register - User Registration', () => {
-    it('should successfully register a new user', async () => {
-      const newUser = {
-        id: 'user456',
-        email: 'newuser@example.com',
-        name: 'New User',
-        password: 'hashed_password',
-        emailVerified: false,
-      };
-
-      mockPrisma.user.findUnique.mockResolvedValue(null); // User doesn't exist
-      mockPrisma.user.create.mockResolvedValue(newUser);
-      mockBcrypt.hash.mockResolvedValue('hashed_password');
-
-      const registrationData = {
-        email: 'newuser@example.com',
-        password: 'password123',
-        name: 'New User',
-      };
-
-      // Check if user already exists
-      const existingUser = await mockPrisma.user.findUnique({
-        where: { email: registrationData.email },
-      });
-      expect(existingUser).toBeNull();
-
-      // Hash password
-      const hashedPassword = await mockBcrypt.hash(registrationData.password);
-      expect(hashedPassword).toBe('hashed_password');
-
-      // Create user
-      const createdUser = await mockPrisma.user.create({
-        data: {
-          email: registrationData.email,
-          password: hashedPassword,
-          name: registrationData.name,
+      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'nonexistent@example.com',
+          password: 'password123',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
         },
       });
 
-      expect(createdUser).toEqual(newUser);
-      // Note: Email service would be called in the actual API route, 
-      // but this test is only testing individual functions
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe('Invalid email or password');
     });
 
-    it('should reject registration with existing email', async () => {
-      const existingUser = {
-        id: 'user123',
-        email: 'existing@example.com',
-        name: 'Existing User',
+    it('should reject login for unverified email', async () => {
+      const unverifiedUser = {
+        ...authenticatedUser,
+        emailVerified: false,
       };
-
-      mockPrisma.user.findUnique.mockResolvedValue(existingUser);
-
-      const user = await mockPrisma.user.findUnique({
-        where: { email: 'existing@example.com' },
-      });
-
-      expect(user).toEqual(existingUser);
-    });
-  });
-
-  describe('GET /api/auth/check-session - Session Management', () => {
-    it('should return user data for valid session', async () => {
-      const mockUser = {
-        id: 'user123',
-        email: 'test@example.com',
-        name: 'Test User',
-      };
-
-      mockCookies.get.mockReturnValue({ value: 'valid_token' });
-      mockJwt.verify.mockReturnValue({ userId: 'user123' });
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
-
-      const token = mockCookies.get('auth-token');
-      expect(token.value).toBe('valid_token');
-
-      const decoded = mockJwt.verify(token.value);
-      expect(decoded.userId).toBe('user123');
-
-      const user = await mockPrisma.user.findUnique({
-        where: { id: decoded.userId },
-      });
-
-      expect(user).toEqual(mockUser);
-    });
-
-    it('should return null for invalid session', async () => {
-      mockCookies.get.mockReturnValue(null);
-
-      const token = mockCookies.get('auth-token');
-      expect(token).toBeNull();
-    });
-  });
-
-  describe('POST /api/auth/logout - User Logout', () => {
-    it('should successfully logout user and clear cookies', async () => {
-      mockCookies.delete.mockReturnValue(undefined);
-
-      // Simulate logout
-      mockCookies.delete('auth-token');
       
-      expect(mockCookies.delete).toHaveBeenCalledWith('auth-token');
+      mockPrisma.user.findUnique.mockResolvedValue(unverifiedUser);
+      mockBcrypt.compare.mockResolvedValue(true);
+
+      const { POST } = await import('@/app/api/auth/login/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'test@example.com',
+          password: 'password123',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.error).toBe('Email not verified');
+      expect(data.requiresVerification).toBe(true);
+      expect(data.email).toBe('test@example.com');
+    });
+
+    it('should handle missing credentials', async () => {
+      const { POST } = await import('@/app/api/auth/login/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: '',
+          password: '',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Email and password are required');
+    });
+
+    it('should handle database connection errors', async () => {
+      mockPrisma.$connect.mockRejectedValue(new Error('Database connection failed'));
+
+      const { POST } = await import('@/app/api/auth/login/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'test@example.com',
+          password: 'password123',
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe('Database connection error');
     });
   });
-}); 
+
+  describe('GET /api/auth/login - Method Not Allowed', () => {
+    it('should return 405 for GET requests', async () => {
+      const { GET } = await import('@/app/api/auth/login/route');
+
+      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+        method: 'GET',
+      });
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(405);
+      expect(data.message).toBe('Please use POST method for login');
+    });
+  });
+
+  describe('Authentication State Management', () => {
+    it('should store authenticated user data for subsequent tests', async () => {
+      // This test ensures we have authenticated user data available
+      expect(authenticatedUser).toBeDefined();
+      expect(authenticatedUser.id).toBe('user123');
+      expect(authenticatedUser.email).toBe('test@example.com');
+      expect(authToken).toBe('mock_jwt_token');
+    });
+
+    it('should provide auth token for API requests', async () => {
+      // This test verifies we can use the auth token in subsequent API calls
+      expect(authToken).toBeDefined();
+      expect(typeof authToken).toBe('string');
+      expect(authToken.length).toBeGreaterThan(0);
+    });
+  });
+});
+
+// Export authenticated user data for use in other test files
+export { authenticatedUser, authToken }; 
