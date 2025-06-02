@@ -50,8 +50,32 @@ ssh*
 
 EC2-DEPLOYMENT-GUIDE.md
 dkim-dns-records.csv
-.certs/
-certificates/
-coverage/
-logs/
+
+# Added by Claude Task Master
+# Logs
+logs
+*.log
+dev-debug.log
+# Dependency directories
+node_modules/
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+.DS_Store
+# Task files
+tasks.json
+tasks/ 
+certificates
+.certs/local-cert.pem
+.certs/local-key.pem
+.certs/mkcert
+ecosystem.config.js
 tests/reports/
+coverage/

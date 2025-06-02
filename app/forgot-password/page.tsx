@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import Image from 'next/image';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -46,14 +47,26 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-stone-800">Forgot Password</CardTitle>
-          <CardDescription className="text-stone-600 font-light">
-            Enter your email address and we'll send you instructions to reset your password.
-          </CardDescription>
-        </CardHeader>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 p-4">
+      <div className="mb-8">
+        <Link href="/" className="block">
+          <Image 
+            src="/logo.png" 
+            alt="Alacart Logo" 
+            width={100} 
+            height={21} 
+            className="h-auto"
+            priority
+          />
+        </Link>
+      </div>
+      <div className="text-center w-full max-w-md px-4">
+        <h1 className="text-4xl font-extralight mb-4">Forgot Password</h1>
+        <p className="text-stone-600 font-light mb-6">
+          Enter your email address and we'll send you instructions to reset your password.
+        </p>
+      </div>
+      <Card className="w-full max-w-md py-6">
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4 rounded-xl">

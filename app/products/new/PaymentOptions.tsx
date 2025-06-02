@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { X, ChevronRight, ChevronLeft } from "lucide-react"
 import Link from "next/link"
+import ErrorModal from '@/app/components/ErrorModal'
 
 export default function PaymentOptions({
   productData,
@@ -27,6 +28,14 @@ export default function PaymentOptions({
     startDate: '',
     endDate: ''
   });
+  const [errorModalOpen, setErrorModalOpen] = useState(false)
+  const [errorModalMessage, setErrorModalMessage] = useState('')
+
+  const showError = (message: string) => {
+    setErrorModalMessage(message)
+    setErrorModalOpen(true)
+  }
+
   const handleToggleOption = (option: string) => {
     setProductData({
       ...productData,
@@ -43,7 +52,14 @@ export default function PaymentOptions({
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-white">
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModalOpen}
+        onClose={() => setErrorModalOpen(false)}
+        title="Validation Error"
+        message={errorModalMessage}
+      />
 
       <header className="p-6 border-b">
         <div className="flex justify-between items-center">
@@ -410,13 +426,13 @@ export default function PaymentOptions({
                     <button 
                       onClick={() => {
                         if (!newDiscountCode.code || !newDiscountCode.amount) {
-                          alert('Please enter a discount code and amount');
+                          showError('Please enter a discount code and amount');
                           return;
                         }
                         
                         // Check for duplicate codes
                         if (discountCodes.some(code => code.code.toLowerCase() === newDiscountCode.code.toLowerCase())) {
-                          alert('A discount code with this name already exists');
+                          showError('A discount code with this name already exists');
                           return;
                         }
                         

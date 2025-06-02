@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { X, ChevronRight, ChevronLeft } from "lucide-react"
@@ -11,6 +11,8 @@ import PaymentOptions from "./PaymentOptions"
 import PublishProduct from "./PublishProduct"
 import ContentUpload from "./ContentUpload"
 import RichTextEditor from "@/components/rich-text-editor"
+import ErrorModal from '@/app/components/ErrorModal'
+import SuccessModal from '@/app/components/SuccessModal'
 
 // Define the Product type
 type Product = {
@@ -28,6 +30,10 @@ export default function NewProduct() {
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorModalMessage, setErrorModalMessage] = useState('');
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successModalMessage, setSuccessModalMessage] = useState('');
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [productData, setProductData] = useState({
@@ -52,6 +58,19 @@ export default function NewProduct() {
   
   // Add content upload step for digital products
   const digitalProductTypes = ['digital_product', 'course', 'ebook', 'audiobook'];
+
+  // Scroll to top when product is created successfully
+  useEffect(() => {
+    if (createdProduct) {
+      // Use setTimeout to ensure the DOM has updated before scrolling
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Also try scrolling to the document element for better browser compatibility
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 100);
+    }
+  }, [createdProduct]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -109,6 +128,16 @@ export default function NewProduct() {
         setPriceInput('0')
       }
     }
+  }
+
+  const showError = (message: string) => {
+    setErrorModalMessage(message)
+    setErrorModalOpen(true)
+  }
+
+  const showSuccess = (message: string) => {
+    setSuccessModalMessage(message)
+    setSuccessModalOpen(true)
   }
 
   const handleSubmit = async () => {
@@ -221,9 +250,9 @@ export default function NewProduct() {
     } catch (error: unknown) {
       console.error('Product submission error:', error);
       if (error instanceof Error) {
-        alert(error.message);
+        showError(error.message);
       } else {
-        alert('An unknown error occurred');
+        showError('An unknown error occurred');
       }
       setIsSubmitting(false);
     }
@@ -231,7 +260,7 @@ export default function NewProduct() {
 
   const handleNext = () => {
     if (step === 1 && (!productData.name || !productData.type || !productData.price)) {
-      alert("Please fill in all required fields: name, type, and price")
+      showError("Please fill in all required fields: name, type, and price")
       return
     }
 
@@ -257,6 +286,22 @@ export default function NewProduct() {
 
   return (
     <div className="min-h-screen">
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModalOpen}
+        onClose={() => setErrorModalOpen(false)}
+        title="Error"
+        message={errorModalMessage}
+      />
+      
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+        title="Success"
+        message={successModalMessage}
+      />
+
       {/* Step indicator */}
       <div className="bg-gray-50 py-3 px-6 border-b">
         <div className="flex items-center justify-between">
@@ -428,8 +473,8 @@ export default function NewProduct() {
                         const url = `${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`;
                         if (navigator?.clipboard) {
                           navigator.clipboard.writeText(url)
-                            .then(() => setShowCopyModal(true))
-                            .catch(() => alert('Failed to copy URL'));
+                            .then(() => showSuccess('URL copied to clipboard'))
+                            .catch(() => showError('Failed to copy URL'));
                         } else {
                           // Fallback for browsers that don't support clipboard API
                           const textarea = document.createElement('textarea');
@@ -438,9 +483,9 @@ export default function NewProduct() {
                           textarea.select();
                           try {
                             document.execCommand('copy');
-                            setShowCopyModal(true);
+                            showSuccess('URL copied to clipboard');
                           } catch (err) {
-                            alert('Failed to copy URL');
+                            showError('Failed to copy URL');
                           }
                           document.body.removeChild(textarea);
                         }
@@ -478,30 +523,6 @@ export default function NewProduct() {
         </div>
       )}
 
-      {/* Copy Success Modal */}
-      {showCopyModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 relative">
-            <button 
-              onClick={() => setShowCopyModal(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            >
-              <X size={20} />
-            </button>
-            <div className="text-center">
-              <h3 className="text-lg font-medium mb-2">Success!</h3>
-              <p className="text-gray-600">URL copied to clipboard!</p>
-              <button
-                onClick={() => setShowCopyModal(false)}
-                className="mt-4 px-4 py-2 bg-black text-white rounded-md w-full"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Mobile buttons - only visible on small screens */}
       {!createdProduct && (
         <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4">

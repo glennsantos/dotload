@@ -67,12 +67,13 @@ export default function TransactionsPage() {
     const fetchTransactions = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`);
+        const response = await fetch(`/api/transactions?page=${pagination.page}&limit=${pagination.limit}`, {
+          credentials: 'include'
+        });
         
         if (!response.ok) {
           if (response.status === 401) {
-            // Redirect to login if unauthorized
-            router.push('/login');
+            // Let middleware handle the redirect
             return;
           }
           throw new Error('Failed to fetch transactions data');

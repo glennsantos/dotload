@@ -13,30 +13,92 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
   
   /* Hide scrollbar for Chrome, Safari and Opera */
-  .scrollbar-hide::-webkit-scrollbar {
+  .scrollbar-hide::-webkit-scrollbar,
+  .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
   
   /* Hide scrollbar for IE, Edge and Firefox */
-  .scrollbar-hide {
+  .scrollbar-hide,
+  .hide-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+  }
+  
+  /* Better touch targets for mobile */
+  @media (max-width: 640px) {
+    button, 
+    [role="button"],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    a[role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Prevent textarea from being too small on mobile */
+    textarea,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="url"] {
+      font-size: 16px; /* Prevent iOS zoom on focus */
+    }
+  }
+  
+  /* Toggle Switch Styles */
+  .toggle-checkbox {
+    position: absolute;
+    height: 0;
+    width: 0;
+    opacity: 0;
+  }
+  
+  .toggle-checkbox:checked + .toggle-label {
+    background-color: theme('colors.emerald.500');
+  }
+  
+  .toggle-checkbox:checked + .toggle-label:before {
+    transform: translateX(1.25rem);
+  }
+  
+  .toggle-label {
+    position: relative;
+    display: block;
+    height: 1.5rem;
+    width: 3rem;
+    background-color: theme('colors.stone.300');
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .toggle-label:before {
+    content: '';
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
   }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 98%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;

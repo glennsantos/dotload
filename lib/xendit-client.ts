@@ -39,7 +39,7 @@ export async function createCustomer({
         email: email,
         mobile_number: mobileNumber,
         phone_number: mobileNumber,
-        description: 'Customer for alaCart',
+        description: 'Customer for alacart',
       })
     });
     
@@ -723,7 +723,7 @@ export async function chargeCard({
   amount,
   currency = 'PHP',
   cardCvn,
-  descriptor = 'alaCart Purchase',
+  descriptor = 'alacart Purchase',
   metadata,
 }: {
   tokenId: string;
@@ -815,7 +815,7 @@ export async function processCardPayment({
       amount,
       currency,
       cardCvn: cardCvc,
-      descriptor: 'alaCart Purchase',
+      descriptor: 'alacart Purchase',
       metadata
     });
     
@@ -950,9 +950,32 @@ export async function createOneTimePayment({
   skipThreeDSecure?: boolean;
   cardOnFileType?: 'CUSTOMER_UNSCHEDULED' | 'MERCHANT_UNSCHEDULED' | 'RECURRING';
 }) {
-  try {
-    console.log(`[Xendit] Creating one-time payment request for ${paymentMethodType} ${channelCode || ''}`);
+  // Enhanced logging utility for debugging
+  const logStep = (step: string, data?: any, error?: any) => {
+    const timestamp = new Date().toISOString();
+    const logPrefix = `[XenditClient][${timestamp}]`;
     
+    if (error) {
+      console.error(`${logPrefix} ERROR in ${step}:`, error);
+      if (data) console.error(`${logPrefix} Context data:`, data);
+    } else {
+      console.log(`${logPrefix} ${step}`, data ? data : '');
+    }
+  };
+
+  try {
+    logStep('ONE_TIME_PAYMENT_START', {
+      referenceId,
+      amount,
+      currency,
+      country,
+      paymentMethodType,
+      channelCode,
+      hasCustomerInfo: !!customerInfo,
+      hasCardInfo: !!cardInfo,
+      hasDirectDebitInfo: !!directDebitInfo
+    });
+
     // Build request body
     const requestBody: any = {
       reference_id: referenceId,
@@ -965,7 +988,14 @@ export async function createOneTimePayment({
         country
       }
     };
-    
+
+    logStep('REQUEST_BODY_BASE_CREATED', {
+      referenceId: requestBody.reference_id,
+      amount: requestBody.amount,
+      currency: requestBody.currency,
+      paymentMethodType: requestBody.payment_method.type
+    });
+
     // Configure payment method based on type
     if (paymentMethodType === 'EWALLET' && channelCode) {
       requestBody.payment_method.ewallet = {
@@ -976,6 +1006,13 @@ export async function createOneTimePayment({
           cancel_return_url: cancelReturnUrl
         }
       };
+      
+      logStep('EWALLET_CONFIG_ADDED', {
+        channelCode,
+        hasSuccessUrl: !!successReturnUrl,
+        hasFailureUrl: !!failureReturnUrl,
+        hasCancelUrl: !!cancelReturnUrl
+      });
     } else if (paymentMethodType === 'CARD' && cardInfo) {
       // Configure card payment method
       requestBody.payment_method.card = {
@@ -993,14 +1030,25 @@ export async function createOneTimePayment({
         }
       };
       
+      logStep('CARD_CONFIG_ADDED', {
+        hasCardNumber: !!cardInfo.cardNumber,
+        expiryMonth: cardInfo.expiryMonth,
+        expiryYear: cardInfo.expiryYear,
+        hasCardholderName: !!cardInfo.cardholderName,
+        hasCardholderEmail: !!cardInfo.cardholderEmail,
+        hasCardholderPhone: !!cardInfo.cardholderPhoneNumber
+      });
+      
       // Add 3DS configuration if specified
       if (skipThreeDSecure) {
         requestBody.payment_method.card.channel_properties.skip_three_d_secure = true;
+        logStep('3DS_SKIP_CONFIGURED');
       }
       
       // Add card-on-file type if specified
       if (cardOnFileType) {
         requestBody.payment_method.card.channel_properties.cardonfile_type = cardOnFileType;
+        logStep('CARD_ON_FILE_TYPE_CONFIGURED', { cardOnFileType });
       }
     } else if (paymentMethodType === 'DIRECT_DEBIT' && channelCode) {
       // Configure direct debit payment method
@@ -1015,6 +1063,8 @@ export async function createOneTimePayment({
         failure_return_url: failureReturnUrl
       };
       
+      logStep('DIRECT_DEBIT_BASE_CONFIG_ADDED', { channelCode });
+      
       // Add additional channel-specific properties if directDebitInfo is provided
       const debitInfo = directDebitInfo || {};
       
@@ -1028,11 +1078,19 @@ export async function createOneTimePayment({
         if (debitInfo.cardExpiry) {
           requestBody.payment_method.direct_debit.channel_properties.card_expiry = debitInfo.cardExpiry;
         }
+        
+        logStep('BRI_SPECIFIC_CONFIG_ADDED', {
+          hasMobileNumber: !!debitInfo.mobileNumber,
+          hasCardLastFour: !!debitInfo.cardLastFour,
+          hasEmail: !!debitInfo.email,
+          hasCardExpiry: !!debitInfo.cardExpiry
+        });
       }
       
       // For SCB and BBL, we need mobile number
       if ((channelCode === 'SCB' || channelCode === 'BBL') && debitInfo.mobileNumber) {
         requestBody.payment_method.direct_debit.channel_properties.mobile_number = debitInfo.mobileNumber;
+        logStep('SCB_BBL_CONFIG_ADDED', { channelCode, hasMobileNumber: !!debitInfo.mobileNumber });
       }
       
       // For KTB and BAY, we need mobile number and identity document number
@@ -1041,6 +1099,11 @@ export async function createOneTimePayment({
           debitInfo.identityDocumentNumber) {
         requestBody.payment_method.direct_debit.channel_properties.mobile_number = debitInfo.mobileNumber;
         requestBody.payment_method.direct_debit.channel_properties.identity_document_number = debitInfo.identityDocumentNumber;
+        logStep('KTB_BAY_CONFIG_ADDED', {
+          channelCode,
+          hasMobileNumber: !!debitInfo.mobileNumber,
+          hasIdentityDocument: !!debitInfo.identityDocumentNumber
+        });
       }
     }
     
@@ -1055,11 +1118,26 @@ export async function createOneTimePayment({
         email: customerInfo.email,
         mobile_number: customerInfo.mobileNumber
       };
+      
+      logStep('CUSTOMER_INFO_ADDED', {
+        hasEmail: !!customerInfo.email,
+        hasName: !!customerInfo.name,
+        hasMobileNumber: !!customerInfo.mobileNumber
+      });
     }
     
-    console.log('[Xendit] Payment request payload:', JSON.stringify(requestBody, null, 2));
+    logStep('REQUEST_PAYLOAD_PREPARED', {
+      payloadSize: JSON.stringify(requestBody).length,
+      hasPaymentMethod: !!requestBody.payment_method,
+      hasCustomer: !!requestBody.customer
+    });
     
     // Direct API call to create payment request
+    logStep('XENDIT_API_CALL_START', {
+      url: `${XENDIT_API_URL}/payment_requests`,
+      method: 'POST'
+    });
+    
     const response = await fetch(`${XENDIT_API_URL}/payment_requests`, {
       method: 'POST',
       headers: {
@@ -1070,19 +1148,78 @@ export async function createOneTimePayment({
       body: JSON.stringify(requestBody)
     });
     
+    logStep('XENDIT_API_RESPONSE_RECEIVED', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+    
+    // Get response as text first to handle potential JSON parsing errors
+    const responseText = await response.text();
+    logStep('XENDIT_API_RESPONSE_TEXT', {
+      length: responseText.length,
+      preview: responseText.substring(0, 500) + (responseText.length > 500 ? '...' : ''),
+      isEmpty: responseText.length === 0,
+      startsWithBrace: responseText.trim().startsWith('{'),
+      startsWithBracket: responseText.trim().startsWith('[')
+    });
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('[Xendit] Payment request creation error:', errorData);
+      logStep('XENDIT_API_ERROR_RESPONSE', {
+        status: response.status,
+        statusText: response.statusText,
+        responseText
+      });
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(responseText);
+        logStep('ERROR_RESPONSE_PARSED', { errorData });
+      } catch (parseError) {
+        logStep('ERROR_RESPONSE_PARSE_FAILED', { responseText }, parseError);
+        errorData = { message: 'Failed to parse error response', raw: responseText };
+      }
+      
       throw new Error(`Failed to create payment request: ${response.status} ${response.statusText}`);
     }
     
-    const paymentData = await response.json();
-    console.log(`[Xendit] Payment request created with ID: ${paymentData.id}`);
-    console.log('[Xendit] Payment response:', JSON.stringify(paymentData, null, 2));
+    // Parse the successful response
+    let paymentData;
+    try {
+      paymentData = JSON.parse(responseText);
+      logStep('SUCCESS_RESPONSE_PARSED', {
+        paymentId: paymentData.id,
+        status: paymentData.status,
+        hasActions: !!(paymentData.actions && paymentData.actions.length > 0),
+        actionsCount: paymentData.actions?.length || 0
+      });
+    } catch (parseError) {
+      logStep('SUCCESS_RESPONSE_PARSE_ERROR', {
+        responseText,
+        parseErrorMessage: parseError instanceof Error ? parseError.message : 'Unknown parse error'
+      }, parseError);
+      
+      throw new Error(`Failed to parse payment response: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
+    }
+    
+    logStep('ONE_TIME_PAYMENT_SUCCESS', {
+      paymentId: paymentData.id,
+      status: paymentData.status,
+      currency: paymentData.currency,
+      amount: paymentData.amount
+    });
     
     return paymentData;
   } catch (error) {
-    console.error('Error creating Xendit payment request:', error);
+    logStep('ONE_TIME_PAYMENT_ERROR', {
+      referenceId,
+      amount,
+      currency,
+      paymentMethodType,
+      channelCode
+    }, error);
+    
     throw error;
   }
 }

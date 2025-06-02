@@ -21,10 +21,10 @@ export default function CardDetailsForm({
 }: CardDetailsFormProps) {
   return (
     <div>
-      <h2 className="text-lg font-medium text-gray-900 mb-4">Card Details</h2>
+      <h2 className="text-lg font-light text-gray-900 mb-4">Card Details</h2>
       <div className="space-y-4 mb-6">
         <div>
-          <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="cardName" className="block text-sm font-light text-gray-700 mb-1">
             Name on card
           </label>
           <input
@@ -39,7 +39,7 @@ export default function CardDetailsForm({
           />
         </div>
         <div>
-          <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="cardNumber" className="block text-sm font-light text-gray-700 mb-1">
             Card number
           </label>
           <input
@@ -55,7 +55,7 @@ export default function CardDetailsForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="cardExpiry" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="cardExpiry" className="block text-sm font-light text-gray-700 mb-1">
               Expiration date (MM/YY)
             </label>
             <input
@@ -70,7 +70,7 @@ export default function CardDetailsForm({
             />
           </div>
           <div>
-            <label htmlFor="cardCvc" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="cardCvc" className="block text-sm font-light text-gray-700 mb-1">
               CVC
             </label>
             <input

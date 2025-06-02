@@ -18,44 +18,77 @@ model User {
   emailVerified           Boolean        @default(false)
   verificationToken       String?        @unique
   verificationTokenExpiry DateTime?
+  storeDescription        String?
+  storeHeaderPath         String?
+  storeLogoPath           String?
+  storeName               String?
   passwordReset           PasswordReset?
   payouts                 Payout[]
   products                Product[]
-  transactions            Transaction[]
   purchases               Purchase[]
+  transactions            Transaction[]
 }
 
 model Product {
-  id                  String      @id @default(cuid())
-  name                String
-  type                String
-  price               Float
-  description         String?
-  coverImagePath      String?
-  userId              String
-  allowPayWhatYouWant Boolean     @default(false)
-  offerCoupons        Boolean     @default(false)
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
-  currency            String      @default("PHP")
-  digitalItemPath     String?
-  slug                String?
-  isPublic            Boolean     @default(true)
-  status              String      @default("active")
-  discountCodes       String?
-  files               File[]
-  user                User        @relation(fields: [userId], references: [id])
-  purchases           Purchase[]
-  variations          Variation[]
+  id                    String      @id @default(cuid())
+  name                  String
+  type                  String
+  price                 Float
+  description           String?
+  coverImagePath        String?
+  userId                String
+  allowPayWhatYouWant   Boolean     @default(false)
+  offerCoupons          Boolean     @default(false)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  currency              String      @default("PHP")
+  digitalItemPath       String?
+  slug                  String?
+  discountCodes         String?
+  isPublic              Boolean     @default(true)
+  status                String      @default("active")
+  allowPreOrders        Boolean     @default(false)
+  bestSeller            Boolean     @default(false)
+  contentLinks          String?
+  curriculum            String?
+  customBadges          String?
+  customTrustIndicators String?
+  downloadLimit         Int         @default(5)
+  instantDownload       Boolean     @default(true)
+  linkExpiration        Int         @default(30)
+  newRelease            Boolean     @default(false)
+  popular               Boolean     @default(false)
+  refundPolicy          Boolean     @default(false)
+  secureCheckout        Boolean     @default(true)
+  stockQuantity         Int?
+  whatsIncluded         String?
+  files                 File[]
+  user                  User        @relation(fields: [userId], references: [id])
+  purchases             Purchase[]
+  variations            Variation[]
 }
 
 model File {
-  id        String  @id @default(cuid())
+  id        String        @id @default(cuid())
   filename  String
   path      String
   mimetype  String
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  downloads FileDownload[]
+}
+
+model FileDownload {
+  id           String    @id @default(cuid())
+  fileId       String
+  userId       String?
+  purchaseId   String?
+  downloadedAt DateTime  @default(now())
+  userAgent    String?
+  ipAddress    String?
+  metadata     String?
+  file         File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  purchase     Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
 }
 
 model Variation {
@@ -67,21 +100,22 @@ model Variation {
 }
 
 model Purchase {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   email         String
   mobileNumber  String
   amount        Float
-  currency      String   @default("PHP")
+  currency      String        @default("PHP")
   paymentMethod String
   paymentId     String?
   status        String
-  accessCode    String   @unique
+  accessCode    String        @unique
   productId     String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   userId        String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  product       Product  @relation(fields: [productId], references: [id])
-  user          User?    @relation(fields: [userId], references: [id])
+  product       Product       @relation(fields: [productId], references: [id])
+  user          User?         @relation(fields: [userId], references: [id])
+  downloads     FileDownload[]
 }
 
 model Payout {
@@ -123,4 +157,25 @@ model Transaction {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model chat_history {
+  id        Int      @id @default(autoincrement())
+  user_id   Int?
+  query     String
+  response  String
+  timestamp DateTime @default(now()) @db.Timestamp(6)
+  metadata  Json?    @default("{}")
+  users     users?   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  id           Int            @id @default(autoincrement())
+  email        String         @unique @db.VarChar(255)
+  name         String         @db.VarChar(255)
+  password     String         @db.VarChar(255)
+  role         String         @db.VarChar(50)
+  preferences  Json?          @default("{}")
+  last_login   DateTime?      @db.Timestamp(6)
+  chat_history chat_history[]
 }

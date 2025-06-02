@@ -1,16 +1,10 @@
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { Resend } from 'resend';
 
-// Create an SES client
-const sesClient = new SESClient({
-  region: process.env.AWS_REGION || 'ap-southeast-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
-  }
-});
+// Create a Resend client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email sender address
-const fromEmail = process.env.EMAIL_FROM || 'alaCart <no-reply@alacart.store>';
+const fromEmail = process.env.EMAIL_FROM || 'alacart <noreply@alacart.store>';
 
 // Send verification email
 export async function sendVerificationEmail(
@@ -23,11 +17,11 @@ export async function sendVerificationEmail(
 
   const htmlBody = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #333;">Welcome to alaCart${name ? `, ${name}` : ''}!</h2>
+      <h2 style="color: #333;">Welcome to alacart${name ? `, ${name}` : ''}!</h2>
       <p>Thank you for registering. Please verify your email address to activate your account.</p>
       <div style="margin: 30px 0;">
-        <a href="${verificationUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-          Verify Email Address
+        <a href="${verificationUrl}" style="background-color: #10b981; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: 300; text-align: center;">
+          <span style="display: inline-block; vertical-align: middle;">Verify Email Address</span>
         </a>
       </div>
       <p>Or copy and paste this link in your browser:</p>
@@ -36,36 +30,22 @@ export async function sendVerificationEmail(
     </div>
   `;
 
-  const textBody = `
-    Welcome to alaCart${name ? `, ${name}` : ''}!
-    
-    Thank you for registering. Please verify your email address to activate your account.
-    
-    Verify your email by clicking this link: ${verificationUrl}
-    
-    If you did not create an account, no further action is required.
-  `;
-
-  const params = {
-    Source: fromEmail,
-    Destination: { ToAddresses: [to] },
-    Message: {
-      Subject: { Data: 'Verify your alaCart account' },
-      Body: {
-        Html: { Data: htmlBody },
-        Text: { Data: textBody }
-      }
-    }
-  };
-
   try {
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject: 'Verify your alacart account',
+      html: htmlBody,
+    });
 
-    
-    // Attempt to send the actual email
-    return await sesClient.send(new SendEmailCommand(params));
+    if (error) {
+      console.error('Error sending verification email:', error);
+      throw error;
+    }
+
+    return data;
   } catch (error) {
     console.error('Error sending verification email:', error);
-    
     throw error;
   }
 }
@@ -85,8 +65,8 @@ export async function sendPasswordResetEmail(
       <p>Hello${name ? ` ${name}` : ''},</p>
       <p>We received a request to reset your password. Click the button below to create a new password:</p>
       <div style="margin: 30px 0;">
-        <a href="${resetUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-          Reset Password
+        <a href="${resetUrl}" style="background-color: #10b981; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: 300; text-align: center;">
+          <span style="display: inline-block; vertical-align: middle;">Reset Password</span>
         </a>
       </div>
       <p>Or copy and paste this link in your browser:</p>
@@ -95,37 +75,22 @@ export async function sendPasswordResetEmail(
     </div>
   `;
 
-  const textBody = `
-    Reset Your Password
-    
-    Hello${name ? ` ${name}` : ''},
-    
-    We received a request to reset your password. Click the link below to create a new password:
-    
-    ${resetUrl}
-    
-    If you did not request a password reset, please ignore this email.
-  `;
-
-  const params = {
-    Source: fromEmail,
-    Destination: { ToAddresses: [to] },
-    Message: {
-      Subject: { Data: 'Reset your alaCart password' },
-      Body: {
-        Html: { Data: htmlBody },
-        Text: { Data: textBody }
-      }
-    }
-  };
-
   try {
-    
-    // Attempt to send the actual email
-    return await sesClient.send(new SendEmailCommand(params));
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject: 'Reset your alacart password',
+      html: htmlBody,
+    });
+
+    if (error) {
+      console.error('Error sending password reset email:', error);
+      throw error;
+    }
+
+    return data;
   } catch (error) {
     console.error('Error sending password reset email:', error);
-    
     throw error;
   }
 }
@@ -142,16 +107,15 @@ export async function sendPurchaseConfirmationEmail(
   name?: string | null
 ) {
   const baseUrl = `http://${process.env.DOMAIN}`;
-  const buyerDashboardUrl = `${baseUrl}/buyer-dashboard?code=${accessCode}`;
+  const tempDownloadsUrl = `${baseUrl}/temp-downloads?code=${accessCode}`;
   const productUrl = `${baseUrl}/p/${productSlug}`;
 
   let subject = '';
   let htmlBody = '';
-  let textBody = '';
 
   // Different email content based on purchase status
   if (status === 'pending') {
-    subject = `Your alaCart Purchase: ${productName} (Payment Pending)`;
+    subject = `Your alacart Purchase: ${productName} (Payment Pending)`;
     
     htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -167,23 +131,9 @@ export async function sendPurchaseConfirmationEmail(
         <p style="margin-top: 30px; color: #666; font-size: 14px;">If you have any questions, please contact our support team.</p>
       </div>
     `;
-
-    textBody = `
-      Thank You for Your Purchase!
-      
-      Hello${name ? ` ${name}` : ''},
-      
-      Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} is currently being processed.
-      
-      Payment Status: Pending
-      
-      We'll send you another email with access to your purchase once the payment is confirmed.
-      
-      If you have any questions, please contact our support team.
-    `;
   } else {
     // Default completed status
-    subject = `Your alaCart Purchase: ${productName}`;
+    subject = `Your alacart Purchase: ${productName}`;
     
     htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -193,50 +143,35 @@ export async function sendPurchaseConfirmationEmail(
         
         <div style="margin: 30px 0;">
           <p><strong>Access Your Content</strong></p>
-          <a href="${buyerDashboardUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-            Access Your Purchase
+          <a href="${tempDownloadsUrl}" style="background-color: #10b981; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: 300; text-align: center;">
+            <span style="display: inline-block; vertical-align: middle;">Access Your Purchase</span>
           </a>
         </div>
         
         <p>Or copy and paste this link in your browser:</p>
-        <p style="word-break: break-all; color: #666;">${buyerDashboardUrl}</p>
+        <p style="word-break: break-all; color: #666;">${tempDownloadsUrl}</p>
         
         <p style="margin-top: 30px; color: #666; font-size: 14px;">Keep this email for your records. The link above provides permanent access to your purchased content.</p>
       </div>
     `;
-
-    textBody = `
-      Thank You for Your Purchase!
-      
-      Hello${name ? ` ${name}` : ''},
-      
-      Thank you for purchasing ${productName}. Your payment of ${currency} ${amount.toFixed(2)} has been successfully processed.
-      
-      Access Your Content: ${buyerDashboardUrl}
-      
-      Keep this email for your records. The link above provides permanent access to your purchased content.
-    `;
   }
 
-  const params = {
-    Source: fromEmail,
-    Destination: { ToAddresses: [to] },
-    Message: {
-      Subject: { Data: subject },
-      Body: {
-        Html: { Data: htmlBody },
-        Text: { Data: textBody }
-      }
-    }
-  };
-
   try {
-    
-    // Attempt to send the actual email
-    return await sesClient.send(new SendEmailCommand(params));
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject: subject,
+      html: htmlBody,
+    });
+
+    if (error) {
+      console.error('Error sending purchase confirmation email:', error);
+      throw error;
+    }
+
+    return data;
   } catch (error) {
     console.error('Error sending purchase confirmation email:', error);
-    
     throw error;
   }
 }
@@ -244,10 +179,8 @@ export async function sendPurchaseConfirmationEmail(
 // Test the email configuration
 export async function testEmailConfig() {
   try {
-    // SES doesn't have a direct verify method like nodemailer,
-    // so we'll check if we can instantiate the client
-    if (!sesClient) {
-      throw new Error('SES client not initialized');
+    if (!resend) {
+      throw new Error('Resend client not initialized');
     }
     return { success: true };
   } catch (error) {

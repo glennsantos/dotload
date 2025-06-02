@@ -113,7 +113,9 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
   // Check if user has purchases
   const checkUserPurchases = async (userId: string) => {
     try {
-      const response = await fetch('/api/purchases');
+      const response = await fetch('/api/purchases', {
+        credentials: 'include'
+      });
       if (response.ok) {
         const data = await response.json();
         // Check if data is an array and has items
@@ -143,6 +145,13 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
+      // Clear localStorage token
+      try {
+        localStorage.removeItem('auth_token');
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+      
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
         headers: {
@@ -151,17 +160,29 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
       })
 
       if (response.ok) {
-        // Update user state immediately instead of redirecting
+        // Update user state immediately
         setUser(null)
         // Dispatch logout event
         window.dispatchEvent(new CustomEvent('auth:logout'))
-        // Still redirect to login page
-        router.push('/login')
+        
+        // Get the response data to use the redirectUrl
+        const data = await response.json()
+        console.log('Logout successful, redirecting to:', data.redirectUrl)
+        
+        // Use the redirectUrl from the response if available, otherwise fallback to /login
+        if (data.redirectUrl) {
+          // Use router.push instead of window.location for better cookie handling
+          router.push('/login')
+        } else {
+          router.push('/login')
+        }
       } else {
         console.error('Logout failed')
       }
     } catch (error) {
       console.error('Logout error:', error)
+      // Fallback to local redirect in case of error
+      router.push('/login')
     } finally {
       setIsLoggingOut(false)
       setMobileMenuOpen(false)
@@ -179,7 +200,7 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/products" className="text-2xl font-bold mr-8">
-            alaCart
+            alacart
           </Link>
         </div>
 

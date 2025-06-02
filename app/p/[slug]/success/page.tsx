@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle, ArrowLeft, Download } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface SuccessPageProps {
   params: any
@@ -104,7 +105,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="border rounded-md p-8 text-center max-w-md mx-auto">
-          <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
+          <h2 className="text-xl font-light mb-2 text-red-600">Error</h2>
           <p className="text-gray-600 mb-6">{error || 'Purchase not found'}</p>
           <Link href={`/p/${unwrappedParams.slug}`} className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
             <ArrowLeft size={18} /> Back to Product
@@ -118,7 +119,14 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">alaCart</h1>
+          <Image 
+            src="/logo.png" 
+            alt="Alacart Logo" 
+            width={100}
+            height={28}
+            className="h-6 w-auto sm:h-7"
+            priority
+          />
         </div>
       </header>
 
@@ -128,46 +136,41 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
             <CheckCircle size={64} className="mx-auto text-green-500" />
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Thank You for Your Purchase!</h1>
+          <h1 className="text-3xl font-light text-gray-900 mb-4">Thank You for Your Purchase!</h1>
           
           <p className="text-lg text-gray-600 mb-8">
             Your payment was successful and your order has been processed.
           </p>
           
           <div className="bg-gray-50 rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-medium text-gray-900 mb-4">Order Details</h2>
+            <h2 className="text-xl font-light text-gray-900 mb-4">Order Details</h2>
             
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-600">Product:</span>
-              <span className="font-medium">{purchase.product.name}</span>
+              <span className="font-light text-gray-600">Product:</span>
+              <span className="font-light">{purchase.product.name}</span>
             </div>
             
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-600">Amount:</span>
-              <span className="font-medium">{purchase.currency} {purchase.amount.toFixed(2)}</span>
-            </div>
-            
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-600">Payment Method:</span>
-              <span className="font-medium">{purchase.paymentMethod}</span>
+              <span className="font-light text-gray-600">Amount:</span>
+              <span className="font-light">{purchase.currency} {purchase.amount.toFixed(2)}</span>
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-gray-600">Date:</span>
-              <span className="font-medium">{new Date(purchase.createdAt).toLocaleDateString()}</span>
+              <span className="font-light text-gray-600">Date:</span>
+              <span className="font-light">{new Date(purchase.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
           
           <div className="mb-8">
-            <h2 className="text-xl font-medium text-gray-900 mb-4">Access Your Content</h2>
+            <h2 className="text-xl font-light text-gray-900 mb-4">Access Your Content</h2>
             
-            <p className="text-gray-600 mb-4">
+            <p className="font-light text-gray-600 mb-4">
               You can access your purchased content using the link below:
             </p>
             
             <Link 
-              href={`/buyer-dashboard?code=${accessCode}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition-colors"
+              href={`/temp-downloads?code=${accessCode}`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full font-light hover:bg-emerald-700 transition-colors"
             >
               <Download size={20} />
               Access Content
@@ -186,7 +189,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
             
             <Link 
               href={`/p/${purchase?.product?.slug || unwrappedParams.slug}`}
-              className="text-black hover:underline"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-full font-light text-emerald-600 bg-white hover:bg-emerald-200 border border-emerald-600"
             >
               Return to Product Page
             </Link>

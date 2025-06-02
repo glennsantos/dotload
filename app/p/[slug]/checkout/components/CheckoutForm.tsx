@@ -81,21 +81,20 @@ export default function CheckoutForm({
   // Prepare props for the form element if needed
   const formProps = paymentMethod === "card" ? {} : {
     onSubmit,
-    className: "bg-white shadow-sm rounded-lg p-6"
   };
   
   return (
     <FormWrapper {...formProps}>
       {/* Email field */}
       <div className="mb-6">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <label htmlFor="email" className="block text-md font-light text-gray-700 mb-1">Email</label>
         <input
           type="email"
           id="email"
           name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="your@email.com"
           required
         />
@@ -103,14 +102,14 @@ export default function CheckoutForm({
       
       {/* Mobile number field */}
       <div className="mb-6">
-        <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+        <label htmlFor="mobileNumber" className="block text-md font-light text-gray-700 mb-1">Mobile Number</label>
         <input
           type="tel"
           id="mobileNumber"
           name="mobileNumber"
           value={mobileNumber}
           onChange={(e) => setMobileNumber(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="e.g. 09123456789"
           required
         />
@@ -119,13 +118,13 @@ export default function CheckoutForm({
       {/* Product Variations */}
       {product?.variations && product.variations.length > 0 && (
         <div className="mb-6">
-          <label htmlFor="variation" className="block text-sm font-medium text-gray-700 mb-1">Select Variation</label>
+          <label htmlFor="variation" className="block text-md font-light text-gray-700 mb-1">Select Variation</label>
           <select
             id="variation"
             name="variation"
             value={selectedVariation}
             onChange={(e) => setSelectedVariation(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           >
             <option value="">Select a variation</option>
@@ -145,7 +144,7 @@ export default function CheckoutForm({
       
       {/* Discount Code field */}
       <div className="mb-6">
-        <label htmlFor="discountCode" className="block text-sm font-medium text-gray-700 mb-1">Discount Code</label>
+        <label htmlFor="discountCode" className="block text-md font-light text-gray-700 mb-1">Discount Code</label>
         <div className="flex">
           <input
             type="text"
@@ -153,13 +152,13 @@ export default function CheckoutForm({
             name="discountCode"
             value={discountCode}
             onChange={(e) => setDiscountCode(e.target.value)}
-            className="flex-1 p-3 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-3 border border-gray-300 rounded-l-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter discount code"
           />
           <button
             type="button"
             onClick={() => handleValidateDiscountCode()}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 rounded-r-md flex items-center"
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 rounded-r-2xl flex items-center"
           >
             <Tag className="h-4 w-4 mr-1" />
             Apply
@@ -226,7 +225,7 @@ export default function CheckoutForm({
       {paymentMethod !== "card" && (
         <button
           type="submit"
-          className="w-full bg-black text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition-colors"
+          className="w-full bg-emerald-600 rounded-full text-white px-6 py-3 font-light hover:bg-gray-800 transition-colors"
           disabled={processingPayment}
         >
           {processingPayment ? (
@@ -235,7 +234,10 @@ export default function CheckoutForm({
               <span className="ml-2">Processing...</span>
             </div>
           ) : (
-            `Pay ${product.currency} ${calculateFinalPrice(product, appliedDiscount).toFixed(2)}`
+            `Pay ${new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: product.currency,
+                }).format(calculateFinalPrice(product, appliedDiscount))}`
           )}
         </button>
       )}

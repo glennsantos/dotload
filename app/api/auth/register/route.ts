@@ -1,15 +1,13 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { sendVerificationEmail } from '@/lib/email';
-import { createErrorResponse, createSuccessResponse, ERROR_RESPONSES } from '@/lib/api-utils';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
-// Ensure dynamic rendering for this route
-export const dynamic = 'force-dynamic';
-
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,100 +39,176 @@ const validatePasswordStrength = (password: string) => {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, name } = await req.json();
-
-    // Validate JWT_SECRET
-    if (!JWT_SECRET) {
-      console.error('JWT_SECRET is not configured');
-      return ERROR_RESPONSES.serverError('Server configuration error');
+    // Check if the request is multipart/form-data or application/json
+    const contentType = req.headers.get('content-type') || '';
+    
+    let email, password, name, storeName, storeDescription;
+    let logoFile = null;
+    let headerFile = null;
+    
+    if (contentType.includes('multipart/form-data')) {
+      // Handle form data submission with file uploads
+      const formData = await req.formData();
+      
+      email = formData.get('email') as string;
+      password = formData.get('password') as string;
+      name = formData.get('name') as string;
+      storeName = formData.get('storeName') as string;
+      storeDescription = formData.get('storeDescription') as string;
+      logoFile = formData.get('logoFile') as File | null;
+      headerFile = formData.get('headerFile') as File | null;
+    } else {
+      // Handle JSON submission
+      const data = await req.json();
+      email = data.email;
+      password = data.password;
+      name = data.name;
+      storeName = data.storeName;
+      storeDescription = data.storeDescription;
     }
 
     // Validate email
     if (!emailRegex.test(email)) {
-      return ERROR_RESPONSES.validationError('Invalid email format');
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
     // Validate password strength
     const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.isValid) {
-      return createErrorResponse(
-        'Password does not meet requirements',
-        400,
-        { details: passwordValidation.requirements.join(', '), code: 'PASSWORD_REQUIREMENTS' }
-      );
+      return NextResponse.json({ 
+        error: 'Password does not meet strength requirements',
+        requirements: passwordValidation.requirements 
+      }, { status: 400 });
     }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return createErrorResponse(
-        'Email already in use',
-        400,
-        { code: 'EMAIL_IN_USE' }
-      );
+      return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
     }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user with email verification token
+    // Generate verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
+    
+    // Process image files if provided
+    let storeLogoPath = null;
+    let storeHeaderPath = null;
+    
+    if (logoFile) {
+      try {
+        const arrayBuffer = await logoFile.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const result = await uploadToCloudinary(buffer, {
+          folder: `users/registration`,
+          public_id: `logo-${Date.now()}`,
+        }) as any;
+        storeLogoPath = result.secure_url;
+      } catch (error) {
+        console.error('Error uploading logo:', error);
+      }
+    }
+    
+    if (headerFile) {
+      try {
+        const arrayBuffer = await headerFile.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const result = await uploadToCloudinary(buffer, {
+          folder: `users/registration`,
+          public_id: `header-${Date.now()}`,
+        }) as any;
+        storeHeaderPath = result.secure_url;
+      } catch (error) {
+        console.error('Error uploading header:', error);
+      }
+    }
+    
+    // Create user with verification token (without store branding fields first)
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        name: name || null,
+        name: name || null,  // Allow optional name
+        emailVerified: false,
         verificationToken,
-        verificationTokenExpiry,
-        emailVerified: false // Explicitly set emailVerified to false
+        verificationTokenExpiry
       },
       select: {
         id: true,
         email: true,
-        name: true,
-        verificationToken: true,
-        verificationTokenExpiry: true
+        name: true
       }
     });
+    
+    // Then update the user with store branding fields in a separate operation
+    if (storeName || storeDescription || storeLogoPath || storeHeaderPath) {
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            storeName: storeName || null,
+            storeDescription: storeDescription || null,
+            storeLogoPath: storeLogoPath || null,
+            storeHeaderPath: storeHeaderPath || null
+          }
+        });
+      } catch (error) {
+        console.error('Error updating store branding fields:', error);
+        // Continue with registration even if store branding update fails
+      }
+    }
+    
+    // If we have uploaded files, update their folder path to include the user ID
+    if (storeLogoPath || storeHeaderPath) {
+      try {
+        // This is a background task, we don't need to wait for it
+        prisma.user.update({
+          where: { id: user.id },
+          data: {
+            storeLogoPath: storeLogoPath ? storeLogoPath.replace('users/registration', `users/${user.id}/logo`) : null,
+            storeHeaderPath: storeHeaderPath ? storeHeaderPath.replace('users/registration', `users/${user.id}/header`) : null
+          }
+        });
+      } catch (error) {
+        console.error('Error updating file paths:', error);
+      }
+    }
+    
+    // Send verification email
+    await sendVerificationEmail(email, verificationToken, name);
 
-    // Send verification email in the background
-    sendVerificationEmail(email, verificationToken, name || 'User')
-      .catch(error => {
-        console.error('Failed to send verification email:', error);
-      });
+    // Create a response with verification message
+    const response = NextResponse.json({
+      message: 'User registered successfully. Please check your email to verify your account.',
+      user,
+      requiresVerification: true
+    }, { status: 201 });
+    
+    // We don't set the authentication cookie until the email is verified
+    // This ensures users verify their email before accessing protected routes
 
-    // Return success response without setting auth cookie
-    return createSuccessResponse(
-      { 
-        message: 'User registered successfully. Please check your email to verify your account.',
-        requiresVerification: true,
-        userId: user.id
-      },
-      { status: 201 }
-    );
+    return response;
   } catch (error) {
     console.error('Registration error:', error);
     
     // Handle Prisma-specific errors
-    if (error && typeof error === 'object' && 'code' in error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
       // Unique constraint violation
       if (error.code === 'P2002') {
-        return createErrorResponse(
-          'Email already in use',
-          400,
-          { 
-            details: 'A user with this email already exists',
-            code: 'EMAIL_ALREADY_EXISTS'
-          }
-        );
+        return NextResponse.json({ 
+          error: 'Email already in use', 
+          details: 'A user with this email already exists' 
+        }, { status: 400 });
       }
     }
 
-    return ERROR_RESPONSES.serverError(
-      error instanceof Error ? error.message : 'An unexpected error occurred'
-    );
+    return NextResponse.json({ 
+      error: 'Registration failed', 
+      details: error instanceof Error ? error.message : 'An unexpected error occurred' 
+    }, { status: 500 });
   }
 }

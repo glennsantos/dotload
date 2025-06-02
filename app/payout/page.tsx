@@ -58,7 +58,8 @@ export default function PayoutPage() {
   const [balance, setBalance] = useState<Balance>({ total: 0, available: 0, pending: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<'form' | 'confirm'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
+  const [payoutReference, setPayoutReference] = useState<string>('');
   const [formData, setFormData] = useState<PayoutFormData>({
     amount: 0,
     bankCode: '',
@@ -77,12 +78,13 @@ export default function PayoutPage() {
         setIsLoading(true);
         
         // Fetch balance data
-        const balanceResponse = await fetch('/api/transactions');
+        const balanceResponse = await fetch('/api/transactions', {
+          credentials: 'include'
+        });
         
         if (!balanceResponse.ok) {
           if (balanceResponse.status === 401) {
-            // Redirect to login if unauthorized
-            router.push('/login');
+            // Let middleware handle the redirect
             return;
           }
           throw new Error('Failed to fetch balance data');
@@ -96,7 +98,9 @@ export default function PayoutPage() {
         } : { total: 0, available: 0, pending: 0 });
         
         // Fetch fee configuration
-        const feeResponse = await fetch('/api/fees');
+        const feeResponse = await fetch('/api/fees', {
+          credentials: 'include'
+        });
         
         if (!feeResponse.ok) {
           throw new Error('Failed to fetch fee configuration');
@@ -253,6 +257,7 @@ export default function PayoutPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payoutData),
+        credentials: 'include'
       });
       
       if (!response.ok) {
@@ -264,18 +269,11 @@ export default function PayoutPage() {
       const data = await response.json();
       console.log('Payout response:', data);
       
-      // Show a more detailed success message
-      toast({
-        title: 'Payout requested',
-        description: `Your payout of ${formatCurrency(formData.amount - processingFee)} has been submitted successfully. Transaction ID: ${data.payout?.id || referenceId}`,
-        variant: 'default',
-      });
+      // Set the payout reference ID for the success screen
+      setPayoutReference(data.payout?.id || referenceId);
       
-      // Add a slight delay before redirecting to ensure the user sees the success message
-      setTimeout(() => {
-        // Redirect to transactions page
-        router.push('/transactions');
-      }, 1500);
+      // Show success screen instead of redirecting
+      setStep('success');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Payout error:', err);
@@ -306,7 +304,7 @@ export default function PayoutPage() {
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={() => router.push('/transactions')}
+          onClick={() => router.push('/dashboard/sales')}
           className="mr-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -361,10 +359,10 @@ export default function PayoutPage() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="bankCode">Bank</Label>
+            <Label htmlFor="bankCode">Payout Method</Label>
             <Select value={formData.bankCode} onValueChange={handleBankChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Select bank" />
+                <SelectValue placeholder="Select Payout Method" />
               </SelectTrigger>
               <SelectContent>
                 {SUPPORTED_BANKS.map(bank => (
@@ -498,6 +496,57 @@ export default function PayoutPage() {
     </div>
   );
 
+  // Render success screen
+  const renderSuccess = () => (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Payout Successful</h1>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-emerald-500" />
+            <span>Your payout has been processed</span>
+          </CardTitle>
+          <CardDescription>
+            Transaction ID: {payoutReference}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg bg-emerald-50 p-4 border border-emerald-100">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h3 className="font-medium">Next steps:</h3>
+                <p className="text-muted-foreground mt-1">
+                  Please check your bank account or e-wallet for the transferred funds.
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="font-medium">Processing time:</h3>
+                <p className="text-muted-foreground mt-1">
+                  Funds might take 1-2 days to arrive depending on your chosen payout method ({SUPPORTED_BANKS.find(b => b.code === formData.bankCode)?.name || formData.bankCode}).
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="font-medium">Amount:</h3>
+                <p className="text-xl font-semibold mt-1">{formatCurrency(netAmount)}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button 
+            className="w-full" 
+            onClick={() => router.push('/dashboard/sales')}
+          >
+            Return to Dashboard
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+
   // Main render function
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
@@ -515,6 +564,7 @@ export default function PayoutPage() {
         <>
           {step === 'form' && renderPayoutForm()}
           {step === 'confirm' && renderConfirmation()}
+          {step === 'success' && renderSuccess()}
         </>
       )}
     </div>

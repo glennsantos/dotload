@@ -3,19 +3,18 @@ import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import { prisma } from "@/lib/prisma"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
-import dynamic from 'next/dynamic'
 
 // Import the client component wrapper instead of directly importing with ssr: false
-import ClientDebugWrapper from '@/components/client-debug-wrapper'
+import ClientDebugWrapper from '@/components/client-debug-wrapper';
+import { AuthProviderWrapper } from '@/components/providers/auth-provider-wrapper';
 
-const TopNavigation = dynamic(() => import('@/components/top-navigation'))
+// Import the fonts
+import { inter } from './fonts'
 
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "alaCart",
+  title: "alacart",
   description: "A digital product marketplace platform",
     generator: 'Glenn Santos'
 }
@@ -43,8 +42,7 @@ async function getCurrentUser() {
   }
 }
 
-// We'll use a client component to conditionally render the top navigation
-// This is handled in the TopNavigation component itself
+// Top navigation has been removed to match the design requirements
 
 export default async function RootLayout({
   children,
@@ -55,11 +53,12 @@ export default async function RootLayout({
   const currentUser = await getCurrentUser();
   
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={inter.variable}>
+      <body className="font-inter">
         <div className="flex flex-col h-screen">
-          <TopNavigation user={currentUser} />
-          <main className="flex-1 overflow-auto">{children}</main>
+          <AuthProviderWrapper initialUser={currentUser}>
+            <main className="flex-1 overflow-auto">{children}</main>
+          </AuthProviderWrapper>
           <ClientDebugWrapper />
         </div>
       </body>

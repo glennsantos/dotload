@@ -16,6 +16,14 @@ async function getProduct(slug: string) {
         slug: slug,
         isPublic: true,
         status: "active"
+      },
+      include: {
+        user: {
+          select: {
+            storeName: true,
+            storeLogoPath: true
+          }
+        }
       }
     })
     return product
@@ -38,7 +46,7 @@ export async function generateMetadata(
   // Use default metadata from parent if product not found
   if (!product) {
     return {
-      title: 'Product Not Found | alaCart',
+      title: 'Product Not Found | alacart',
       description: 'The requested product could not be found.'
     }
   }
@@ -54,7 +62,7 @@ export async function generateMetadata(
     : `${baseUrl}/images/default-product.jpg`
   
   // Extract plain text description if it's in rich text format
-  let description = product.description || 'A digital product on alaCart'
+  let description = product.description || 'A digital product on alacart'
   // If description contains HTML tags, extract plain text
   if (description && description.includes('<')) {
     description = description.replace(/<[^>]*>/g, '')
@@ -82,7 +90,7 @@ export async function generateMetadata(
         alt: product.name
       }],
       type: 'website',
-      siteName: 'alaCart',
+      siteName: 'alacart',
       locale: 'en_US',
     },
     

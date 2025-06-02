@@ -1,28 +1,24 @@
-# alaCarte Launch Checklist
+# alacart Launch Checklist
 
 ## Resolve Issues
-- [ ] Fix TOKEN_NOT_FOUND_ERROR in Credit card payment for prod
-- [ ] See issues in Github for more
+*Note: more issues listed in Github*
 
-## from Marco
-- [ ] Need CSS used for this and description of the style
-- [ ] Currency should be removed since only PHP
-- [ ] Why not wizard for create product?
-- [ ] Does it need a store?
-- [ ] What is the plan for? And payment method?
-
-## Calculate Financials
-- [x] Create napkin computation to determine revenue targets
-- [ ] Assess costs for the service
-- [ ] Get initial funding for costs
- 
 ## Site Setup
-- [ ] Attach domain to dev server
-- [ ] Create SSL cert for dev server via Letsencrypt.
-- [ ] Convert SES to prod setup
-- [ ] Change from email for alacart in .env files
-- [ ] Change other emails as needed
-- [ ] clean up front end console.logs
+- [x] Attach domain to dev server
+- [x] Convert SES to prod setup
+- [x] check domain if connected
+- [x] Change from email for alacart in .env files
+- [x] Change other emails as needed
+- [x] Create SSL cert for dev server via Letsencrypt.
+- [ ] fix SES DKIM
+  - [ ] https://repost.aws/knowledge-center/ses-dkim-failing-verification
+  - [ ] https://docs.aws.amazon.com/ses/latest/dg/send-email-authentication-dkim.html
+- [ ] clean up front end console.logs for prod
+
+## Deploy to Dev
+- [x] Update code
+- [x] Update database
+- [x] Update environment variables
 
 ## Perform QA Testing
 - [ ] Get QA assistance for the rest of the testing
@@ -36,6 +32,13 @@
   - [ ] Determine which performance items we will need to address immediately.
 - [ ] Execute final smoke testing
 - [ ] Get agreement when to launch
+
+## Calculate Financials
+- [x] Create napkin computation to determine revenue targets
+- [ ] Assess costs for the service
+- [ ] Get initial funding for costs
+
+# POST SALE ITEMS
 
 ## Craft GTM
 
@@ -57,6 +60,6 @@
 
 ## Security
 - [x] Ensure all environment variables are properly set in production
-- [ ] Confirm security groups are properly configured
-- [ ] Review permissions for S3 buckets and other AWS resources
+- [x] Confirm security groups are properly configured
+- [x] Review permissions for S3 buckets and other AWS resources
 - [ ] Set up automated database backups

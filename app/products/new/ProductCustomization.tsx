@@ -3,8 +3,11 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
-import { X, Upload, ChevronLeft } from "lucide-react"
+import { X, Upload, ChevronLeft, AlertCircle } from "lucide-react"
 import NextImage from "next/image"
+import ErrorModal from '@/app/components/ErrorModal'
+
+const MAX_FILE_SIZE_MB = 10; // 10MB max file size for product photos
 
 export default function ProductCustomization({
   productData,
@@ -20,11 +23,33 @@ export default function ProductCustomization({
   onCancel: () => void
 }) {
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [errorModalOpen, setErrorModalOpen] = useState(false)
+  const [errorModalMessage, setErrorModalMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const showError = (message: string) => {
+    setErrorModalMessage(message)
+    setErrorModalOpen(true)
+  }
 
   const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0]
+      
+      // Check file size (10MB limit)
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        showError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB. Please choose a smaller image.`)
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+        return
+      }
+      
+      // Clear any previous errors
+      setError(null)
+      
       setProductData({
         ...productData,
         coverImage: file,
@@ -56,6 +81,14 @@ export default function ProductCustomization({
 
   return (
     <div>
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModalOpen}
+        onClose={() => setErrorModalOpen(false)}
+        title="Upload Error"
+        message={errorModalMessage}
+      />
+
       <header className="p-6 border-b">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-normal truncate">
@@ -137,7 +170,7 @@ export default function ProductCustomization({
                         <Upload size={16} className="mr-2" /> Upload Image
                       </label>
                       <p className="text-sm text-gray-500 mt-2">
-                        Recommended size: 1200 x 630 pixels
+                        Recommended size: 1200 x 630 pixels (max 10MB)
                       </p>
                     </div>
                   )}

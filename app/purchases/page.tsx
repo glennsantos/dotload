@@ -54,7 +54,7 @@ export default function PurchasesPage() {
         
         // If we have an access code, use it to fetch the specific purchase
         if (accessCode) {
-          const response = await fetch(`/api/purchases/access?code=${accessCode}`)
+          const response = await fetch(`/api/purchases/access?code=${accessCode}`, { credentials: 'include' })
           
           if (!response.ok) {
             throw new Error(`Error: ${response.status}`)
@@ -64,7 +64,7 @@ export default function PurchasesPage() {
           setPurchases([data])
           
           // Check if user exists or needs to be created
-          const userResponse = await fetch('/api/auth/me')
+          const userResponse = await fetch('/api/auth/me', { credentials: 'include' })
           
           if (userResponse.ok) {
             const userData = await userResponse.json()
@@ -76,7 +76,7 @@ export default function PurchasesPage() {
           }
         } else {
           // If no access code, fetch all purchases for the logged-in user
-          const response = await fetch('/api/purchases')
+          const response = await fetch('/api/purchases', { credentials: 'include' })
           
           if (!response.ok) {
             throw new Error(`Error: ${response.status}`)
@@ -113,6 +113,7 @@ export default function PurchasesPage() {
           email,
           accessCode,
         }),
+        credentials: 'include'
       })
       
       if (!response.ok) {
@@ -237,12 +238,6 @@ export default function PurchasesPage() {
               When you buy products on , they will appear here for easy access.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                href="/products" 
-                className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center justify-center gap-2"
-              >
-                Browse Products
-              </Link>
               <Link 
                 href="/" 
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md inline-flex items-center justify-center gap-2 hover:bg-gray-50"

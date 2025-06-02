@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Mail, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import AuthHeader from '@/components/auth/AuthHeader';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -23,7 +25,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   
   // Get the callback URL if it exists
-  const callbackUrl = searchParams.get('callbackUrl') || '/products';
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   
   // Check for verified=true in URL params (redirected from email verification)
   useEffect(() => {
@@ -52,11 +54,48 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Store token in localStorage as fallback
+        if (data.token) {
+          localStorage.setItem('auth_token', data.token);
+        }
+        
+        console.log('Login successful - cookie set by server');
+        
+        // Debug: Check if cookie was actually set
+        setTimeout(() => {
+          console.log('All cookies after login:', document.cookie);
+          console.log('localStorage token:', localStorage.getItem('auth_token'));
+        }, 100);
+        
         // Dispatch auth:login event to update UI components
         window.dispatchEvent(new CustomEvent('auth:login', {
           detail: { user: data.user }
         }));
-        // Redirect to callback URL or dashboard on successful login
+        
+        // Check if user is primarily a buyer (has purchases but no products)
+        try {
+          const statusResponse = await fetch('/api/auth/user-status', {
+            method: 'GET',
+            credentials: 'include', // Include cookies for authentication
+          });
+          
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            
+            // If the API recommends a different redirect, use that instead
+            if (statusData.recommendedRedirect && statusData.recommendedRedirect !== '/dashboard') {
+              // Use router.push instead of window.location for better cookie preservation
+              router.push(statusData.recommendedRedirect);
+              return;
+            }
+          }
+        } catch (statusError) {
+          console.error('Error checking user status:', statusError);
+          // Continue with normal redirect if status check fails
+        }
+        
+        // Default redirect behavior if status check fails or no special redirect needed
+        // Use router.push instead of window.location.href to preserve cookies
         router.push(decodeURI(callbackUrl));
       } else if (response.status === 403 && data.requiresVerification) {
         // Handle unverified email
@@ -105,20 +144,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-stone-800">Welcome Back</CardTitle>
-          <CardDescription className="text-stone-600 font-light">
-            Log in to access your alaCart products
-            {callbackUrl !== '/products' && (
-              <div className="mt-2 text-xs flex items-center text-stone-500 font-light">
-                <span>You'll be redirected to: </span>
-                <span className="ml-1 font-medium truncate">{decodeURI(callbackUrl)}</span>
-              </div>
-            )}
-          </CardDescription>
-        </CardHeader>
+    <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] py-8">
+      <div className="flex flex-col items-center mb-8">
+        <Link href="/" className="mb-4">
+          <Image 
+            src="/logo.png" 
+            alt="Alacart Logo" 
+            width={100} 
+            height={21} 
+            className="h-auto mb-8"
+            priority
+          />
+        </Link>
+        <h1 className="text-4xl font-extralight mb-4">Welcome Back</h1>
+        <p className="text-stone-600 font-light">
+          Sign in to your account
+        </p>
+      </div>
+      <Card className="w-full max-w-md py-8">
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4 rounded-xl">
@@ -183,16 +226,16 @@ export default function LoginPage() {
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light" 
               disabled={isLoggingIn}>
               {isLoggingIn ? (
-                <span className="flex items-center font-light">Logging in... <ArrowRight className="ml-2 h-4 w-4 animate-pulse" /></span>
+                <span className="flex items-center font-light">Signing in... <ArrowRight className="ml-2 h-4 w-4 animate-pulse" /></span>
               ) : (
-                'Log In'
+                'Sign In'
               )}
             </Button>
           </form>
           <div className="text-center mt-4 text-sm text-stone-600 font-light">
             Don't have an account? {' '}
             <Link href="/register" className="text-emerald-600 hover:text-emerald-700 font-light">
-              Register
+              Sign up
             </Link>
           </div>
         </CardContent>

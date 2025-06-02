@@ -1,14 +1,17 @@
-# alaCart
+# alacart
 
 A modern, flexible digital product marketplace platform built with Next.js and Prisma.
 
+Made by (c) Glenn Santos
+
 ## Overview
 
-alaCarte is an innovative platform for creators to sell digital products, offering flexible product variations, seamless file uploads, and easy payment configuration.
+alacart is an innovative platform for creators to sell digital products, offering flexible product variations, seamless file uploads, and easy payment configuration.
 
 ## Table of Contents
 
 - [Local Development](#local-development)
+- [Testing](#testing)
 - [Deployment Process](#deployment-process)
   - [Database Setup](#database-setup)
   - [AWS Infrastructure](#aws-infrastructure)
@@ -48,18 +51,178 @@ cp .env.example .env
 pnpm prisma migrate dev
 ```
 
-5. Run the development server
+5. Set up HTTPS for local development
+   ```bash
+   # Install mkcert if not already installed
+   curl -sSL https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 -o mkcert
+   chmod +x mkcert
+   
+   # Create certificates
+   mkdir -p .certs
+   ./mkcert -install
+   ./mkcert -cert-file .certs/local-cert.pem -key-file .certs/local-key.pem localhost 127.0.0.1 ::1
+   ```
+
+6. Run the development server with HTTPS
+   ```bash
+   pnpm dev  # Uses HTTPS
+   # or for HTTP only:
+   # pnpm dev:http
+   ```
+   
+   Note: Your browser will show a security warning for the self-signed certificate. You'll need to accept the risk and proceed.
 ```bash
 pnpm dev
 ```
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
 
+### Seeding the Database
+
+To populate the database with test data, you can use the seeder script. The seeder will create:
+- 10 test users
+- 10 products per user
+- 10 purchases per product (with random statuses)
+
+1. Install required dependencies:
+```bash
+pnpm add -D tsx ts-node @types/node node-fetch@2 --legacy-peer-deps
+```
+
+2. Generate the Prisma client (if not already done):
+```bash
+pnpm prisma generate
+```
+
+3. Run the seeder script:
+```bash
+pnpm seed
+```
+
+This will populate your database with test data. The script will log its progress as it creates users, products, and purchases.
+
 ### Additional Commands
 - Build for production: `pnpm build`
 - Start production server: `pnpm start`
 - Lint the project: `pnpm lint`
 - Run tests: `pnpm test`
+
+## Testing
+
+### Test Structure
+
+The project includes comprehensive test coverage organized by feature area:
+
+```
+tests/
+├── setup.ts                    # Jest configuration and global mocks
+├── backend/                    # Backend API tests
+│   ├── auth/
+│   │   └── auth.test.ts       # Authentication API tests
+│   ├── products/
+│   │   └── products.test.ts   # Product management tests
+│   ├── purchases/
+│   │   └── purchases.test.ts  # Purchase and payment tests
+│   └── payouts/
+│       └── payouts.test.ts    # Payout system tests
+├── frontend/                   # Frontend component tests
+│   ├── auth/
+│   │   └── login.test.tsx     # Login component tests
+│   ├── products/
+│   │   └── product-form.test.tsx
+│   └── dashboard/
+│       └── dashboard.test.tsx
+├── integration/                # Integration tests
+│   └── user-journey.test.ts   # End-to-end user flows
+└── e2e/                       # End-to-end tests
+    └── purchase-flow.test.ts  # Complete purchase scenarios
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm run test:watch
+
+# Run tests with coverage report
+pnpm run test:coverage
+
+# Run specific test suites
+pnpm run test:backend      # Backend API tests only
+pnpm run test:frontend     # Frontend component tests only
+pnpm run test:integration  # Integration tests only
+pnpm run test:e2e         # End-to-end tests only
+
+# Run tests for CI/CD
+pnpm run test:ci
+```
+
+### Test Categories
+
+#### Backend Tests
+- **Authentication**: Login, registration, session management, password reset
+- **Product Management**: CRUD operations, file uploads, validation, slug generation
+- **Purchase Processing**: Payment flows, discount codes, order fulfillment
+- **Payout System**: Balance calculations, fee processing, bank transfers
+- **Error Handling**: Input validation, authorization, external service failures
+
+#### Frontend Tests
+- **Component Rendering**: UI components render correctly with props
+- **User Interactions**: Form submissions, button clicks, navigation
+- **Form Validation**: Client-side validation and error display
+- **State Management**: Component state updates and side effects
+- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+
+#### Integration Tests
+- **API Integration**: Frontend components with backend APIs
+- **Database Operations**: Data persistence and retrieval
+- **External Services**: Payment gateways, email services, file storage
+- **User Journeys**: Complete workflows from start to finish
+
+#### End-to-End Tests
+- **Purchase Flow**: Complete customer purchase journey
+- **Seller Workflow**: Product creation to payout process
+- **Authentication Flow**: Registration, verification, login
+- **Error Scenarios**: Network failures, payment errors, validation failures
+
+### Test Coverage Requirements
+
+- **Unit Tests**: 90% code coverage minimum
+- **Integration Tests**: All API endpoints covered
+- **E2E Tests**: All critical user journeys covered
+- **Error Scenarios**: All error paths tested
+
+### Testing Guidelines
+
+1. **Test Structure**: Follow AAA pattern (Arrange, Act, Assert)
+2. **Mocking**: Mock external dependencies and services
+3. **Data**: Use realistic test data that matches production scenarios
+4. **Isolation**: Each test should be independent and not rely on others
+5. **Performance**: Tests should complete within reasonable time limits
+6. **Maintenance**: Keep tests updated with feature changes
+
+### Mock Services
+
+The test suite includes comprehensive mocking for:
+
+- **Database**: Prisma client with realistic data responses
+- **Payment Gateway**: Xendit API responses and webhooks
+- **File Storage**: Cloudinary upload and management
+- **Email Service**: Email delivery and templates
+- **Authentication**: JWT token generation and validation
+
+### Continuous Integration
+
+Tests are automatically run on:
+- Pull request creation and updates
+- Merge to main branch
+- Scheduled daily runs
+- Release deployments
+
+Coverage reports are generated and tracked over time to ensure quality standards are maintained.
 
 ## Deployment Process
 
@@ -409,7 +572,7 @@ To access Prisma Studio in the EC2 instance:
 
 ## Simple EC2 Deployment Guide with AWS CLI
 
-This guide provides a simpler approach to deploy alaCarte to an EC2 instance using AWS CLI and `pnpm dev` or `pnpm start`.
+This guide provides a simpler approach to deploy alacart to an EC2 instance using AWS CLI and `pnpm dev` or `pnpm start`.
 
 ### Deployment Checklist
 
@@ -460,7 +623,7 @@ chmod 400 alacarte-key.pem
 # Create security group for EC2
 aws ec2 create-security-group \
   --group-name alacarte-ec2-sg \
-  --description "Security group for alaCarte EC2 instance"
+  --description "Security group for alacart EC2 instance"
 
 # Get your public IP
 MY_IP=$(curl -s https://checkip.amazonaws.com)/32
@@ -888,7 +1051,7 @@ XENDIT_WEBHOOK_SECRET=YourXenditWebhookSecret
 AWS_REGION=ap-southeast-1
 AWS_ACCESS_KEY_ID=your_access_key_id
 AWS_SECRET_ACCESS_KEY=your_secret_access_key
-EMAIL_FROM=alaCarte <no-reply@example.com>
+EMAIL_FROM=alacart <no-reply@example.com>
 
 ### Email Configuration
 
@@ -1287,16 +1450,16 @@ To improve security management and reduce policy sprawl, we've consolidated mult
    # 1. First, kill any existing Prisma Studio process
    pkill -f 'prisma studio'
    
-   # 2. Start Prisma Studio on a specific port (e.g., 5556)
+   # 2. Start Prisma Studio on a specific port (e.g., 5555)
    #    The 'nohup' and output redirection will keep it running after you log out
-   nohup pnpm prisma studio --port 5556 --browser none > /dev/null 2>&1 &
+   nohup pnpm prisma studio --port 5555 --browser none > /dev/null 2>&1 &
    
    # 3. On your local machine, set up an SSH tunnel
-   #    Replace 5556 with your chosen port if different
-   ssh -f -L 5556:localhost:5556 alacarte-ec2 -N
+   #    Replace 5555 with your chosen port if different
+   ssh -f -L 5555:localhost:5555 alacarte-ec2 -N
    
    # 4. Access Prisma Studio in your browser at:
-   #    http://localhost:5556
+   #    http://localhost:5555
    
    # Note: If you get an 'address already in use' error, try a different port
    
@@ -1371,7 +1534,7 @@ The email service implementation has been migrated from Nodemailer/Mailtrap to A
    AWS_REGION=ap-southeast-1
    AWS_ACCESS_KEY_ID=your_access_key_id
    AWS_SECRET_ACCESS_KEY=your_secret_access_key
-   EMAIL_FROM=no-reply@alacarte.app
+   EMAIL_FROM=noreply@alacart.store
    ```
 
 7. **For Production Use**:
@@ -1394,3 +1557,44 @@ The email service implementation has been migrated from Nodemailer/Mailtrap to A
      --port 22 \
      --cidr $CURRENT_IP
    ```
+
+### 2025-06-01: Fixed Nginx File Upload Size Limit
+
+1. **Issue Identified**:
+   - Users experiencing `413 Request Entity Too Large` error when uploading files larger than 1MB
+   - Nginx default `client_max_body_size` is 1MB, but application supports up to 100MB uploads
+   - Error occurred during product creation with file uploads
+
+2. **Changes Made**:
+   - Updated `nginx.conf` to set global `client_max_body_size 100M`
+   - Updated `alacarte-nginx-https.conf` to set `client_max_body_size 100M` in both HTTP and HTTPS server blocks
+   - Updated `alacarte.conf` to set `client_max_body_size 100M` in HTTP server block
+
+3. **Files Modified**:
+   - `nginx.conf`: Added global setting in http block
+   - `alacarte-nginx-https.conf`: Added setting to both server blocks
+   - `alacarte.conf`: Added setting to server block
+
+4. **Deployment Steps**:
+   ```bash
+   # Connect to EC2 server
+   ssh -F ssh_config alacarte-ec2
+   
+   # Copy updated nginx configuration files to server
+   sudo cp /path/to/nginx.conf /etc/nginx/nginx.conf
+   sudo cp /path/to/alacarte-nginx-https.conf /etc/nginx/conf.d/
+   
+   # Test nginx configuration
+   sudo nginx -t
+   
+   # Reload nginx to apply changes
+   sudo systemctl reload nginx
+   
+   # Verify the configuration is active
+   sudo nginx -T | grep client_max_body_size
+   ```
+
+5. **Verification**:
+   - Test file uploads up to 100MB should now work without 413 errors
+   - Both HTTP and HTTPS requests should support large file uploads
+   - Application-level file size validation (50MB for content files, 10MB for cover images) remains in effect

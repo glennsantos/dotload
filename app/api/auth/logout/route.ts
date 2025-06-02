@@ -1,10 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
+// Get domain from environment variables
+const DOMAIN = process.env.DOMAIN || 'localhost:3000';
+const BASE_URL = DOMAIN.startsWith('http') ? DOMAIN : `http://${DOMAIN}`;
+
+// Only handle POST requests for intentional logout
+// GET requests are dangerous as they can be triggered accidentally by browser prefetching
+export async function GET(request: NextRequest) {
+  return NextResponse.json({ 
+    error: 'Method not allowed. Use POST for logout.' 
+  }, { status: 405 });
+}
+
+// Handle POST requests for programmatic logout
 export async function POST(request: NextRequest) {
   try {
+    console.log(`[LOGOUT] Logout request received`);
+    console.log(`[LOGOUT] Using domain for redirect: ${BASE_URL}`);
+    
     // Create a response that will clear the token cookie
     const response = NextResponse.json({ 
-      message: 'Logged out successfully' 
+      message: 'Logged out successfully',
+      redirectUrl: `${BASE_URL}/login` // Include the redirect URL in the response
     }, { status: 200 });
 
     // Clear the token cookie
@@ -14,9 +32,10 @@ export async function POST(request: NextRequest) {
       path: '/'
     });
 
+    console.log(`[LOGOUT] Token cookie cleared successfully`);
     return response;
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('[LOGOUT] Logout error:', error);
     
     return NextResponse.json({ 
       error: 'Logout failed', 
