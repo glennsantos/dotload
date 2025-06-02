@@ -7,6 +7,7 @@ import { cwd } from 'process';
 import * as fs from 'fs';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { apiConfig, checkFileSizeLimit, formatFileSize } from '../../config';
+import { isAllowedDigitalFile } from '@/lib/file-validation';
 
 // Ensure uploads directory exists with proper structure
 async function ensureUploadsDir(userId: string, productId: string) {
@@ -71,6 +72,12 @@ async function processFiles(formData: FormData, userId: string, productId: strin
       if (!checkFileSizeLimit(value, MAX_FILE_SIZE_MB)) {
         throw new Error(`File ${value.name} exceeds the maximum size limit of ${MAX_FILE_SIZE_MB}MB. File size: ${formatFileSize(value.size)}`);
       }
+      
+      // Check file type
+      if (!isAllowedDigitalFile(value.name, value.type)) {
+        throw new Error(`File ${value.name} is not an allowed file type. Please upload only supported file formats.`);
+      }
+      
       contentFiles.push(value);
     }
   }

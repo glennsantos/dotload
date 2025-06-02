@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { isAllowedDigitalFile } from '@/lib/file-validation';
 
 // Function removed - using Cloudinary exclusively
 
@@ -57,6 +58,14 @@ export async function POST(
     if (!digitalItem) {
       return NextResponse.json({ 
         error: 'No digital item provided' 
+      }, { status: 400 });
+    }
+    
+    // Validate file type
+    if (!isAllowedDigitalFile(digitalItem.name, digitalItem.type)) {
+      return NextResponse.json({
+        error: 'Invalid file type',
+        details: `File "${digitalItem.name}" is not an allowed file type. Please upload only supported file formats.`
       }, { status: 400 });
     }
     

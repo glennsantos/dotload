@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Upload, Check, X, ArrowLeft, File, Plus, LinkIcon, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { ALLOWED_EXTENSIONS_FOR_HTML_ACCEPT, isAllowedDigitalFile } from '@/lib/file-validation'
 
 export default function UploadDigitalItem({ productId }: { productId: string }) {
   const router = useRouter()
@@ -17,6 +18,15 @@ export default function UploadDigitalItem({ productId }: { productId: string }) 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
+      
+      // Check for invalid file types
+      const invalidFiles = newFiles.filter(file => !isAllowedDigitalFile(file.name, file.type))
+      
+      if (invalidFiles.length > 0) {
+        setError(`Invalid file type(s): ${invalidFiles.map(f => f.name).join(', ')}. Please upload only allowed file types.`)
+        return
+      }
+      
       setFiles([...files, ...newFiles])
       setError(null)
     }
@@ -141,6 +151,7 @@ export default function UploadDigitalItem({ productId }: { productId: string }) 
               className="hidden"
               id="content-upload"
               disabled={isUploading || uploadSuccess}
+              accept={ALLOWED_EXTENSIONS_FOR_HTML_ACCEPT}
             />
             <label
               htmlFor="content-upload"

@@ -6,6 +6,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Save, ChevronRight } from "lucide-react"
 import RichTextEditor from "@/components/rich-text-editor"
+import { isAllowedDigitalFile } from '@/lib/file-validation'
 
 // Variation Item Component for managing individual variations
 const VariationItem = ({ variation, index, onUpdate, onDelete }: { 
@@ -915,6 +916,18 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                         onChange={async (e) => {
                           if (e.target.files && e.target.files.length > 0) {
                             setIsUploading(true);
+                            
+                            // Validate file types before uploading
+                            const newFiles = Array.from(e.target.files);
+                            const invalidFiles = newFiles.filter(file => !isAllowedDigitalFile(file.name, file.type));
+                            
+                            if (invalidFiles.length > 0) {
+                              setIsUploading(false);
+                              toast.error(`Invalid file types: ${invalidFiles.map(f => f.name).join(', ')}. Please upload only supported file types.`);
+                              e.target.value = '';
+                              return;
+                            }
+                            
                             const formData = new FormData();
                             
                             for (let i = 0; i < e.target.files.length; i++) {

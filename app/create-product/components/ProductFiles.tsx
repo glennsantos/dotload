@@ -5,6 +5,7 @@ import { Product } from './ProductCreationForm'
 import { Trash, Upload, X, Link as LinkIcon, Plus, FileText, Check, Loader2, File as FileIcon, Download } from 'lucide-react'
 import ErrorModal from '@/app/components/ErrorModal'
 import SuccessModal from '@/app/components/SuccessModal'
+import { ALLOWED_EXTENSIONS_FOR_HTML_ACCEPT, isAllowedDigitalFile } from '@/lib/file-validation'
 
 // Maximum file size in bytes (50MB)
 const MAX_FILE_SIZE = 50 * 1024 * 1024
@@ -88,6 +89,15 @@ export default function ProductFiles({
         return
       }
       
+      // Check for invalid file types
+      const invalidFiles = newFiles.filter(file => !isAllowedDigitalFile(file.name, file.type))
+      
+      if (invalidFiles.length > 0) {
+        const fileNames = invalidFiles.map(f => f.name).join(', ')
+        showError(`The following file types are not allowed: ${fileNames}. Please upload only supported file types.`)
+        return
+      }
+      
       setProductData({
         ...productData,
         contentFiles: [...productData.contentFiles, ...newFiles]
@@ -108,6 +118,15 @@ export default function ProductFiles({
       if (oversizedFiles.length > 0) {
         const fileNames = oversizedFiles.map(f => f.name).join(', ')
         showError(`The following files exceed the maximum size of 50MB: ${fileNames}`)
+        return
+      }
+      
+      // Check for invalid file types
+      const invalidFiles = newFiles.filter(file => !isAllowedDigitalFile(file.name, file.type))
+      
+      if (invalidFiles.length > 0) {
+        const fileNames = invalidFiles.map(f => f.name).join(', ')
+        showError(`The following file types are not allowed: ${fileNames}. Please upload only supported file types.`)
         return
       }
       
@@ -223,7 +242,7 @@ export default function ProductFiles({
             multiple
             className="hidden"
             onChange={handleFileChange}
-            accept=".pdf,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp3,.mp4,.jpg,.jpeg,.png,.gif"
+            accept={ALLOWED_EXTENSIONS_FOR_HTML_ACCEPT}
           />
         </div>
       </div>

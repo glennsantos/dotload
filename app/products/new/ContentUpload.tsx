@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Upload, X, Link as LinkIcon, File, Plus, ChevronLeft, Loader2, Check, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { ALLOWED_EXTENSIONS_FOR_HTML_ACCEPT, isAllowedDigitalFile } from '@/lib/file-validation'
 
 export default function ContentUpload({
   productData,
@@ -42,20 +43,8 @@ export default function ContentUpload({
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files)
       
-      // Check for allowed file types
-      const allowedExtensions = [
-        '.csv', '.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg', '.gif', '.webp',
-        '.mp4', '.mp3', '.wav', '.zip', '.rar', '.7z', '.xls', '.xlsx', '.md',
-        '.epub', '.mobi', '.pptx', '.txt', '.svg', '.ai', '.eps', '.psd',
-        '.aac', '.flac', '.m4b', '.mov', '.avi', '.mkv', '.webm', '.cube',
-        '.look', '.xmp', '.html', '.woff', '.woff2', '.ttf', '.otf', '.notion'
-      ]
-      
-      // Check if any files have invalid extensions
-      const invalidFiles = newFiles.filter(file => {
-        const extension = '.' + file.name.split('.').pop()?.toLowerCase()
-        return !allowedExtensions.includes(extension)
-      })
+      // Check for invalid file types using the utility function
+      const invalidFiles = newFiles.filter(file => !isAllowedDigitalFile(file.name, file.type))
       
       if (invalidFiles.length > 0) {
         setError(`Invalid file type(s): ${invalidFiles.map(f => f.name).join(', ')}. Please upload only allowed file types.`)
@@ -194,7 +183,7 @@ export default function ContentUpload({
                 className="hidden"
                 id="content-upload"
                 disabled={isSubmitting || uploadSuccess}
-                accept=".csv,.pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.mp4,.mp3,.wav,.zip,.rar,.7z,.xls,.xlsx,.md,.epub,.mobi,.pptx,.txt,.svg,.ai,.eps,.psd,.aac,.flac,.m4b,.mov,.avi,.mkv,.webm,.cube,.look,.xmp,.html,.woff,.woff2,.ttf,.otf,.notion"
+                accept={ALLOWED_EXTENSIONS_FOR_HTML_ACCEPT}
               />
               <label
                 htmlFor="content-upload"

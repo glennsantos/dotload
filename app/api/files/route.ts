@@ -5,6 +5,7 @@ import { verify } from 'jsonwebtoken';
 import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { isAllowedDigitalFile } from '@/lib/file-validation';
 
 /**
  * GET /api/files
@@ -168,6 +169,14 @@ export async function POST(request: NextRequest) {
       if (!file) {
         // No more files to process
         break;
+      }
+      
+      // Validate file type
+      if (!isAllowedDigitalFile(file.name, file.type)) {
+        return NextResponse.json({
+          error: 'Invalid file type',
+          details: `File "${file.name}" is not an allowed file type. Please upload only supported file formats.`
+        }, { status: 400 });
       }
       
       // Generate a unique filename
