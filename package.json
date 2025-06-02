@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage",
     "test:backend": "jest tests/backend",
     "test:frontend": "jest tests/frontend",
+    "test:frontend:journey": "node tests/run-frontend-journey.js",
     "test:integration": "jest tests/integration",
     "test:e2e": "jest tests/e2e",
     "test:ci": "jest --ci --coverage --watchAll=false",
