@@ -307,7 +307,7 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
       {/* Preview modal */}
       {isPreviewOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div ref={modalRef} className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-auto">
+          <div ref={modalRef} className="py-10 bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-auto">
             <div className="flex justify-between items-center p-4 border-b">
               <h3 className="text-lg font-medium">Product Preview</h3>
               <button 
@@ -341,7 +341,7 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
               <div className="mt-6 flex justify-end">
                 <Button
                   onClick={() => setIsPreviewOpen(false)}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   Close Preview
                 </Button>
