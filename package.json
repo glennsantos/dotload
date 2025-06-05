@@ -122,6 +122,7 @@
     "postcss-nesting": "^13.0.1",
     "prisma": "^6.7.0",
     "style-loader": "^4.0.0",
+    "supabase": "^2.24.3",
     "tailwindcss": "^3.4.17",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
