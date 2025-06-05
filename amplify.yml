@@ -15,8 +15,8 @@ frontend:
         - pnpm run build
     postBuild:
       commands:
-        - echo "Running database migrations"
-        - npx prisma migrate deploy
+        - echo "Build completed successfully"
+        - echo "Database migrations will be handled separately from production environment"
   artifacts:
     baseDirectory: .next
     files:
