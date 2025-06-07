@@ -10,6 +10,7 @@ declare global {
 const createPrismaClient = () => {
   // Handle both ESM and CommonJS module systems
   const { PrismaClient } = pkg as any
+  
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   })

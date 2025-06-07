@@ -4,6 +4,30 @@ import { prisma } from '@/lib/prisma';
 export async function GET(req: NextRequest) {
   try {
     console.log('Testing database connection...');
+    console.log('Available environment variables:');
+    console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+    console.log('DIRECT_URL:', process.env.DIRECT_URL ? 'SET' : 'NOT SET');
+    console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET');
+    console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    
+    // If DATABASE_URL is not set, return early with detailed error
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({
+        success: false,
+        error: 'DATABASE_URL environment variable is not set',
+        debug: {
+          availableEnvVars: Object.keys(process.env).filter(key => 
+            key.includes('DATABASE') || 
+            key.includes('SUPABASE') || 
+            key.includes('URL') ||
+            key.includes('DIRECT')
+          ),
+          nodeEnv: process.env.NODE_ENV,
+          timestamp: new Date().toISOString()
+        }
+      }, { status: 500 });
+    }
     
     // Test basic connection
     await prisma.$connect();
@@ -54,6 +78,16 @@ export async function GET(req: NextRequest) {
         hasUrl: !!process.env.DATABASE_URL,
         hasDirectUrl: !!process.env.DIRECT_URL,
         supabaseConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+      },
+      debug: {
+        availableEnvVars: Object.keys(process.env).filter(key => 
+          key.includes('DATABASE') || 
+          key.includes('SUPABASE') || 
+          key.includes('URL') ||
+          key.includes('DIRECT')
+        ),
+        nodeEnv: process.env.NODE_ENV,
+        errorStack: error instanceof Error ? error.stack : undefined,
       },
       timestamp: new Date().toISOString()
     }, { status: 500 });
