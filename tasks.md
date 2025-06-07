@@ -189,6 +189,13 @@ reference repo: /home/aryeh/dev/alacart.store
    - Priority: High
    - Test Strategy: Verify the registration form UI matches design specifications.
 
+3. **Fix Registration JSON Parse Error** ✅
+   - Task ID: 1.2.2
+   - Description: Fixed JSON parsing error in registration API by adding proper error handling around email sending and field validation.
+   - Dependencies: 1.2
+   - Priority: High
+   - Test Strategy: Verify registration works without JSON parsing errors in production.
+
 3. **Redesign Forgot Password Form** ✅
    - Task ID: 1.2.1
    - Description: Update the forgot password form to match the new design language.

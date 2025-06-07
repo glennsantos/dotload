@@ -2,12 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { sendVerificationEmail } from '@/lib/email';
 import { uploadToCloudinary } from '@/lib/cloudinary';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,9 +35,11 @@ const validatePasswordStrength = (password: string) => {
 };
 
 export async function POST(req: NextRequest) {
+  console.log('Registration API called');
   try {
     // Check if the request is multipart/form-data or application/json
     const contentType = req.headers.get('content-type') || '';
+    console.log('Content-Type:', contentType);
     
     let email, password, name, storeName, storeDescription;
     let logoFile = null;
@@ -65,6 +64,14 @@ export async function POST(req: NextRequest) {
       name = data.name;
       storeName = data.storeName;
       storeDescription = data.storeDescription;
+    }
+
+    // Validate required fields
+    if (!email || !password) {
+      return NextResponse.json({ 
+        error: 'Missing required fields',
+        details: 'Email and password are required' 
+      }, { status: 400 });
     }
 
     // Validate email
@@ -178,8 +185,14 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    // Send verification email
-    await sendVerificationEmail(email, verificationToken, name);
+    // Send verification email (with error handling)
+    try {
+      await sendVerificationEmail(email, verificationToken, name);
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError);
+      // Continue with registration even if email fails
+      // User can still verify later or request a new verification email
+    }
 
     // Create a response with verification message
     const response = NextResponse.json({

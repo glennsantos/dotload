@@ -192,6 +192,19 @@ export default function RegisterPage() {
         body: formData,
       });
 
+      console.log('Registration response status:', response.status);
+      console.log('Registration response headers:', response.headers);
+      
+      // Check if response is actually JSON
+      const contentType = response.headers.get('content-type');
+      console.log('Response content-type:', contentType);
+      
+      if (!contentType || !contentType.includes('application/json')) {
+        const textResponse = await response.text();
+        console.error('Non-JSON response received:', textResponse);
+        throw new Error('Server returned an invalid response. Please try again.');
+      }
+
       const data = await response.json();
 
       if (!response.ok) {

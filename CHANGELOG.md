@@ -5,7 +5,37 @@ All notable changes to the Alacarte e-commerce platform will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2025-01-30
+## [Unreleased] - 2025-06-05
+
+### Added
+- **AWS Amplify Production Deployment**: Completed production deployment to AWS Amplify
+  - Created Amplify application with full environment configuration
+  - Set up Supabase production database with all required tables
+  - Configured all environment variables for production services
+  - Optimized build specification for cloud deployment
+  - Added comprehensive deployment documentation
+
+### Infrastructure
+- **Production Database**: Supabase PostgreSQL database in production
+  - Project: `alacarte-production` (rekljluyxjjqeggimsnd)
+  - All 11 tables created with proper relationships and constraints
+  - Database migrations up to date
+- **Application Hosting**: AWS Amplify with automatic SSL
+  - Domain: `https://d2luqrny08trmv.amplifyapp.com`
+  - Connected to GitHub repository with auto-deployment
+  - Optimized build process with proper caching
+
+### Configuration
+- Production environment variables configured for:
+  - Database connections (Supabase)
+  - Authentication (NextAuth with JWT)
+  - File storage (Cloudinary)
+  - Payment processing (Xendit development mode)
+  - Email service (Resend)
+- Build specification optimized to skip database migrations during deployment
+- Repository connected to `amplify-deployment` branch
+
+## [2025-01-30]
 
 ### Added
 - **Product-Specific Discount Code Creation**: Users can now create discount codes for specific products directly from the dashboard
