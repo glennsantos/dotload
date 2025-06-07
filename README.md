@@ -46,12 +46,40 @@ cp .env.example .env
 # Edit .env with your local configuration
 ```
 
-4. Set up the database
+4. Configure your database (Supabase or Local PostgreSQL)
+
+   **Option A: Using Supabase (Recommended for Production)**
+   ```bash
+   # Add to your .env file:
+   DATABASE_URL=postgresql://postgres:password@db.project.supabase.co:5432/postgres
+   DIRECT_URL=postgresql://postgres:password@db.project.supabase.co:5432/postgres
+   NEXT_PUBLIC_SUPABASE_URL=https://project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+   ```
+
+   **Option B: Using Local PostgreSQL**
+   ```bash
+   # Add to your .env file:
+   LOCAL_DATABASE_URL=postgresql://postgres:password@localhost:5432/alacart
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/alacart
+   DIRECT_URL=postgresql://postgres:password@localhost:5432/alacart
+   ```
+
+   The application automatically detects Supabase configuration and falls back to local PostgreSQL when not available.
+
+5. Set up the database
 ```bash
 pnpm prisma migrate dev
 ```
 
-5. Set up HTTPS for local development
+6. Test your database connection
+```bash
+# Visit http://localhost:3000/api/test-db after starting the server
+# This will show your current database configuration
+```
+
+7. Set up HTTPS for local development
    ```bash
    # Install mkcert if not already installed
    curl -sSL https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 -o mkcert
@@ -63,7 +91,7 @@ pnpm prisma migrate dev
    ./mkcert -cert-file .certs/local-cert.pem -key-file .certs/local-key.pem localhost 127.0.0.1 ::1
    ```
 
-6. Run the development server with HTTPS
+8. Run the development server with HTTPS
    ```bash
    pnpm dev  # Uses HTTPS
    # or for HTTP only:
@@ -71,11 +99,8 @@ pnpm prisma migrate dev
    ```
    
    Note: Your browser will show a security warning for the self-signed certificate. You'll need to accept the risk and proceed.
-```bash
-pnpm dev
-```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
+9. Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
 
 ### Seeding the Database
 
