@@ -5,6 +5,7 @@ const path = require('path');
 
 const nextConfig = {
   // Ensure static files are properly served
+  devIndicators: false,
   output: 'standalone',
   images: {
     unoptimized: true, // Disable image optimization if not needed
