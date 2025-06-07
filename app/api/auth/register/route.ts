@@ -41,6 +41,18 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get('content-type') || '';
     console.log('Content-Type:', contentType);
     
+    // Test database connection first
+    try {
+      await prisma.$connect();
+      console.log('Database connection successful');
+    } catch (dbError) {
+      console.error('Database connection failed:', dbError);
+      return NextResponse.json({ 
+        error: 'Database connection failed',
+        details: 'Unable to connect to the database' 
+      }, { status: 500 });
+    }
+    
     let email, password, name, storeName, storeDescription;
     let logoFile = null;
     let headerFile = null;
@@ -68,14 +80,17 @@ export async function POST(req: NextRequest) {
 
     // Validate required fields
     if (!email || !password) {
+      console.log('Missing required fields - email:', !!email, 'password:', !!password);
       return NextResponse.json({ 
         error: 'Missing required fields',
         details: 'Email and password are required' 
       }, { status: 400 });
     }
 
+    console.log('Validating email format for:', email);
     // Validate email
     if (!emailRegex.test(email)) {
+      console.log('Invalid email format:', email);
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
@@ -89,14 +104,36 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
+    console.log('Checking if user exists for email:', email);
+    try {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        console.log('User already exists for email:', email);
+        return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
+      }
+      console.log('No existing user found, proceeding with registration');
+    } catch (dbError) {
+      console.error('Error checking existing user:', dbError);
+      return NextResponse.json({ 
+        error: 'Database error',
+        details: 'Error checking existing user' 
+      }, { status: 500 });
     }
 
     // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    console.log('Hashing password...');
+    let hashedPassword;
+    try {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+      console.log('Password hashed successfully');
+    } catch (hashError) {
+      console.error('Error hashing password:', hashError);
+      return NextResponse.json({ 
+        error: 'Password hashing failed',
+        details: 'Unable to process password' 
+      }, { status: 500 });
+    }
 
     // Generate verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -135,21 +172,32 @@ export async function POST(req: NextRequest) {
     }
     
     // Create user with verification token (without store branding fields first)
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: name || null,  // Allow optional name
-        emailVerified: false,
-        verificationToken,
-        verificationTokenExpiry
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true
-      }
-    });
+    console.log('Creating user in database...');
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name: name || null,  // Allow optional name
+          emailVerified: false,
+          verificationToken,
+          verificationTokenExpiry
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true
+        }
+      });
+      console.log('User created successfully with ID:', user.id);
+    } catch (createError) {
+      console.error('Error creating user:', createError);
+      return NextResponse.json({ 
+        error: 'Failed to create user',
+        details: createError instanceof Error ? createError.message : 'Unknown error' 
+      }, { status: 500 });
+    }
     
     // Then update the user with store branding fields in a separate operation
     if (storeName || storeDescription || storeLogoPath || storeHeaderPath) {
@@ -207,9 +255,11 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error('Registration error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     
     // Handle Prisma-specific errors
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error('Prisma error code:', error.code);
       // Unique constraint violation
       if (error.code === 'P2002') {
         return NextResponse.json({ 
@@ -219,9 +269,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Ensure we always return JSON, never HTML
     return NextResponse.json({ 
       error: 'Registration failed', 
-      details: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      details: error instanceof Error ? error.message : 'An unexpected error occurred',
+      timestamp: new Date().toISOString()
     }, { status: 500 });
   }
 }
