@@ -18,10 +18,8 @@ export const isSupabaseConfigured = () => {
 // Get the appropriate database URL
 export const getDatabaseUrl = () => {
   if (isSupabaseConfigured() && DATABASE_URL) {
-    console.log('Using Supabase database');
     return DATABASE_URL;
   } else {
-    console.log('Falling back to local database');
     return LOCAL_DATABASE_URL;
   }
 };
@@ -42,12 +40,6 @@ export const getDatabaseConfig = () => {
     directUrl: getDirectUrl(),
     isSupabase: isSupabaseConfigured(),
   };
-  
-  console.log('Database configuration:', {
-    isSupabase: config.isSupabase,
-    hasUrl: !!config.url,
-    hasDirectUrl: !!config.directUrl,
-  });
   
   return config;
 };

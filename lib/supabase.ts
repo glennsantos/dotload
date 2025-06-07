@@ -1,33 +1,40 @@
 // Supabase client utility for direct Supabase operations
-import { createClient } from '@supabase/supabase-js';
-import { getSupabaseConfig } from './database';
+
+// Check if Supabase is configured
+export const isSupabaseConfigured = () => {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+};
 
 // Create Supabase client (client-side)
-export const createSupabaseClient = () => {
-  const config = getSupabaseConfig();
-  
-  if (!config) {
+export const createSupabaseClient = async () => {
+  if (!isSupabaseConfigured()) {
     throw new Error('Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
   }
   
-  return createClient(config.url, config.anonKey);
+  const { createClient } = await import('@supabase/supabase-js');
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 };
 
 // Create Supabase admin client (server-side)
-export const createSupabaseAdminClient = () => {
-  const config = getSupabaseConfig();
-  
-  if (!config || !config.serviceRoleKey) {
+export const createSupabaseAdminClient = async () => {
+  if (!isSupabaseConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error('Supabase admin client requires SUPABASE_SERVICE_ROLE_KEY environment variable.');
   }
   
-  return createClient(config.url, config.serviceRoleKey);
+  const { createClient } = await import('@supabase/supabase-js');
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 };
 
 // Get Supabase client (with error handling)
-export const getSupabaseClient = () => {
+export const getSupabaseClient = async () => {
   try {
-    return createSupabaseClient();
+    return await createSupabaseClient();
   } catch (error) {
     console.warn('Supabase client not available:', error);
     return null;
@@ -35,9 +42,9 @@ export const getSupabaseClient = () => {
 };
 
 // Get Supabase admin client (with error handling)
-export const getSupabaseAdminClient = () => {
+export const getSupabaseAdminClient = async () => {
   try {
-    return createSupabaseAdminClient();
+    return await createSupabaseAdminClient();
   } catch (error) {
     console.warn('Supabase admin client not available:', error);
     return null;
@@ -47,7 +54,7 @@ export const getSupabaseAdminClient = () => {
 // Test Supabase connection
 export const testSupabaseConnection = async () => {
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
     if (!supabase) {
       return { success: false, error: 'Supabase client not available' };
     }
