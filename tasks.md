@@ -198,6 +198,17 @@ reference repo: /home/aryeh/dev/alacart.store
 
 4. **Add Comprehensive Error Handling and Debugging** ✅
    - Task ID: 1.2.3
+   - Description: Enhanced registration API with comprehensive error handling, logging, and database connectivity testing.
+   - Dependencies: 1.2.2
+   - Priority: High
+   - Test Strategy: Verify all error scenarios are handled gracefully and return JSON responses.
+
+5. **Fix Prisma Binary Target for AWS Lambda** ✅
+   - Task ID: 1.2.4
+   - Description: Fixed Prisma binary target mismatch for AWS Lambda deployment by adding rhel-openssl-1.0.x and rhel-openssl-3.0.x targets.
+   - Dependencies: 1.2.3
+   - Priority: Critical
+   - Test Strategy: Verify registration API works correctly in production deployment without Prisma engine errors.
    - Description: Added detailed logging and error handling to registration API to identify 500 errors. Added database connection testing, password hashing error handling, and comprehensive catch blocks.
    - Dependencies: 1.2.2
    - Priority: High
