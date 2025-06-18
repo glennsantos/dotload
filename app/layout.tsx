@@ -14,9 +14,9 @@ import { inter } from './fonts'
 
 
 export const metadata: Metadata = {
-  title: "alacart",
+  title: "dotload",
   description: "A digital product marketplace platform",
-    generator: 'Glenn Santos'
+  generator: 'Glenn Santos'
 }
 
 async function getCurrentUser() {
@@ -53,9 +53,9 @@ export default async function RootLayout({
   const currentUser = await getCurrentUser();
   
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-inter">
-        <div className="flex flex-col h-screen">
+    <html lang="en" className={`${inter.variable} dark`}>
+      <body className="font-sans antialiased">
+        <div className="flex flex-col h-screen bg-background text-foreground">
           <AuthProviderWrapper initialUser={currentUser}>
             <main className="flex-1 overflow-auto">{children}</main>
           </AuthProviderWrapper>

@@ -1,6 +1,6 @@
 # Tasks for Frontend Redesign
 
-- change the scheme to match the colors, styles and fonts of Claude: /home/aryeh/dev/dotload/data/Screenshot from 2025-06-14 09-05-16.png
+- ✅ change the scheme to match the colors, styles and fonts of Claude: /home/aryeh/dev/dotload/data/Screenshot from 2025-06-14 09-05-16.png
 - remove the physical product option in product creation
 - change the homepage entirely: copy, design, overall message
 - get a xendit account

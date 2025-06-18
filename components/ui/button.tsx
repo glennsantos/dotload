@@ -5,26 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden",
   {
     variants: {
       variant: {
-        default: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm rounded-xl",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm rounded-xl hover:shadow-claude",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl shadow-sm hover:shadow-claude",
         outline:
-          "border border-stone-200 bg-white text-stone-800 hover:bg-stone-50 shadow-sm rounded-xl",
-        'outline-emerald':
-          'border border-emerald-600 bg-white text-emerald-600 hover:bg-emerald-50 shadow-sm rounded-xl',
+          "border border-border bg-background text-foreground hover:bg-muted/50 shadow-sm rounded-xl hover:shadow-claude",
+        'outline-primary':
+          'border border-primary bg-background text-primary hover:bg-primary/5 shadow-sm rounded-xl hover:shadow-claude',
         secondary:
-          "bg-stone-100 text-stone-800 hover:bg-stone-200 rounded-xl",
-        ghost: "hover:bg-stone-100 hover:text-stone-800",
-        link: "text-emerald-600 hover:text-emerald-700 underline-offset-4 hover:underline",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl shadow-sm hover:shadow-claude",
+        ghost: "hover:bg-muted/50 hover:text-foreground rounded-xl",
+        link: "text-primary hover:text-primary/80 underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-5 py-2",
-        sm: "h-9 px-4 py-2",
-        lg: "h-11 px-6 py-2",
+        default: "h-10 px-5 py-2 text-sm",
+        sm: "h-9 px-4 py-2 text-sm",
+        lg: "h-12 px-8 py-3 text-base",
         icon: "h-10 w-10",
       },
     },
