@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService } from '@/lib/supabase-db';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -23,29 +23,18 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get all products with discount codes
-    const products = await prisma.product.findMany({
-      where: {
-        userId: user.id,
-        discountCodes: {
-          not: null
-        }
-      },
-      select: {
-        id: true,
-        discountCodes: true
-      }
-    });
+    // Get all products with discount codes using Supabase
+    const products = await supabaseProductService.getProductsByUserId(user.id);
     
     let codeDeleted = false;
     
     // Go through each product and remove the discount code if found
     for (const product of products) {
-      if (!product.discountCodes) continue;
+      if (!(product as any).discountCodes) continue;
       
       try {
         // Parse the discount codes
-        const codes = JSON.parse(product.discountCodes);
+        const codes = JSON.parse((product as any).discountCodes);
         
         if (!Array.isArray(codes)) continue;
         
@@ -56,18 +45,15 @@ export async function DELETE(request: NextRequest) {
           // Remove the code
           codes.splice(codeIndex, 1);
           
-          // Update the product
-          await prisma.product.update({
-            where: { id: product.id },
-            data: {
-              discountCodes: JSON.stringify(codes)
-            }
+          // Update the product using Supabase
+          await supabaseProductService.updateProduct((product as any).id, {
+            discountCodes: JSON.stringify(codes)
           });
           
           codeDeleted = true;
         }
       } catch (error) {
-        console.error(`Error parsing discount codes for product ${product.id}:`, error);
+        console.error(`Error parsing discount codes for product ${(product as any).id}:`, error);
       }
     }
     
@@ -81,6 +67,17 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting discount code:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to delete discount code' },
       { status: 500 }

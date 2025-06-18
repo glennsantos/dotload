@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { isAllowedDigitalFile } from '@/lib/file-validation';
@@ -33,10 +33,8 @@ export async function POST(
       }, { status: 401 });
     }
     
-    // Check if product exists and belongs to the current user
-    const product = await prisma.product.findUnique({
-      where: { id: productId }
-    });
+    // Check if product exists and belongs to the current user using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     if (!product) {
       return NextResponse.json({ 
@@ -45,7 +43,7 @@ export async function POST(
     }
     
     // Verify that the product belongs to the current user
-    if (product.userId !== userId) {
+    if ((product as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to modify this product'
@@ -82,16 +80,9 @@ export async function POST(
     
     const digitalItemPath = result.secure_url;
     
-    // Update product with digital item path
-    const updatedProduct = await prisma.product.update({
-      where: { id: productId },
-      data: {
-        digitalItemPath
-      },
-      include: {
-        files: true,
-        variations: true
-      }
+    // Update product with digital item path using Supabase
+    const updatedProduct = await supabaseProductService.updateProduct(productId, {
+      digitalItemPath
     });
     
     return NextResponse.json({
@@ -100,6 +91,17 @@ export async function POST(
     }, { status: 200 });
   } catch (error) {
     console.error('Digital item upload error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to upload digital item', 
       details: error instanceof Error ? error.message : 'Unknown error'

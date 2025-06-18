@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPurchaseById, updatePurchaseStatus } from '@/lib/purchase-utils';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
 import { createOneTimePayment, checkPaymentRequestStatus, chargeCard } from '@/lib/xendit-client';
-import { prisma } from '@/lib/prisma';
+import { supabaseUserService, supabaseTransactionService, supabasePurchaseService } from '@/lib/supabase-db';
 
 export async function POST(request: NextRequest) {
   console.log('='.repeat(80));
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Find the purchase
+    // Find the purchase using Supabase
     console.log(`[Xendit Card Payment] Fetching purchase with ID: ${purchaseId}`);
     const purchase = await getPurchaseById(purchaseId);
     
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     const callbackUrl = `${baseUrl}/api/webhooks/xendit`;
     
     try {
-      // Create a transaction record
+      // Create a transaction record using Supabase
       console.log('[Xendit Card Payment] Creating transaction record');
       
       // Get user ID from purchase or find/create a system user
@@ -105,22 +105,18 @@ export async function POST(request: NextRequest) {
       // If no userId in purchase, try to find a user with the same email
       if (!userId && purchase.email) {
         console.log(`[Xendit Card Payment] No userId in purchase, looking for user with email: ${purchase.email}`);
-        const existingUser = await prisma.user.findFirst({
-          where: { email: purchase.email }
-        });
+        const existingUser = await supabaseUserService.findUserByEmail(purchase.email);
         
         if (existingUser) {
-          userId = existingUser.id;
+          userId = (existingUser as any).id;
           console.log(`[Xendit Card Payment] Found user with matching email: ${userId}`);
         } else {
           // Try to find any user in the system as a fallback
           console.log('[Xendit Card Payment] No matching user found, looking for any user as fallback');
-          const fallbackUser = await prisma.user.findFirst({
-            orderBy: { createdAt: 'asc' } // Get the oldest user (likely an admin or system user)
-          });
+          const allUsers = await supabaseUserService.getUsers({ limit: 1 });
           
-          if (fallbackUser) {
-            userId = fallbackUser.id;
+          if (allUsers && allUsers.length > 0) {
+            userId = allUsers[0].id;
             console.log(`[Xendit Card Payment] Using fallback user: ${userId}`);
           } else {
             // If no user exists at all, we need to throw an error
@@ -136,32 +132,29 @@ export async function POST(request: NextRequest) {
       }
       
       console.log(`[Xendit Card Payment] Creating transaction with userId: ${userId}`);
-      const transaction = await prisma.transaction.create({
-        data: {
-          userId: userId,  // Use userId directly since we're not using connect syntax for user
-          amount: amount,
-          currency: currency,
-          status: 'PENDING',
-          type: 'payment',
-          description: `Card payment for purchase ${purchase.id}`,
-          reference: purchase.id,  // Store purchase ID in the reference field
-          referenceType: 'PURCHASE',  // Indicate the type of reference
-          metadata: JSON.stringify({
-            paymentMethod: 'card',
-            tokenId: tokenId.substring(0, 8) + '...',  // Only store partial token ID for reference
-            flowType: '3DS'
-          })
-        }
+      const transaction = await supabaseTransactionService.createTransaction({
+        userId: userId,
+        amount: amount,
+        currency: currency,
+        status: 'pending',
+        type: 'payment',
+        description: `Card payment for purchase ${purchase.id}`,
+        referenceId: purchase.id,
+        metadata: JSON.stringify({
+          paymentMethod: 'card',
+          tokenId: tokenId.substring(0, 8) + '...',  // Only store partial token ID for reference
+          flowType: '3DS'
+        })
       });
       
       console.log('[Xendit Card Payment] Transaction created:', {
-        id: transaction.id,
-        status: transaction.status,
-        amount: transaction.amount,
-        currency: transaction.currency
+        id: (transaction as any).id,
+        status: (transaction as any).status,
+        amount: (transaction as any).amount,
+        currency: (transaction as any).currency
       });
       
-      console.log(`[Xendit Card Payment] Transaction record created with ID: ${transaction.id}`);
+      console.log(`[Xendit Card Payment] Transaction record created with ID: ${(transaction as any).id}`);
       
       // Generate a unique reference ID for this payment
       const referenceId = `card_purchase_${purchase.id}_${Date.now()}`;
@@ -196,20 +189,17 @@ export async function POST(request: NextRequest) {
         chargeType: paymentResult.charge_type || null
       });
       
-      // Update transaction with payment result
+      // Update transaction with payment result using Supabase
       console.log('[Xendit Card Payment] Updating transaction record');
-      await prisma.transaction.update({
-        where: { id: transaction.id },
-        data: {
-          status: paymentResult.status === 'AUTHORIZED' || paymentResult.status === 'CAPTURED' ? 'COMPLETED' : 'PENDING',
-          reference: paymentResult.id,
-          metadata: JSON.stringify({
-            paymentMethod: 'card',
-            tokenId: tokenId.substring(0, 8) + '...',
-            chargeId: paymentResult.id,
-            status: paymentResult.status
-          })
-        }
+      await supabaseTransactionService.updateTransaction((transaction as any).id, {
+        status: paymentResult.status === 'AUTHORIZED' || paymentResult.status === 'CAPTURED' ? 'completed' : 'pending',
+        referenceId: paymentResult.id,
+        metadata: JSON.stringify({
+          paymentMethod: 'card',
+          tokenId: tokenId.substring(0, 8) + '...',
+          chargeId: paymentResult.id,
+          status: paymentResult.status
+        })
       });
       
       console.log(`[Xendit Card Payment] Payment request created with ID: ${paymentResult.id}`);
@@ -256,16 +246,13 @@ export async function POST(request: NextRequest) {
         console.log(`[Xendit Card Payment] Payment successful: ${paymentResult.id}`);
         console.log('[Xendit Card Payment] Payment status:', paymentResult.status);
         
-        // Update purchase status
+        // Update purchase status using existing utility (already migrated)
         console.log(`[Xendit Card Payment] Updating purchase status to completed for ID: ${purchase.id}`);
         await updatePurchaseStatus(purchase.id, 'completed', paymentResult.id);
         
-        // Update transaction status
-        await prisma.transaction.update({
-          where: { id: transaction.id },
-          data: {
-            status: 'COMPLETED'
-          }
+        // Update transaction status using Supabase
+        await supabaseTransactionService.updateTransaction((transaction as any).id, {
+          status: 'completed'
         });
         
         // Send purchase confirmation email
@@ -320,13 +307,20 @@ export async function POST(request: NextRequest) {
       console.error('[Xendit Card Payment] Payment processing error:', error);
       console.error('='.repeat(80));
       
-      // Update purchase status to failed
-      await prisma.purchase.update({
-        where: { id: purchase.id },
-        data: {
-          status: 'failed'
-        }
+      // Update purchase status to failed using Supabase
+      await supabasePurchaseService.updatePurchase(purchase.id, {
+        status: 'failed'
       });
+      
+      if (error instanceof Error) {
+        // Handle specific Supabase errors
+        if (error.message.includes('Failed to')) {
+          return NextResponse.json(
+            { error: 'Database error occurred. Please try again.' },
+            { status: 500 }
+          );
+        }
+      }
       
       return NextResponse.json({ 
         error: 'Failed to process card payment', 
@@ -335,6 +329,17 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('[Xendit Card Payment] Status check error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to check payment status',
       details: error instanceof Error ? error.message : 'Unknown error'

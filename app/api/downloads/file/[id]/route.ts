@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseFileService, supabasePurchaseService } from '@/lib/supabase-db';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
 import { cwd } from 'process';
@@ -94,31 +94,22 @@ export async function GET(request: NextRequest) {
     debugLog(`Authenticated user: ${userId}, isAdmin: ${isAdmin}`);
     debugLog(`Looking up file with ID: ${fileId}`);
     
-    // Find the file with product details including downloadLimit and linkExpiration
-    const file = await prisma.file.findUnique({
-      where: { id: fileId },
-      include: { 
-        product: {
-          include: {
-            user: true
-          }
-        }
-      }
-    });
+    // Find the file with product details using Supabase
+    const file = await supabaseFileService.findFileById(fileId);
     
-    if (!file) {
+    if (!file || !(file as any).product) {
       debugLog(`File not found with ID: ${fileId}`);
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
     
     // Get product download restrictions
-    const downloadLimit = file.product.downloadLimit;
-    const linkExpiration = file.product.linkExpiration;
+    const downloadLimit = (file as any).product.downloadLimit;
+    const linkExpiration = (file as any).product.linkExpiration;
     
     debugLog(`Product download restrictions: limit=${downloadLimit}, expiration=${linkExpiration} days`);
     
     // Verify the user has access to the file
-    const isCreator = file.product?.userId === userId;
+    const isCreator = (file as any).product?.userId === userId;
     
     // If user is not the creator or admin, check if they've purchased the product
     let hasPurchased = false;
@@ -126,7 +117,7 @@ export async function GET(request: NextRequest) {
     let purchase = null;
     
     // Case 1: User is the owner of the product
-    if (file.product.userId === userId) {
+    if ((file as any).product.userId === userId) {
       debugLog('User is the product owner - access granted');
       authorized = true;
     }
@@ -139,32 +130,24 @@ export async function GET(request: NextRequest) {
     else {
       // For temporary access tokens, we already have the purchase ID
       if (isTempAccess && purchaseId) {
-        purchase = await prisma.purchase.findUnique({
-          where: {
-            id: purchaseId,
-            productId: file.product.id,
-            status: 'completed'
-          }
-        });
+        purchase = await supabasePurchaseService.findPurchaseById(purchaseId);
         
-        if (purchase) {
-          debugLog(`Found valid purchase with temp access token: ${purchase.id}`);
+        if (purchase && (purchase as any).productId === (file as any).product.id && (purchase as any).status === 'completed') {
+          debugLog(`Found valid purchase with temp access token: ${(purchase as any).id}`);
           authorized = true;
         }
       } else {
         // For regular users, check if they have a purchase for this product
-        purchase = await prisma.purchase.findFirst({
-          where: {
-            userId: userId,
-            productId: file.product.id,
-            status: 'completed'
-          }
+        const purchases = await supabasePurchaseService.getPurchasesByEmail((userId as any).email || '', {
+          status: 'completed'
         });
         
+        purchase = purchases.find((p: any) => p.productId === (file as any).product.id && p.userId === userId);
+        
         if (purchase) {
-          debugLog(`User has purchased this product: ${purchase.id}`);
+          debugLog(`User has purchased this product: ${(purchase as any).id}`);
           authorized = true;
-          purchaseId = purchase.id;
+          purchaseId = (purchase as any).id;
         }
       }
     }
@@ -178,14 +161,10 @@ export async function GET(request: NextRequest) {
     }
     
     // If this is a purchase-based download (not owner or admin), check restrictions
-    if (authorized && purchase && !isAdmin && file.product.userId !== userId) {
+    if (authorized && purchase && !isAdmin && (file as any).product.userId !== userId) {
       // 1. Check download limit
-      const previousDownloads = await prisma.fileDownload.count({
-        where: {
-          purchaseId: purchase.id,
-          fileId: fileId
-        }
-      });
+      const downloadHistory = await supabaseFileService.getDownloadHistory(fileId);
+      const previousDownloads = downloadHistory.filter((dl: any) => dl.purchaseId === (purchase as any).id).length;
       
       debugLog(`Previous downloads for this purchase: ${previousDownloads}/${downloadLimit}`);
       
@@ -200,7 +179,7 @@ export async function GET(request: NextRequest) {
       }
       
       // 2. Check link expiration
-      const purchaseDate = purchase.createdAt;
+      const purchaseDate = new Date((purchase as any).createdAt);
       const currentDate = new Date();
       const daysSincePurchase = differenceInDays(currentDate, purchaseDate);
       
@@ -221,7 +200,7 @@ export async function GET(request: NextRequest) {
     debugLog(`User access type: ${isCreator ? 'Creator' : isAdmin ? 'Admin' : 'Purchaser'}`);
     
     // Get the file path
-    const filePath = file.path;
+    const filePath = (file as any).path;
     debugLog(`File path from database: ${filePath}`);
     
     // If the path is a URL, redirect to it
@@ -253,7 +232,7 @@ export async function GET(request: NextRequest) {
       debugLog(`Successfully read file, size: ${fileBuffer.length} bytes`);
       
       // Get the filename
-      const fileName = file.filename || absoluteFilePath.split('/').pop() || 'download';
+      const fileName = (file as any).filename || absoluteFilePath.split('/').pop() || 'download';
       
       // Determine content type
       const extension = fileName.split('.').pop()?.toLowerCase();
@@ -292,26 +271,23 @@ export async function GET(request: NextRequest) {
       
       debugLog(`Serving file: ${fileName}, type: ${contentType}, disposition: ${disposition}, size: ${fileBuffer.length} bytes`);
       
-      // Log the download for analytics
+      // Log the download for analytics using Supabase
       try {
-        const downloadLog = await prisma.fileDownload.create({
-          data: {
-            fileId: fileId,
-            userId: isTempAccess ? null : userId, // Don't store temp user IDs
-            purchaseId: purchaseId, // Store the purchase ID for tracking
-            downloadedAt: new Date(),
-            userAgent: request.headers.get('user-agent') || 'unknown',
-            ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-            // Track if this was a temporary access download
-            metadata: isTempAccess ? JSON.stringify({
-              tempAccess: true,
-              email: tempData.email,
-              productId: tempData.productId
-            }) : null
-          }
+        const downloadLog = await supabaseFileService.createFileDownload({
+          fileId: fileId,
+          userId: isTempAccess ? null : userId,
+          purchaseId: purchaseId,
+          downloadedAt: new Date().toISOString(),
+          userAgent: request.headers.get('user-agent') || 'unknown',
+          ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+          metadata: isTempAccess ? JSON.stringify({
+            tempAccess: true,
+            email: tempData.email,
+            productId: tempData.productId
+          }) : null
         });
         
-        debugLog(`Logged download for analytics, id: ${downloadLog.id}`);
+        debugLog(`Logged download for analytics, id: ${(downloadLog as any).id}`);
       } catch (logError) {
         // Don't fail the download if logging fails
         debugLog(`Failed to log download: ${logError instanceof Error ? logError.message : String(logError)}`);
@@ -327,6 +303,17 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     debugLog(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

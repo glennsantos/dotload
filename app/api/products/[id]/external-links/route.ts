@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService, supabaseFileService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function POST(
@@ -20,15 +20,10 @@ export async function POST(
       );
     }
 
-    // Check if the product exists and belongs to the user
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-        userId,
-      },
-    });
+    // Check if the product exists and belongs to the user using Supabase
+    const product = await supabaseProductService.findProductById(productId);
 
-    if (!product) {
+    if (!product || (product as any).userId !== userId) {
       return NextResponse.json(
         { error: 'Not found', details: 'Product not found or you do not have permission to modify it' },
         { status: 404 }
@@ -45,19 +40,13 @@ export async function POST(
       );
     }
 
-    // Create file records for each link
+    // Create file records for each link using Supabase
     const filePromises = links.map(link => {
-      return prisma.file.create({
-        data: {
-          filename: `External Link: ${new URL(link).hostname}`,
-          path: link, // Store the URL as the path
-          mimetype: 'text/url',
-          product: {
-            connect: {
-              id: productId,
-            },
-          },
-        },
+      return supabaseFileService.createFile({
+        filename: `External Link: ${new URL(link).hostname}`,
+        path: link, // Store the URL as the path
+        mimetype: 'text/url',
+        productId: productId,
       });
     });
 
@@ -67,6 +56,17 @@ export async function POST(
     return NextResponse.json({ success: true, message: 'External links added successfully' });
   } catch (error) {
     console.error('Error adding external links:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Server error', details: 'Failed to add external links' },
       { status: 500 }

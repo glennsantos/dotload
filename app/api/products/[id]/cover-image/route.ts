@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
@@ -36,12 +36,8 @@ export async function POST(
       }, { status: 401 });
     }
     
-    // Find the product by ID
-    const existingProduct = await prisma.product.findUnique({
-      where: {
-        id: productId
-      }
-    });
+    // Find the product by ID using Supabase
+    const existingProduct = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!existingProduct) {
@@ -51,7 +47,7 @@ export async function POST(
       }, { status: 404 });
     }
     
-    if (existingProduct.userId !== userId) {
+    if ((existingProduct as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to update this product'
@@ -84,14 +80,9 @@ export async function POST(
     
     coverImagePath = result.secure_url;
     
-    // Update the product with the new cover image path
-    const updatedProduct = await prisma.product.update({
-      where: {
-        id: productId
-      },
-      data: {
-        coverImagePath
-      }
+    // Update the product with the new cover image path using Supabase
+    const updatedProduct = await supabaseProductService.updateProduct(productId, {
+      coverImagePath
     });
     
     return NextResponse.json({
@@ -100,6 +91,17 @@ export async function POST(
     });
   } catch (error) {
     console.error('Cover image update error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to update cover image', 
       details: error instanceof Error ? error.message : 'Unknown error'
