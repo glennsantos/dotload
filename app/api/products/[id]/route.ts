@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { apiConfig, checkFileSizeLimit, formatFileSize } from '../../config';
 import { isAllowedDigitalFile } from '@/lib/file-validation';
-import { supabaseProductService, supabaseFileService } from '@/lib/supabase-db';
+import { supabaseProductService, supabaseFileService, supabaseVariationService } from '@/lib/supabase-db';
 
 // Ensure uploads directory exists with proper structure
 async function ensureUploadsDir(userId: string, productId: string) {
@@ -201,69 +201,51 @@ export async function GET(
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
     
+    // If no authenticated user, return error
     if (!userId) {
       return NextResponse.json({ 
         error: 'Authentication required',
-        details: 'You must be logged in to view this product'
+        details: 'You must be logged in to view product details'
       }, { status: 401 });
     }
-
-    // Find the product using Supabase
+    
+    // Find the product by ID using Supabase
     const product = await supabaseProductService.findProductById(productId);
     
+    // Check if product exists and belongs to the user
     if (!product) {
       return NextResponse.json({ 
         error: 'Product not found',
         details: 'The requested product does not exist'
       }, { status: 404 });
     }
-
-    // Check if the user owns this product
+    
     if (product.userId !== userId) {
       return NextResponse.json({ 
-        error: 'Access denied',
+        error: 'Unauthorized',
         details: 'You do not have permission to view this product'
       }, { status: 403 });
     }
-
+    
+    // Get variations for this product using Supabase
+    const variations = await supabaseVariationService.getVariationsByProductId(productId);
+    
+    // Get files for this product using Supabase
+    const files = await supabaseFileService.getFilesByProductId(productId);
+    
     // Return the product data
     return NextResponse.json({
       product: {
-        id: product.id,
-        name: product.name,
-        type: product.type,
-        price: product.price,
-        description: product.description,
-        coverImagePath: product.coverImagePath,
-        digitalItemPath: product.digitalItemPath,
-        slug: product.slug,
-        currency: product.currency,
-        createdAt: product.createdAt,
-        updatedAt: product.updatedAt,
-        status: product.status,
-        isPublic: product.isPublic,
-        allowPayWhatYouWant: product.allowPayWhatYouWant,
-        offerCoupons: product.offerCoupons,
-        downloadLimit: product.downloadLimit,
-        linkExpiration: product.linkExpiration,
-        files: product.files || [],
-        variations: product.variations || []
+        ...product,
+        variations,
+        files
       }
     });
-
   } catch (error) {
-    console.error('Error fetching product:', error);
-    
-    if (error instanceof Error) {
-      return NextResponse.json({
-        error: 'Failed to fetch product',
-        details: error.message
-      }, { status: 500 });
-    }
-    
-    return NextResponse.json({
-      error: 'Internal server error',
-      details: 'An unexpected error occurred'
+    console.error('Product fetch error:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch product', 
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
@@ -284,7 +266,7 @@ export async function PUT(
         details: 'Product ID is required'
       }, { status: 400 });
     }
-    
+
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
     
@@ -292,11 +274,11 @@ export async function PUT(
     if (!userId) {
       return NextResponse.json({ 
         error: 'Authentication required',
-        details: 'You must be logged in to update a product'
+        details: 'You must be logged in to edit a product'
       }, { status: 401 });
     }
     
-    // Find the product by ID
+    // Find the product by ID using Supabase
     const existingProduct = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
@@ -310,316 +292,87 @@ export async function PUT(
     if (existingProduct.userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
-        details: 'You do not have permission to update this product'
+        details: 'You do not have permission to edit this product'
       }, { status: 403 });
     }
-    
-    // Check if the request is multipart/form-data or JSON
+
+    // Parse request data
     const contentType = request.headers.get('content-type') || '';
     let updateData: any = {};
-    let coverImagePath = null;
     
     if (contentType.includes('multipart/form-data')) {
-      // Handle form data
+      // Handle form data with files
       const formData = await request.formData();
       
-      // Log form data keys and values for debugging
-      console.log('Edit Product - Form Data Keys:', [...formData.keys()]);
+      console.log('Edit Product - Processing form data');
       
-      // Log the raw form data values for key fields
-      console.log('Edit Product - Raw Form Data:');
-      console.log('- badges:', formData.get('badges'));
-      console.log('- trustIndicators:', formData.get('trustIndicators'));
-      console.log('- whatsIncluded:', formData.get('whatsIncluded'));
-      console.log('- curriculum:', formData.get('curriculum'));
-      
-      // Extract basic product details
+      // Extract text fields
       const name = formData.get('name') as string;
-      const description = formData.get('description') as string || '';
+      const description = formData.get('description') as string;
       const price = formData.get('price') as string;
+      const type = formData.get('type') as string;
+      const allowPayWhatYouWant = formData.get('allowPayWhatYouWant') as string;
+      const offerCoupons = formData.get('offerCoupons') as string;
+      const discountCodes = formData.get('discountCodes') as string;
+      const isPublic = formData.get('isPublic') as string;
+      const status = formData.get('status') as string;
+      const variations = formData.get('variations') as string;
       
-      // Validate required fields
-      if (!name || !price) {
-        return NextResponse.json({ 
-          error: 'Missing required fields',
-          details: {
-            name: !!name,
-            price: !!price,
-          }
-        }, { status: 400 });
-      }
-      
-      // Parse price
-      const parsedPrice = parseFloat(price);
-      if (isNaN(parsedPrice) || parsedPrice < 0) {
-        return NextResponse.json({ 
-          error: 'Invalid price', 
-          details: 'Price must be a positive number'
-        }, { status: 400 });
-      }
-      
-      // Process uploaded files if any
-      const { coverImagePath: newCoverImagePath, uploadedContentFiles } = await processFiles(formData, userId, productId);
-      if (newCoverImagePath) {
-        coverImagePath = newCoverImagePath;
-      }
-      
-      // Log the uploaded content files
-      if (uploadedContentFiles && uploadedContentFiles.length > 0) {
-        console.log(`Successfully uploaded ${uploadedContentFiles.length} content files`);
-      }
-      
-      // Parse variations if exist
-      let parsedVariations: { name: string; options: string }[] = [];
-      try {
-        const variationsData = formData.get('variations');
-        if (variationsData) {
-          const parsed = JSON.parse(variationsData as string);
-          if (Array.isArray(parsed)) {
-            parsedVariations = parsed.map(v => ({
-              name: v.name || 'Unnamed Variation',
-              options: JSON.stringify(v.options || [])
-            }));
-          }
-        }
-      } catch (parseError) {
-        console.error('Error parsing variations:', parseError);
-        return NextResponse.json({ 
-          error: 'Invalid variations format', 
-          details: parseError instanceof Error ? parseError.message : 'Unknown error'
-        }, { status: 400 });
-      }
-      
-      // Parse payment options
-      let paymentOptions = {
-        allowPayWhatYouWant: false,
-        offerCoupons: false
+      // Build update data object only with provided fields
+      updateData = {
+        ...(name !== null && name !== undefined ? { name } : {}),
+        ...(description !== null && description !== undefined ? { description } : {}),
+        ...(price !== null && price !== undefined ? { 
+          price: parseFloat(price) || 0 
+        } : {}),
+        ...(type !== null && type !== undefined ? { type } : {}),
+        ...(allowPayWhatYouWant !== null && allowPayWhatYouWant !== undefined ? { 
+          allowPayWhatYouWant: allowPayWhatYouWant === 'true' 
+        } : {}),
+        ...(offerCoupons !== null && offerCoupons !== undefined ? { 
+          offerCoupons: offerCoupons === 'true' 
+        } : {}),
+        ...(discountCodes !== null && discountCodes !== undefined ? { discountCodes } : {}),
+        ...(isPublic !== null && isPublic !== undefined ? { 
+          isPublic: isPublic === 'true' 
+        } : {}),
+        ...(status !== null && status !== undefined ? { status } : {})
       };
       
-      try {
-        const paymentOptionsData = formData.get('paymentOptions');
-        if (paymentOptionsData) {
-          const parsedOptions = JSON.parse(paymentOptionsData as string);
-          paymentOptions = {
-            allowPayWhatYouWant: !!parsedOptions.allowPayWhatYouWant,
-            offerCoupons: !!parsedOptions.offerCoupons
-          };
-        }
-      } catch (parseError) {
-        console.error('Error parsing payment options:', parseError);
-        // Continue with default values
+      console.log('Edit Product - Extracted data:', updateData);
+      
+      // Process files if any are present
+      const { coverImagePath, uploadedContentFiles } = await processFiles(formData, userId, productId);
+      
+      // Add cover image to update data if provided
+      if (coverImagePath) {
+        updateData.coverImage = coverImagePath;
       }
       
-      // Parse trust indicators
-      let secureCheckout = false;
-      let instantDownload = false;
-      let refundPolicy = false;
-      let customTrustIndicators = '[]';
-      
-      try {
-        const trustIndicatorsData = formData.get('trustIndicators');
-        if (trustIndicatorsData) {
-          const parsedTrustIndicators = JSON.parse(trustIndicatorsData as string);
-          secureCheckout = !!parsedTrustIndicators.secureCheckout;
-          instantDownload = !!parsedTrustIndicators.instantDownload;
-          refundPolicy = !!parsedTrustIndicators.refundPolicy;
-          customTrustIndicators = JSON.stringify(parsedTrustIndicators.custom || []);
-        } else {
-          console.log('Edit Product - No trust indicators data found in form, preserving existing data');
-          // Preserve existing trust indicators data if not provided in form
-          secureCheckout = existingProduct.secureCheckout || false;
-          instantDownload = existingProduct.instantDownload || false;
-          refundPolicy = existingProduct.refundPolicy || false;
-          
-          try {
-            if (existingProduct.customTrustIndicators) {
-              customTrustIndicators = existingProduct.customTrustIndicators;
-              console.log('Edit Product - Using existing customTrustIndicators data:', customTrustIndicators);
-            }
-          } catch (error) {
-            console.error('Error using existing customTrustIndicators:', error);
-          }
-        }
-      } catch (parseError) {
-        console.error('Error parsing trust indicators:', parseError);
-        // Continue with default values
-      }
-      
-      // Parse badges
-      let bestSeller = false;
-      let newRelease = false;
-      let popular = false;
-      let customBadges = '[]';
-      
-      try {
-        const badgesData = formData.get('badges');
-        if (badgesData) {
-          const parsedBadges = JSON.parse(badgesData as string);
-          bestSeller = !!parsedBadges.bestSeller;
-          newRelease = !!parsedBadges.newRelease;
-          popular = !!parsedBadges.popular;
-          customBadges = JSON.stringify(Array.isArray(parsedBadges.custom) ? parsedBadges.custom : []);
-        } else {
-          console.log('Edit Product - No badges data found in form, preserving existing data');
-          // Preserve existing badges data if not provided in form
-          bestSeller = existingProduct.bestSeller || false;
-          newRelease = existingProduct.newRelease || false;
-          popular = existingProduct.popular || false;
-          
-          try {
-            if (existingProduct.customBadges) {
-              customBadges = existingProduct.customBadges;
-              console.log('Edit Product - Using existing customBadges data:', customBadges);
-            }
-          } catch (error) {
-            console.error('Error using existing customBadges:', error);
-          }
-        }
-      } catch (parseError) {
-        console.error('Error parsing badges:', parseError);
-        // Continue with default values
-      }
-      
-      // Get the slug from form data
-      const slug = formData.get('slug') as string || '';
-      
-      // Parse what's included
-      let whatsIncluded = [];
-      
-      try {
-        const whatsIncludedData = formData.get('whatsIncluded');
-        console.log('Edit Product - Processing whatsIncluded:', whatsIncludedData);
-        if (whatsIncludedData) {
-          whatsIncluded = JSON.parse(whatsIncludedData as string);
-          console.log('Edit Product - Parsed whatsIncluded:', whatsIncluded);
-          if (!Array.isArray(whatsIncluded)) {
-            console.log('Edit Product - whatsIncluded is not an array, resetting to empty array');
-            whatsIncluded = [];
-          }
-        } else {
-          console.log('Edit Product - No whatsIncluded data found in form, preserving existing data');
-          // Preserve existing whatsIncluded data if not provided in form
-          try {
-            const existingWhatsIncluded = existingProduct.whatsIncluded;
-            if (existingWhatsIncluded) {
-              whatsIncluded = JSON.parse(existingWhatsIncluded);
-              console.log('Edit Product - Using existing whatsIncluded data:', whatsIncluded);
-            }
-          } catch (error) {
-            console.error('Error parsing existing whatsIncluded:', error);
-          }
-        }
-      } catch (parseError) {
-        console.error('Error parsing whatsIncluded:', parseError);
-        // Continue with empty array
-      }
-      
-      // Parse curriculum items
-      let curriculum = [];
-      try {
-        const curriculumData = formData.get('curriculum');
-        console.log('Edit Product - Processing curriculum:', curriculumData);
-        if (curriculumData) {
-          curriculum = JSON.parse(curriculumData as string);
-          console.log('Edit Product - Parsed curriculum:', curriculum);
-          if (!Array.isArray(curriculum)) {
-            console.log('Edit Product - curriculum is not an array, resetting to empty array');
-            curriculum = [];
-          }
-        } else {
-          console.log('Edit Product - No curriculum data found in form, preserving existing data');
-          // Preserve existing curriculum data if not provided in form
-          try {
-            const existingCurriculum = existingProduct.curriculum;
-            if (existingCurriculum) {
-              curriculum = JSON.parse(existingCurriculum);
-              console.log('Edit Product - Using existing curriculum data:', curriculum);
-            }
-          } catch (error) {
-            console.error('Error parsing existing curriculum:', error);
-          }
-        }
-      } catch (parseError) {
-        console.error('Error parsing curriculum:', parseError);
-        // Continue with empty array
-      }
-      
-      // Parse download settings
-      let downloadSettings = {
-        downloadLimit: 5,
-        linkExpiration: 30
-      };
-      
-      try {
-        const downloadSettingsData = formData.get('downloadSettings');
-        if (downloadSettingsData) {
-          const parsedSettings = JSON.parse(downloadSettingsData as string);
-          downloadSettings = {
-            downloadLimit: parseInt(parsedSettings.downloadLimit) || 5,
-            linkExpiration: parseInt(parsedSettings.linkExpiration) || 30
-          };
-        }
-      } catch (parseError) {
-        console.error('Error parsing download settings:', parseError);
-        // Continue with default values
-      }
-      
-      // Log the data before creating the updateData object
-      console.log('Edit Product - Data for updateData:', {
-        whatsIncluded,
-        curriculum,
-        bestSeller,
-        newRelease,
-        popular,
-        customBadges
+      console.log('Edit Product - Files processed:', { 
+        coverImagePath, 
+        uploadedFilesCount: uploadedContentFiles.length 
       });
       
-      updateData = {
-        name,
-        description: description || undefined, // Only update if not blank
-        price: parsedPrice,
-        // Add payment options as individual fields
-        allowPayWhatYouWant: paymentOptions.allowPayWhatYouWant,
-        offerCoupons: paymentOptions.offerCoupons,
-        ...(coverImagePath ? { coverImagePath } : {}),
-        // Add slug if provided
-        ...(slug ? { slug } : {}),
-        // Add trust indicators as individual fields
-        secureCheckout: secureCheckout,
-        instantDownload: instantDownload,
-        refundPolicy: refundPolicy,
-        customTrustIndicators: customTrustIndicators,
-        // Add badges as individual fields
-        bestSeller: bestSeller,
-        newRelease: newRelease,
-        popular: popular,
-        customBadges: customBadges,
-        // Always include whatsIncluded and curriculum, even if empty
-        whatsIncluded: JSON.stringify(whatsIncluded || []),
-        curriculum: JSON.stringify(curriculum || []),
-        // Add download settings as individual fields
-        downloadLimit: downloadSettings.downloadLimit,
-        linkExpiration: downloadSettings.linkExpiration
-      };
-      
-      console.log('Edit Product - Final updateData:', updateData);
-      
       // Handle variations update if provided
-      if (parsedVariations.length > 0) {
-        // Delete existing variations and create new ones
-        await supabaseProductService.deleteVariations(productId);
-        
-        // Create new variations
-        await Promise.all(parsedVariations.map(variation => 
-          supabaseProductService.createVariation({
-            ...variation,
-          prisma.variation.create({
-            data: {
-              ...variation,
+      if (variations) {
+        try {
+          const parsedVariations = JSON.parse(variations);
+          
+          // Delete existing variations and create new ones using Supabase
+          await supabaseVariationService.deleteVariationsByProductId(productId);
+          
+          // Create new variations using Supabase
+          await Promise.all(parsedVariations.map(variation => 
+            supabaseVariationService.createVariation({
+              name: variation.name || 'Unnamed Variation',
+              options: JSON.stringify(variation.options || []),
               productId: productId
-            }
-          })
-        ));
+            })
+          ));
+        } catch (error) {
+          console.error('Error processing variations:', error);
+        }
       }
     } else {
       // Handle JSON data
@@ -683,21 +436,15 @@ export async function PUT(
       
       // Handle variations update if provided
       if (jsonData.variations && Array.isArray(jsonData.variations)) {
-        // Delete existing variations and create new ones
-        await prisma.variation.deleteMany({
-          where: {
-            productId: productId
-          }
-        });
+        // Delete existing variations and create new ones using Supabase
+        await supabaseVariationService.deleteVariationsByProductId(productId);
         
-        // Create new variations
+        // Create new variations using Supabase
         await Promise.all(jsonData.variations.map((variation: any) => 
-          prisma.variation.create({
-            data: {
-              name: variation.name || 'Unnamed Variation',
-              options: JSON.stringify(variation.options || []),
-              productId: productId
-            }
+          supabaseVariationService.createVariation({
+            name: variation.name || 'Unnamed Variation',
+            options: JSON.stringify(variation.options || []),
+            productId: productId
           })
         ));
       }
@@ -736,27 +483,19 @@ export async function PUT(
     // Log the final updateData object
     console.log('Edit Product - Final updateData:', updateData);
     
-    // Update the product with the provided data
-    const updatedProduct = await prisma.product.update({
-      where: {
-        id: productId
-      },
-      data: updateData
-    });
+    // Update the product with the provided data using Supabase
+    const updatedProduct = await supabaseProductService.updateProduct(productId, updateData);
     
-    // Fetch the updated product with all its data
-    const refreshedProduct = await prisma.product.findUnique({
-      where: {
-        id: productId
-      },
-      include: {
-        variations: true
-      }
-    });
+    // Fetch the updated product with all its data using Supabase
+    const refreshedProduct = await supabaseProductService.findProductById(productId);
+    const variations = await supabaseVariationService.getVariationsByProductId(productId);
     
     return NextResponse.json({ 
       message: 'Product updated successfully',
-      product: refreshedProduct
+      product: {
+        ...refreshedProduct,
+        variations
+      }
     });
   } catch (error) {
     console.error('Product update error:', error);
@@ -794,12 +533,8 @@ export async function DELETE(
       }, { status: 401 });
     }
     
-    // Find the product by ID
-    const existingProduct = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      }
-    });
+    // Find the product by ID using Supabase
+    const existingProduct = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!existingProduct) {
@@ -816,25 +551,12 @@ export async function DELETE(
       }, { status: 403 });
     }
     
-    // Delete associated files and variations
-    await prisma.file.deleteMany({
-      where: {
-        productId: productId
-      }
-    });
+    // Delete associated files and variations using Supabase
+    await supabaseFileService.deleteFilesByProductId(productId);
+    await supabaseVariationService.deleteVariationsByProductId(productId);
     
-    await prisma.variation.deleteMany({
-      where: {
-        productId: productId
-      }
-    });
-    
-    // Delete the product
-    await prisma.product.delete({
-      where: {
-        id: productId
-      }
-    });
+    // Delete the product using Supabase
+    await supabaseProductService.deleteProduct(productId);
     
     return NextResponse.json({
       message: 'Product deleted successfully'

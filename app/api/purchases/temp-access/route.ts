@@ -19,17 +19,8 @@ export async function POST(request: NextRequest) {
     
     console.log(`[TEMP-ACCESS] Creating temporary access for code: ${accessCode}`);
     
-    // Find the purchase by access code
-    const purchase = await prisma.purchase.findUnique({
-      where: { accessCode },
-      include: {
-        product: {
-          include: {
-            files: true
-          }
-        }
-      }
-    });
+    // Find the purchase by access code using Supabase
+    const purchase = await supabasePurchaseService.findPurchaseByAccessCode(accessCode);
     
     if (!purchase) {
       console.log(`[TEMP-ACCESS] Purchase not found for code: ${accessCode}`);
@@ -79,13 +70,8 @@ export async function POST(request: NextRequest) {
       const downloadLimit = purchase.product?.downloadLimit || 10;
       const linkExpiration = purchase.product?.linkExpiration || 30;
       
-      // Check download limit
-      const previousDownloads = await prisma.fileDownload.count({
-        where: {
-          purchaseId: purchase.id,
-          fileId: file.id
-        }
-      });
+      // Check download limit using Supabase
+      const previousDownloads = await supabaseFileService.countFileDownloads(purchase.id, file.id);
       
       // Check link expiration
       const purchaseDate = purchase.createdAt;

@@ -202,24 +202,22 @@ export async function POST(request: NextRequest) {
           userId: purchase.product.userId
         });
         
-        const transaction = await prisma.transaction.create({
-          data: {
-            amount,
-            currency: currency,
-            type: 'payment',
-            status: 'pending',
-            description: `${channelCode} payment for purchase ${purchase.id}`,
-            reference: purchase.id,
-            referenceType: 'Purchase',
-            metadata: JSON.stringify({
-              paymentMethod: 'ewallet',
-              channelCode: channelCode,
-              flowType: 'one-time',
-              mobileNumber: mobileNumber,
-              purchaseId: purchase.id
-            }),
-            userId: purchase.product.userId // Use the product's userId since purchase.userId might be null for guest purchases
-          }
+        const transaction = await supabaseTransactionService.createTransaction({
+          amount,
+          currency: currency,
+          type: 'payment',
+          status: 'pending',
+          description: `${channelCode} payment for purchase ${purchase.id}`,
+          reference: purchase.id,
+          referenceType: 'Purchase',
+          metadata: JSON.stringify({
+            paymentMethod: 'ewallet',
+            channelCode: channelCode,
+            flowType: 'one-time',
+            mobileNumber: mobileNumber,
+            purchaseId: purchase.id
+          }),
+          userId: purchase.product.userId // Use the product's userId since purchase.userId might be null for guest purchases
         });
         
         logApiStep('TRANSACTION_CREATE_SUCCESS', {
@@ -313,19 +311,16 @@ export async function POST(request: NextRequest) {
             paymentId: paymentData.id
           });
           
-          await prisma.transaction.update({
-            where: { id: transaction.id },
-            data: {
-              reference: paymentData.id,
-              metadata: JSON.stringify({
-                paymentMethod: 'ewallet',
-                channelCode: channelCode,
-                paymentId: paymentData.id,
-                referenceId: referenceId,
-                flowType: 'one-time',
-                mobileNumber: mobileNumber,
-              })
-            }
+          await supabaseTransactionService.updateTransaction(transaction.id, {
+            reference: paymentData.id,
+            metadata: JSON.stringify({
+              paymentMethod: 'ewallet',
+              channelCode: channelCode,
+              paymentId: paymentData.id,
+              referenceId: referenceId,
+              flowType: 'one-time',
+              mobileNumber: mobileNumber,
+            })
           });
           
           logApiStep('TRANSACTION_UPDATE_SUCCESS');
@@ -381,25 +376,19 @@ export async function POST(request: NextRequest) {
           }, paymentError);
           
           // Update transaction to failed status
-          await prisma.transaction.update({
-            where: { id: transaction.id },
-            data: {
-              status: 'FAILED',
-              metadata: JSON.stringify({
-                paymentMethod: 'ewallet',
-                channelCode: channelCode,
-                flowType: 'one-time',
-                error: paymentError instanceof Error ? paymentError.message : 'Unknown error'
-              })
-            }
+          await supabaseTransactionService.updateTransaction(transaction.id, {
+            status: 'FAILED',
+            metadata: JSON.stringify({
+              paymentMethod: 'ewallet',
+              channelCode: channelCode,
+              flowType: 'one-time',
+              error: paymentError instanceof Error ? paymentError.message : 'Unknown error'
+            })
           });
           
           // Update purchase status to failed
-          await prisma.purchase.update({
-            where: { id: purchase.id },
-            data: {
-              status: 'failed'
-            }
+          await supabasePurchaseService.updatePurchase(purchase.id, {
+            status: 'failed'
           });
           
           return NextResponse.json({ 
@@ -467,13 +456,10 @@ export async function POST(request: NextRequest) {
           
           if (authAction && authAction.url) {
             // Record the payment method ID in the purchase record for later use
-            await prisma.purchase.update({
-              where: { id: purchase.id },
-              data: {
-                paymentId: paymentMethodResponse.id, // Use paymentId field instead of paymentMethodId
-                paymentMethod: 'ewallet',
-                status: 'pending'
-              }
+            await supabasePurchaseService.updatePurchase(purchase.id, {
+              paymentId: paymentMethodResponse.id, // Use paymentId field instead of paymentMethodId
+              paymentMethod: 'ewallet',
+              status: 'pending'
             });
             
             // Add a transaction record for the pending purchase
@@ -486,18 +472,16 @@ export async function POST(request: NextRequest) {
               flowType: 'ewallet-flow'
             };
             
-            await prisma.transaction.create({
-              data: {
-                userId: userId,
-                type: 'purchase',
-                status: 'pending',
-                amount: amount,
-                currency: currency,
-                description: `Purchase of ${purchase.product.name}`,
-                reference: purchase.id,
-                referenceType: 'Purchase',
-                metadata: JSON.stringify(metadata)
-              }
+            await supabaseTransactionService.createTransaction({
+              amount: amount,
+              currency: currency,
+              type: 'purchase',
+              status: 'pending',
+              description: `Purchase of ${purchase.product.name}`,
+              reference: purchase.id,
+              referenceType: 'Purchase',
+              metadata: JSON.stringify(metadata),
+              userId: userId
             });
             
             // Return the URL for the frontend to redirect the user
@@ -531,13 +515,10 @@ export async function POST(request: NextRequest) {
             
             if (authAction && authAction.url) {
               // Update the purchase record with payment information
-              await prisma.purchase.update({
-                where: { id: purchase.id },
-                data: {
-                  paymentId: chargeResponse.id, // Use paymentId field instead of paymentMethodId
-                  paymentMethod: 'ewallet',
-                  status: 'pending'
-                }
+              await supabasePurchaseService.updatePurchase(purchase.id, {
+                paymentId: chargeResponse.id, // Use paymentId field instead of paymentMethodId
+                paymentMethod: 'ewallet',
+                status: 'pending'
               });
               
               // Add a transaction record for the pending purchase
@@ -551,18 +532,16 @@ export async function POST(request: NextRequest) {
                 chargeId: chargeResponse.id
               };
               
-              await prisma.transaction.create({
-                data: {
-                  userId: userId,
-                  type: 'purchase',
-                  status: 'pending',
-                  amount: amount,
-                  currency: currency,
-                  description: `Purchase of ${purchase.product.name}`,
-                  reference: purchase.id,
-                  referenceType: 'Purchase',
-                  metadata: JSON.stringify(metadata)
-                }
+              await supabaseTransactionService.createTransaction({
+                amount: amount,
+                currency: currency,
+                type: 'purchase',
+                status: 'pending',
+                description: `Purchase of ${purchase.product.name}`,
+                reference: purchase.id,
+                referenceType: 'Purchase',
+                metadata: JSON.stringify(metadata),
+                userId: userId
               });
               
               // Return the URL for the frontend to redirect the user
@@ -594,18 +573,16 @@ export async function POST(request: NextRequest) {
               chargeId: chargeResponse.id
             };
             
-            await prisma.transaction.create({
-              data: {
-                userId: userId,
-                type: 'purchase',
-                status: 'completed',
-                amount: amount,
-                currency: currency,
-                description: `Purchase of ${purchase.product.name}`,
-                reference: purchase.id,
-                referenceType: 'Purchase',
-                metadata: JSON.stringify(metadata)
-              }
+            await supabaseTransactionService.createTransaction({
+              amount: amount,
+              currency: currency,
+              type: 'purchase',
+              status: 'completed',
+              description: `Purchase of ${purchase.product.name}`,
+              reference: purchase.id,
+              referenceType: 'Purchase',
+              metadata: JSON.stringify(metadata),
+              userId: userId
             });
             
             // Send purchase confirmation email
@@ -719,31 +696,26 @@ export async function POST(request: NextRequest) {
             logApiStep('PAYMENT_METHOD_ACTIVE_CREATING_PAYMENT');
             
             // Create a transaction record for the payment attempt
-            await prisma.transaction.create({
-              data: {
-                type: 'PURCHASE',
-                status: 'PENDING',
-                amount: amount,
-                currency: currency,
-                description: `Payment for ${purchase.product.name}`,
-                reference: purchase.id,
-                referenceType: 'Purchase',
-                metadata: JSON.stringify({
-                  customerId: customer.id,
-                  channelCode: walletType,
-                  flowType: 'TOKENIZED',
-                  paymentMethodId: paymentMethodResponse.id
-                }),
-                userId: purchase.product.userId
-              }
+            await supabaseTransactionService.createTransaction({
+              amount: amount,
+              currency: currency,
+              type: 'PURCHASE',
+              status: 'PENDING',
+              description: `Payment for ${purchase.product.name}`,
+              reference: purchase.id,
+              referenceType: 'Purchase',
+              metadata: JSON.stringify({
+                customerId: customer.id,
+                channelCode: walletType,
+                flowType: 'TOKENIZED',
+                paymentMethodId: paymentMethodResponse.id
+              }),
+              userId: purchase.product.userId
             });
             
             // Update purchase with payment method ID
-            await prisma.purchase.update({
-              where: { id: purchase.id },
-              data: {
-                paymentId: paymentMethodResponse.id
-              }
+            await supabasePurchaseService.updatePurchase(purchase.id, {
+              paymentId: paymentMethodResponse.id
             });
             
             // Create the actual payment using the payment method
@@ -828,33 +800,28 @@ export async function POST(request: NextRequest) {
             }
             
             // Create a transaction record for the payment attempt
-            await prisma.transaction.create({
-              data: {
-                type: 'PURCHASE',
-                status: 'PENDING',
-                amount: amount,
-                currency: currency,
-                description: `Payment for ${purchase.product.name}`,
-                reference: purchase.id,
-                referenceType: 'Purchase',
-                metadata: JSON.stringify({
-                  customerId: customer.id,
-                  channelCode: walletType,
-                  flowType: 'TOKENIZED',
-                  paymentMethodId: paymentMethodResponse.id,
-                  requiresAction: true
-                }),
-                userId: purchase.product.userId
-              }
+            await supabaseTransactionService.createTransaction({
+              amount: amount,
+              currency: currency,
+              type: 'PURCHASE',
+              status: 'PENDING',
+              description: `Payment for ${purchase.product.name}`,
+              reference: purchase.id,
+              referenceType: 'Purchase',
+              metadata: JSON.stringify({
+                customerId: customer.id,
+                channelCode: walletType,
+                flowType: 'TOKENIZED',
+                paymentMethodId: paymentMethodResponse.id,
+                requiresAction: true
+              }),
+              userId: purchase.product.userId
             });
             
             // Update purchase with payment method ID and status
-            await prisma.purchase.update({
-              where: { id: purchase.id },
-              data: {
-                paymentId: paymentMethodResponse.id,
-                status: 'pending'
-              }
+            await supabasePurchaseService.updatePurchase(purchase.id, {
+              paymentId: paymentMethodResponse.id,
+              status: 'pending'
             });
             
             // Set the redirect URL to the action URL
@@ -958,22 +925,20 @@ export async function POST(request: NextRequest) {
         await updatePurchaseStatus(purchase.id, 'pending', paymentMethodResponse.id);
         
         // Record transaction in the database
-        await prisma.transaction.create({
-          data: {
-            userId: purchase.product.userId,
-            amount: purchase.amount,
-            currency: purchase.currency,
-            type: 'payment',
-            status: 'pending',
-            description: `Payment for ${purchase.product.name}`,
-            reference: purchase.id,
-            referenceType: 'Purchase',
-            metadata: JSON.stringify({
-              paymentMethod: paymentMethod,
-              customerId: customer.id,
-              paymentMethodId: paymentMethodResponse.id
-            })
-          }
+        await supabaseTransactionService.createTransaction({
+          amount: amount,
+          currency: currency,
+          type: 'payment',
+          status: 'pending',
+          description: `Payment for ${purchase.product.name}`,
+          reference: purchase.id,
+          referenceType: 'Purchase',
+          metadata: JSON.stringify({
+            paymentMethod: paymentMethod,
+            customerId: customer.id,
+            paymentMethodId: paymentMethodResponse.id
+          }),
+          userId: purchase.product.userId
         });
         
         // Reset variables before processing payment response
@@ -1122,32 +1087,27 @@ export async function POST(request: NextRequest) {
       try {
         logApiStep('CARD_TRANSACTION_CREATE_START');
         
-        const transaction = await prisma.transaction.create({
-          data: {
-            userId: purchase.product.userId,
-            amount: amount,
-            currency: currency,
-            type: 'payment',
-            status: 'pending',
-            description: `Card payment for purchase ${purchase.id}`,
-            reference: purchase.id,
-            referenceType: 'Purchase',
-            metadata: JSON.stringify({
-              paymentMethod: 'card',
-              cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A'
-            })
-          }
+        const transaction = await supabaseTransactionService.createTransaction({
+          amount: amount,
+          currency: currency,
+          type: 'payment',
+          status: 'pending',
+          description: `Card payment for purchase ${purchase.id}`,
+          reference: purchase.id,
+          referenceType: 'Purchase',
+          metadata: JSON.stringify({
+            paymentMethod: 'card',
+            cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A'
+          }),
+          userId: purchase.product.userId
         });
         
         logApiStep('CARD_TRANSACTION_CREATE_SUCCESS', { transactionId: transaction.id });
         
         // Update purchase status to pending
-        await prisma.purchase.update({
-          where: { id: purchase.id },
-          data: {
-            paymentMethod: 'card',
-            status: 'pending'
-          }
+        await supabasePurchaseService.updatePurchase(purchase.id, {
+          paymentMethod: 'card',
+          status: 'pending'
         });
         
         logApiStep('CARD_PURCHASE_STATUS_UPDATED');
@@ -1190,18 +1150,15 @@ export async function POST(request: NextRequest) {
           });
           
           // Update the transaction record with the payment ID
-          await prisma.transaction.update({
-            where: { id: transaction.id },
-            data: {
-              status: 'COMPLETED',
-              reference: paymentResult.paymentId,
-              metadata: JSON.stringify({
-                paymentMethod: 'card',
-                cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A',
-                paymentId: paymentResult.paymentId,
-                status: paymentResult.status
-              })
-            }
+          await supabaseTransactionService.updateTransaction(transaction.id, {
+            status: 'COMPLETED',
+            reference: paymentResult.paymentId,
+            metadata: JSON.stringify({
+              paymentMethod: 'card',
+              cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A',
+              paymentId: paymentResult.paymentId,
+              status: paymentResult.status
+            })
           });
           
           // Update purchase status to completed
@@ -1247,24 +1204,18 @@ export async function POST(request: NextRequest) {
           }, paymentError);
           
           // Update transaction to failed status
-          await prisma.transaction.update({
-            where: { id: transaction.id },
-            data: {
-              status: 'FAILED',
-              metadata: JSON.stringify({
-                paymentMethod: 'card',
-                cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A',
-                error: paymentError instanceof Error ? paymentError.message : 'Unknown error'
-              })
-            }
+          await supabaseTransactionService.updateTransaction(transaction.id, {
+            status: 'FAILED',
+            metadata: JSON.stringify({
+              paymentMethod: 'card',
+              cardLast4: cardNumber ? cardNumber.slice(-4) : 'N/A',
+              error: paymentError instanceof Error ? paymentError.message : 'Unknown error'
+            })
           });
           
           // Update purchase status to failed
-          await prisma.purchase.update({
-            where: { id: purchase.id },
-            data: {
-              status: 'failed'
-            }
+          await supabasePurchaseService.updatePurchase(purchase.id, {
+            status: 'failed'
           });
           
           return NextResponse.json({ 

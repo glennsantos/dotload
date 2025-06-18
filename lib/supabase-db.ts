@@ -622,6 +622,53 @@ export class SupabaseFileService {
       throw error;
     }
   }
+
+  // Count file downloads for a specific purchase and file
+  async countFileDownloads(purchaseId: string, fileId: string): Promise<number> {
+    try {
+      console.log('[SupabaseFileService] Counting file downloads for purchase:', purchaseId, 'file:', fileId);
+      
+      const supabase = await this.getAdminClient();
+      const { count, error } = await supabase
+        .from('FileDownload')
+        .select('*', { count: 'exact', head: true })
+        .eq('purchaseId', purchaseId)
+        .eq('fileId', fileId);
+      
+      if (error) {
+        console.error('[SupabaseFileService] Error counting file downloads:', error);
+        throw new Error(`Failed to count file downloads: ${error.message}`);
+      }
+      
+      return count || 0;
+    } catch (error) {
+      console.error('[SupabaseFileService] Exception counting file downloads:', error);
+      throw error;
+    }
+  }
+
+  // Delete all files for a product
+  async deleteFilesByProductId(productId: string): Promise<void> {
+    try {
+      console.log('[SupabaseFileService] Deleting files for product:', productId);
+      
+      const supabase = await this.getAdminClient();
+      const { error } = await supabase
+        .from('File')
+        .delete()
+        .eq('productId', productId);
+      
+      if (error) {
+        console.error('[SupabaseFileService] Error deleting files for product:', error);
+        throw new Error(`Failed to delete files for product: ${error.message}`);
+      }
+      
+      console.log('[SupabaseFileService] Files deleted successfully for product:', productId);
+    } catch (error) {
+      console.error('[SupabaseFileService] Exception deleting files for product:', error);
+      throw error;
+    }
+  }
 }
 
 // Variation operations using Supabase
@@ -722,6 +769,22 @@ export class SupabaseVariationService {
     }
 
     return data;
+  }
+
+  // Delete all variations for a product
+  async deleteVariationsByProductId(productId: string) {
+    const supabase = await this.getAdminClient();
+    
+    const { error } = await supabase
+      .from('Variation')
+      .delete()
+      .eq('productId', productId);
+
+    if (error) {
+      throw new Error(`Failed to delete variations for product: ${error.message}`);
+    }
+
+    return true;
   }
 }
 
