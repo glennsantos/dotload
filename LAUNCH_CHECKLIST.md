@@ -1,4 +1,4 @@
-# alacart Launch Checklist
+# dotload Launch Checklist
 
 ## Resolve Issues
 *Note: more issues listed in Github*
@@ -7,7 +7,7 @@
 - [x] Attach domain to dev server
 - [x] Convert SES to prod setup
 - [x] check domain if connected
-- [x] Change from email for alacart in .env files
+- [x] Change from email for dotload in .env files
 - [x] Change other emails as needed
 - [x] Create SSL cert for dev server via Letsencrypt.
 - [ ] fix SES DKIM

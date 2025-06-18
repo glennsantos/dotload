@@ -7,7 +7,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Database URLs
 const DATABASE_URL = process.env.DATABASE_URL;
-const LOCAL_DATABASE_URL = process.env.LOCAL_DATABASE_URL || 'postgresql://postgres:password@localhost:5432/alacart';
+const LOCAL_DATABASE_URL = process.env.LOCAL_DATABASE_URL || 'postgresql://postgres:password@localhost:5432/dotload';
 
 // Check if Supabase is configured
 export const isSupabaseConfigured = () => {

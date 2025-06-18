@@ -1,6 +1,6 @@
 ## Frontend Redesign Tasks
 
-reference repo: /home/aryeh/dev/alacart.store
+reference repo: /home/aryeh/dev/dotload.store
 
 ### Auth Pages
 1. Redesign the login and registration forms to match the new design language.

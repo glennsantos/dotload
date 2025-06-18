@@ -1,10 +1,10 @@
-# AWS Amplify Deployment Guide for alaCarte
+# AWS Amplify Deployment Guide for Dotload
 
-This guide provides step-by-step instructions for deploying the alaCarte digital marketplace application on AWS Amplify.
+This guide provides step-by-step instructions for deploying the Dotload digital marketplace application on AWS Amplify.
 
 ## Overview
 
-alaCarte is a Next.js 15+ application with the following key features:
+Dotload is a Next.js 15+ application with the following key features:
 - Digital product marketplace
 - PostgreSQL database with Prisma ORM
 - File uploads with Cloudinary integration
@@ -17,7 +17,7 @@ alaCarte is a Next.js 15+ application with the following key features:
 Before starting the deployment, ensure you have:
 
 1. **AWS Account** with appropriate permissions
-2. **GitHub Repository** with your alaCarte code
+2. **GitHub Repository** with your Dotload code
 3. **Domain Name** (optional, but recommended)
 4. **Third-party Service Accounts**:
    - Cloudinary account for image/file storage
@@ -172,7 +172,7 @@ NODE_ENV=production
 2. **Connect Repository**:
    - Select "GitHub" as your repository service
    - Authorize AWS Amplify to access your GitHub account
-   - Select your alaCarte repository
+   - Select your Dotload repository
    - Choose the main/master branch
 
 3. **Configure Build Settings**:
@@ -471,7 +471,7 @@ node -e "console.log(process.env.DATABASE_URL)"
 
 ## Conclusion
 
-This guide provides a comprehensive approach to deploying alaCarte on AWS Amplify. The platform offers excellent scalability, built-in CI/CD, and seamless integration with other AWS services.
+This guide provides a comprehensive approach to deploying Dotload on AWS Amplify. The platform offers excellent scalability, built-in CI/CD, and seamless integration with other AWS services.
 
 For production deployments, ensure you:
 - Use secure, unique secrets for all environment variables

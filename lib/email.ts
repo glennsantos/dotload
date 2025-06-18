@@ -17,7 +17,7 @@ export async function sendVerificationEmail(
 
   const htmlBody = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #333;">Welcome to alacart${name ? `, ${name}` : ''}!</h2>
+              <h2 style="color: #333;">Welcome to dotload${name ? `, ${name}` : ''}!</h2>
       <p>Thank you for registering. Please verify your email address to activate your account.</p>
       <div style="margin: 30px 0;">
         <a href="${verificationUrl}" style="background-color: #10b981; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 9999px; display: inline-block; font-weight: 300; text-align: center;">
@@ -38,7 +38,7 @@ export async function sendVerificationEmail(
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: [to],
-      subject: 'Verify your alacart account',
+      subject: 'Verify your dotload account',
       html: htmlBody,
     });
 
@@ -87,7 +87,7 @@ export async function sendPasswordResetEmail(
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: [to],
-      subject: 'Reset your alacart password',
+      subject: 'Reset your dotload password',
       html: htmlBody,
     });
 
@@ -123,7 +123,7 @@ export async function sendPurchaseConfirmationEmail(
 
   // Different email content based on purchase status
   if (status === 'pending') {
-    subject = `Your alacart Purchase: ${productName} (Payment Pending)`;
+    subject = `Your dotload Purchase: ${productName} (Payment Pending)`;
     
     htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -141,7 +141,7 @@ export async function sendPurchaseConfirmationEmail(
     `;
   } else {
     // Default completed status
-    subject = `Your alacart Purchase: ${productName}`;
+    subject = `Your dotload Purchase: ${productName}`;
     
     htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

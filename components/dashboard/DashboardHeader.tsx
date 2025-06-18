@@ -64,7 +64,7 @@ export function DashboardHeader() {
             <Link href="/" className="block">
               <Image 
                 src="/logo.png" 
-                alt="Alacart Logo" 
+                alt="Dotload Logo" 
                 width={100}
                 height={28}
                 className="h-6 w-auto sm:h-7"

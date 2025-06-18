@@ -7,7 +7,7 @@ export default function AuthHeader() {
       <Link href="/" className="mb-4">
         <Image 
           src="/logo.png" 
-          alt="Alacart Logo" 
+          alt="Dotload Logo" 
           width={160} 
           height={42.67} 
           className="h-auto"

@@ -15,7 +15,7 @@ export function CTASection() {
           Ready to Start Selling?
         </h2>
         <p className="mb-8">
-          Join thousands of creators already using Alacart
+                        Join thousands of creators already using Dotload
         </p>
         <Button
           asChild

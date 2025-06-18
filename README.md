@@ -1,4 +1,4 @@
-# alacart
+# dotload
 
 A modern, flexible digital product marketplace platform built with Next.js and Prisma.
 
@@ -6,7 +6,7 @@ Made by (c) Glenn Santos
 
 ## Overview
 
-alacart is an innovative platform for creators to sell digital products, offering flexible product variations, seamless file uploads, and easy payment configuration.
+dotload is an innovative platform for creators to sell digital products, offering flexible product variations, seamless file uploads, and easy payment configuration.
 
 ## Table of Contents
 
@@ -31,8 +31,8 @@ alacart is an innovative platform for creators to sell digital products, offerin
 ### Setup
 1. Clone the repository
 ```bash
-git clone https://github.com/glennsantos/alacarte.git
-cd alaCarte
+git clone https://github.com/glennsantos/dotload.git
+cd dotload
 ```
 
 2. Install dependencies
@@ -61,9 +61,9 @@ cp .env.example .env
    **Option B: Using Local PostgreSQL**
    ```bash
    # Add to your .env file:
-   LOCAL_DATABASE_URL=postgresql://postgres:password@localhost:5432/alacart
-   DATABASE_URL=postgresql://postgres:password@localhost:5432/alacart
-   DIRECT_URL=postgresql://postgres:password@localhost:5432/alacart
+   LOCAL_DATABASE_URL=postgresql://postgres:password@localhost:5432/dotload
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/dotload
+   DIRECT_URL=postgresql://postgres:password@localhost:5432/dotload
    ```
 
    The application automatically detects Supabase configuration and falls back to local PostgreSQL when not available.
@@ -540,7 +540,7 @@ To access Prisma Studio in the EC2 instance:
 
 ## Simple EC2 Deployment Guide with AWS CLI
 
-This guide provides a simpler approach to deploy alacart to an EC2 instance using AWS CLI and `pnpm dev` or `pnpm start`.
+This guide provides a simpler approach to deploy dotload to an EC2 instance using AWS CLI and `pnpm dev` or `pnpm start`.
 
 ### Deployment Checklist
 

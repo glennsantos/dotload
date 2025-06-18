@@ -19,9 +19,9 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ### Local Development Configuration
 ```env
 # Local PostgreSQL Database
-LOCAL_DATABASE_URL=postgresql://postgres:password@localhost:5432/alacart
-DATABASE_URL=postgresql://postgres:password@localhost:5432/alacart
-DIRECT_URL=postgresql://postgres:password@localhost:5432/alacart
+LOCAL_DATABASE_URL=postgresql://postgres:password@localhost:5432/dotload
+DATABASE_URL=postgresql://postgres:password@localhost:5432/dotload
+DIRECT_URL=postgresql://postgres:password@localhost:5432/dotload
 
 # Leave Supabase variables empty for local development
 # NEXT_PUBLIC_SUPABASE_URL=

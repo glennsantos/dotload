@@ -4,6 +4,7 @@
 - remove the physical product option in product creation
 - change the homepage entirely: copy, design, overall message
 - get a xendit account
+- ✅ Replace all instances of "alacarte/alacart" with "dotload" (branding rebrand completed)
 
 ## Deployment Tasks
 
@@ -27,6 +28,29 @@
    - Dependencies: None
    - Priority: Medium
    - Test Strategy: Verify middleware works correctly in production without excessive logging.
+
+4. **Configure Database and Environment Variables** ✅
+   - Task ID: 7.4
+   - Description: Set up Supabase database (hjihiagddnhgrwrtbwsv) with complete schema migration. Replaced DIRECT_URL with DATABASE_URL in codebase. Identified required environment variables for production deployment.
+   - Dependencies: 7.1
+   - Priority: High
+   - Test Strategy: Verify database connection and environment variables work in production deployment.
+   - Notes: Domain: dotload-friends-projects-5a78b24f.vercel.app, Need to add DOMAIN and NEXT_PUBLIC_BASE_URL env vars in Vercel dashboard.
+
+5. **Complete Production Deployment** ✅
+   - Task ID: 7.5
+   - Description: Successfully deployed application to Vercel production environment with Supabase database integration. Fixed Prisma client generation issue.
+   - Dependencies: 7.1, 7.2, 7.3, 7.4
+   - Priority: High
+   - Test Strategy: Verify application accessibility and functionality in production environment.
+   - Status: COMPLETED ✅
+   - Notes: 
+     - Final Deployed URL: https://dotload-38jjq6k2o-friends-projects-5a78b24f.vercel.app
+     - Application deployed successfully with Supabase database (hjihiagddnhgrwrtbwsv)
+     - Fixed Prisma client generation by adding "prisma generate" to build and postinstall scripts
+     - All environment variables configured correctly
+     - Build and deployment pipeline working correctly
+     - Application fully functional and accessible
 
 ## Create Product Page Redesign
 
