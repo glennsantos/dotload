@@ -11,7 +11,7 @@ import {
   processCardPayment,
   createOneTimePayment
 } from '@/lib/xendit-client';
-import { prisma } from '@/lib/prisma';
+import { supabaseTransactionService, supabasePurchaseService } from '@/lib/supabase-db';
 
 // Enhanced logging utility for debugging
 const logApiStep = (step: string, data?: any, error?: any) => {

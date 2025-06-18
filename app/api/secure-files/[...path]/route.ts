@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUserId, getCurrentUser } from '@/lib/auth-utils';
-import { prisma } from '@/lib/prisma';
+import { supabaseFileService, supabasePurchaseService } from '@/lib/supabase-db';
 import fs from 'fs';
 import path from 'path';
 
@@ -38,16 +38,12 @@ export async function GET(
     const fileUserId = pathSegments[1];
     const productId = pathSegments[3];
     
-    // Find the file in the database
-    const file = await prisma.file.findFirst({
-      where: {
-        path: filePath,
-        productId: productId
-      },
-      include: {
-        product: true
-      }
-    });
+    // Find the file in the database using Supabase
+    let file = null;
+    
+    // Try to find files by product ID and path
+    const productFiles = await supabaseFileService.findFileByProductIds([productId]);
+    file = productFiles.find((f: any) => f.path === filePath);
     
     // If file not found in database, try to find by partial path match
     if (!file) {
@@ -55,15 +51,9 @@ export async function GET(
       const filename = filePath.split('/').pop() || '';
       
       // Try to find by filename and product ID
-      const fileByName = await prisma.file.findFirst({
-        where: {
-          filename,
-          productId: productId
-        },
-        include: {
-          product: true
-        }
-      });
+      const fileByName = productFiles.find((f: any) => 
+        f.filename === filename && f.productId === productId
+      );
       
       if (fileByName) {
         return new NextResponse('File not found with exact path, but found by name. Please use the correct URL.', { status: 404 });
@@ -78,7 +68,7 @@ export async function GET(
     // User can access if:
     // 1. They are the owner of the product
     // 2. They have purchased the product
-    const isOwner = file.product.userId === userId;
+    const isOwner = (file as any).product?.userId === userId;
     
     if (!isOwner) {
       // Get user email from current user
@@ -89,17 +79,12 @@ export async function GET(
         return new NextResponse('Unauthorized', { status: 403 });
       }
       
-      // Check if the user has purchased the product
-      // Using the Purchase model from the Prisma schema
-      const purchaseResults = await prisma.$queryRaw`
-        SELECT * FROM "Purchase"
-        WHERE "productId" = ${productId}
-        AND ("status" = 'completed' OR "status" = 'succeeded')
-        AND "email" = ${userEmail}
-        LIMIT 1
-      `;
-      
-      const purchase = Array.isArray(purchaseResults) && purchaseResults.length > 0 ? purchaseResults[0] : null;
+      // Check if the user has purchased the product using Supabase
+      const purchases = await supabasePurchaseService.findPurchasesByEmail(userEmail);
+      const purchase = purchases.find((p: any) => 
+        p.productId === productId && 
+        (p.status === 'completed' || p.status === 'succeeded')
+      );
       
       if (!purchase) {
         // If no purchase found by email, check if the user has an access code
@@ -124,7 +109,7 @@ export async function GET(
     const fileBuffer = fs.readFileSync(absoluteFilePath);
     
     // Determine content type based on file extension
-    const extension = path.extname(file.filename).toLowerCase();
+    const extension = path.extname((file as any).filename).toLowerCase();
     const mimeTypes: Record<string, string> = {
       '.pdf': 'application/pdf',
       '.doc': 'application/msword',
@@ -153,12 +138,18 @@ export async function GET(
     return new NextResponse(fileBuffer, {
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `inline; filename="${file.filename}"`,
+        'Content-Disposition': `inline; filename="${(file as any).filename}"`,
         'Cache-Control': 'no-store, max-age=0'
       }
     });
   } catch (error) {
     console.error('Error accessing secure file:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return new NextResponse('Database error occurred while accessing file', { status: 500 });
+    }
+    
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
