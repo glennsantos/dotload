@@ -17,7 +17,7 @@ export function HeroSection() {
           <span className="block font-extralight">in Minutes</span>
         </h1>
         <p className="max-w-2xl mx-auto text-xl text-stone-600 mb-12">
-          The fastest way to sell digital and physical products online. Build stunning,
+          The fastest way to sell digital products online. Build stunning,
           conversion-optimized checkout pages with zero coding required.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-6">

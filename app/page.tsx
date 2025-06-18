@@ -94,8 +94,8 @@ export default function Home() {
               },
               {
                 icon: Globe,
-                title: "Global Reach",
-                description: "Accept payments worldwide with support for multiple currencies and payment methods"
+                title: "Get Paid Instantly",
+                description: "Accept GCash, Debit/Credit Card, and more"
               }
             ].map((feature, index) => (
               <div key={index} className="group">
