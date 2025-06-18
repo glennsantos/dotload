@@ -29,11 +29,11 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
 
   if (!product) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="border rounded-md p-8 text-center max-w-md mx-auto">
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="border border-border rounded-lg p-8 text-center max-w-md mx-auto">
           <h2 className="text-xl font-medium mb-2 text-destructive">Error</h2>
           <p className="text-muted-foreground mb-6">{error || 'Product not found'}</p>
-          <Link href="/" className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md inline-flex items-center gap-2">
+          <Link href="/" className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-secondary/80 transition-colors">
             <ArrowLeft size={18} /> Back to Home
           </Link>
         </div>
@@ -72,9 +72,9 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
   }
 
   return (
-    <div className="min-h-screen bg-white pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Product Preview Header */}
-      <div className="bg-white border-b flex justify-between items-center py-4 px-6">
+      <div className="bg-background border-b border-border flex justify-between items-center py-4 px-6">
         <div className="flex items-center gap-2">
           {product.user?.storeLogoPath ? (
             <Image 
@@ -89,7 +89,7 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
               {product.user?.storeName ? product.user.storeName.charAt(0).toUpperCase() : "S"}
             </div>
           )}
-          <span className="font-light">{product.user?.storeName || "Store"}</span>
+          <span className="font-light text-foreground">{product.user?.storeName || "Store"}</span>
         </div>
       </div>
 
@@ -112,23 +112,23 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
           {/* Product Badges */}
           <div className="flex flex-wrap justify-center gap-2 mb-2">
             {product.bestSeller && (
-              <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">Best Seller</span>
+              <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full font-light">Best Seller</span>
             )}
             {product.newRelease && (
-              <span className="bg-secondary/50 text-secondary-foreground text-xs px-2 py-1 rounded-full">New Release</span>
+              <span className="bg-secondary/10 text-secondary-foreground text-xs px-2 py-1 rounded-full font-light">New Release</span>
             )}
             {product.popular && (
-              <span className="bg-accent/10 text-accent-foreground text-xs px-2 py-1 rounded-full">Popular</span>
+              <span className="bg-accent/10 text-accent-foreground text-xs px-2 py-1 rounded-full font-light">Popular</span>
             )}
             
             {/* Custom Badges */}
             {customBadges && customBadges.length > 0 && customBadges.map((badge: string, index: number) => (
-                              <span key={`badge-${index}`} className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">{badge}</span>
+              <span key={`badge-${index}`} className="bg-muted/50 text-muted-foreground text-xs px-2 py-1 rounded-full font-light">{badge}</span>
             ))}
           </div>
 
           {/* Product Title */}
-          <h1 className="text-3xl md:text-4xl font-normal text-foreground mb-2">{product.name}</h1>
+          <h1 className="text-3xl md:text-4xl font-light text-foreground mb-2">{product.name}</h1>
           
           {/* Product Description */}
           <div className="text-muted-foreground text-sm md:text-base mb-6 text-left">
@@ -140,11 +140,11 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
 
         {/* Price and Buy Button */}
         <div className="hidden sm:block mb-8 text-center">
-          <p className="text-2xl font-light mb-4">₱{product.price.toFixed(2)}</p>
+          <p className="text-2xl font-light mb-4 text-foreground">₱{product.price.toFixed(2)}</p>
           <button
             onClick={isPreview ? undefined : handlePurchase}
             disabled={loading || isPreview}
-            className={`w-full px-6 py-3 rounded-md font-normal text-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${
+            className={`w-full px-6 py-3 rounded-2xl font-light text-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${
               isPreview 
                 ? 'bg-muted text-muted-foreground cursor-not-allowed' 
                 : 'bg-primary text-primary-foreground hover:bg-primary/90'
@@ -154,7 +154,7 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
               <>Preview Mode - Buy Now Off</>
             ) : loading ? (
               <>
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent inline-block mr-2"></div>
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-primary-foreground border-r-transparent inline-block mr-2"></div>
                 <span>Processing...</span>
               </>
             ) : (
@@ -164,18 +164,18 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
         </div>
 
         {/* What's Included Section */}
-        <div className="border rounded-xl font-light p-4 mb-8">
-          <h3 className="text-lg mb-2 text-center">What's included:</h3>
+        <div className="border border-border rounded-xl font-light p-4 mb-8 bg-background">
+          <h3 className="text-lg mb-2 text-center text-foreground">What's included:</h3>
           <ul className="space-y-2">
             {whatsIncluded && whatsIncluded.length > 0 ? (
               whatsIncluded.map((item: string, index: number) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
+                <li key={index} className="flex items-start gap-2 text-sm text-foreground">
                   <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
                   <span>{item}</span>
                 </li>
               ))
             ) : (
-              <li className="flex items-start gap-2 text-sm">
+              <li className="flex items-start gap-2 text-sm text-foreground">
                 <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
                 <span>{product.name}</span>
               </li>
@@ -217,7 +217,7 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
 
         {/* Powered by alacart footer */}
         <div className="w-full">
-          <div className="border-t border-gray-200 w-full px-4 py-4 flex flex-col items-center justify-center gap-2 text-gray-500 text-sm">
+          <div className="border-t border-border w-full px-4 py-4 flex flex-col items-center justify-center gap-2 text-muted-foreground text-sm">
             <div>Powered by</div>
             <Image 
               src="/logo.png" 
@@ -235,11 +235,11 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
       
       
       {/* Mobile fixed Buy Now button */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50">
         <button
           onClick={isPreview ? undefined : handlePurchase}
           disabled={loading || isPreview}
-          className={`w-full px-6 py-3 rounded-md font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${
+          className={`w-full px-6 py-3 rounded-2xl font-light transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${
             isPreview 
               ? 'bg-muted text-muted-foreground cursor-not-allowed' 
               : 'bg-primary text-primary-foreground hover:bg-primary/90'
@@ -249,7 +249,7 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
             <>Preview Mode - Buy Now Off</>
           ) : loading ? (
             <>
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent inline-block mr-2"></div>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-primary-foreground border-r-transparent inline-block mr-2"></div>
               <span>Processing...</span>
             </>
           ) : (

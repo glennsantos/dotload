@@ -51,15 +51,15 @@ export default function ProductStockPricing({
   }
 
   return (
-    <div className="mt-8 mb-6 border rounded-md p-4">
-          <h3 className="tracking-tight text-xl font-light text-foreground mb-2">Stock & Pricing</h3>
-    <p className="text-sm text-muted-foreground mb-4 font-light">Manage inventory and availability</p>
+    <div className="mt-8 mb-6 border border-border rounded-lg p-6 bg-background">
+      <h3 className="tracking-tight text-xl font-light text-foreground mb-2">Stock & Pricing</h3>
+      <p className="text-sm text-muted-foreground mb-6 font-light">Manage inventory and availability</p>
       
       {/* Unlimited Quantity Toggle */}
-      <div className="flex items-center justify-between p-2 border rounded-md mb-4">
+      <div className="flex items-center justify-between p-4 border border-border rounded-lg mb-4 bg-muted/20">
         <div>
-                  <h4 className="text-sm font-light text-foreground">Unlimited Quantity</h4>
-        <p className="text-xs text-muted-foreground font-light">No stock limitations</p>
+          <h4 className="text-sm font-light text-foreground">Unlimited Quantity</h4>
+          <p className="text-xs text-muted-foreground font-light">No stock limitations</p>
         </div>
         <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
           <input 
@@ -79,7 +79,7 @@ export default function ProductStockPricing({
       {/* Stock Quantity Input - Only show if not unlimited */}
       {!unlimitedQuantity && (
         <div className="mb-4">
-          <label htmlFor="stock-quantity" className="block text-sm font-light mb-1">
+          <label htmlFor="stock-quantity" className="block text-sm font-light mb-2 text-foreground">
             Stock Quantity
           </label>
           <div className="relative">
@@ -89,7 +89,7 @@ export default function ProductStockPricing({
               min="0"
               value={productData.stockQuantity || 0}
               onChange={handleStockQuantityChange}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
         </div>

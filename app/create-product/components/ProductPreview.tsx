@@ -116,12 +116,13 @@ export default function ProductPreview({
   // Render the fullscreen preview
   if (fullscreenState) {
     return (
-      <div className="fixed inset-0 bg-white z-50 overflow-auto">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-light">Product Preview</h2>
+      <div className="fixed inset-0 bg-background z-50 overflow-auto">
+        <div className="flex justify-between items-center p-4 border-b border-border bg-background/80 backdrop-blur-sm">
+          <h2 className="text-lg font-light text-foreground">Product Preview</h2>
           <Button 
             onClick={toggleFullscreen}
             variant="outline"
+            className="rounded-2xl font-light"
           >
             Exit Fullscreen
           </Button>
@@ -141,12 +142,17 @@ export default function ProductPreview({
   // Default variant - sticky with scaling
   return (
     <div className="sticky top-4">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-xl font-light">Product Preview <span className="text-xs bg-stone-100 text-stone-800 px-2 py-1 rounded-full">Live Preview</span></h3>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-xl font-light text-foreground">
+          Product Preview 
+          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full ml-2 font-light">
+            Live Preview
+          </span>
+        </h3>
         <div className="flex items-center space-x-2">
           <button 
             onClick={toggleFullscreen}
-            className="text-gray-500 hover:text-gray-700 focus:outline-none"
+            className="text-muted-foreground hover:text-foreground focus:outline-none transition-colors p-1"
             title="View fullscreen"
           >
             <Maximize size={16} />
@@ -154,7 +160,7 @@ export default function ProductPreview({
         </div>
       </div>
       
-      <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+      <div className="border border-border rounded-lg overflow-hidden bg-background shadow-sm">
         {/* Use the ClientProductPage component for consistent rendering */}
         <div className="scale-[0.85] origin-top">
           <ClientProductPage 

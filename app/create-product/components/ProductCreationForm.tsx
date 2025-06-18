@@ -549,7 +549,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   }, [createdProduct]);
   
   return (
-    <div className="min-h-screen bg-white mt-20">
+    <div className="min-h-screen bg-background mt-20">
       {/* Error Modal */}
       <ErrorModal
         isOpen={errorModalOpen}
@@ -569,7 +569,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
         <div>
           {/* Validation errors alert */}
           {showValidationErrors && Object.keys(validationErrors).length > 0 && (
-            <div className="mx-auto max-w-7xl p-4 mt-4 bg-destructive/10 border border-destructive/20 rounded-md">
+            <div className="mx-auto max-w-7xl p-4 mt-4 bg-destructive/10 border border-destructive/20 rounded-lg">
               <div className="flex items-start">
                 <AlertCircle className="w-5 h-5 text-destructive mr-2 mt-0.5" />
                 <div>
@@ -586,95 +586,96 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
             </div>
           )}
           
-          
-          
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 p-6">
-            {/* Left side - Form */}
-            <div className="md:col-span-7">
+          <div className="p-6 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+              {/* Left side - Form */}
+              <div className="md:col-span-7">
+                <div className="claude-card p-6">
+                  {/* Tab Navigation */}
+                  <div className="w-full flex bg-background border border-border rounded-2xl overflow-hidden mb-8">
+                    <button
+                      onClick={() => handleTabChange('setup')}
+                      className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-2xl transition-colors ${
+                        activeTab === 'setup'
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:text-primary hover:bg-muted/50'
+                      }`}
+                    >
+                      Product Setup
+                    </button>
+                    <button
+                      onClick={() => handleTabChange('advanced')}
+                      className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-2xl transition-colors ${
+                        activeTab === 'advanced'
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:text-primary hover:bg-muted/50'
+                      }`}
+                    >
+                      Advanced Options
+                    </button>
+                  </div>
 
-              {/* Tab Navigation */}
-              <div className="w-full flex bg-white border rounded-full overflow-hidden mx-auto rounded-full">
-                <button
-                  onClick={() => handleTabChange('setup')}
-                  className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-full transition-colors ${
-                    activeTab === 'setup'
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted hover:text-primary'
-                  }`}
-                >
-                  Product Setup
-                </button>
-                <button
-                  onClick={() => handleTabChange('advanced')}
-                  className={`w-1/2 m-1 py-3 text-sm font-light rounded-full transition-colors ${
-                    activeTab === 'advanced'
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted hover:text-primary'
-                  }`}
-                >
-                  Advanced Options
-                </button>
-              </div>
-
-
-              {activeTab === 'setup' && (
-                <div className="space-y-8">
-                  <ProductTypeSelection 
-                    productData={productData} 
-                    setProductData={setProductData} 
-                  />
+                  {activeTab === 'setup' && (
+                    <div className="space-y-8">
+                      <ProductTypeSelection 
+                        productData={productData} 
+                        setProductData={setProductData} 
+                      />
+                      
+                      <ProductInformation 
+                        productData={productData} 
+                        setProductData={setProductData} 
+                      />
+                      <ProductStockPricing
+                        productData={productData}
+                        setProductData={setProductData}
+                      />
+                      
+                      {/* Physical product components moved to ProductAdvancedOptions */}
+                      
+                      {productData.type === 'digital_product' && (
+                        <ProductFiles 
+                          productData={productData} 
+                          setProductData={setProductData} 
+                        />
+                      )}
+                    </div>
+                  )}
                   
-                  <ProductInformation 
-                    productData={productData} 
-                    setProductData={setProductData} 
-                  />
-                  <ProductStockPricing
-                    productData={productData}
-                    setProductData={setProductData}
-                  />
-                  
-                  {/* Physical product components moved to ProductAdvancedOptions */}
-                  
-                  {productData.type === 'digital_product' && (
-                    <ProductFiles 
+                  {activeTab === 'advanced' && (
+                    <ProductAdvancedOptions 
                       productData={productData} 
                       setProductData={setProductData} 
                     />
                   )}
+                  
+                  {/* Form Actions */}
+                  <div className="flex justify-between mt-8 pt-6 border-t border-border">
+                    <Button 
+                      onClick={() => router.push('/products')} 
+                      variant="outline"
+                      className="hidden sm:flex rounded-2xl font-light"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleSubmit} 
+                      className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting 
+                        ? isEditing ? 'Updating Product...' : 'Creating Product...' 
+                        : isEditing ? 'Update Product' : 'Create Product'
+                      }
+                    </Button>
+                  </div>
                 </div>
-              )}
-              
-              {activeTab === 'advanced' && (
-                <ProductAdvancedOptions 
-                  productData={productData} 
-                  setProductData={setProductData} 
-                />
-              )}
-              
-              {/* Form Actions */}
-              <div className="flex justify-between mt-8">
-                <button 
-                  onClick={() => router.push('/products')} 
-                  className="hidden sm:flex px-4 py-2 text-muted border border-gray-300 rounded-md"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleSubmit} 
-                  className="hidden sm:flex px-4 py-2 bg-primary text-primary-foreground rounded-md"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting 
-                    ? isEditing ? 'Updating Product...' : 'Creating Product...' 
-                    : isEditing ? 'Update Product' : 'Create Product'
-                  }
-                </button>
               </div>
-            </div>
-            
-            {/* Right side - Product Preview */}
-            <div className="md:col-span-5">
-              <ProductPreview productData={productData} />
+              
+              {/* Right side - Product Preview */}
+              <div className="md:col-span-5">
+                <ProductPreview productData={productData} />
+              </div>
             </div>
           </div>
         </div>
@@ -684,18 +685,18 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Left side - Success message and actions */}
               <div className="lg:col-span-5">
-                <div className="mb-6">
-                  <h2 className="text-xl font-light mb-4">Product {isEditing ? 'Updated' : 'Created'} Successfully!</h2>
-                  <p className="font-light text-gray-600 mb-6">Your product is now available for purchase.</p>
+                <div className="claude-card p-6">
+                  <h2 className="text-xl font-light mb-4 text-foreground">Product {isEditing ? 'Updated' : 'Created'} Successfully!</h2>
+                  <p className="font-light text-muted-foreground mb-6">Your product is now available for purchase.</p>
                   
-                  <div className="p-4 border rounded-3xl mb-6">
-                    <h3 className="font-light mb-2">Product URL</h3>
+                  <div className="p-4 border border-border rounded-2xl mb-6">
+                    <h3 className="font-light mb-2 text-foreground">Product URL</h3>
                     <div className="flex mb-4">
                       <input
                         type="text"
                         value={`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`}
                         readOnly
-                        className="flex-1 p-2 border rounded-l-2xl bg-muted"
+                        className="flex-1 p-2 border border-border rounded-l-2xl bg-muted text-foreground"
                       />
                       <button 
                         onClick={() => {
@@ -706,7 +707,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                               .catch(() => showError('Failed to copy URL'));
                           }
                         }}
-                        className="px-4 py-2 bg-primary text-primary-foreground rounded-r-2xl"
+                        className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-r-2xl font-light transition-colors"
                       >
                         Copy
                       </button>
@@ -715,14 +716,14 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                   
                   <div className="flex gap-4 mt-8 font-light flex-wrap mb-4">
                     {isEditing && (
-                      <Button onClick={() => window.location.reload()} variant="outline">
+                      <Button onClick={() => window.location.reload()} variant="outline" className="rounded-2xl font-light">
                         Continue Editing
                       </Button>
                     )}
-                    <Button onClick={() => setIsPreviewFullscreen(true)} variant="outline">
+                    <Button onClick={() => setIsPreviewFullscreen(true)} variant="outline" className="rounded-2xl font-light">
                       Preview Product
                     </Button>
-                    <Button onClick={() => router.push('/products')} variant="default">
+                    <Button onClick={() => router.push('/products')} variant="default" className="rounded-2xl font-light">
                       <span className="flex items-center gap-2">
                         <ChevronLeft /> Back to Products
                       </span>
@@ -730,19 +731,19 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                   </div>
 
                   {/* Share Buttons */}
-                  <div className="p-4 border rounded-3xl mb-6">
-                    <h3 className="font-light mb-3">Share Your Product</h3>
-                    <p className="text-sm text-gray-600 mb-4">Share your product on social media</p>
+                  <div className="p-4 border border-border rounded-2xl mb-6">
+                    <h3 className="font-light mb-3 text-foreground">Share Your Product</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Share your product on social media</p>
                     <div className="flex gap-2 sm:gap-3 flex-wrap">
                       <button 
                         onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}&text=${encodeURIComponent(`Check out ${createdProduct.name}`)}`, '_blank')} 
-                        className="px-2 py-2 sm:px-4 bg-secondary text-secondary-foreground rounded-xl sm:rounded-2xl hover:bg-secondary/80 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
+                        className="px-2 py-2 sm:px-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-2xl transition-colors text-xs sm:text-sm flex-1 sm:flex-none font-light"
                       >
                         X (Twitter)
                       </button>
                       <button 
                         onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} 
-                        className="px-2 py-2 sm:px-4 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl hover:bg-primary/90 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
+                        className="px-2 py-2 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl transition-colors text-xs sm:text-sm flex-1 sm:flex-none font-light"
                       >
                         Facebook
                       </button>
@@ -756,7 +757,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                               .catch(() => showError('Failed to copy URL'));
                           }
                         }}
-                        className="px-2 py-2 sm:px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl sm:rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
+                        className="px-2 py-2 sm:px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl transition-colors text-xs sm:text-sm flex-1 sm:flex-none font-light"
                       >
                         Instagram
                       </button>
@@ -781,17 +782,17 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
 
       {/* Mobile submit button - only visible on small screens */}
       {!createdProduct && (
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4">
-          <button 
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
+          <Button 
             onClick={handleSubmit} 
-            className="w-full px-4 py-3 rounded-md bg-primary text-primary-foreground flex items-center justify-center"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light"
             disabled={isSubmitting}
           >
             {isSubmitting 
               ? isEditing ? 'Updating Product...' : 'Creating Product...' 
               : isEditing ? 'Update Product' : 'Create Product'
             }
-          </button>
+          </Button>
         </div>
       )}
     </div>

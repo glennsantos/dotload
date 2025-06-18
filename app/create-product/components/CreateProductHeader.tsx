@@ -61,10 +61,10 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
         onClose={() => setIsMenuOpen(false)}
       />
       
-      <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-sm border-b border-stone-200 py-2">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border py-2">
         {/* Back to Dashboard button */}
-        <Link href="/products" className="text-sm text-stone-500 hover:text-stone-700">
-          <span className="flex items-center pl-4 mt-2 pb-4 border-b border-stone-200">
+        <Link href="/products" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <span className="flex items-center pl-4 mt-2 pb-4 border-b border-border">
             <ChevronLeft size={16} className="mr-1" />
             Back to Dashboard
           </span>
@@ -82,10 +82,10 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
               />
             </Link>
             <div>
-              <h1 className="text-xl sm:text-2xl font-light text-stone-800">
+              <h1 className="text-xl sm:text-2xl font-light text-foreground">
                 {isEdit ? 'Edit Product' : 'Create Product'}
               </h1>
-              <p className="hidden sm:block text-xs sm:text-sm text-stone-500 font-light">{isEdit ? 'Edit your product details' : 'Build your checkout page'}</p>
+              <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground font-light">{isEdit ? 'Edit your product details' : 'Build your checkout page'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">

@@ -28,14 +28,14 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write something...' }:
   // Don't render on server
   if (!isMounted) {
     return (
-      <div className="border rounded-md p-3 min-h-[150px] bg-white">
+      <div className="border border-border rounded-lg p-3 min-h-[150px] bg-background text-muted-foreground">
         Loading editor...
       </div>
     )
   }
 
   return (
-    <div className="rounded-md overflow-hidden">
+    <div className="rounded-lg overflow-hidden border border-border bg-background">
       <Editor
         value={editorContent}
         onEditorChange={(newContent) => {
@@ -54,9 +54,20 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write something...' }:
             'bold italic forecolor | alignleft aligncenter ' +
             'alignright alignjustify | bullist numlist outdent indent | ' +
             'removeformat | help',
-          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+          content_style: `
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+              font-size: 14px;
+              line-height: 1.6;
+              color: hsl(var(--foreground));
+              background-color: hsl(var(--background));
+              padding: 12px;
+            }
+          `,
           placeholder: placeholder,
-          branding: false
+          branding: false,
+          skin: false,
+          content_css: false
         }}
       />
     </div>

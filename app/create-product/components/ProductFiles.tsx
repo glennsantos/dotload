@@ -210,13 +210,13 @@ export default function ProductFiles({
       />
 
       <div className="mb-6">
-              <h3 className="tracking-tight text-xl font-light text-foreground">Digital Files</h3>
-      <p className="text-sm text-muted-foreground mb-4">Upload files customers will download after purchase</p>
+        <h3 className="tracking-tight text-xl font-light text-foreground">Digital Files</h3>
+        <p className="text-sm text-muted-foreground mb-4">Upload files customers will download after purchase</p>
       </div>
 
       {/* File upload area */}
       <div 
-        className={`border-2 border-dashed ${dragActive ? 'border-primary bg-primary/5' : 'border-border'} rounded-xl p-6 text-center mb-6`}
+        className={`border-2 border-dashed ${dragActive ? 'border-primary bg-primary/5' : 'border-border'} rounded-xl p-6 text-center mb-6 transition-colors`}
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
@@ -226,12 +226,12 @@ export default function ProductFiles({
           <div className={`${dragActive ? 'bg-primary/10' : 'bg-muted'} p-3 rounded-full mb-3`}>
             <Upload className="w-6 h-6 text-muted-foreground" />
           </div>
-          <p className="text-sm font-light mb-1">
+          <p className="text-sm font-light mb-1 text-foreground">
             {dragActive ? 'Drop files here' : 'Drag and drop files here'}
           </p>
           <p className="text-xs text-muted-foreground mb-4 font-light">or click to browse</p>
           <button 
-            className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md hover:bg-primary/90"
+            className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-2xl hover:bg-primary/90 font-light transition-colors"
             onClick={() => document.getElementById('file-upload')?.click()}
           >
             Select Files
@@ -250,12 +250,12 @@ export default function ProductFiles({
       {/* File list */}
       {(productData.contentFiles.length > 0 || (productData.existingFiles && productData.existingFiles.length > 0)) && (
         <div className="mb-6">
-          <h3 className="text-base font-light mb-2">Uploaded Files</h3>
-          <div className="max-h-60 overflow-y-auto border rounded-md">
-            <ul className="divide-y">
+          <h3 className="text-base font-light mb-2 text-foreground">Uploaded Files</h3>
+          <div className="max-h-60 overflow-y-auto border border-border rounded-lg">
+            <ul className="divide-y divide-border">
               {/* Display existing files */}
               {productData.existingFiles && productData.existingFiles.length > 0 && productData.existingFiles.map((file, index) => (
-                <li key={`existing-${index}`} className="flex items-center justify-between p-3 bg-muted">
+                <li key={`existing-${index}`} className="flex items-center justify-between p-3 bg-muted/30">
                   <div className="flex items-center">
                     <FileIcon size={16} className="text-muted-foreground mr-2" />
                     <div>
@@ -269,7 +269,7 @@ export default function ProductFiles({
                             showError('Failed to download file. Please try again.');
                           }
                         }}
-                        className="text-sm font-light text-primary hover:text-primary/80 hover:underline"
+                        className="text-sm font-light text-primary hover:text-primary/80 hover:underline transition-colors"
                       >
                         {file.name}
                         <Download size={14} className="ml-2 inline" />
@@ -283,19 +283,19 @@ export default function ProductFiles({
               
               {/* Display newly added files */}
               {productData.contentFiles.map((file, index) => (
-                <li key={`new-${index}`} className="flex items-center justify-between p-3">
+                <li key={`new-${index}`} className="flex items-center justify-between p-3 hover:bg-muted/20 transition-colors">
                   <div className="flex items-center">
                     <FileIcon size={16} className="text-muted-foreground mr-2" />
                     <div>
                       {/* File objects don't have URL property, so we just display the name */}
-                      <p className="text-sm font-light">{file.name}</p>
+                      <p className="text-sm font-light text-foreground">{file.name}</p>
                       <p className="text-xs text-muted-foreground font-light">{formatFileSize(file.size)}</p>
                       <p className="text-xs text-primary font-light">New upload</p>
                     </div>
                   </div>
                   <button 
                     onClick={() => handleRemoveFile(index)}
-                    className="text-destructive hover:text-destructive/80 p-1"
+                    className="text-destructive hover:text-destructive/80 p-1 transition-colors"
                   >
                     <Trash size={16} />
                   </button>
@@ -314,24 +314,24 @@ export default function ProductFiles({
       {/* Content Links */}
       <div className="mb-6">
         {Array.isArray(productData.contentLinks) && productData.contentLinks.length > 0 && (
-          <div className="border rounded-md">
-            <ul className="divide-y">
+          <div className="border border-border rounded-lg">
+            <ul className="divide-y divide-border">
               {productData.contentLinks.map((link, index) => (
-                <li key={index} className="flex items-center justify-between p-3">
+                <li key={index} className="flex items-center justify-between p-3 hover:bg-muted/20 transition-colors">
                   <div className="flex items-center">
                     <LinkIcon size={16} className="text-muted-foreground mr-2" />
                     <a 
                       href={link} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline font-light"
+                      className="text-sm text-primary hover:underline font-light transition-colors"
                     >
                       {link}
                     </a>
                   </div>
                   <button
                     onClick={() => handleRemoveLink(index)}
-                    className="text-destructive hover:text-destructive/80"
+                    className="text-destructive hover:text-destructive/80 transition-colors"
                   >
                     <X size={16} />
                   </button>
@@ -343,7 +343,7 @@ export default function ProductFiles({
       </div>
 
       {/* Digital product specific information */}
-      <div className="mt-6 p-4 bg-muted rounded-md border border-border">
+      <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-border">
         <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-4 font-light">
           <li>Maximum 10 files per product</li>
           <li>Maximum file size: 100MB each</li>

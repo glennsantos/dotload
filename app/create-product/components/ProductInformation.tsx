@@ -137,27 +137,27 @@ export default function ProductInformation({
       />
 
       <div className="mb-6">
-        <h3 className="tracking-tight text-xl font-light text-stone-900">Product Information</h3>
-        <p className="text-sm text-gray-500 mb-4">Essential details about your product</p>
+        <h3 className="tracking-tight text-xl font-light text-foreground">Product Information</h3>
+        <p className="text-sm text-muted-foreground mb-4">Essential details about your product</p>
       </div>
       
       <div className="space-y-6">
         {/* Product Name */}
         <div>
-          <label className="block mb-2 text-sm">Product Name</label>
+          <label className="block mb-2 text-sm text-foreground">Product Name</label>
           <input
             type="text"
             name="name"
             value={productData.name}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded-md"
+            className="w-full p-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder="Enter product name"
           />
         </div>
         
         {/* Description */}
         <div>
-          <label className="block mb-2 text-sm">Description</label>
+          <label className="block mb-2 text-sm text-foreground">Description</label>
           <RichTextEditor
             value={productData.description || ''}
             onChange={(value: string) => setProductData({ ...productData, description: value })}
@@ -168,9 +168,9 @@ export default function ProductInformation({
         {/* Custom URL */}
         <div>
           <div className="flex justify-between items-center mb-2">
-            <label className="text-sm">Custom URL (Optional)</label>
+            <label className="text-sm text-foreground">Custom URL (Optional)</label>
             <button 
-              className="px-2 py-1 border rounded text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 border border-border rounded-2xl text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors font-light"
               onClick={() => {
                 if (productData.name) {
                   const slug = productData.name
@@ -191,23 +191,23 @@ export default function ProductInformation({
               name="slug"
               value={productData.slug}
               onChange={handleInputChange}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="your-product-name"
             />
             
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-          <span className="flex items-center bg-stone-50 p-2 rounded-lg p-2">
-            <span className="font-semibold">Product URL:</span>&nbsp;
-            <a target="_blank" className="text-emerald-600 hover:text-emerald-700" href={`${typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}`}>{typeof window !== 'undefined' ? window.location.origin : ''}/p/{productData.slug ? productData.slug : 'your-product-url'}</a></span>
+          <p className="text-xs text-muted-foreground mt-1">
+          <span className="flex items-center bg-muted/50 p-3 rounded-lg mt-2">
+            <span className="font-medium text-foreground">Product URL:</span>&nbsp;
+            <a target="_blank" className="text-primary hover:text-primary/80 transition-colors" href={`${typeof window !== 'undefined' ? window.location.origin : ''}/p/${productData.slug}`}>{typeof window !== 'undefined' ? window.location.origin : ''}/p/{productData.slug ? productData.slug : 'your-product-url'}</a></span>
           </p>
         </div>
         
         {/* Price */}
         <div>
-          <label className="block mb-2 text-sm">Price</label>
-          <div className="relative flex rounded-md shadow-sm">
-            <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-gray-50 text-gray-500 text-sm">
+          <label className="block mb-2 text-sm text-foreground">Price</label>
+          <div className="relative flex rounded-lg shadow-sm">
+            <span className="inline-flex items-center px-3 border border-r-0 border-border rounded-l-lg bg-muted/50 text-muted-foreground text-sm">
               {getCurrencySymbol(productData.currency)}
             </span>
             <input
@@ -216,13 +216,13 @@ export default function ProductInformation({
               onChange={handlePriceChange}
               onFocus={handlePriceFocus}
               onBlur={handlePriceBlur}
-              className="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-r-none"
+              className="flex-1 min-w-0 block w-full px-3 py-3 border border-border focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground sm:text-sm rounded-r-none"
               placeholder="1"
               inputMode="numeric"
               pattern="[0-9]*"
             />
             <select 
-              className="border-l-0 rounded-r-md border-gray-300 bg-stone-50 text-gray-700 py-2 pl-3 pr-8 text-sm focus:ring-emerald-500 focus:border-emerald-500 border"
+              className="border-l-0 rounded-r-lg border-border bg-muted/50 text-foreground py-3 pl-3 pr-8 text-sm focus:ring-2 focus:ring-primary focus:border-transparent border"
               disabled
               value={productData.currency}
               onChange={(e) => setProductData({ ...productData, currency: e.target.value })}
@@ -237,24 +237,24 @@ export default function ProductInformation({
       
       {/* Thumbnail Upload */}
       <div className="mt-8 mb-6">
-        <h3 className="text-xl font-light mb-2">Product Photo</h3>
-        <p className="text-sm text-gray-500 mb-4">Upload a high-quality photo of your physical product</p>
+        <h3 className="text-xl font-light mb-2 text-foreground">Product Photo</h3>
+        <p className="text-sm text-muted-foreground mb-4">Upload a high-quality photo of your physical product</p>
         
-        <div className="border border-dashed rounded-md p-4 flex flex-col items-center justify-center mb-4">
+        <div className="border-2 border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center mb-4 bg-background hover:bg-muted/20 transition-colors">
           {productData.coverImage ? (
             <div className="relative w-full">
               <img 
                 src={URL.createObjectURL(productData.coverImage)} 
                 alt="Thumbnail preview" 
-                className="w-32 h-32 object-cover rounded-md mx-auto mb-2"
+                className="w-32 h-32 object-cover rounded-lg mx-auto mb-2"
               />
               <button 
                 onClick={() => setProductData({...productData, coverImage: null})}
-                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2"
+                className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-full p-1 transform translate-x-1/2 -translate-y-1/2 hover:bg-destructive/90 transition-colors"
               >
                 <X size={14} />
               </button>
-              <p className="text-sm text-center text-gray-500">{productData.coverImage.name}</p>
+              <p className="text-sm text-center text-muted-foreground">{productData.coverImage.name}</p>
             </div>
           ) : productData.coverImagePath ? (
             <div className="relative w-full">
@@ -270,15 +270,15 @@ export default function ProductInformation({
                   `/${productData.coverImagePath}`
                 } 
                 alt="Thumbnail preview" 
-                className="w-32 h-32 object-cover rounded-md mx-auto mb-2"
+                className="w-32 h-32 object-cover rounded-lg mx-auto mb-2"
               />
               <button 
                 onClick={() => setProductData({...productData, coverImagePath: ''})}
-                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2"
+                className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-full p-1 transform translate-x-1/2 -translate-y-1/2 hover:bg-destructive/90 transition-colors"
               >
                 <X size={14} />
               </button>
-              <p className="text-sm text-center text-gray-500">Existing photo</p>
+              <p className="text-sm text-center text-muted-foreground">Existing photo</p>
             </div>
           ) : (
             <>
@@ -290,11 +290,11 @@ export default function ProductInformation({
                 onChange={handleCoverImageUpload}
               />
               <label htmlFor="cover-image" className="cursor-pointer flex flex-col items-center justify-center py-6">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-                  <Upload size={20} className="text-gray-500" />
+                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-2">
+                  <Upload size={20} className="text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium">Add Image</p>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
+                <p className="text-sm font-medium text-foreground">Add Image</p>
+                <p className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF up to 10MB</p>
               </label>
             </>
           )}
