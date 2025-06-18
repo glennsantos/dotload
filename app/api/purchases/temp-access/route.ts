@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabasePurchaseService, supabaseFileService } from '@/lib/supabase-db';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { differenceInDays } from 'date-fns';

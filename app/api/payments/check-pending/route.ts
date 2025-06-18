@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkPaymentRequestStatus } from '@/lib/xendit-client';
 import { updatePurchaseStatus, getPurchaseById } from '@/lib/purchase-utils';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
-import { prisma } from '@/lib/prisma';
+import { supabaseTransactionService } from '@/lib/supabase-db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,19 +38,9 @@ export async function POST(request: NextRequest) {
         // Get the payment ID from the purchase or from the transaction
         let paymentId = purchase.paymentId;
         
-        // If no payment ID on the purchase, check the transaction
+        // If no payment ID on the purchase, check the transaction using Supabase
         if (!paymentId) {
-          const transaction = await prisma.transaction.findFirst({
-            where: {
-              reference: { not: null },
-              purchase: {
-                id: purchaseId
-              }
-            },
-            orderBy: {
-              createdAt: 'desc'
-            }
-          });
+          const transaction = await supabaseTransactionService.findTransactionByPurchaseId(purchaseId);
           
           if (transaction?.reference) {
             paymentId = transaction.reference;
@@ -81,19 +71,12 @@ export async function POST(request: NextRequest) {
           // Update the purchase status to completed
           await updatePurchaseStatus(purchaseId, 'completed', paymentId);
           
-          // Update the transaction status if it exists
-          const transaction = await prisma.transaction.findFirst({
-            where: {
-              reference: paymentId
-            }
-          });
+          // Update the transaction status if it exists using Supabase
+          const transaction = await supabaseTransactionService.findTransactionByReference(paymentId);
           
           if (transaction) {
-            await prisma.transaction.update({
-              where: { id: transaction.id },
-              data: {
-                status: 'completed'
-              }
+            await supabaseTransactionService.updateTransaction((transaction as any).id, {
+              status: 'completed'
             });
           }
           
@@ -154,6 +137,15 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('[Check Pending] Error checking pending purchases:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while checking pending purchases', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to check pending purchases', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

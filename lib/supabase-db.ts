@@ -1372,6 +1372,49 @@ export class SupabaseTransactionService {
 
     return data;
   }
+
+  // Find transaction by purchase ID
+  async findTransactionByPurchaseId(purchaseId: string) {
+    const supabase = await this.getAdminClient();
+    
+    const { data, error } = await supabase
+      .from('Transaction')
+      .select('*')
+      .eq('purchaseId', purchaseId)
+      .not('reference', 'is', null)
+      .order('createdAt', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw new Error(`Failed to find transaction by purchase ID: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  // Find transaction by reference
+  async findTransactionByReference(reference: string) {
+    const supabase = await this.getAdminClient();
+    
+    const { data, error } = await supabase
+      .from('Transaction')
+      .select('*')
+      .eq('reference', reference)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw new Error(`Failed to find transaction by reference: ${error.message}`);
+    }
+
+    return data;
+  }
 }
 
 // Payout operations using Supabase

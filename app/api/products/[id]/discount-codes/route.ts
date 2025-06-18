@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService } from '@/lib/supabase-db';
 
 type ProductWithDiscountCodes = {
   id: string;
@@ -32,10 +32,8 @@ export async function DELETE(
       }, { status: 400 });
     }
 
-    // Fetch the current product
-    const product = await prisma.product.findUnique({
-      where: { id: productId }
-    }) as ProductWithDiscountCodes;
+    // Fetch the current product using Supabase
+    const product = await supabaseProductService.findProductById(productId) as ProductWithDiscountCodes;
 
     if (!product) {
       return NextResponse.json({ 
@@ -44,10 +42,10 @@ export async function DELETE(
     }
 
     // Parse existing discount codes
-    let currentDiscountCodes = product.discountCodes 
-      ? typeof product.discountCodes === 'string' 
-        ? JSON.parse(product.discountCodes) 
-        : product.discountCodes 
+    let currentDiscountCodes = (product as any).discountCodes 
+      ? typeof (product as any).discountCodes === 'string' 
+        ? JSON.parse((product as any).discountCodes) 
+        : (product as any).discountCodes 
       : [];
 
     // Remove the specific discount code
@@ -55,12 +53,9 @@ export async function DELETE(
       (dc: { code: string }) => dc.code !== code
     );
 
-    // Update the product with the new discount codes
-    await prisma.product.update({
-      where: { id: productId },
-      data: { 
-        discountCodes: updatedDiscountCodes ? JSON.stringify(updatedDiscountCodes) : null
-      } as any
+    // Update the product with the new discount codes using Supabase
+    await supabaseProductService.updateProduct(productId, { 
+      discountCodes: updatedDiscountCodes ? JSON.stringify(updatedDiscountCodes) : null
     });
 
     return NextResponse.json({ 
@@ -70,6 +65,15 @@ export async function DELETE(
 
   } catch (error) {
     console.error('Error deleting discount code:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while deleting discount code', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to delete discount code' 
     }, { status: 500 });
