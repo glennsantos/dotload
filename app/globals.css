@@ -121,13 +121,13 @@ body {
     --secondary: 210 20% 96%;
     --secondary-foreground: 210 20% 20%;
     --muted: 210 20% 96%;
-    --muted-foreground: 210 20% 45%;
+    --muted-foreground: 210 20% 35%;  /* Increased contrast for better readability */
     --accent: 13 100% 62%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 210 20% 89%;
-    --input: 210 20% 89%;
+    --border: 210 20% 85%;            /* Increased contrast for borders */
+    --input: 210 20% 96%;             /* Slightly more contrast for input backgrounds */
     --ring: 13 100% 62%;
     --chart-1: 13 100% 62%;
     --chart-2: 210 50% 45%;
@@ -149,7 +149,7 @@ body {
     /* Dark theme - Claude inspired */
     --background: 210 20% 6%;    /* #101014 */
     --foreground: 0 0% 95%;      /* #f2f2f2 */
-    --card: 210 20% 8%;          /* #16161b */
+    --card: 210 20% 10%;         /* Increased contrast for cards/inputs */
     --card-foreground: 0 0% 95%;
     --popover: 210 20% 8%;
     --popover-foreground: 0 0% 95%;
@@ -158,13 +158,13 @@ body {
     --secondary: 210 20% 12%;    /* #1f1f26 */
     --secondary-foreground: 0 0% 85%;
     --muted: 210 20% 12%;
-    --muted-foreground: 0 0% 60%;
+    --muted-foreground: 0 0% 70%;  /* Increased contrast for better readability */
     --accent: 13 100% 62%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 210 20% 15%;       /* #242429 */
-    --input: 210 20% 12%;
+    --border: 210 20% 18%;       /* Increased contrast for borders */
+    --input: 210 20% 14%;        /* Increased contrast for input backgrounds */
     --ring: 13 100% 62%;
     --chart-1: 13 100% 62%;
     --chart-2: 210 60% 65%;

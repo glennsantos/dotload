@@ -57,12 +57,12 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
   }) || tabs[0];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden mb-12 mt-6">
+    <div className="claude-card rounded-2xl overflow-hidden mb-12 mt-6">
       {/* Mobile Dropdown */}
       <div className="md:hidden relative w-full">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between bg-white px-4 py-2 text-sm font-light rounded-lg"
+          className="w-full flex items-center justify-between bg-transparent px-4 py-2 text-sm font-light rounded-lg text-foreground"
         >
           <div className="flex items-center gap-2">
             {activeTabItem.icon}
@@ -72,7 +72,7 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
         </button>
         
         {isOpen && (
-          <div className="mt-1 mx-6 py-1 bg-white rounded-xl border border-stone-200 fixed inset-x-0 mx-2 z-50 px-2 py-2">
+          <div className="mt-1 mx-6 py-1 claude-card rounded-xl fixed inset-x-0 mx-2 z-50 px-2 py-2">
             {tabs.map((tab) => {
               const isActive = activeTab 
                 ? tab.label.toLowerCase() === activeTab.toLowerCase()
@@ -87,8 +87,8 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors w-full",
                     isActive 
-                      ? "bg-emerald-100 text-emerald-700 rounded-lg" 
-                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-200"
+                      ? "bg-primary/10 text-primary rounded-lg" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
                   {tab.icon}
@@ -115,8 +115,8 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
               className={cn(
                 "flex flex-1 justify-center items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors rounded-lg",
                 isActive 
-                  ? "bg-emerald-100 text-emerald-700" 
-                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+                  ? "bg-primary/10 text-primary" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
               {tab.icon}

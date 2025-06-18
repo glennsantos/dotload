@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Eye, EyeOff, UserIcon, KeyIcon } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
 export default function AccountSettingsPage() {
   const [fullName, setFullName] = useState("")
@@ -144,12 +145,12 @@ export default function AccountSettingsPage() {
               <label htmlFor="full-name" className="block text-sm font-light text-stone-700 mb-1">
                 Full Name
               </label>
-              <input
+              <Input
                 id="full-name"
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
+                className="rounded-2xl"
                 required
               />
             </div>
@@ -158,12 +159,12 @@ export default function AccountSettingsPage() {
               <label htmlFor="email-address" className="block text-sm font-light text-stone-700 mb-1">
                 Email Address
               </label>
-              <input
+              <Input
                 id="email-address"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
+                className="rounded-2xl"
                 required
               />
             </div>

@@ -115,39 +115,39 @@ export default async function Dashboard() {
           title="Total Products"
           value={stats.productCount.toString()}
           subtitle="Active products"
-          icon={<Package className="h-5 w-5 text-emerald-600" />}
-          iconClassName="bg-emerald-100"
+          icon={<Package className="h-5 w-5 text-primary" />}
+          iconClassName="bg-primary/10"
         />
         
         <StatsCard
           title="Total Sales"
           value={stats.salesCount.toString()}
           subtitle="Completed orders"
-          icon={<TrendingUp className="h-5 w-5 text-emerald-600" />}
-          iconClassName="bg-emerald-100"
+          icon={<TrendingUp className="h-5 w-5 text-primary" />}
+          iconClassName="bg-primary/10"
         />
         
         <StatsCard
           title="Total Revenue"
           value={formatCurrency(stats.totalRevenue)}
           subtitle="Total earnings"
-          icon={<LucideBanknote className="h-5 w-5 text-emerald-600" />}
-          iconClassName="bg-emerald-100"
+          icon={<LucideBanknote className="h-5 w-5 text-primary" />}
+          iconClassName="bg-primary/10"
         />
         
         <StatsCard
           title="Customers"
           value={stats.customerCount.toString()}
           subtitle="Unique customers"
-          icon={<Users className="h-5 w-5 text-emerald-600" />}
-          iconClassName="bg-emerald-100"
+          icon={<Users className="h-5 w-5 text-primary" />}
+          iconClassName="bg-primary/10"
         />
       </div>
 
       {/* Recent Sales Section */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-light text-stone-800">Recent Sales</h2>
+          <h2 className="text-2xl font-light text-foreground">Recent Sales</h2>
           <Button asChild variant="outline" size="sm" className="text-sm">
             <Link href="/dashboard/sales" className="flex items-center gap-1">
               View all <ArrowRight size={14} />
@@ -156,41 +156,41 @@ export default async function Dashboard() {
         </div>
         
         {stats.recentTransactions.length === 0 ? (
-          <div className="text-center py-8 border border-stone-100 rounded-lg shadow-sm p-4 sm:p-6">
-            <ShoppingCart className="mx-auto h-12 w-12 text-stone-300 mb-4" />
-            <p className="text-lg font-medium mb-2">No sales yet</p>
-            <p className="text-sm text-stone-500 mb-6">Start selling to see transactions here!</p>
-            <Button asChild className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light">
+          <div className="text-center py-8 claude-card rounded-lg p-4 sm:p-6">
+            <ShoppingCart className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium mb-2 text-foreground">No sales yet</p>
+            <p className="text-sm text-muted-foreground mb-6">Start selling to see transactions here!</p>
+            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light">
               <Link href="/create-product">+ Create a product</Link>
             </Button>
           </div>
         ) : (
-          <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+          <div className="claude-card rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b bg-white">
-                    <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Product</th>
-                    <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Status</th>
-                    <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Amount</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">Product</th>
+                    <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">Date</th>
+                    <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">Status</th>
+                    <th className="text-right py-3 px-4 font-medium text-sm text-muted-foreground">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats.recentTransactions.map((transaction: Purchase) => (
-                    <tr key={transaction.id} className="border-b hover:bg-stone-50">
+                    <tr key={transaction.id} className="border-b border-border hover:bg-muted/50">
                       <td className="py-3 px-4">
                         <div>
-                          <div className="font-medium text-stone-800">{transaction.product.name}</div>
+                          <div className="font-medium text-foreground">{transaction.product.name}</div>
                           {transaction.email && (
-                            <div className="text-xs text-stone-500 mt-1">
+                            <div className="text-xs text-muted-foreground mt-1">
                               Customer: {transaction.email}
                             </div>
                           )}
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="text-sm text-stone-600">
+                        <div className="text-sm text-muted-foreground">
                           {new Date(transaction.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',

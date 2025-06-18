@@ -4,6 +4,62 @@
 - make the rounded elements less rounded. apply to all elements 
 - get a xendit account
 - clean up front end console.logs for prod
+- enable RLS and use the service key for security
+
+is there something in vercel like @amplify.yml you see here. so that it can load the .env while building. cause the env values are present
+
+## Color Scheme Fixes
+
+1. **Fix Color Schemes Across All Pages** ✅
+   - Task ID: 10.1
+   - Description: Updated color schemes across dashboard, auth pages, and components to match the homepage Claude-inspired design. Replaced hardcoded stone-*, emerald-*, and white colors with HSL color variables (background, foreground, primary, muted-foreground, border, etc.)
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify consistent color scheme across all pages matching the homepage design
+   - Implementation:
+     - Updated dashboard page stats cards and table styling
+     - Fixed dashboard tabs component colors
+     - Updated login page colors to match design system
+     - Fixed register page color scheme throughout
+     - Updated create product page background
+     - Applied Claude-inspired color variables consistently
+
+2. **Fix Input Field Readability** ✅
+   - Task ID: 10.2
+   - Description: Fixed input field contrast and readability issues across all forms by updating the base Input component to use proper color variables and removing hardcoded color overrides from auth pages and settings forms. Enhanced color contrast for both light and dark themes.
+   - Dependencies: 10.1
+   - Priority: High
+   - Test Strategy: Verify input fields are clearly readable across all forms and themes
+   - Implementation:
+     - Updated base Input component to use bg-card, border-border, text-foreground variables
+     - Removed hardcoded border and focus color overrides from login and register forms
+     - Updated settings page inputs to use the Input component instead of raw input elements
+     - Enhanced color contrast values in both light and dark theme CSS variables
+     - Updated label component to use proper text-foreground color for consistency
+
+3. **Fix Database Connection Issues and Migrate to Proper Supabase Connection** ✅
+   - Task ID: 10.3
+   - Description: Successfully migrated from direct PostgreSQL/Prisma connections to Supabase's recommended JavaScript client approach. This resolves database connectivity issues and provides better security, reliability, and features.
+   - Dependencies: None
+   - Priority: Critical
+   - Status: COMPLETED ✅
+   - Implementation:
+     - **Problem**: Direct PostgreSQL connections were failing due to password issues and network unreliability
+     - **Solution**: Migrated to Supabase JavaScript client (proper way to connect)
+     - Created new Supabase database service (`lib/supabase-db.ts`) with proper user operations
+     - Updated registration API to use Supabase client instead of Prisma
+     - Fixed UUID generation for user creation
+     - **Fixed FormData parsing**: Updated registration API to handle FormData instead of JSON (for file uploads)
+     - Successfully tested user registration with Supabase client and FormData
+   - **Benefits of Supabase Client Approach**:
+     - ✅ No direct database passwords needed
+     - ✅ Built-in Row Level Security (RLS)
+     - ✅ Real-time subscriptions available
+     - ✅ Automatic connection pooling
+     - ✅ Built-in auth integration
+     - ✅ Edge function compatibility
+     - ✅ Better error handling and validation
+   - **Test Results**: Registration API working correctly with both JSON and FormData, user count verified in database, frontend-backend integration working
 
 
 ===== COMPLETED TASKS ======

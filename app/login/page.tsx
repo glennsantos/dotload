@@ -156,8 +156,8 @@ export default function LoginPage() {
             priority
           />
         </Link>
-        <h1 className="text-4xl font-extralight mb-4">Welcome Back</h1>
-        <p className="text-stone-600 font-light">
+        <h1 className="text-4xl font-extralight mb-4 text-foreground">Welcome Back</h1>
+        <p className="text-muted-foreground font-light">
           Sign in to your account
         </p>
       </div>
@@ -174,7 +174,7 @@ export default function LoginPage() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="mt-2 w-full rounded-2xl border-stone-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 font-light" 
+                    className="mt-2 w-full rounded-2xl border-border text-primary hover:bg-primary/10 hover:text-primary font-light" 
                     onClick={handleResendVerification}
                     disabled={isResendingVerification}
                   >
@@ -187,15 +187,15 @@ export default function LoginPage() {
           )}
           
           {success && (
-            <Alert className="mb-4 bg-emerald-50 text-emerald-800 border-emerald-200 rounded-xl">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <Alert className="mb-4 bg-primary/10 text-primary border-primary/20 rounded-xl">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <Label htmlFor="email" className="text-stone-700 font-light">Email</Label>
+              <Label htmlFor="email" className="text-foreground font-light">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -203,11 +203,11 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="border-stone-300 rounded-2xl h-12 font-light focus:border-emerald-500 focus:ring-emerald-500"
+                className="rounded-2xl h-12 font-light"
               />
             </div>
             <div>
-              <Label htmlFor="password" className="text-stone-700 font-light">Password</Label>
+              <Label htmlFor="password" className="text-foreground font-light">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -215,15 +215,15 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                className="border-stone-300 rounded-2xl h-12 font-light focus:border-emerald-500 focus:ring-emerald-500"
+                className="rounded-2xl h-12 font-light"
               />
-              <Link href="/forgot-password" className="text-xs text-emerald-600 hover:text-emerald-700 mt-1 block text-right font-light">
+              <Link href="/forgot-password" className="text-xs text-primary hover:text-primary/80 mt-1 block text-right font-light">
                 Forgot password?
               </Link>
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light" 
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl h-12 font-light" 
               disabled={isLoggingIn}>
               {isLoggingIn ? (
                 <span className="flex items-center font-light">Signing in... <ArrowRight className="ml-2 h-4 w-4 animate-pulse" /></span>
@@ -232,9 +232,9 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-          <div className="text-center mt-4 text-sm text-stone-600 font-light">
+          <div className="text-center mt-4 text-sm text-muted-foreground font-light">
             Don't have an account? {' '}
-            <Link href="/register" className="text-emerald-600 hover:text-emerald-700 font-light">
+            <Link href="/register" className="text-primary hover:text-primary/80 font-light">
               Sign up
             </Link>
           </div>
