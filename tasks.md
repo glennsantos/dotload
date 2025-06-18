@@ -1,5 +1,7 @@
 # Tasks for Frontend Redesign
 
+- update all documentation with how we've deployed so far.
+- change all button colors to conform with the new color scheme
 - get a xendit account
 
 

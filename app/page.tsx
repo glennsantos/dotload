@@ -54,9 +54,6 @@ export default function Home() {
             <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg">
               Start Selling Today
             </Button>
-            <Button variant="outline" size="lg" className="border-border/50 px-8 py-6 text-lg">
-              View Demo
-            </Button>
           </div>
 
           <div className="pt-8">
