@@ -135,22 +135,22 @@ export default function CustomersPage() {
       title: "Total Customers", 
       value: String(customers.length), 
       subtitle: "All time customers",
-      icon: <Users className="h-5 w-5 text-emerald-600" />,
-      iconClassName: "bg-emerald-100"
+      icon: <Users className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10"
     },
     { 
       title: "Total Revenue", 
       value: formatCurrency(totalRevenue), 
       subtitle: "From all customers",
-      icon: <LucideBanknote className="h-5 w-5 text-emerald-600" />,
-      iconClassName: "bg-emerald-100"
+      icon: <LucideBanknote className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10"
     },
     { 
       title: "Avg. Purchase Value", 
       value: formatCurrency(customers.length ? totalRevenue / customers.length : 0), 
       subtitle: "Per customer",
-      icon: <ShoppingBag className="h-5 w-5 text-emerald-600" />,
-      iconClassName: "bg-emerald-100"
+      icon: <ShoppingBag className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10"
     }
   ];
 
@@ -178,21 +178,48 @@ export default function CustomersPage() {
       {/* Customers Section */}
       <div className="space-y-6">
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <div className="claude-card p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div className="space-y-2">
+                <div className="h-6 bg-muted rounded animate-pulse w-48"></div>
+                <div className="h-4 bg-muted rounded animate-pulse w-64"></div>
+              </div>
+              <div className="h-10 bg-muted rounded-2xl animate-pulse w-32"></div>
+            </div>
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-4 p-4 border border-border rounded-lg">
+                  <div className="h-8 w-8 bg-muted rounded-full animate-pulse"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded animate-pulse w-32"></div>
+                    <div className="h-3 bg-muted rounded animate-pulse w-24"></div>
+                  </div>
+                  <div className="h-4 bg-muted rounded animate-pulse w-20"></div>
+                  <div className="h-4 bg-muted rounded animate-pulse w-16"></div>
+                  <div className="h-4 bg-muted rounded animate-pulse w-24"></div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <div className="claude-card">
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
         ) : (
-          <Card className="border-0 shadow-none">
-            <CardHeader className="px-0">
+          <div className="claude-card">
+            <CardHeader className="px-6 py-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <CardTitle className="text-xl font-medium text-stone-800 px-0">Customer Management</CardTitle>
+                <div>
+                  <CardTitle className="text-xl font-light text-foreground">Customer Management</CardTitle>
+                  <CardDescription className="text-muted-foreground mt-1">
+                    {filteredCustomers.length} {filteredCustomers.length === 1 ? 'customer' : 'customers'} found
+                  </CardDescription>
+                </div>
                 <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-stone-400" />
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
                     placeholder="Search customers..."
@@ -202,44 +229,41 @@ export default function CustomersPage() {
                   />
                 </div>
               </div>
-              <CardDescription>
-                {filteredCustomers.length} {filteredCustomers.length === 1 ? 'customer' : 'customers'} found
-              </CardDescription>
             </CardHeader>
-            <CardContent className="px-0">
+            <CardContent className="px-6 pb-6">
               {filteredCustomers.length === 0 ? (
-                <div className="text-center py-8 text-stone-500">
-                  <Users className="mx-auto h-12 w-12 text-stone-300 mb-4" />
-                  <p className="text-lg font-medium mb-2">No customers yet</p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <Users className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                  <p className="text-lg font-medium mb-2 text-foreground">No customers yet</p>
                   <p className="text-sm mb-6">Your customer information will appear here once you make sales</p>
-                  <Button asChild className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light">
+                  <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light">
                     <Link href="/create-product">+ Create a product</Link>
                   </Button>
                 </div>
               ) : (
-                <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+                <div className="border border-border rounded-lg overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b bg-white">
-                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Customer</th>
-                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Contact</th>
-                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Purchases</th>
-                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Total Spend</th>
-                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Last Purchase</th>
+                        <tr className="border-b bg-muted/30">
+                          <th className="text-left py-3 px-4 font-medium text-sm text-foreground">Customer</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-foreground">Contact</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-foreground">Purchases</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-foreground">Total Spend</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-foreground">Last Purchase</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredCustomers.map((customer) => (
-                          <tr key={customer.id} className="border-b hover:bg-stone-50">
+                          <tr key={customer.id} className="border-b hover:bg-muted/50 transition-colors">
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8 bg-stone-200 text-stone-800">
+                                <Avatar className="h-8 w-8 bg-muted text-foreground">
                                   <AvatarFallback>{getInitials(customer.name)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <div className="font-medium text-stone-800">{customer.name}</div>
-                                  <div className="text-xs text-stone-500">
+                                  <div className="font-medium text-foreground">{customer.name}</div>
+                                  <div className="text-xs text-muted-foreground">
                                     Customer since {formatDate(customer.createdAt)}
                                   </div>
                                 </div>
@@ -247,27 +271,27 @@ export default function CustomersPage() {
                             </td>
                             <td className="py-3 px-4">
                               <div className="flex flex-col gap-1">
-                                <div className="flex items-center text-sm text-stone-600">
-                                  <Mail className="h-3.5 w-3.5 mr-2 text-stone-400" />
+                                <div className="flex items-center text-sm text-foreground">
+                                  <Mail className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                                   {customer.email}
                                 </div>
                                 {customer.phone && (
-                                  <div className="flex items-center text-sm text-stone-600">
-                                    <Phone className="h-3.5 w-3.5 mr-2 text-stone-400" />
+                                  <div className="flex items-center text-sm text-foreground">
+                                    <Phone className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                                     {customer.phone}
                                   </div>
                                 )}
                               </div>
                             </td>
                             <td className="py-3 px-4 text-right">
-                              <div className="font-medium">{customer.purchaseCount}</div>
+                              <div className="font-medium text-foreground">{customer.purchaseCount}</div>
                             </td>
                             <td className="py-3 px-4 text-right">
-                              <div className="font-medium text-emerald-700">{formatCurrency(customer.totalSpend)}</div>
+                              <div className="font-medium text-primary">{formatCurrency(customer.totalSpend)}</div>
                             </td>
                             <td className="py-3 px-4 text-right">
-                              <div className="flex items-center justify-end text-sm text-stone-600">
-                                <Calendar className="h-3.5 w-3.5 mr-2 text-stone-400" />
+                              <div className="flex items-center justify-end text-sm text-foreground">
+                                <Calendar className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                                 {formatDate(customer.lastPurchaseDate)}
                               </div>
                             </td>
@@ -279,7 +303,7 @@ export default function CustomersPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </div>
         )}
       </div>
     </div>

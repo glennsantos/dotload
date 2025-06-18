@@ -259,22 +259,22 @@ export default function PromosPage() {
       title: "Active Codes", 
       value: String(discountCodes.filter(code => code.isActive).length), 
       subtitle: "Currently available",
-      icon: <Percent className="h-5 w-5 text-emerald-600" />,
-      iconClassName: "bg-emerald-100"
+      icon: <Percent className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10"
     },
     { 
       title: "Total Redemptions", 
       value: String(discountCodes.reduce((sum, code) => sum + code.usedCount, 0)), 
       subtitle: "Times codes were used",
-      icon: <Check className="h-5 w-5 text-emerald-600" />,
-      iconClassName: "bg-blue-100"
+      icon: <Check className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10"
     },
     { 
       title: "Product-Specific", 
       value: String(discountCodes.filter(code => code.productId !== null).length), 
       subtitle: "Codes for specific products",
-      icon: <Percent className="h-5 w-5 text-emerald-600" />,
-      iconClassName: "bg-emerald-100"
+      icon: <Percent className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10"
     }
   ];
 
@@ -302,28 +302,55 @@ export default function PromosPage() {
       {/* Discount Codes Section */}
       <div className="space-y-6">
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <div className="claude-card p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div className="space-y-2">
+                <div className="h-6 bg-muted rounded animate-pulse w-48"></div>
+                <div className="h-4 bg-muted rounded animate-pulse w-64"></div>
+              </div>
+              <div className="h-10 bg-muted rounded-2xl animate-pulse w-32"></div>
+            </div>
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-4 p-4 border border-border rounded-lg">
+                  <div className="h-4 bg-muted rounded animate-pulse w-24"></div>
+                  <div className="h-4 bg-muted rounded animate-pulse w-16"></div>
+                  <div className="h-4 bg-muted rounded animate-pulse w-20"></div>
+                  <div className="h-6 bg-muted rounded animate-pulse w-16"></div>
+                  <div className="flex space-x-2 ml-auto">
+                    <div className="h-8 w-8 bg-muted rounded animate-pulse"></div>
+                    <div className="h-8 w-8 bg-muted rounded animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : error ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <div className="claude-card">
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
         ) : (
-          <Card className="border-0 shadow-none">
-            <CardHeader className="px-0">
+          <div className="claude-card">
+            <CardHeader className="px-6 py-6">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-xl font-medium text-stone-800">Your Discount Codes</CardTitle>
+                <div>
+                  <CardTitle className="text-xl font-light text-foreground">Your Discount Codes</CardTitle>
+                  <CardDescription className="text-muted-foreground mt-1">
+                    Manage discount codes for your products
+                  </CardDescription>
+                </div>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light">
                       <Plus className="h-4 w-4 mr-2" /> Create Code
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle>Create New Discount Code</DialogTitle>
+                      <DialogTitle className="font-light">Create New Discount Code</DialogTitle>
                       <DialogDescription>
                         Create a new discount code for your products. Click save when you're done.
                       </DialogDescription>
@@ -426,73 +453,70 @@ export default function PromosPage() {
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">Save Code</Button>
+                        <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light">Save Code</Button>
                       </DialogFooter>
                     </form>
                   </DialogContent>
                 </Dialog>
               </div>
-              <CardDescription>
-                Manage discount codes for your products
-              </CardDescription>
             </CardHeader>
-            <CardContent className="px-0">
+            <CardContent className="px-6 pb-6">
               {discountCodes.length === 0 ? (
-                <div className="text-center py-8 text-stone-500">
-                  <Percent className="mx-auto h-12 w-12 text-stone-300 mb-4" />
-                  <p className="text-lg font-medium mb-2">No discount codes yet</p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <Percent className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                  <p className="text-lg font-medium mb-2 text-foreground">No discount codes yet</p>
                   <p className="text-sm mb-6">Create your first discount code to boost sales</p>
                   <Button 
                     onClick={() => setIsDialogOpen(true)}
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light"
                   >
                     + Create Code
                   </Button>
                 </div>
               ) : (
-                <div className="border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+                <div className="border border-border rounded-lg overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b bg-white">
-                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Code</th>
-                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Discount</th>
-                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Usage</th>
-                          <th className="text-left py-3 px-4 font-medium text-sm text-stone-700">Status</th>
-                          <th className="text-right py-3 px-4 font-medium text-sm text-stone-700">Actions</th>
+                        <tr className="border-b bg-muted/30">
+                          <th className="text-left py-3 px-4 font-medium text-sm text-foreground">Code</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-foreground">Discount</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-foreground">Usage</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-foreground">Status</th>
+                          <th className="text-right py-3 px-4 font-medium text-sm text-foreground">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {discountCodes.map((code) => (
-                          <tr key={code.id} className="border-b hover:bg-stone-50">
+                          <tr key={code.id} className="border-b hover:bg-muted/50 transition-colors">
                             <td className="py-3 px-4">
-                              <div className="font-medium text-stone-800">{code.code}</div>
+                              <div className="font-medium text-foreground">{code.code}</div>
                               {code.productName && (
-                                <div className="text-xs text-stone-500 mt-1">
+                                <div className="text-xs text-muted-foreground mt-1">
                                   Product: {code.productName}
                                 </div>
                               )}
                             </td>
                             <td className="py-3 px-4">
-                              <div className="text-sm text-stone-600">
+                              <div className="text-sm text-foreground font-medium">
                                 {formatDiscountValue(code.type, code.value)}
                               </div>
                             </td>
                             <td className="py-3 px-4">
-                              <div className="text-sm text-stone-600">
+                              <div className="text-sm text-foreground">
                                 {code.usedCount}{code.maxUses ? `/${code.maxUses}` : ''} uses
-                                <div className="text-xs text-stone-500 mt-1">
+                                <div className="text-xs text-muted-foreground mt-1">
                                   Expires: {formatDate(code.expiresAt)}
                                 </div>
                               </div>
                             </td>
                             <td className="py-3 px-4">
-                              <Badge className={code.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-800'}>
+                              <Badge className={code.isActive ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'}>
                                 {code.isActive ? 'Active' : 'Inactive'}
                               </Badge>
                               {code.productId && (
                                 <div className="mt-1">
-                                  <Badge className="bg-secondary/20 text-secondary-foreground">
+                                  <Badge className="bg-secondary/10 text-secondary-foreground border-secondary/20">
                                     Product Specific
                                   </Badge>
                                 </div>
@@ -503,7 +527,7 @@ export default function PromosPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="h-8 px-2 text-stone-600"
+                                  className="h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-2xl"
                                   onClick={() => copyToClipboard(code.code)}
                                 >
                                   {copiedCode === code.code ? (
@@ -516,7 +540,7 @@ export default function PromosPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 rounded-2xl"
                                   onClick={() => handleDeleteCode(code.id)}
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -532,7 +556,7 @@ export default function PromosPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </div>
         )}
       </div>
     </div>

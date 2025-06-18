@@ -18,3 +18,7 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 
 ✅ **Products Page Design & Middleware Fix**: Updated products page styling to match design language (claude-card, consistent colors/typography). Fixed middleware bug where /products was incorrectly treated as public route due to /p/* wildcard match.
 
+✅ **Promos Page Design Update**: Updated promos/discount codes page styling to match design language - claude-card for containers, consistent primary/secondary color scheme (replacing hardcoded emerald/blue colors), font-light typography, rounded-2xl buttons, improved skeleton loading states, and consistent table styling with proper hover states and semantic badge colors.
+
+✅ **Customers Page Design Update**: Updated customers page styling to match design language - claude-card for containers, consistent primary color scheme (replacing hardcoded emerald/stone colors), font-light typography, improved skeleton loading states with customer-specific placeholders, semantic color tokens for text hierarchy, and consistent table styling with proper hover states.
+
