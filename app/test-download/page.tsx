@@ -140,7 +140,7 @@ export default function TestDownloadPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
         </div>
       ) : files.length === 0 ? (
-        <div className="text-center p-8 border rounded-lg bg-gray-50">
+        <div className="text-center p-8 border rounded-lg bg-muted">
           <p>No files found. Please upload some files first.</p>
         </div>
       ) : (

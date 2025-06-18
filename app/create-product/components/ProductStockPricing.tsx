@@ -52,14 +52,14 @@ export default function ProductStockPricing({
 
   return (
     <div className="mt-8 mb-6 border rounded-md p-4">
-      <h3 className="tracking-tight text-xl font-light text-stone-900 mb-2">Stock & Pricing</h3>
-      <p className="text-sm text-gray-500 mb-4 font-light">Manage inventory and availability</p>
+          <h3 className="tracking-tight text-xl font-light text-foreground mb-2">Stock & Pricing</h3>
+    <p className="text-sm text-muted-foreground mb-4 font-light">Manage inventory and availability</p>
       
       {/* Unlimited Quantity Toggle */}
       <div className="flex items-center justify-between p-2 border rounded-md mb-4">
         <div>
-          <h4 className="text-sm font-light text-stone-900">Unlimited Quantity</h4>
-          <p className="text-xs text-gray-500 font-light">No stock limitations</p>
+                  <h4 className="text-sm font-light text-foreground">Unlimited Quantity</h4>
+        <p className="text-xs text-muted-foreground font-light">No stock limitations</p>
         </div>
         <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
           <input 
@@ -71,7 +71,7 @@ export default function ProductStockPricing({
           />
           <label 
             htmlFor="unlimited-quantity" 
-            className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${unlimitedQuantity ? 'bg-emerald-500' : 'bg-stone-300'}`}
+            className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${unlimitedQuantity ? 'bg-primary' : 'bg-muted'}`}
           ></label>
         </div>
       </div>

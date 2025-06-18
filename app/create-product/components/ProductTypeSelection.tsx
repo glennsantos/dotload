@@ -18,50 +18,50 @@ export default function ProductTypeSelection({
 
   return (
     <div className="mt-8">
-      <h3 className="mb-4 tracking-tight text-xl font-light text-stone-900">Product Type</h3>
+      <h3 className="mb-4 tracking-tight text-xl font-light text-foreground">Product Type</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div 
-          className={`p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
-            productData.type === "digital_product" 
-              ? "border-emerald-300 bg-emerald-50 shadow-sm" 
-              : "border-stone-200 hover:border-stone-300 hover:bg-stone-50"
+          className={`p-6 border-2 rounded-lg cursor-pointer transition-all ${
+            productData.type === 'digital' 
+              ? "border-primary bg-primary/5 shadow-sm"
+              : "border-border hover:border-muted-foreground hover:bg-muted"
           }`}
           onClick={() => handleTypeSelect("digital_product")}
         >
           <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-xl ${
-            productData.type === "digital_product" 
-              ? "border-emerald-300 bg-emerald-100 shadow-sm text-emerald-600"
-              : "border-stone-300 hover:border-stone-300 hover:bg-stone-50 text-stone-600"
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm border ${
+              productData.type === 'digital'
+                ? "border-primary bg-primary/10 shadow-sm text-primary"
+                : "border-muted-foreground hover:border-muted-foreground hover:bg-muted text-muted-foreground"
             }`}>
               <Download className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-light text-stone-900">Digital Product</h3>
-              <p className="text-sm text-stone-500 font-light">Files, courses, software</p>
+                        <h3 className="font-light text-foreground">Digital Product</h3>
+          <p className="text-sm text-muted-foreground font-light">Files, courses, software</p>
             </div>
           </div>
         </div>
         
         <div 
-          className={`p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
-            productData.type === "physical_product" 
-              ? "border-emerald-300 bg-emerald-50 shadow-sm" 
-              : "border-stone-200 hover:border-stone-300 hover:bg-stone-50"
+          className={`p-6 border-2 rounded-lg cursor-pointer transition-all ${
+            productData.type === 'physical' 
+              ? "border-primary bg-primary/5 shadow-sm"
+              : "border-border hover:border-muted-foreground hover:bg-muted"
           }`}
           onClick={() => handleTypeSelect("physical_product")}
         >
           <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-xl ${
-            productData.type === "physical_product" 
-              ? "border-emerald-300 bg-emerald-100 shadow-sm text-emerald-600"
-              : "border-stone-300 hover:border-stone-300 hover:bg-stone-50 text-stone-600"
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm border ${
+              productData.type === 'physical'
+                ? "border-primary bg-primary/10 shadow-sm text-primary"
+                : "border-muted-foreground hover:border-muted-foreground hover:bg-muted text-muted-foreground"
             }`}>
               <Package className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-light text-stone-900">Physical Product</h3>
-              <p className="text-sm text-stone-500 font-light">Tangible goods, merchandise</p>
+                        <h3 className="font-light text-foreground">Physical Product</h3>
+          <p className="text-sm text-muted-foreground font-light">Tangible goods, merchandise</p>
             </div>
           </div>
         </div>

@@ -105,7 +105,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="border rounded-md p-8 text-center max-w-md mx-auto">
-          <h2 className="text-xl font-light mb-2 text-red-600">Error</h2>
+          <h2 className="text-xl font-light mb-2 text-destructive">Error</h2>
           <p className="text-gray-600 mb-6">{error || 'Purchase not found'}</p>
           <Link href={`/p/${unwrappedParams.slug}`} className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
             <ArrowLeft size={18} /> Back to Product
@@ -116,7 +116,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Image 
@@ -133,7 +133,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="bg-white shadow-sm rounded-lg p-8 text-center">
           <div className="mb-6">
-            <CheckCircle size={64} className="mx-auto text-green-500" />
+            <CheckCircle size={64} className="mx-auto text-primary" />
           </div>
           
           <h1 className="text-3xl font-light text-gray-900 mb-4">Thank You for Your Purchase!</h1>
@@ -142,7 +142,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
             Your payment was successful and your order has been processed.
           </p>
           
-          <div className="bg-gray-50 rounded-lg p-6 mb-8">
+                      <div className="bg-muted rounded-lg p-6 mb-8">
             <h2 className="text-xl font-light text-gray-900 mb-4">Order Details</h2>
             
             <div className="flex items-center justify-between mb-4">
@@ -170,7 +170,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
             
             <Link 
               href={`/temp-downloads?code=${accessCode}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full font-light hover:bg-emerald-700 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-light hover:bg-primary/90 transition-colors"
             >
               <Download size={20} />
               Access Content
@@ -189,7 +189,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
             
             <Link 
               href={`/p/${purchase?.product?.slug || unwrappedParams.slug}`}
-              className="inline-flex items-center justify-center px-6 py-3 rounded-full font-light text-emerald-600 bg-white hover:bg-emerald-200 border border-emerald-600"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-full font-light text-primary bg-background hover:bg-primary/5 border border-primary"
             >
               Return to Product Page
             </Link>

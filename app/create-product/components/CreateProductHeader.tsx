@@ -96,9 +96,9 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="h-9 w-9 rounded-full relative overflow-hidden hover:bg-stone-100"
+                    className="h-9 w-9 rounded-full relative overflow-hidden hover:bg-muted"
                   >
-                    <div className="h-9 w-9 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 font-medium text-sm">
+                    <div className="h-9 w-9 rounded-full flex items-center justify-center bg-primary/10 text-primary font-medium text-sm">
                       {userData.userLogo ? <Image src={userData.userLogo} alt="User Logo" width={40} height={40} className="h-full w-full object-cover" /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}
                     </div>
                   </Button>
@@ -146,10 +146,10 @@ export default function CreateProductHeader({ isEdit = false }: CreateProductHea
             <div className="md:hidden">
               <button 
                 onClick={() => setIsMenuOpen(true)}
-                className="h-9 w-9 rounded-full relative overflow-hidden hover:bg-stone-100"
+                className="h-9 w-9 rounded-full relative overflow-hidden hover:bg-muted"
                 aria-label="Profile menu"
               >
-                <div className="h-12 w-12 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 font-medium text-sm">
+                <div className="h-12 w-12 rounded-full flex items-center justify-center bg-primary/10 text-primary font-medium text-sm">
                   {userData.userLogo ? <Image src={userData.userLogo} alt="User Logo" width={40} height={40} className="h-full w-full object-cover" /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}
                 </div>
               </button>

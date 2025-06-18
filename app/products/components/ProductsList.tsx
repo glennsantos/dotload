@@ -184,7 +184,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
   if (error) {
     return (
       <div className="border rounded-md p-8 text-center">
-        <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
+        <h2 className="text-xl font-medium mb-2 text-destructive">Error</h2>
         <p className="text-gray-600 mb-6">{error}</p>
         <button 
           onClick={() => window.location.reload()} 
@@ -218,22 +218,22 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
       title: "Total Revenue", 
       value: "$0", 
       subtitle: "All time earnings",
-      icon: <DollarSign className="h-5 w-5 text-green-600" />,
-      iconClassName: "bg-green-100"
+              icon: <DollarSign className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10"
     },
     { 
       title: "Total Sales", 
       value: "0", 
       subtitle: "Completed orders",
-      icon: <ShoppingCart className="h-5 w-5 text-blue-600" />,
-      iconClassName: "bg-blue-100"
+      icon: <ShoppingCart className="h-5 w-5 text-primary" />,
+      iconClassName: "bg-primary/10"
     },
     { 
       title: "Customers", 
       value: "0", 
       subtitle: "Unique buyers",
-      icon: <Users className="h-5 w-5 text-purple-600" />,
-      iconClassName: "bg-purple-100"
+      icon: <Users className="h-5 w-5 text-secondary-foreground" />,
+      iconClassName: "bg-secondary/10"
     }
   ]
 
@@ -262,13 +262,13 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
         {/* Desktop view tabs - hidden on mobile */}
         <div className="hidden md:flex rounded-xl overflow-hidden border border-stone-200 shadow-none">
           <button 
-            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'active' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100'}`}
+            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'active' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
             onClick={() => setActiveFilter('active')}
           >
             Active ({products.filter(p => p.status !== 'archived').length})
           </button>
           <button 
-            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'archived' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100'}`}
+            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'archived' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
             onClick={() => setActiveFilter('archived')}
           >
             <span className="flex items-center"><Archive className="mr-2 h-4 w-4" /> Archived ({products.filter(p => p.status === 'archived').length})</span>

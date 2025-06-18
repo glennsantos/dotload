@@ -569,14 +569,14 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
         <div>
           {/* Validation errors alert */}
           {showValidationErrors && Object.keys(validationErrors).length > 0 && (
-            <div className="mx-auto max-w-7xl p-4 mt-4 bg-red-50 border border-red-200 rounded-md">
+            <div className="mx-auto max-w-7xl p-4 mt-4 bg-destructive/10 border border-destructive/20 rounded-md">
               <div className="flex items-start">
-                <AlertCircle className="w-5 h-5 text-red-500 mr-2 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-destructive mr-2 mt-0.5" />
                 <div>
-                  <h3 className="text-sm font-medium text-red-800">
+                  <h3 className="text-sm font-medium text-destructive">
                     Please fix the following errors:
                   </h3>
-                  <ul className="mt-2 text-sm text-red-700 list-disc list-inside">
+                  <ul className="mt-2 text-sm text-destructive list-disc list-inside">
                     {Object.entries(validationErrors).map(([field, error]) => (
                       <li key={field}>{error}</li>
                     ))}
@@ -598,8 +598,8 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                   onClick={() => handleTabChange('setup')}
                   className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-full transition-colors ${
                     activeTab === 'setup'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'text-stone-500 hover:text-stone-700'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted hover:text-primary'
                   }`}
                 >
                   Product Setup
@@ -608,8 +608,8 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                   onClick={() => handleTabChange('advanced')}
                   className={`w-1/2 m-1 py-3 text-sm font-light rounded-full transition-colors ${
                     activeTab === 'advanced'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'text-stone-500 hover:text-stone-700'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted hover:text-primary'
                   }`}
                 >
                   Advanced Options
@@ -655,13 +655,13 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
               <div className="flex justify-between mt-8">
                 <button 
                   onClick={() => router.push('/products')} 
-                  className="hidden sm:flex px-4 py-2 text-gray-600 border border-gray-300 rounded-md"
+                  className="hidden sm:flex px-4 py-2 text-muted border border-gray-300 rounded-md"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleSubmit} 
-                  className="hidden sm:flex px-4 py-2 bg-emerald-500 text-white rounded-md"
+                  className="hidden sm:flex px-4 py-2 bg-primary text-primary-foreground rounded-md"
                   disabled={isSubmitting}
                 >
                   {isSubmitting 
@@ -695,7 +695,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                         type="text"
                         value={`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`}
                         readOnly
-                        className="flex-1 p-2 border rounded-l-2xl bg-gray-100"
+                        className="flex-1 p-2 border rounded-l-2xl bg-muted"
                       />
                       <button 
                         onClick={() => {
@@ -706,7 +706,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                               .catch(() => showError('Failed to copy URL'));
                           }
                         }}
-                        className="px-4 py-2 bg-emerald-600 text-white rounded-r-2xl"
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-r-2xl"
                       >
                         Copy
                       </button>
@@ -736,13 +736,13 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                     <div className="flex gap-2 sm:gap-3 flex-wrap">
                       <button 
                         onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}&text=${encodeURIComponent(`Check out ${createdProduct.name}`)}`, '_blank')} 
-                        className="px-2 py-2 sm:px-4 bg-black text-white rounded-xl sm:rounded-2xl hover:bg-gray-800 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
+                        className="px-2 py-2 sm:px-4 bg-secondary text-secondary-foreground rounded-xl sm:rounded-2xl hover:bg-secondary/80 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
                       >
                         X (Twitter)
                       </button>
                       <button 
                         onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/p/${createdProduct.slug || createdProduct.id}`)}`, '_blank')} 
-                        className="px-2 py-2 sm:px-4 bg-blue-600 text-white rounded-xl sm:rounded-2xl hover:bg-blue-700 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
+                        className="px-2 py-2 sm:px-4 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl hover:bg-primary/90 transition-colors text-xs sm:text-sm flex-1 sm:flex-none"
                       >
                         Facebook
                       </button>
@@ -784,7 +784,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
         <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4">
           <button 
             onClick={handleSubmit} 
-            className="w-full px-4 py-3 rounded-md bg-emerald-500 text-white flex items-center justify-center"
+            className="w-full px-4 py-3 rounded-md bg-primary text-primary-foreground flex items-center justify-center"
             disabled={isSubmitting}
           >
             {isSubmitting 

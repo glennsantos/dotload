@@ -181,7 +181,7 @@ export default function BuyerDashboardPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-          <p className="mt-2 text-gray-600">Loading your purchases...</p>
+          <p className="mt-2 text-muted-foreground">Loading your purchases...</p>
         </div>
       </div>
     )
@@ -191,9 +191,9 @@ export default function BuyerDashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="border rounded-md p-8 text-center max-w-md mx-auto">
-          <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Link href="/" className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
+          <h2 className="text-xl font-medium mb-2 text-destructive">Error</h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <Link href="/" className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md inline-flex items-center gap-2">
             Go Home
           </Link>
         </div>
@@ -203,23 +203,23 @@ export default function BuyerDashboardPage() {
 
   if (showUserForm) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-background py-12">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-sm p-8">
           <h1 className="text-2xl font-bold mb-6">Complete Your Account</h1>
           
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             Please provide the following information to access your purchase and create your account.
           </p>
           
           {formError && (
-            <div className="bg-red-50 text-red-700 p-4 rounded-md mb-6">
+            <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-6">
               {formError}
             </div>
           )}
           
           <form onSubmit={handleSubmitUserDetails}>
             <div className="mb-4">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
                 Your Name
               </label>
               <input
@@ -227,13 +227,13 @@ export default function BuyerDashboardPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-border rounded focus:ring-primary focus:border-primary"
                 required
               />
             </div>
             
             <div className="mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                 Email Address
               </label>
               <input
@@ -241,12 +241,12 @@ export default function BuyerDashboardPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-border rounded focus:ring-primary focus:border-primary"
                 required
                 readOnly={!!email}
               />
               {email && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   This is the email address used for your purchase.
                 </p>
               )}
@@ -254,7 +254,7 @@ export default function BuyerDashboardPage() {
             
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              className="w-full bg-primary text-primary-foreground py-2 px-4 rounded hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
               disabled={submitting}
             >
               {submitting ? "Creating Account..." : "Create Account & Access Purchase"}
@@ -266,27 +266,27 @@ export default function BuyerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Purchases</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-8">Purchases</h1>
         
         {purchases.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
+            <div className="text-muted-foreground mb-4">
               <ShoppingBag size={48} className="mx-auto" />
             </div>
             <h2 className="text-2xl font-bold mb-2">No Purchases Found</h2>
-            <p className="text-gray-600">You don't have any purchases yet.</p>
+            <p className="text-muted-foreground">You don't have any purchases yet.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
               <Link 
                 href="/products" 
-                className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center justify-center gap-2"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md inline-flex items-center justify-center gap-2"
               >
                 Browse Products
               </Link>
               <Link 
                 href="/" 
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md inline-flex items-center justify-center gap-2 hover:bg-gray-50"
+                className="px-4 py-2 border border-border text-muted-foreground rounded-md inline-flex items-center justify-center gap-2 hover:bg-muted"
               >
                 Return to Home
               </Link>
@@ -296,8 +296,8 @@ export default function BuyerDashboardPage() {
           <div className="space-y-8">
             {purchases.map((purchase) => (
               <div key={purchase.id} className="bg-white shadow-sm rounded-lg overflow-hidden">
-                <div className="border-b border-gray-100 px-6 py-3 flex justify-between items-center">
-                  <div className="text-sm text-gray-500">
+                <div className="border-b border-border px-6 py-3 flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">
                     {new Date(purchase.createdAt).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -307,7 +307,7 @@ export default function BuyerDashboardPage() {
                     })}
                   </div>
                   <div className="flex items-center">
-                    <span className={`px-2 py-1 text-xs rounded-full ${purchase.status === 'completed' || purchase.status === 'succeeded' ? 'bg-green-100 text-green-800' : purchase.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+                    <span className={`px-2 py-1 rounded text-xs ${purchase.status === 'completed' || purchase.status === 'succeeded' ? 'bg-primary/10 text-primary' : purchase.status === 'pending' ? 'bg-secondary/10 text-secondary' : 'bg-muted text-muted-foreground'}`}>
                       {purchase.status.charAt(0).toUpperCase() + purchase.status.slice(1)}
                     </span>
                   </div>
@@ -326,8 +326,8 @@ export default function BuyerDashboardPage() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <FileText className="text-gray-400" size={48} />
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <FileText className="text-muted-foreground" size={48} />
                         </div>
                       )}
                     </div>
@@ -341,7 +341,7 @@ export default function BuyerDashboardPage() {
                       <span>Purchased on {new Date(purchase.createdAt).toLocaleDateString()}</span>
                       <span className="mx-2">•</span>
                       <span className="flex items-center">
-                        <CheckCircle size={16} className="mr-1 text-green-500" />
+                        <CheckCircle size={16} className="mr-1 text-primary" />
                         {purchase.status}
                       </span>
                     </div>
@@ -351,12 +351,12 @@ export default function BuyerDashboardPage() {
                       {purchase.product.files && purchase.product.files.length > 0 ? (
                         <ul className="space-y-2">
                           {purchase.product.files.map((file) => (
-                            <li key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <li key={file.id} className="flex items-center justify-between p-3 bg-muted rounded-md">
                               <span className="truncate flex-1">{file.filename}</span>
                               {purchase.status === 'completed' || purchase.status === 'succeeded' ? (
                                 <a 
                                   href={`/api/purchases/download?fileId=${file.id}&accessCode=${purchase.accessCode}`}
-                                  className="ml-4 text-blue-600 hover:text-blue-500 flex items-center"
+                                  className="ml-4 text-primary hover:text-primary/80 flex items-center"
                                   download
                                 >
                                   <Download size={16} className="mr-1" />
@@ -371,7 +371,7 @@ export default function BuyerDashboardPage() {
                                     })
                                     setShowPaymentPendingModal(true)
                                   }}
-                                  className="ml-4 text-blue-600 hover:text-blue-500 flex items-center"
+                                  className="ml-4 text-primary hover:text-primary/80 flex items-center"
                                 >
                                   <Download size={16} className="mr-1" />
                                   Download
@@ -396,7 +396,7 @@ export default function BuyerDashboardPage() {
                     
                     <Link 
                       href={`/p/${purchase.product.slug}`}
-                      className="text-blue-600 hover:text-blue-500 flex items-center text-sm"
+                      className="text-primary hover:text-primary/80 flex items-center text-sm"
                     >
                       <ExternalLink size={14} className="mr-1" />
                       View Product Page

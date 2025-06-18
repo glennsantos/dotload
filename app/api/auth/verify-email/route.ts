@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseUserService } from '@/lib/supabase-db';
 
 export const dynamic = 'force-dynamic'; // Prevent static optimization
 
@@ -28,19 +28,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Find user with the verification token
-    const user = await prisma.user.findFirst({
-      where: { 
-        verificationToken: token
-      },
-      select: {
-        id: true,
-        email: true,
-        emailVerified: true,
-        verificationToken: true,
-        verificationTokenExpiry: true
-      }
-    });
+    // Find user with the verification token using Supabase
+    const user = await supabaseUserService.findUserByVerificationToken(token);
 
     if (!user) {
       console.error('No user found with provided token');
@@ -55,7 +44,7 @@ export async function GET(req: NextRequest) {
 
     // Check if token is expired
     const now = new Date();
-    if (user.verificationTokenExpiry && user.verificationTokenExpiry < now) {
+    if (user.verificationTokenExpiry && new Date(user.verificationTokenExpiry) < now) {
       console.error('Token expired for user:', user.id);
       return NextResponse.json<ErrorResponse>(
         { 
@@ -67,14 +56,11 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-      // Update user to mark email as verified
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          emailVerified: true,
-          verificationToken: null,
-          verificationTokenExpiry: null,
-        },
+      // Update user to mark email as verified using Supabase
+      await supabaseUserService.updateUser(user.id, {
+        emailVerified: true,
+        verificationToken: null,
+        verificationTokenExpiry: null,
       });
       
       console.log('Successfully verified email for user:', user.id);
@@ -131,10 +117,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    // Find user by email using Supabase
+    const user = await supabaseUserService.findUserByEmail(email);
 
     if (!user) {
       // Don't reveal that the user doesn't exist for security
@@ -151,12 +135,9 @@ export async function POST(req: NextRequest) {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        verificationToken,
-        verificationTokenExpiry,
-      },
+    await supabaseUserService.updateUser(user.id, {
+      verificationToken,
+      verificationTokenExpiry: verificationTokenExpiry.toISOString(),
     });
 
     // Send verification email
@@ -176,10 +157,7 @@ export async function POST(req: NextRequest) {
       requestMethod: req.method,
       requestHeaders: Object.fromEntries(req.headers.entries()),
       stage: error instanceof Error && error.message.includes('sendVerificationEmail') ? 'sending_email' : 'token_generation',
-      prismaError: error instanceof Error && error.message.includes('Prisma') ? {
-        code: (error as any).code,
-        meta: (error as any).meta
-      } : null
+      supabaseError: error instanceof Error && error.message.includes('Supabase') ? error.message : null
     };
     console.error('Resend verification email error:', errorContext);
     return NextResponse.json({ 

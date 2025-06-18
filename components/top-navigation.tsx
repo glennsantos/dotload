@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, Search, Bell, User, LogOut, Settings, ShoppingBag, Wallet, BookOpen } from "lucide-react"
+import { Menu, X, Search, Bell, User, LogOut, Settings, ShoppingBag, Wallet, BookOpen, BarChart3, Package } from "lucide-react"
 import { useRouter, usePathname } from "next/navigation"
 
 // Create a custom event for auth state changes
@@ -205,11 +205,11 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
         </div>
 
         <div className="flex items-center space-x-6">
-          <Link href="/products" className="hover:text-gray-300">
+          <Link href="/products" className="hover:text-muted-foreground">
             Products
           </Link>
           {user && (
-            <Link href="/buyer-dashboard" className="hover:text-gray-300">
+            <Link href="/buyer-dashboard" className="hover:text-muted-foreground">
               Purchases
             </Link>
           )}
@@ -217,57 +217,50 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
             <div className="relative" ref={userMenuRef}>
               <button 
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center hover:text-gray-300 focus:outline-none"
+                className="flex items-center hover:text-muted-foreground focus:outline-none"
               >
                 <User size={20} />
                 <span className="ml-2 hidden md:inline">{user.name || user.email}</span>
               </button>
               
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg z-50">
-                  {hasPurchases && (
-                    <>
-                      <Link
-                        href="/purchases"
-                        className="block px-4 py-2 hover:bg-gray-100 flex items-center"
-                      >
-                        <ShoppingBag className="mr-2" size={16} /> Purchases
-                      </Link>
-                    </>
-                  )}
+                <div className="absolute right-0 mt-2 w-48 bg-background text-foreground rounded-lg shadow-lg z-50 border border-border">
+                  <Link 
+                    href="/dashboard" 
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block px-4 py-2 hover:bg-muted flex items-center"
+                  >
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
                   <Link 
                     href="/settings" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                     onClick={() => setUserMenuOpen(false)}
+                    className="block px-4 py-2 text-sm text-muted-foreground hover:bg-muted flex items-center"
                   >
-                    <Settings size={16} className="mr-2" />
+                    <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </Link>
-
                   <Link 
-                    href="/transactions" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={() => {
-                      console.log('Transactions menu item clicked');
-                      setUserMenuOpen(false);
-                    }}
+                    href="/products" 
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block px-4 py-2 text-sm text-muted-foreground hover:bg-muted flex items-center"
                   >
-                    <BookOpen size={16} className="mr-2" />
-                    Transactions
+                    <Package className="mr-2 h-4 w-4" />
+                    Products
                   </Link>
-                  <button 
-                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-destructive hover:bg-muted flex items-center"
                     onClick={handleLogout}
-                    disabled={isLoggingOut}
                   >
-                    <LogOut size={16} className="mr-2" />
-                    {isLoggingOut ? 'Logging out...' : 'Logout'}
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <Link href="/login" className="hover:text-gray-300">
+            <Link href="/login" className="hover:text-muted-foreground">
               <User size={20} />
             </Link>
           )}
@@ -277,12 +270,12 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <nav className="px-4 pt-2 pb-4 space-y-2 md:hidden">
-          <Link href="/products" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/products" className="block py-2 hover:text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
             Products
           </Link>
           
           {user && hasPurchases && (
-            <Link href="/purchases" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/purchases" className="block py-2 hover:text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
               <span className="flex items-center">
                 <ShoppingBag size={18} className="mr-2" />
                 Purchases
@@ -292,13 +285,13 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
           
           {user ? (
             <>
-              <Link href="/settings" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/settings" className="block py-2 hover:text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
                 <span className="flex items-center">
                   <Settings size={18} className="mr-2" />
                   Settings
                 </span>
               </Link>
-              <Link href="/transactions" className="block py-2 hover:text-gray-300" onClick={() => {
+              <Link href="/transactions" className="block py-2 hover:text-muted-foreground" onClick={() => {
                 console.log('Mobile Transactions menu item clicked');
                 setMobileMenuOpen(false);
               }}>
@@ -308,7 +301,7 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
                 </span>
               </Link>
               <button 
-                className="flex items-center w-full py-2 text-red-400 hover:text-red-300"
+                className="flex items-center w-full py-2 text-destructive hover:text-destructive/80"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
               >
@@ -317,7 +310,7 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
               </button>
             </>
           ) : (
-            <Link href="/login" className="block py-2 hover:text-gray-300" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/login" className="block py-2 hover:text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
               <span className="flex items-center">
                 <User size={18} className="mr-2" />
                 Login

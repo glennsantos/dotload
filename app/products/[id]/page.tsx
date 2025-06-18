@@ -71,7 +71,7 @@ export default function ProductDetailPage({ params, searchParams }: ProductDetai
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="border rounded-md p-8 text-center max-w-md mx-auto">
-          <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
+          <h2 className="text-xl font-medium mb-2 text-destructive">Error</h2>
           <p className="text-gray-600 mb-6">{error || 'Product not found'}</p>
           <Link href="/products" className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
             <ArrowLeft size={18} /> Back to Products
@@ -149,7 +149,7 @@ export default function ProductDetailPage({ params, searchParams }: ProductDetai
                     <div>
                       <div className="text-sm text-gray-500">Status</div>
                       <div className="font-medium flex items-center">
-                        <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                        <span className="inline-block w-2 h-2 rounded-full bg-primary mr-2"></span>
                         Published
                       </div>
                     </div>
@@ -183,7 +183,7 @@ export default function ProductDetailPage({ params, searchParams }: ProductDetai
                   )}
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="bg-purple-200 text-sm px-2 py-1 rounded">${product.price.toFixed(2)}</div>
+                      <div className="bg-secondary text-sm px-2 py-1 rounded">${product.price.toFixed(2)}</div>
                       <div className="text-sm text-gray-500">0 ratings</div>
                     </div>
                     <Link

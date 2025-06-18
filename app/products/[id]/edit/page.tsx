@@ -1583,7 +1583,7 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <div className="flex items-center mb-4">
               {saveResult.success ? (
-                <div className="bg-green-100 text-green-700 p-3 rounded-full mr-3">
+                <div className="bg-primary/10 text-primary p-3 rounded-full mr-3">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -1622,7 +1622,7 @@ export default function ProductEditPage({ params, searchParams }: ProductEditPag
                     fetchProduct();
                   }
                 }}
-                className={`px-4 py-2 rounded-md ${saveResult.success ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white`}
+                className={`px-4 py-2 rounded-md ${saveResult.success ? 'bg-primary hover:bg-primary/90' : 'bg-destructive hover:bg-destructive/90'} text-white`}
               >
                 Close
               </button>

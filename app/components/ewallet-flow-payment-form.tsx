@@ -93,19 +93,19 @@ export default function EWalletFlowPaymentForm({
           onValueChange={setChannelCode}
           className="grid grid-cols-2 gap-4"
         >
-          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-gray-50">
+          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-muted">
             <RadioGroupItem value="OVO" id="ovo" />
             <Label htmlFor="ovo" className="cursor-pointer">OVO</Label>
           </div>
-          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-gray-50">
+          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-muted">
             <RadioGroupItem value="DANA" id="dana" />
             <Label htmlFor="dana" className="cursor-pointer">DANA</Label>
           </div>
-          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-gray-50">
+          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-muted">
             <RadioGroupItem value="SHOPEEPAY" id="shopeepay" />
             <Label htmlFor="shopeepay" className="cursor-pointer">ShopeePay</Label>
           </div>
-          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-gray-50">
+          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-muted">
             <RadioGroupItem value="LINKAJA" id="linkaja" />
             <Label htmlFor="linkaja" className="cursor-pointer">LinkAja</Label>
           </div>
@@ -133,7 +133,7 @@ export default function EWalletFlowPaymentForm({
         </Button>
       </div>
       
-      <div className="text-sm text-gray-500 mt-4 p-4 bg-gray-50 rounded-md">
+      <div className="text-sm text-muted-foreground mt-4 p-4 bg-muted rounded-md">
         <h3 className="font-medium mb-2">How it works:</h3>
         <ol className="list-decimal pl-5 space-y-1">
           <li>You'll be redirected to link your eWallet account</li>

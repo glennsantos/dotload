@@ -191,10 +191,10 @@ export default function ProductCustomization({
                 Preview will be generated after submission
               </div>
               <div className="flex items-center justify-between mb-2">
-                <div className="bg-purple-200 text-sm px-2 py-1 rounded">₱{productData.price || "2.99"}</div>
+                <div className="bg-secondary text-sm px-2 py-1 rounded">₱{productData.price || "2.99"}</div>
                 <div className="text-sm text-gray-500">0 ratings</div>
               </div>
-              <div className="bg-yellow-100 text-sm p-2 rounded mb-4">This product is not currently for sale</div>
+              <div className="bg-secondary/20 text-sm p-2 rounded mb-4">This product is not currently for sale</div>
             </div>
           </div>
         </div>

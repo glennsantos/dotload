@@ -492,7 +492,7 @@ export default function PromosPage() {
                               </Badge>
                               {code.productId && (
                                 <div className="mt-1">
-                                  <Badge className="bg-blue-100 text-blue-800">
+                                  <Badge className="bg-secondary/20 text-secondary-foreground">
                                     Product Specific
                                   </Badge>
                                 </div>

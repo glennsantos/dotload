@@ -72,10 +72,10 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         {/* Header */}
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-medium text-stone-800">Menu</h2>
+            <h2 className="text-xl font-medium text-foreground">Menu</h2>
             <button
               onClick={onClose}
-              className="p-1 rounded-full hover:bg-stone-100 text-stone-500"
+              className="p-1 rounded-full hover:bg-muted text-muted-foreground"
               aria-label="Close menu"
             >
               <X className="h-6 w-6" />
@@ -86,7 +86,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         {/* User Profile */}
         <div className="px-6 py-4">
           <div className="flex items-center">
-            <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-medium text-lg overflow-hidden">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium text-lg overflow-hidden">
               {userData.userLogo ? (
                 <img 
                   src={userData.userLogo} 
@@ -98,9 +98,9 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               )}
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-stone-900">{userData.userName}</p>
+              <p className="text-sm font-medium text-foreground">{userData.userName}</p>
               {userData.userEmail && (
-                <p className="text-xs text-stone-500">{userData.userEmail}</p>
+                <p className="text-xs text-muted-foreground">{userData.userEmail}</p>
               )}
             </div>
           </div>
@@ -108,7 +108,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
         {/* Actions Section */}
         <div className="px-6 py-4">
-          <h3 className="text-sm font-medium text-stone-800 mb-3">Actions</h3>
+                      <h3 className="text-sm font-medium text-foreground mb-3">Actions</h3>
           <Button 
             asChild
             className="w-full"
@@ -121,8 +121,8 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         </div>
 
         {/* Account Section */}
-        <div className="py-6 mt-4 mx-6 border-t border-stone-200">
-          <h3 className="text-sm font-medium text-stone-800 mb-3">Account</h3>
+        <div className="py-6 mt-4 mx-6 border-t border-border">
+                      <h3 className="text-sm font-medium text-foreground mb-3">Account</h3>
           <ul className="space-y-3 pl-4">
             <li>
               <Link href="/settings" className="cursor-pointer flex items-center">

@@ -175,13 +175,13 @@ export default function SalesPage() {
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100';
+        return 'bg-primary/10 text-primary hover:bg-primary/20';
       case 'pending':
-        return 'bg-amber-100 text-amber-800 hover:bg-amber-100';
+        return 'bg-secondary/20 text-secondary-foreground hover:bg-secondary/30';
       case 'failed':
-        return 'bg-red-100 text-red-800 hover:bg-red-100';
+        return 'bg-destructive/10 text-destructive hover:bg-destructive/20';
       default:
-        return 'bg-stone-100 text-stone-800 hover:bg-stone-100';
+        return 'bg-muted text-muted-foreground hover:bg-muted/80';
     }
   };
 
@@ -189,13 +189,13 @@ export default function SalesPage() {
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
       case 'income':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
+        return 'bg-primary/10 text-primary hover:bg-primary/20';
       case 'payout':
-        return 'bg-purple-100 text-purple-800 hover:bg-purple-100';
+        return 'bg-secondary/20 text-secondary-foreground hover:bg-secondary/30';
       case 'fee':
-        return 'bg-stone-100 text-stone-800 hover:bg-stone-100';
+        return 'bg-accent/10 text-accent-foreground hover:bg-accent/20';
       default:
-        return 'bg-stone-100 text-stone-800 hover:bg-stone-100';
+        return 'bg-muted text-muted-foreground hover:bg-muted/80';
     }
   };
 
@@ -203,12 +203,12 @@ export default function SalesPage() {
   const getAmountColor = (type: string) => {
     switch (type) {
       case 'income':
-        return 'text-emerald-600';
+        return 'text-primary';
       case 'payout':
       case 'fee':
-        return 'text-red-600';
+        return 'text-destructive';
       default:
-        return 'text-stone-800';
+        return 'text-foreground';
     }
   };
 
@@ -238,14 +238,14 @@ export default function SalesPage() {
           title="Current Balance"
           value={formatCurrency(summary.currentBalance || 0, 'PHP').replace('PHP', '').trim()}
           subtitle="Total balance in your account"
-          icon={<Landmark className="h-5 w-5 text-emerald-600" />}
-          iconClassName="bg-emerald-100"
+          icon={<Landmark className="h-5 w-5 text-primary" />}
+          iconClassName="bg-primary/10"
         />
         
         <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-100">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-sm font-light text-stone-600">Available Balance</h3>
+              <h3 className="text-sm font-light text-muted-foreground">Available Balance</h3>
               <p className="text-2xl font-normal mt-1">{formatCurrency(summary.availableBalance || 0, 'PHP').replace('PHP', '').trim()}</p>
               <p className="text-xs text-stone-500 mt-1">Available for withdrawal</p>
             </div>
@@ -366,7 +366,7 @@ export default function SalesPage() {
                   variant="outline"
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page === 1}
-                  className="border-stone-200 text-stone-700"
+                  className="border-border text-muted-foreground"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Previous
@@ -378,7 +378,7 @@ export default function SalesPage() {
                   variant="outline"
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page === pagination.totalPages}
-                  className="border-stone-200 text-stone-700"
+                  className="border-border text-muted-foreground"
                 >
                   Next
                   <ArrowRight className="h-4 w-4 ml-2" />

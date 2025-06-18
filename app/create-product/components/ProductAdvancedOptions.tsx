@@ -247,7 +247,7 @@ export default function ProductAdvancedOptions({
         
         <div className="mb-3">
           {Array.isArray(productData.whatsIncluded) && productData.whatsIncluded.map((item, index) => (
-            <div key={index} className="flex items-center justify-between mb-2 p-2 bg-gray-50 rounded-md">
+            <div key={index} className="flex items-center justify-between mb-2 p-2 bg-muted rounded-md">
               <div className="flex items-center">
                 <Check size={16} className="text-emerald-500 mr-2" />
                 <span className="text-sm">{item}</span>
@@ -281,7 +281,7 @@ export default function ProductAdvancedOptions({
             }}
           />
           <button
-            className="px-4 py-2 bg-gray-100 border border-l-0 rounded-r-md"
+            className="px-4 py-2 bg-muted border border-l-0 rounded-r-md"
             onClick={handleAddIncludedItem}
           >
             <Plus size={16} />
@@ -311,7 +311,7 @@ export default function ProductAdvancedOptions({
                   
                   <ul className="space-y-1 mb-3">
                     {module.items.map((item, itemIndex) => (
-                      <li key={itemIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                      <li key={itemIndex} className="flex items-center justify-between p-2 bg-muted rounded-md">
                         <span className="text-sm">{item}</span>
                         <button
                           onClick={() => handleRemoveModuleItem(moduleIndex, itemIndex)}
@@ -341,7 +341,7 @@ export default function ProductAdvancedOptions({
                       }}
                     />
                     <button
-                      className="px-3 py-2 bg-gray-100 border border-l-0 rounded-r-md"
+                      className="px-3 py-2 bg-muted border border-l-0 rounded-r-md"
                       onClick={() => handleAddModuleItem(moduleIndex)}
                     >
                       <Plus size={14} />
@@ -370,7 +370,7 @@ export default function ProductAdvancedOptions({
                 }}
               />
               <button
-                className="px-4 py-2 bg-gray-100 border border-l-0 rounded-r-md"
+                className="px-4 py-2 bg-muted border border-l-0 rounded-r-md"
                 onClick={handleAddModule}
               >
                 <Plus size={16} />
@@ -401,7 +401,7 @@ export default function ProductAdvancedOptions({
               />
               <label 
                 htmlFor="badge-bestseller" 
-                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.badges.bestSeller ? 'bg-emerald-500' : 'bg-stone-300'}`}
+                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.badges.bestSeller ? 'bg-primary' : 'bg-muted'}`}
               ></label>
             </div>
           </div>
@@ -421,7 +421,7 @@ export default function ProductAdvancedOptions({
               />
               <label 
                 htmlFor="badge-new" 
-                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.badges.newRelease ? 'bg-emerald-500' : 'bg-stone-300'}`}
+                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.badges.newRelease ? 'bg-primary' : 'bg-muted'}`}
               ></label>
             </div>
           </div>
@@ -441,7 +441,7 @@ export default function ProductAdvancedOptions({
               />
               <label 
                 htmlFor="badge-popular" 
-                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.badges.popular ? 'bg-emerald-500' : 'bg-stone-300'}`}
+                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.badges.popular ? 'bg-primary' : 'bg-muted'}`}
               ></label>
             </div>
           </div>
@@ -451,7 +451,7 @@ export default function ProductAdvancedOptions({
           <label className="block text-sm mb-2">Custom Badges</label>
           <div className="mb-3">
             {productData.badges.custom.map((badge, index) => (
-              <div key={index} className="inline-block bg-gray-100 rounded-full px-3 py-1 text-xs mr-2 mb-2 flex items-center">
+              <div key={index} className="inline-block bg-muted rounded-full px-3 py-1 text-xs mr-2 mb-2 flex items-center">
                 <span>{badge}</span>
                 <button
                   onClick={() => handleRemoveCustomBadge(index)}
@@ -482,7 +482,7 @@ export default function ProductAdvancedOptions({
               }}
             />
             <button
-              className="px-4 py-2 bg-gray-100 border border-l-0 rounded-r-md"
+              className="px-4 py-2 bg-muted border border-l-0 rounded-r-md"
               onClick={handleAddCustomBadge}
             >
               <Plus size={16} />
@@ -514,7 +514,7 @@ export default function ProductAdvancedOptions({
             />
             <label 
               htmlFor="trust-secure" 
-              className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.secureCheckout ? 'bg-emerald-500' : 'bg-stone-300'}`}
+              className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.secureCheckout ? 'bg-primary' : 'bg-muted'}`}
             ></label>
           </div>
         </div>
@@ -538,7 +538,7 @@ export default function ProductAdvancedOptions({
               />
               <label 
                 htmlFor="trust-download" 
-                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.instantDownload ? 'bg-emerald-500' : 'bg-stone-300'}`}
+                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.instantDownload ? 'bg-primary' : 'bg-muted'}`}
               ></label>
             </div>
           </div>
@@ -562,7 +562,7 @@ export default function ProductAdvancedOptions({
             />
             <label 
               htmlFor="trust-refund" 
-              className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.refundPolicy ? 'bg-emerald-500' : 'bg-stone-300'}`}
+              className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.refundPolicy ? 'bg-primary' : 'bg-muted'}`}
             ></label>
           </div>
         </div>
@@ -571,7 +571,7 @@ export default function ProductAdvancedOptions({
           <label className="block text-sm mb-2">Custom Trust Indicators</label>
           <div className="mb-3">
             {productData.trustIndicators.custom.map((indicator, index) => (
-              <div key={index} className="flex items-center justify-between mb-2 p-2 bg-stone-50 rounded-md border border-stone-200">
+              <div key={index} className="flex items-center justify-between mb-2 p-2 bg-muted rounded-md border border-muted">
                 <div className="flex items-center">
                   <ThumbsUp size={14} className="text-emerald-500 mr-2" />
                   <span className="text-sm font-light">{indicator}</span>
@@ -599,7 +599,7 @@ export default function ProductAdvancedOptions({
               className="flex-1 p-2 border rounded-l-md"
             />
             <button
-              className="px-4 py-2 bg-gray-100 border border-l-0 rounded-r-md"
+              className="px-4 py-2 bg-muted border border-l-0 rounded-r-md"
               onClick={handleAddCustomTrustIndicator}
             >
               <Plus size={16} />

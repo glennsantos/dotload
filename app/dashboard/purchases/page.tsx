@@ -163,7 +163,7 @@ export default function PurchasesPage() {
       case 'pending':
         return 'bg-amber-100 text-amber-800 hover:bg-amber-100';
       case 'failed':
-        return 'bg-red-100 text-red-800 hover:bg-red-100';
+        return 'bg-destructive/10 text-destructive hover:bg-destructive/20';
       default:
         return 'bg-stone-100 text-stone-800 hover:bg-stone-100';
     }

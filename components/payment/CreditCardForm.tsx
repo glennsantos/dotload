@@ -464,12 +464,12 @@ export default function CreditCardForm({
   return (
     <div className="w-full">
       <h3 className="text-lg font-light mb-1">Credit Card Payment</h3>
-      <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-muted-foreground mb-4">
         Enter your card details to complete the purchase
       </p>
       
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
@@ -567,12 +567,12 @@ export default function CreditCardForm({
       {/* 3DS Authentication Modal */}
       {showThreeDSFrame && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg w-full max-w-2xl">
+          <div className="bg-background p-4 rounded-lg w-full max-w-2xl border border-border">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Card Authentication</h3>
               <button 
                 onClick={closeThreeDSFrame}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-muted-foreground hover:text-foreground"
               >
                 ✕
               </button>
@@ -585,7 +585,7 @@ export default function CreditCardForm({
                 title="3D Secure Authentication"
               />
             </div>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-muted-foreground">
               Please complete the authentication process to proceed with your payment.
               Do not close this window until the process is complete.
             </p>

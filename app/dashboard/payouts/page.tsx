@@ -169,11 +169,11 @@ export default function PayoutsPage() {
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed':
-        return 'bg-green-100 text-green-800'
+        return 'bg-primary/10 text-primary'
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-secondary/20 text-secondary-foreground'
       case 'failed':
-        return 'bg-red-100 text-red-800'
+        return 'bg-destructive/10 text-destructive'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -194,7 +194,7 @@ export default function PayoutsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="border rounded-md p-8 text-center max-w-md mx-auto">
-          <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
+          <h2 className="text-xl font-medium mb-2 text-destructive">Error</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button 
             onClick={fetchPayoutData}
@@ -235,7 +235,7 @@ export default function PayoutsPage() {
           <h2 className="text-lg font-medium mb-4">Request Payout</h2>
           
           {formError && (
-            <div className="mb-4 p-4 bg-red-50 rounded-md text-red-600">
+            <div className="mb-4 p-4 bg-destructive/10 rounded-md text-destructive">
               {formError}
             </div>
           )}

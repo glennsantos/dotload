@@ -104,12 +104,24 @@ export async function POST(req: NextRequest) {
 
       debugLog('✅ User created successfully', { id: newUser.id, email: newUser.email });
 
-      // Return success response (excluding password)
-      const { password: _, ...userResponse } = newUser;
+      // Send verification email
+      debugLog('📧 Sending verification email...');
+      try {
+        const { sendVerificationEmail } = await import('@/lib/email');
+        await sendVerificationEmail(newUser.email, newUser.verificationToken, newUser.name);
+        debugLog('✅ Verification email sent successfully');
+      } catch (emailError) {
+        debugLog('⚠️ Failed to send verification email', emailError);
+        // Don't fail the registration if email fails, but log the error
+        console.error('Email sending failed during registration:', emailError);
+      }
+
+      // Return success response (excluding password and token)
+      const { password: _, verificationToken: __, ...userResponse } = newUser;
       
       return NextResponse.json({
         success: true,
-        message: 'Registration successful',
+        message: 'Registration successful. Please check your email for verification.',
         user: userResponse,
         method: 'Supabase JavaScript Client'
       }, { status: 201 });

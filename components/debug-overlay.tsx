@@ -48,11 +48,11 @@ export default function DebugOverlay() {
 
   if (!isVisible) {
     return (
-      <button 
-        className="fixed bottom-2 right-2 bg-gray-800 text-white p-2 rounded-full z-[9999]"
-        onClick={() => setIsVisible(true)}
+      <button
+        className="fixed bottom-2 right-2 bg-muted text-muted-foreground p-2 rounded-full z-[9999] hover:bg-muted/80"
+        onClick={() => setIsVisible(!isVisible)}
       >
-        Debug
+        🐛
       </button>
     );
   }
@@ -65,10 +65,10 @@ export default function DebugOverlay() {
       </div>
       <div className="space-y-1">
         {events.length === 0 ? (
-          <p className="text-gray-400">No events logged yet</p>
+          <p className="text-muted-foreground">No events logged yet</p>
         ) : (
           events.map((event, i) => (
-            <div key={i} className="border-b border-gray-700 pb-1">
+            <div key={i} className="border-b border-muted-foreground pb-1">
               {event}
             </div>
           ))

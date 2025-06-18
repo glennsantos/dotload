@@ -153,13 +153,13 @@ export default function TransactionsPage() {
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-primary/10 text-primary';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-secondary/20 text-secondary-foreground';
       case 'failed':
-        return 'bg-red-100 text-red-800';
+        return 'bg-destructive/10 text-destructive';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -167,13 +167,13 @@ export default function TransactionsPage() {
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
       case 'income':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-primary/10 text-primary';
       case 'payout':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-secondary/20 text-secondary-foreground';
       case 'fee':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-accent/10 text-accent-foreground';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -181,12 +181,12 @@ export default function TransactionsPage() {
   const getAmountColor = (type: string) => {
     switch (type) {
       case 'income':
-        return 'text-green-600';
+        return 'text-primary';
       case 'payout':
       case 'fee':
-        return 'text-red-600';
+        return 'text-destructive';
       default:
-        return '';
+        return 'text-muted-foreground';
     }
   };
 

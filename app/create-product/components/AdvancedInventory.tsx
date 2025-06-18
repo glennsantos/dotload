@@ -33,8 +33,8 @@ export default function AdvancedInventory({
     <div className="mt-8 mb-6 border rounded-md p-4">
       <div className="flex items-start mb-2">
         <div>
-          <h3 className="tracking-tight text-xl font-light text-stone-900">Advanced Inventory</h3>
-          <p className="text-sm text-gray-500 mb-4 font-light">
+              <h3 className="tracking-tight text-xl font-light text-foreground">Advanced Inventory</h3>
+    <p className="text-sm text-muted-foreground mb-4 font-light">
             Additional inventory management options
           </p>
         </div>
@@ -43,8 +43,8 @@ export default function AdvancedInventory({
       {/* Allow Pre-orders */}
       <div className="flex items-center justify-between p-2 border rounded-md mb-4">
         <div>
-          <h4 className="text-sm font-light text-stone-900">Allow Pre-orders</h4>
-          <p className="text-xs text-gray-500 font-light">Accept orders beyond available stock</p>
+                  <h4 className="text-sm font-light text-foreground">Allow Pre-orders</h4>
+        <p className="text-xs text-muted-foreground font-light">Accept orders beyond available stock</p>
         </div>
         <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
           <input 
@@ -57,7 +57,7 @@ export default function AdvancedInventory({
           <label 
             htmlFor="allow-preorders" 
             className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-              productData.inventorySettings?.allowPreOrders ? 'bg-emerald-500' : 'bg-stone-300'
+              productData.inventorySettings?.allowPreOrders ? 'bg-primary' : 'bg-muted'
             }`}
           ></label>
         </div>

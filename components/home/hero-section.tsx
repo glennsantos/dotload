@@ -11,12 +11,12 @@ export function HeroSection() {
   return (
     <section className="py-32 text-center">
       <div className="container mx-auto px-4">
-        <h1 className="text-5xl lg:text-6xl text-stone-900 mb-8 leading-tight">
+        <h1 className="text-5xl lg:text-6xl text-foreground mb-8 leading-tight">
           <span className="block font-extralight">Create Professional</span>
           <span className="text-7xl block font-medium">Checkout Pages</span>
           <span className="block font-extralight">in Minutes</span>
         </h1>
-        <p className="max-w-2xl mx-auto text-xl text-stone-600 mb-12">
+        <p className="max-w-2xl mx-auto text-xl text-muted-foreground mb-12">
           The fastest way to sell digital products online. Build stunning,
           conversion-optimized checkout pages with zero coding required.
         </p>

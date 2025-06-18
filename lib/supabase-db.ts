@@ -25,8 +25,13 @@ export class SupabaseUserService {
   }) {
     const supabase = await this.getAdminClient();
     
+    // Generate verification token
+    const cryptoModule = await import('crypto');
+    const verificationToken = cryptoModule.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    
     // Generate a UUID for the user
-    const userId = crypto.randomUUID();
+    const userId = cryptoModule.randomUUID();
     
     const { data, error } = await supabase
       .from('User')
@@ -40,6 +45,8 @@ export class SupabaseUserService {
         storeLogoPath: userData.storeLogoPath,
         storeHeaderPath: userData.storeHeaderPath,
         emailVerified: false,
+        verificationToken,
+        verificationTokenExpiry: verificationTokenExpiry.toISOString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       })
@@ -78,6 +85,23 @@ export class SupabaseUserService {
       .from('User')
       .select('*')
       .eq('id', id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`Failed to find user: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  // Find user by verification token
+  async findUserByVerificationToken(token: string) {
+    const supabase = await this.getAdminClient();
+    
+    const { data, error } = await supabase
+      .from('User')
+      .select('id, email, emailVerified, verificationToken, verificationTokenExpiry')
+      .eq('verificationToken', token)
       .single();
 
     if (error && error.code !== 'PGRST116') {

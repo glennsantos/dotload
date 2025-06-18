@@ -173,7 +173,7 @@ export default function EWalletForm({
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded mb-4">
               {error}
             </div>
           )}
@@ -189,7 +189,7 @@ export default function EWalletForm({
                 disabled={isLoading}
                 required
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Enter the mobile number registered with your {walletName} account
               </p>
             </div>

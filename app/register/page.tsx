@@ -368,9 +368,9 @@ export default function RegisterPage() {
                                 </div>
                               </>
                             ) : (
-                              <div className="w-full h-full bg-stone-100 rounded-xl flex flex-col items-center justify-center group-hover:bg-stone-200 transition-colors">
-                                <Store className="h-10 w-10 text-stone-400 mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs text-stone-500">Upload Logo</span>
+                              <div className="w-full h-full bg-muted rounded-xl flex flex-col items-center justify-center group-hover:bg-muted/80 transition-colors">
+                                <Store className="h-10 w-10 text-muted-foreground mb-2 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs text-muted-foreground">Upload Logo</span>
                               </div>
                             )}
                           </div>
@@ -382,13 +382,13 @@ export default function RegisterPage() {
                             accept="image/jpeg, image/png, image/webp"
                             className="hidden"
                           />
-                          <p className="text-xs text-stone-500 mt-2">JPG, PNG, WebP (max 2MB)</p>
+                          <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP (max 2MB)</p>
                         </div>
                       </div>
                       
                       <div>
-                        <Label className="text-stone-700 font-light mb-2 block">Header Image</Label>
-                        <div className="border border-dashed border-stone-300 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 transition-colors"
+                        <Label className="text-foreground font-light mb-2 block">Header Image</Label>
+                        <div className="border border-dashed border-border rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
                              onClick={() => headerInputRef.current?.click()}>
                           <div className="relative w-full h-28 mb-2 group">
                             {headerImage ? (
@@ -407,9 +407,9 @@ export default function RegisterPage() {
                                 </div>
                               </>
                             ) : (
-                              <div className="w-full h-full bg-stone-100 rounded-xl flex flex-col items-center justify-center group-hover:bg-stone-200 transition-colors">
-                                <Upload className="h-10 w-10 text-stone-400 mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs text-stone-500">Upload Header</span>
+                              <div className="w-full h-full bg-muted rounded-xl flex flex-col items-center justify-center group-hover:bg-muted/80 transition-colors">
+                                <Upload className="h-10 w-10 text-muted-foreground mb-2 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs text-muted-foreground">Upload Header</span>
                               </div>
                             )}
                           </div>
@@ -421,7 +421,7 @@ export default function RegisterPage() {
                             accept="image/jpeg, image/png, image/webp"
                             className="hidden"
                           />
-                          <p className="text-xs text-stone-500 mt-2">JPG, PNG, WebP (max 2MB)</p>
+                          <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP (max 2MB)</p>
                         </div>
                       </div>
                     </div>
@@ -430,7 +430,7 @@ export default function RegisterPage() {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light mt-8" 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl h-12 font-light mt-8" 
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Creating Account...' : 'Create Account'}
@@ -438,11 +438,11 @@ export default function RegisterPage() {
               </form>
             ) : (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mail className="h-8 w-8 text-emerald-600" />
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Mail className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-light text-stone-800 mb-2">Check your email</h3>
-                <p className="text-stone-600 mb-6">We've sent a verification link to <span className="font-medium">{registeredEmail}</span></p>
+                <h3 className="text-xl font-light text-foreground mb-2">Check your email</h3>
+                <p className="text-muted-foreground mb-6">We've sent a verification link to <span className="font-medium">{registeredEmail}</span></p>
                 <div className="flex flex-col space-y-4">
                   <Button
                     onClick={handleResendVerification}

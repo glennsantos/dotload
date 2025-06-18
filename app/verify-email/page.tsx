@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -68,10 +69,10 @@ export default function VerifyEmailPage() {
   }, [token, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             Email Verification
           </h2>
         </div>
@@ -79,21 +80,19 @@ export default function VerifyEmailPage() {
         <div className="mt-8 space-y-6 bg-white p-8 rounded-lg shadow">
           {verificationStatus === 'loading' && (
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
-              <p className="mt-4 text-gray-600">Verifying your email...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Verifying your email...</p>
             </div>
           )}
           
           {verificationStatus === 'success' && (
             <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/10">
+                <CheckCircle className="h-6 w-6 text-primary" />
               </div>
-              <p className="mt-4 text-lg font-medium text-gray-900">Email verified successfully!</p>
-              <p className="mt-2 text-gray-600">You will be redirected to the login page shortly.</p>
-              <Link href="/login" className="mt-4 inline-block text-blue-600 hover:underline">
+              <p className="mt-4 text-lg font-medium text-foreground">Email verified successfully!</p>
+              <p className="mt-2 text-muted-foreground">You will be redirected to the login page shortly.</p>
+              <Link href="/login" className="mt-4 inline-block text-primary hover:underline">
                 Click here if you are not redirected
               </Link>
             </div>
@@ -101,16 +100,14 @@ export default function VerifyEmailPage() {
           
           {verificationStatus === 'error' && (
             <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10">
+                <XCircle className="h-6 w-6 text-destructive" />
               </div>
-              <p className="mt-4 text-lg font-medium text-gray-900">Verification failed</p>
-              <p className="mt-2 text-gray-600">{errorMessage}</p>
+              <p className="mt-4 text-lg font-medium text-foreground">Verification failed</p>
+              <p className="mt-2 text-muted-foreground">{errorMessage}</p>
               <div className="mt-4 space-y-2">
                 <p>You can:</p>
-                <Link href="/login" className="block text-blue-600 hover:underline">
+                <Link href="/login" className="block text-primary hover:underline">
                   Go to login page
                 </Link>
                 <button 
@@ -156,7 +153,7 @@ export default function VerifyEmailPage() {
                       alert(error instanceof Error ? `Error: ${error.message}` : 'An unexpected error occurred');
                     }
                   }}
-                  className="block text-blue-600 hover:underline"
+                  className="block text-primary hover:underline"
                 >
                   Resend verification email
                 </button>

@@ -140,7 +140,7 @@ export default function BrandSettingsPage() {
      
       <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-6">
         {message.text && (
-          <div className={`p-4 mb-4 rounded-md ${message.type === "error" ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+          <div className={`p-4 mb-4 rounded-md ${message.type === "error" ? "bg-destructive/10 text-destructive border border-destructive/20" : "bg-primary/10 text-primary border border-primary/20"}`}>
             {message.text}
           </div>
         )}

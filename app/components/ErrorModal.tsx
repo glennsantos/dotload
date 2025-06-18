@@ -34,10 +34,10 @@ export default function ErrorModal({ isOpen, onClose, title = 'Error', message }
         }`}
       >
         <div className="flex justify-between items-center p-4">
-          <h3 className="text-lg font-medium text-red-500">{title}</h3>
+          <h3 className="text-lg font-medium text-destructive">{title}</h3>
           <button 
             onClick={onClose}
-            className="text-stone-500 hover:text-stone-700 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X size={20} />
           </button>
@@ -45,7 +45,7 @@ export default function ErrorModal({ isOpen, onClose, title = 'Error', message }
         
         <div className="p-8">
           {typeof message === 'string' ? (
-            <p className="text-lg font-light text-stone-700">{message}</p>
+            <p className="text-lg font-light text-foreground">{message}</p>
           ) : (
             message
           )}
@@ -54,7 +54,7 @@ export default function ErrorModal({ isOpen, onClose, title = 'Error', message }
         <div className="p-4 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
           >
             Close
           </button>

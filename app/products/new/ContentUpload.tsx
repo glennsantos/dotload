@@ -166,7 +166,7 @@ export default function ContentUpload({
         )}
 
         {uploadSuccess && (
-          <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md flex items-center">
+          <div className="mb-4 p-3 bg-primary/10 text-primary rounded-md flex items-center">
             <Check size={16} className="mr-2 flex-shrink-0" />
             <span>Digital content added successfully!</span>
           </div>

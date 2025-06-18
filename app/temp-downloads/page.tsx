@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { Download, ArrowLeft, CheckCircle, AlertCircle, XCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -148,7 +148,7 @@ export default function TempDownloadsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-emerald-500 border-r-transparent"></div>
           <p className="mt-4 text-gray-600 font-light">Loading your purchased content...</p>
@@ -159,11 +159,11 @@ export default function TempDownloadsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardHeader>
-            <div className="mx-auto rounded-full bg-red-100 p-3 mb-4">
-              <AlertCircle className="h-6 w-6 text-red-600" />
+            <div className="mx-auto rounded-full bg-destructive/10 p-3 mb-4">
+              <XCircle className="h-8 w-8 text-destructive" />
             </div>
             <CardTitle className="text-center font-light">Access Error</CardTitle>
             <CardDescription className="text-center">{error}</CardDescription>
@@ -186,7 +186,7 @@ export default function TempDownloadsPage() {
 
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Image 
@@ -203,8 +203,8 @@ export default function TempDownloadsPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <Card className="border-0 shadow-sm">
           <CardHeader>
-            <div className="mx-auto rounded-full bg-emerald-100 p-3 mb-4">
-              <Download className="h-6 w-6 text-emerald-600" />
+            <div className="mx-auto rounded-full bg-primary/10 p-3 mb-4">
+              <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
             <CardTitle className="text-center text-2xl font-light">Your Downloads</CardTitle>
             <CardDescription className="text-center">
@@ -232,10 +232,10 @@ export default function TempDownloadsPage() {
                 {files.map((file) => (
                   <div 
                     key={file.id} 
-                    className="border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-gray-50 transition-colors"
+                    className="border border-border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-muted transition-colors"
                   >
                     <div className="flex items-center">
-                      <div className="bg-gray-100 p-2 rounded-md mr-3">
+                      <div className="bg-muted p-2 rounded-md mr-3">
                         <Download className="h-5 w-5 text-gray-500" />
                       </div>
                       <div>
@@ -253,8 +253,8 @@ export default function TempDownloadsPage() {
                       onClick={() => handleDownload(file.id)}
                       
                       className={`rounded-full font-light mt-4 sm:mt-0 ${file.downloadRestriction 
-                        ? 'bg-gray-400 hover:bg-gray-400 text-white cursor-not-allowed' 
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
+                        ? 'bg-muted hover:bg-muted text-muted-foreground cursor-not-allowed' 
+                        : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
                       size="sm"
                     >
                       {downloadStatus[file.id] === 'loading' ? (
@@ -289,7 +289,7 @@ export default function TempDownloadsPage() {
             <Button
               variant="outline"
               onClick={() => router.back()}
-              className="font-light text-emerald-600 border-emerald-600 hover:bg-emerald-50"
+              className="font-light text-primary border-primary hover:bg-primary/5"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Return to Purchase

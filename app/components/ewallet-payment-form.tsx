@@ -84,19 +84,19 @@ export default function EWalletPaymentForm({
           onValueChange={setPaymentMethod}
           className="grid grid-cols-2 gap-4"
         >
-          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-gray-50">
+          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-muted">
             <RadioGroupItem value="gcash" id="gcash" />
             <Label htmlFor="gcash" className="cursor-pointer">GCash</Label>
           </div>
-          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-gray-50">
+          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-muted">
             <RadioGroupItem value="grabpay" id="grabpay" />
             <Label htmlFor="grabpay" className="cursor-pointer">GrabPay</Label>
           </div>
-          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-gray-50">
+          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-muted">
             <RadioGroupItem value="shopeepay" id="shopeepay" />
             <Label htmlFor="shopeepay" className="cursor-pointer">ShopeePay</Label>
           </div>
-          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-gray-50">
+          <div className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-muted">
             <RadioGroupItem value="maya" id="maya" />
             <Label htmlFor="maya" className="cursor-pointer">Maya</Label>
           </div>

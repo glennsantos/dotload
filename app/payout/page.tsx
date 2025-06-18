@@ -512,7 +512,7 @@ export default function PayoutPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-lg bg-emerald-50 p-4 border border-emerald-100">
+          <div className="rounded-lg bg-primary/5 p-4 border border-primary/20">
             <div className="flex flex-col gap-4">
               <div>
                 <h3 className="font-medium">Next steps:</h3>

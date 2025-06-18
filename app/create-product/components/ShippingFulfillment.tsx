@@ -32,19 +32,19 @@ export default function ShippingFulfillment({
         <h4 className="text-md font-light mb-4">Coming Soon:</h4>
         <ul className="space-y-2">
           <li className="flex items-center text-sm text-stone-600">
-            <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
+            <span className="inline-block w-2 h-2 bg-primary rounded-full mr-2"></span>
             Shipping zones and rates
           </li>
           <li className="flex items-center text-sm text-stone-600">
-            <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
+            <span className="inline-block w-2 h-2 bg-primary rounded-full mr-2"></span>
             Package dimensions and weight
           </li>
           <li className="flex items-center text-sm text-stone-600">
-            <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
+            <span className="inline-block w-2 h-2 bg-primary rounded-full mr-2"></span>
             Fulfillment method selection
           </li>
           <li className="flex items-center text-sm text-stone-600">
-            <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
+            <span className="inline-block w-2 h-2 bg-primary rounded-full mr-2"></span>
             International shipping options
           </li>
         </ul>

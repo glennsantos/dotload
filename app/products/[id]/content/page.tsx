@@ -9,15 +9,15 @@ function getFileIcon(mimetype: string) {
   if (mimetype.startsWith('image/')) {
     return <ImageIcon size={20} className="text-blue-500" />
   } else if (mimetype.startsWith('video/')) {
-    return <Video size={20} className="text-purple-500" />
+    return <Video size={20} className="text-secondary-foreground" />
   } else if (mimetype.startsWith('audio/')) {
-    return <Music size={20} className="text-green-500" />
+    return <Music size={20} className="text-primary" />
   } else if (mimetype.startsWith('application/pdf')) {
-    return <FileText size={20} className="text-red-500" />
+    return <FileText size={20} className="text-destructive" />
   } else if (mimetype.startsWith('application/zip') || mimetype.startsWith('application/x-rar')) {
-    return <Archive size={20} className="text-orange-500" />
+    return <Archive size={20} className="text-primary" />
   } else if (mimetype === 'text/url') {
-    return <ExternalLink size={20} className="text-teal-500" />
+    return <ExternalLink size={20} className="text-primary" />
   } else {
     return <File size={20} className="text-gray-500" />
   }
@@ -96,8 +96,8 @@ export default function ProductContentPage({ params, searchParams }: ProductCont
           </div>
         ) : error ? (
           <div className="border rounded-md p-12 bg-white text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <Link href={`/products/${unwrappedParams.id}`} className="text-blue-500 hover:underline">
+            <p className="text-destructive mb-4">{error}</p>
+            <Link href={`/products/${unwrappedParams.id}`} className="text-primary hover:underline">
               Back to Product
             </Link>
           </div>
@@ -150,7 +150,7 @@ export default function ProductContentPage({ params, searchParams }: ProductCont
                                 href={file.path} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                                className="inline-flex items-center gap-1 text-primary hover:text-primary-foreground"
                               >
                                 <ExternalLink size={16} /> Open
                               </a>
@@ -159,7 +159,7 @@ export default function ProductContentPage({ params, searchParams }: ProductCont
                                 href={file.path} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                                className="inline-flex items-center gap-1 text-primary hover:text-primary-foreground"
                               >
                                 <Download size={16} /> Download
                               </a>

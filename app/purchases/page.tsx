@@ -139,7 +139,7 @@ export default function PurchasesPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-          <p className="mt-2 text-gray-600">Loading your purchases...</p>
+          <p className="mt-2 text-muted-foreground">Loading your purchases...</p>
         </div>
       </div>
     )
@@ -149,9 +149,9 @@ export default function PurchasesPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="border rounded-md p-8 text-center max-w-md mx-auto">
-          <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Link href="/" className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
+          <h2 className="text-xl font-medium mb-2 text-destructive">Error</h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <Link href="/" className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md inline-flex items-center gap-2">
             Go Home
           </Link>
         </div>
@@ -161,23 +161,23 @@ export default function PurchasesPage() {
 
   if (showUserForm) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-background py-12">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-sm p-8">
           <h1 className="text-2xl font-bold mb-6">Complete Your Account</h1>
           
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             Please provide the following information to access your purchase and create your account.
           </p>
           
           {formError && (
-            <div className="bg-red-50 text-red-700 p-4 rounded-md mb-6">
+            <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-6">
               {formError}
             </div>
           )}
           
           <form onSubmit={handleSubmitUserDetails}>
             <div className="mb-4">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
                 Your Name
               </label>
               <input
@@ -185,13 +185,13 @@ export default function PurchasesPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-border rounded focus:ring-primary focus:border-primary"
                 required
               />
             </div>
             
             <div className="mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                 Email Address
               </label>
               <input
@@ -199,12 +199,12 @@ export default function PurchasesPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-border rounded focus:ring-primary focus:border-primary"
                 required
                 readOnly={!!email}
               />
               {email && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   This is the email address used for your purchase.
                 </p>
               )}
@@ -212,7 +212,7 @@ export default function PurchasesPage() {
             
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              className="w-full bg-primary text-primary-foreground py-2 px-4 rounded hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
               disabled={submitting}
             >
               {submitting ? "Creating Account..." : "Create Account & Access Purchase"}
@@ -224,23 +224,23 @@ export default function PurchasesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-4 py-2">
-        <h1 className="text-3xl font-bold text-gray-900 my-4">Purchases</h1>
+        <h1 className="text-3xl font-bold text-foreground my-4">Purchases</h1>
         
         {purchases.length === 0 ? (
           <div className="bg-white shadow-sm rounded-lg p-8 text-center">
             <div className="flex justify-center mb-6">
-              <ShoppingBag size={64} className="text-gray-300" />
+              <ShoppingBag size={64} className="text-muted-foreground" />
             </div>
             <h2 className="text-xl font-medium mb-4">You don't have any purchases yet</h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               When you buy products on , they will appear here for easy access.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href="/" 
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md inline-flex items-center justify-center gap-2 hover:bg-gray-50"
+                className="px-4 py-2 border border-border text-foreground rounded-md inline-flex items-center justify-center gap-2 hover:bg-muted"
               >
                 Return to Home
               </Link>
@@ -264,8 +264,8 @@ export default function PurchasesPage() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <FileText className="text-gray-400" size={48} />
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <FileText className="text-muted-foreground" size={48} />
                         </div>
                       )}
                     </div>
@@ -274,12 +274,12 @@ export default function PurchasesPage() {
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold mb-2">{purchase.product.name}</h2>
                     
-                    <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <div className="flex items-center text-sm text-muted-foreground mb-4">
                       <Clock size={16} className="mr-1" />
                       <span>Purchased on {new Date(purchase.createdAt).toLocaleDateString()}</span>
                       <span className="mx-2">•</span>
                       <span className="flex items-center">
-                        <CheckCircle size={16} className="mr-1 text-green-500" />
+                        <CheckCircle size={16} className="mr-1 text-primary" />
                         {purchase.status}
                       </span>
                     </div>
@@ -289,11 +289,11 @@ export default function PurchasesPage() {
                       {purchase.product.files && purchase.product.files.length > 0 ? (
                         <ul className="space-y-2">
                           {purchase.product.files.map((file) => (
-                            <li key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <li key={file.id} className="flex items-center justify-between p-3 bg-muted rounded-md">
                               <span className="truncate flex-1">{file.filename}</span>
                               <a 
                                 href={`/api/purchases/download?fileId=${file.id}&accessCode=${purchase.accessCode}`}
-                                className="ml-4 text-blue-600 hover:text-blue-500 flex items-center"
+                                className="ml-4 text-primary hover:text-primary/80 flex items-center"
                                 download
                               >
                                 <Download size={16} className="mr-1" />
@@ -303,7 +303,7 @@ export default function PurchasesPage() {
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-gray-500">No files available for this product.</p>
+                        <p className="text-muted-foreground">No files available for this product.</p>
                       )}
                     </div>
                   </div>
@@ -312,13 +312,13 @@ export default function PurchasesPage() {
                     <div className="text-lg font-bold mb-1">
                       {purchase.currency} {purchase.amount.toFixed(2)}
                     </div>
-                    <div className="text-sm text-gray-500 mb-4">
+                    <div className="text-sm text-muted-foreground mb-4">
                       via {purchase.paymentMethod}
                     </div>
                     
                     <Link 
                       href={`/p/${purchase.product.slug}`}
-                      className="text-blue-600 hover:text-blue-500 flex items-center text-sm"
+                      className="text-primary hover:text-primary/80 flex items-center text-sm"
                     >
                       <ExternalLink size={14} className="mr-1" />
                       View Product Page

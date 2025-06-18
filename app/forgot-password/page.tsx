@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
       <div className="mb-8">
         <Link href="/" className="block">
           <Image 
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
       </div>
       <div className="text-center w-full max-w-md px-4">
         <h1 className="text-4xl font-extralight mb-4">Forgot Password</h1>
-        <p className="text-stone-600 font-light mb-6">
+                  <p className="text-muted-foreground font-light mb-6">
           Enter your email address and we'll send you instructions to reset your password.
         </p>
       </div>
@@ -77,8 +77,8 @@ export default function ForgotPasswordPage() {
           )}
           
           {success && (
-            <Alert className="mb-4 bg-emerald-50 text-emerald-800 border-emerald-200 rounded-xl">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <Alert className="mb-4 bg-primary/10 text-primary border-primary/20 rounded-xl">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email" className="text-stone-700 font-light">Email</Label>
+              <Label htmlFor="email" className="text-foreground font-light">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -94,13 +94,13 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="border-stone-300 rounded-2xl h-12 font-light focus:border-emerald-500 focus:ring-emerald-500"
+                className="border-border rounded-2xl h-12 font-light focus:border-primary focus:ring-primary"
               />
             </div>
             
             <Button 
               type="submit" 
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-light" 
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl h-12 font-light" 
               disabled={isSubmitting}>
               {isSubmitting ? (
                 <span className="flex items-center font-light">Sending... <Mail className="ml-2 h-4 w-4 animate-pulse" /></span>
@@ -109,8 +109,8 @@ export default function ForgotPasswordPage() {
               )}
             </Button>
             
-            <div className="text-center mt-4 text-sm text-stone-600 font-light">
-              <Link href="/login" className="text-emerald-600 hover:text-emerald-700 font-light flex items-center justify-center">
+                      <div className="text-center mt-4 text-sm text-muted-foreground font-light">
+            <Link href="/login" className="text-primary hover:text-primary/80 font-light flex items-center justify-center">
                 <ArrowLeft size={16} className="mr-1" />
                 Back to login
               </Link>

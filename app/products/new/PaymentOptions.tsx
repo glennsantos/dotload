@@ -91,7 +91,7 @@ export default function PaymentOptions({
                 }
                 onNext();
               }} 
-              className="px-4 py-2 bg-black text-white rounded-md"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
             >
               Continue
             </button>
@@ -127,7 +127,7 @@ export default function PaymentOptions({
               }
               onNext();
             }} 
-            className="px-4 py-2 bg-black text-white rounded-md w-full"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md w-full"
           >
             Continue
           </button>

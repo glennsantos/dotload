@@ -159,14 +159,14 @@ export default function CheckoutForm({
             <button
               type="button"
               onClick={() => handleValidateDiscountCode()}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 rounded-r-2xl flex items-center"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground px-4 rounded-r-2xl flex items-center"
             >
               <Tag className="h-4 w-4 mr-1" />
               Apply
             </button>
           </div>
           {appliedDiscount && (
-            <div className="mt-2 text-sm text-green-600">
+                          <div className="mt-2 text-sm text-primary">
               Discount applied: {appliedDiscount.type === 'percentage' ? 
                 `${appliedDiscount.value || appliedDiscount.amount}%` : 
                 `${product.currency} ${appliedDiscount.value || appliedDiscount.amount}`} off
@@ -220,7 +220,7 @@ export default function CheckoutForm({
       
       {/* Payment error message */}
       {paymentError && (
-        <div className="mb-6 p-4 bg-red-50 rounded-md text-red-600">
+        <div className="mb-6 p-4 bg-destructive/10 rounded-md text-destructive">
           {paymentError}
         </div>
       )}
@@ -229,7 +229,7 @@ export default function CheckoutForm({
       {paymentMethod !== "card" && (
         <button
           type="submit"
-          className="w-full bg-emerald-600 rounded-full text-white px-6 py-3 font-light hover:bg-gray-800 transition-colors"
+          className="w-full bg-primary rounded-full text-primary-foreground px-6 py-3 font-light hover:bg-primary/90 transition-colors"
           disabled={processingPayment}
         >
           {processingPayment ? (

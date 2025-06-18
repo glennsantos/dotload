@@ -210,28 +210,28 @@ export default function ProductFiles({
       />
 
       <div className="mb-6">
-        <h3 className="tracking-tight text-xl font-light text-stone-900">Digital Files</h3>
-        <p className="text-sm text-gray-500 mb-4">Upload files customers will download after purchase</p>
+              <h3 className="tracking-tight text-xl font-light text-foreground">Digital Files</h3>
+      <p className="text-sm text-muted-foreground mb-4">Upload files customers will download after purchase</p>
       </div>
 
       {/* File upload area */}
       <div 
-        className={`border-2 border-dashed ${dragActive ? 'border-emerald-500 bg-emerald-50' : 'border-stone-200'} rounded-xl p-6 text-center mb-6`}
+        className={`border-2 border-dashed ${dragActive ? 'border-primary bg-primary/5' : 'border-border'} rounded-xl p-6 text-center mb-6`}
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
       >
         <div className="flex flex-col items-center justify-center py-8">
-          <div className={`${dragActive ? 'bg-emerald-100' : 'bg-stone-100'} p-3 rounded-full mb-3`}>
-            <Upload className="w-6 h-6 text-stone-500" />
+          <div className={`${dragActive ? 'bg-primary/10' : 'bg-muted'} p-3 rounded-full mb-3`}>
+            <Upload className="w-6 h-6 text-muted-foreground" />
           </div>
           <p className="text-sm font-light mb-1">
             {dragActive ? 'Drop files here' : 'Drag and drop files here'}
           </p>
-          <p className="text-xs text-gray-500 mb-4 font-light">or click to browse</p>
+          <p className="text-xs text-muted-foreground mb-4 font-light">or click to browse</p>
           <button 
-            className="px-4 py-2 bg-emerald-500 text-white text-sm rounded-md hover:bg-emerald-600"
+            className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md hover:bg-primary/90"
             onClick={() => document.getElementById('file-upload')?.click()}
           >
             Select Files
@@ -255,9 +255,9 @@ export default function ProductFiles({
             <ul className="divide-y">
               {/* Display existing files */}
               {productData.existingFiles && productData.existingFiles.length > 0 && productData.existingFiles.map((file, index) => (
-                <li key={`existing-${index}`} className="flex items-center justify-between p-3 bg-stone-50">
+                <li key={`existing-${index}`} className="flex items-center justify-between p-3 bg-muted">
                   <div className="flex items-center">
-                    <FileIcon size={16} className="text-stone-500 mr-2" />
+                    <FileIcon size={16} className="text-muted-foreground mr-2" />
                     <div>
                       <button 
                         onClick={() => {
@@ -269,12 +269,12 @@ export default function ProductFiles({
                             showError('Failed to download file. Please try again.');
                           }
                         }}
-                        className="text-sm font-light text-emerald-600 hover:text-emerald-700 hover:underline"
+                        className="text-sm font-light text-primary hover:text-primary/80 hover:underline"
                       >
                         {file.name}
                         <Download size={14} className="ml-2 inline" />
                       </button>
-                      <p className="text-xs text-stone-600 font-light">Already uploaded</p>
+                      <p className="text-xs text-muted-foreground font-light">Already uploaded</p>
                     </div>
                   </div>
                 </li>
@@ -285,17 +285,17 @@ export default function ProductFiles({
               {productData.contentFiles.map((file, index) => (
                 <li key={`new-${index}`} className="flex items-center justify-between p-3">
                   <div className="flex items-center">
-                    <FileIcon size={16} className="text-stone-500 mr-2" />
+                    <FileIcon size={16} className="text-muted-foreground mr-2" />
                     <div>
                       {/* File objects don't have URL property, so we just display the name */}
                       <p className="text-sm font-light">{file.name}</p>
-                      <p className="text-xs text-gray-500 font-light">{formatFileSize(file.size)}</p>
-                      <p className="text-xs text-blue-600 font-light">New upload</p>
+                      <p className="text-xs text-muted-foreground font-light">{formatFileSize(file.size)}</p>
+                      <p className="text-xs text-primary font-light">New upload</p>
                     </div>
                   </div>
                   <button 
                     onClick={() => handleRemoveFile(index)}
-                    className="text-red-500 hover:text-red-700 p-1"
+                    className="text-destructive hover:text-destructive/80 p-1"
                   >
                     <Trash size={16} />
                   </button>
@@ -303,7 +303,7 @@ export default function ProductFiles({
               ))}
             </ul>
           </div>
-          <p className="text-xs text-gray-500 mt-2 font-light">
+          <p className="text-xs text-muted-foreground mt-2 font-light">
             {(productData.contentFiles.length + (productData.existingFiles ? productData.existingFiles.length : 0)) === 1 
               ? '1 file selected' 
               : `${productData.contentFiles.length + (productData.existingFiles ? productData.existingFiles.length : 0)} files selected`}
@@ -319,19 +319,19 @@ export default function ProductFiles({
               {productData.contentLinks.map((link, index) => (
                 <li key={index} className="flex items-center justify-between p-3">
                   <div className="flex items-center">
-                    <LinkIcon size={16} className="text-stone-500 mr-2" />
+                    <LinkIcon size={16} className="text-muted-foreground mr-2" />
                     <a 
                       href={link} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-sm text-emerald-600 hover:underline font-light"
+                      className="text-sm text-primary hover:underline font-light"
                     >
                       {link}
                     </a>
                   </div>
                   <button
                     onClick={() => handleRemoveLink(index)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-destructive hover:text-destructive/80"
                   >
                     <X size={16} />
                   </button>
@@ -343,8 +343,8 @@ export default function ProductFiles({
       </div>
 
       {/* Digital product specific information */}
-      <div className="mt-6 p-4 bg-stone-50 rounded-md border border-stone-200">
-        <ul className="text-sm text-gray-600 space-y-1 list-disc pl-4 font-light">
+      <div className="mt-6 p-4 bg-muted rounded-md border border-border">
+        <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-4 font-light">
           <li>Maximum 10 files per product</li>
           <li>Maximum file size: 100MB each</li>
           <li>Supported formats: PDF, ZIP, MP3, MP4, and most common file types</li>

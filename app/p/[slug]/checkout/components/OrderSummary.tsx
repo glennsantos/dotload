@@ -45,7 +45,7 @@ export default function OrderSummary({ product, appliedDiscount }: OrderSummaryP
         </div>
         
         {appliedDiscount && (
-          <div className="flex justify-between mb-2 text-green-500">
+                      <div className="flex justify-between mb-2 text-primary">
             <p className="text-sm">Discount ({appliedDiscount.type === 'percentage' ? 
               `${appliedDiscount.value || appliedDiscount.amount}%` : 
               `${product.currency} ${appliedDiscount.value || appliedDiscount.amount}`})</p>

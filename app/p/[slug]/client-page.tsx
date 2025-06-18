@@ -31,9 +31,9 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="border rounded-md p-8 text-center max-w-md mx-auto">
-          <h2 className="text-xl font-medium mb-2 text-red-600">Error</h2>
-          <p className="text-gray-600 mb-6">{error || 'Product not found'}</p>
-          <Link href="/" className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
+          <h2 className="text-xl font-medium mb-2 text-destructive">Error</h2>
+          <p className="text-muted-foreground mb-6">{error || 'Product not found'}</p>
+          <Link href="/" className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md inline-flex items-center gap-2">
             <ArrowLeft size={18} /> Back to Home
           </Link>
         </div>
@@ -85,7 +85,7 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
               className="rounded-full w-6 h-6 object-cover"
             />
           ) : (
-            <div className="bg-gray-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-light">
+            <div className="bg-secondary text-secondary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-light">
               {product.user?.storeName ? product.user.storeName.charAt(0).toUpperCase() : "S"}
             </div>
           )}
@@ -112,26 +112,26 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
           {/* Product Badges */}
           <div className="flex flex-wrap justify-center gap-2 mb-2">
             {product.bestSeller && (
-              <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">Best Seller</span>
+              <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">Best Seller</span>
             )}
             {product.newRelease && (
-              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">New Release</span>
+              <span className="bg-secondary/50 text-secondary-foreground text-xs px-2 py-1 rounded-full">New Release</span>
             )}
             {product.popular && (
-              <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Popular</span>
+              <span className="bg-accent/10 text-accent-foreground text-xs px-2 py-1 rounded-full">Popular</span>
             )}
             
             {/* Custom Badges */}
             {customBadges && customBadges.length > 0 && customBadges.map((badge: string, index: number) => (
-              <span key={`badge-${index}`} className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">{badge}</span>
+                              <span key={`badge-${index}`} className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">{badge}</span>
             ))}
           </div>
 
           {/* Product Title */}
-          <h1 className="text-3xl md:text-4xl font-normal text-gray-900 mb-2">{product.name}</h1>
+          <h1 className="text-3xl md:text-4xl font-normal text-foreground mb-2">{product.name}</h1>
           
           {/* Product Description */}
-          <div className="text-gray-600 text-sm md:text-base mb-6 text-left">
+          <div className="text-muted-foreground text-sm md:text-base mb-6 text-left">
             {product.description && (
               <RichTextRenderer content={product.description} />
             )}
@@ -146,8 +146,8 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
             disabled={loading || isPreview}
             className={`w-full px-6 py-3 rounded-md font-normal text-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${
               isPreview 
-                ? 'bg-gray-400 text-white cursor-not-allowed' 
-                : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+                : 'bg-primary text-primary-foreground hover:bg-primary/90'
             }`}
           >
             {isPreview ? (
@@ -170,13 +170,13 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
             {whatsIncluded && whatsIncluded.length > 0 ? (
               whatsIncluded.map((item: string, index: number) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
-                  <Check size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
                   <span>{item}</span>
                 </li>
               ))
             ) : (
               <li className="flex items-start gap-2 text-sm">
-                <Check size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
                 <span>{product.name}</span>
               </li>
             )}
@@ -184,22 +184,22 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
         </div>
 
         {/* Trust Indicators */}
-        <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-gray-500 mb-4">
+        <div className="flex flex-wrap justify-center items-center gap-4 text-xs text-muted-foreground mb-4">
           {product.secureCheckout && (
             <div className="flex items-center gap-1">
-              <Check size={14} className="text-emerald-500" />
+              <Check size={14} className="text-primary" />
               <span>Secure Checkout</span>
             </div>
           )}
           {product.instantDownload && (
             <div className="flex items-center gap-1">
-              <Download size={14} className="text-emerald-500" />
+              <Download size={14} className="text-primary" />
               <span>Instant Download</span>
             </div>
           )}
           {product.refundPolicy && (
             <div className="flex items-center gap-1">
-              <Clock size={14} className="text-emerald-500" />
+              <Clock size={14} className="text-primary" />
               <span>Money-back Guarantee</span>
             </div>
           )}
@@ -208,7 +208,7 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
           {trustIndicators && trustIndicators.length > 0 && 
             trustIndicators.map((indicator: string, index: number) => (
               <div key={`trust-${index}`} className="flex items-center gap-1">
-                <Check size={14} className="text-emerald-500" />
+                <Check size={14} className="text-primary" />
                 <span>{indicator}</span>
               </div>
             ))
@@ -241,8 +241,8 @@ export default function ClientProductPage({ product, slug, isPreview = false }: 
           disabled={loading || isPreview}
           className={`w-full px-6 py-3 rounded-md font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${
             isPreview 
-              ? 'bg-gray-400 text-white cursor-not-allowed' 
-              : 'bg-emerald-500 text-white hover:bg-emerald-600'
+              ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'
           }`}
         >
           {isPreview ? (

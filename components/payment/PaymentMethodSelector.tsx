@@ -38,7 +38,7 @@ export default function PaymentMethodSelector({
           onValueChange={(value) => setSelectedMethod(value as PaymentMethod)}
           className="space-y-3"
         >
-          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-gray-50 cursor-pointer">
+          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-muted cursor-pointer">
             <RadioGroupItem value="card" id="card" />
             <Label htmlFor="card" className="flex items-center cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -49,7 +49,7 @@ export default function PaymentMethodSelector({
             </Label>
           </div>
           
-          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-gray-50 cursor-pointer">
+          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-muted cursor-pointer">
             <RadioGroupItem value="gcash" id="gcash" />
             <Label htmlFor="gcash" className="flex items-center cursor-pointer">
               <img src="/images/gcash-logo.png" alt="GCash" className="h-5 w-5 mr-2" />
@@ -57,7 +57,7 @@ export default function PaymentMethodSelector({
             </Label>
           </div>
           
-          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-gray-50 cursor-pointer">
+          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-muted cursor-pointer">
             <RadioGroupItem value="grabpay" id="grabpay" />
             <Label htmlFor="grabpay" className="flex items-center cursor-pointer">
               <img src="/images/grabpay-logo.png" alt="GrabPay" className="h-5 w-5 mr-2" />
@@ -65,7 +65,7 @@ export default function PaymentMethodSelector({
             </Label>
           </div>
           
-          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-gray-50 cursor-pointer">
+          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-muted cursor-pointer">
             <RadioGroupItem value="shopeepay" id="shopeepay" />
             <Label htmlFor="shopeepay" className="flex items-center cursor-pointer">
               <img src="/images/shopeepay-logo.png" alt="ShopeePay" className="h-5 w-5 mr-2" />
@@ -73,7 +73,7 @@ export default function PaymentMethodSelector({
             </Label>
           </div>
           
-          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-gray-50 cursor-pointer">
+          <div className="flex items-center space-x-2 border p-3 rounded-md hover:bg-muted cursor-pointer">
             <RadioGroupItem value="paymaya" id="paymaya" />
             <Label htmlFor="paymaya" className="flex items-center cursor-pointer">
               <img src="/images/paymaya-logo.png" alt="PayMaya" className="h-5 w-5 mr-2" />

@@ -58,7 +58,7 @@ export function DashboardHeader() {
         onClose={() => setIsMenuOpen(false)}
       />
       
-      <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-sm border-b border-stone-200 py-2">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border py-2">
         <div className="flex justify-between items-center h-16 px-4 sm:px-6">
           <div className="flex items-center space-x-3 sm:space-x-4">
             <Link href="/" className="block">
@@ -72,8 +72,8 @@ export function DashboardHeader() {
               />
             </Link>
             <div>
-              <h1 className="text-xl sm:text-2xl font-light text-stone-800">Dashboard</h1>
-              <p className="hidden sm:block text-xs sm:text-sm text-stone-500 font-light">Welcome back, {userData.userName}</p>
+              <h1 className="text-xl sm:text-2xl font-light text-foreground">Dashboard</h1>
+              <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground font-light">Welcome back, {userData.userName}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -95,9 +95,9 @@ export function DashboardHeader() {
             <Button 
               variant="ghost" 
               size="icon"
-              className="h-10 w-10 rounded-full relative overflow-hidden hover:bg-stone-100"
+              className="h-10 w-10 rounded-full relative overflow-hidden hover:bg-muted"
             >
-              <div className="h-10 w-10 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 font-medium text-sm">
+              <div className="h-10 w-10 rounded-full flex items-center justify-center bg-primary/10 text-primary font-medium text-sm">
                 {userData.userLogo ? <Image src={userData.userLogo} alt="User Logo" width={40} height={40} className="h-full w-full object-cover" /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}
               </div>
             </Button>
@@ -144,7 +144,7 @@ export function DashboardHeader() {
             {/* Mobile profile button */}
             <button 
               onClick={() => setIsMenuOpen(true)}
-              className="md:hidden h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-medium text-lg overflow-hidden"
+              className="md:hidden h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium text-lg overflow-hidden"
               aria-label="Profile menu"
             >
               {userData.userLogo ? <Image src={userData.userLogo} alt="Desktop User Logo" width={40} height={40} className="h-full w-full object-cover" /> : userData.userName ? userData.userName.charAt(0).toUpperCase() : 'U'}

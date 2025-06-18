@@ -88,14 +88,14 @@ export default function ProductVariants({
     <div className="mt-8 mb-6 border rounded-md p-4">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h3 className="tracking-tight text-xl font-light text-stone-900">Product Variants</h3>
-          <p className="text-sm text-gray-500 mb-4 font-light">
+                <h3 className="tracking-tight text-xl font-light text-foreground">Product Variants</h3>
+      <p className="text-sm text-muted-foreground mb-4 font-light">
             Add different options like size, color, or material for your physical products
           </p>
         </div>
         <button
           onClick={() => setShowVariantForm(true)}
-          className="flex items-center text-sm bg-white border border-stone-300 text-stone-700 px-3 py-1.5 rounded-md hover:bg-stone-50"
+          className="flex items-center text-sm bg-background border border-border text-foreground px-3 py-1.5 rounded-md hover:bg-muted"
         >
           <Plus size={16} className="mr-1" />
           Add Variant
@@ -104,7 +104,7 @@ export default function ProductVariants({
       
       {/* Variant Form */}
       {showVariantForm && (
-        <div className="border rounded-md p-4 mb-4 bg-stone-50">
+        <div className="border rounded-md p-4 mb-4 bg-muted">
           <div className="mb-4">
             <label htmlFor="variant-name" className="block text-sm font-light mb-1">
               Variant Name
@@ -138,13 +138,13 @@ export default function ProductVariants({
           <div className="flex justify-end space-x-2">
             <button
               onClick={() => setShowVariantForm(false)}
-              className="px-3 py-1.5 border border-stone-300 rounded-md text-sm"
+              className="px-3 py-1.5 border border-border rounded-md text-sm"
             >
               Cancel
             </button>
             <button
               onClick={handleAddVariant}
-              className="px-3 py-1.5 bg-emerald-500 text-white rounded-md text-sm"
+              className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm"
             >
               Add Variant
             </button>
@@ -160,11 +160,11 @@ export default function ProductVariants({
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <h4 className="font-medium">{variant.name}</h4>
-                  <p className="text-xs text-gray-500">Display as: {variant.displayType}</p>
+                  <p className="text-xs text-muted-foreground">Display as: {variant.displayType}</p>
                 </div>
                 <button
                   onClick={() => handleRemoveVariant(variantIndex)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-destructive hover:text-destructive/80"
                 >
                   <X size={16} />
                 </button>
@@ -175,11 +175,11 @@ export default function ProductVariants({
                 <p className="text-sm font-light mb-1">Options:</p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {variant.options.map((option, optionIndex) => (
-                    <div key={optionIndex} className="flex items-center bg-stone-100 px-2 py-1 rounded-md">
+                    <div key={optionIndex} className="flex items-center bg-muted px-2 py-1 rounded-md">
                       <span className="text-sm">{option}</span>
                       <button
                         onClick={() => handleRemoveOption(variantIndex, optionIndex)}
-                        className="ml-1 text-red-500 hover:text-red-700"
+                        className="ml-1 text-destructive hover:text-destructive/80"
                       >
                         <X size={14} />
                       </button>
@@ -198,7 +198,7 @@ export default function ProductVariants({
                   />
                   <button
                     onClick={() => handleAddOption(variantIndex)}
-                    className="bg-emerald-500 text-white px-2 py-1 rounded-r-md"
+                    className="bg-primary text-primary-foreground px-2 py-1 rounded-r-md"
                   >
                     <Plus size={16} />
                   </button>
@@ -212,9 +212,9 @@ export default function ProductVariants({
       {/* Empty State */}
       {(!productData.variants || productData.variants.length === 0) && !showVariantForm && (
         <div className="text-center py-6 border-dashed border-2 rounded-md">
-          <Package size={24} className="mx-auto text-gray-400 mb-2" />
-          <p className="text-gray-500 text-sm">No variants added yet</p>
-          <p className="text-gray-400 text-xs mt-1">Add variants like size, color, or material</p>
+                      <Package size={24} className="mx-auto text-muted-foreground mb-2" />
+            <p className="text-muted-foreground text-sm">No variants added yet</p>
+            <p className="text-muted-foreground/60 text-xs mt-1">Add variants like size, color, or material</p>
         </div>
       )}
     </div>

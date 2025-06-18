@@ -88,7 +88,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Reset Password</CardTitle>
@@ -106,8 +106,8 @@ export default function ResetPasswordPage() {
           )}
           
           {success && (
-            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <Alert className="mb-4 bg-primary/10 text-primary border-primary/20">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
@@ -164,7 +164,7 @@ export default function ResetPasswordPage() {
             </Button>
             
             <div className="text-center mt-4 text-sm">
-              <Link href="/login" className="text-blue-600 hover:underline flex items-center justify-center">
+              <Link href="/login" className="text-primary hover:underline flex items-center justify-center">
                 <ArrowLeft size={16} className="mr-1" />
                 Back to login
               </Link>
