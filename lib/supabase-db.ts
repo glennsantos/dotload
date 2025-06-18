@@ -477,19 +477,29 @@ export class SupabaseFileService {
   }
 
   // Delete file
-  async deleteFile(id: string) {
-    const supabase = await this.getAdminClient();
-    
-    const { error } = await supabase
-      .from('File')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      throw new Error(`Failed to delete file: ${error.message}`);
+  async deleteFile(fileId: string): Promise<any> {
+    try {
+      console.log('[SupabaseFileService] Deleting file:', fileId);
+      
+      const supabase = await this.getAdminClient();
+      const { data, error } = await supabase
+        .from('File')
+        .delete()
+        .eq('id', fileId)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('[SupabaseFileService] Error deleting file:', error);
+        throw new Error(`Failed to delete file: ${error.message}`);
+      }
+      
+      console.log('[SupabaseFileService] File deleted successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('[SupabaseFileService] Exception deleting file:', error);
+      throw error;
     }
-
-    return true;
   }
 
   // Create file download record
@@ -531,6 +541,86 @@ export class SupabaseFileService {
     }
 
     return data || [];
+  }
+
+  async getFileCount(): Promise<number> {
+    try {
+      console.log('[SupabaseFileService] Getting file count');
+      
+      const supabase = await this.getAdminClient();
+      const { count, error } = await supabase
+        .from('File')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) {
+        console.error('[SupabaseFileService] Error getting file count:', error);
+        throw new Error(`Failed to get file count: ${error.message}`);
+      }
+      
+      return count || 0;
+    } catch (error) {
+      console.error('[SupabaseFileService] Exception getting file count:', error);
+      throw error;
+    }
+  }
+
+  async getFiles(options?: { limit?: number; offset?: number }): Promise<any[]> {
+    try {
+      console.log('[SupabaseFileService] Getting files with options:', options);
+      
+      const supabase = await this.getAdminClient();
+      let query = supabase
+        .from('File')
+        .select('id, filename, path, productId, createdAt');
+      
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
+      
+      if (options?.offset) {
+        query = query.range(options.offset, (options.offset + (options.limit || 10)) - 1);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('[SupabaseFileService] Error getting files:', error);
+        throw new Error(`Failed to get files: ${error.message}`);
+      }
+      
+      return data || [];
+    } catch (error) {
+      console.error('[SupabaseFileService] Exception getting files:', error);
+      throw error;
+    }
+  }
+
+  async findFileByProductIds(productIds: string[], fileExtension?: string): Promise<any | null> {
+    try {
+      console.log('[SupabaseFileService] Finding file by product IDs:', productIds, 'extension:', fileExtension);
+      
+      const supabase = await this.getAdminClient();
+      let query = supabase
+        .from('File')
+        .select('*')
+        .in('productId', productIds);
+      
+      if (fileExtension) {
+        query = query.like('filename', `%${fileExtension}`);
+      }
+      
+      const { data, error } = await query.limit(1);
+      
+      if (error) {
+        console.error('[SupabaseFileService] Error finding file by product IDs:', error);
+        throw new Error(`Failed to find file by product IDs: ${error.message}`);
+      }
+      
+      return data && data.length > 0 ? data[0] : null;
+    } catch (error) {
+      console.error('[SupabaseFileService] Exception finding file by product IDs:', error);
+      throw error;
+    }
   }
 }
 
