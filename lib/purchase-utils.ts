@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { supabasePurchaseService } from './supabase-db';
 import crypto from 'crypto';
 
 // Generate a unique access code for product purchases
@@ -6,7 +6,7 @@ export const generateAccessCode = (): string => {
   return crypto.randomBytes(16).toString('hex');
 };
 
-// Create a new purchase record
+// Create a new purchase record using Supabase
 export const createPurchase = async ({
   productId,
   email,
@@ -65,9 +65,8 @@ export const createPurchase = async ({
     
     logPurchaseUtilStep('PURCHASE_DATA_PREPARED', purchaseData);
     
-    const purchase = await prisma.purchase.create({
-      data: purchaseData,
-    });
+    // Create purchase using Supabase
+    const purchase = await supabasePurchaseService.createPurchase(purchaseData);
     
     logPurchaseUtilStep('PURCHASE_CREATE_SUCCESS', {
       purchaseId: purchase.id,
@@ -104,22 +103,19 @@ export const createPurchase = async ({
   }
 };
 
-// Update purchase status after payment
+// Update purchase status after payment using Supabase
 export const updatePurchaseStatus = async (
   purchaseId: string,
   status: 'pending' | 'completed' | 'failed' | 'awaiting_capture' | 'succeeded',
   paymentId?: string
 ) => {
   try {
-    const purchase = await prisma.purchase.update({
-      where: {
-        id: purchaseId,
-      },
-      data: {
-        status,
-        ...(paymentId && { paymentId }),
-      },
-    });
+    const updateData: any = { status };
+    if (paymentId) {
+      updateData.paymentId = paymentId;
+    }
+    
+    const purchase = await supabasePurchaseService.updatePurchase(purchaseId, updateData);
     
     return purchase;
   } catch (error) {
@@ -128,23 +124,10 @@ export const updatePurchaseStatus = async (
   }
 };
 
-// Get purchase by access code
+// Get purchase by access code using Supabase
 export const getPurchaseByAccessCode = async (accessCode: string) => {
   try {
-    const purchase = await prisma.purchase.findUnique({
-      where: {
-        accessCode,
-      },
-      include: {
-        product: {
-          include: {
-            user: true,
-            files: true // Include files in the product query
-          }
-        },
-        user: true,
-      },
-    });
+    const purchase = await supabasePurchaseService.findPurchaseByAccessCode(accessCode);
     
     return purchase;
   } catch (error) {
@@ -153,17 +136,10 @@ export const getPurchaseByAccessCode = async (accessCode: string) => {
   }
 };
 
-// Get purchases by product ID
+// Get purchases by product ID using Supabase
 export const getPurchasesByProductId = async (productId: string) => {
   try {
-    const purchases = await prisma.purchase.findMany({
-      where: {
-        productId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const purchases = await supabasePurchaseService.getPurchasesByProductOwner(productId);
     
     return purchases;
   } catch (error) {
@@ -172,23 +148,10 @@ export const getPurchasesByProductId = async (productId: string) => {
   }
 };
 
-// Get purchase by ID
+// Get purchase by ID using Supabase
 export const getPurchaseById = async (id: string) => {
   try {
-    const purchase = await prisma.purchase.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        product: {
-          include: {
-            user: true,
-            files: true // Include files in the product query
-          }
-        },
-        user: true,
-      },
-    });
+    const purchase = await supabasePurchaseService.findPurchaseById(id);
     
     return purchase;
   } catch (error) {

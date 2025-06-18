@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { supabaseProductService } from './supabase-db';
 
 /**
  * Generate a URL-friendly slug from a string
@@ -19,7 +19,7 @@ export function generateSlug(text: string): string {
 }
 
 /**
- * Generate a unique slug for a product
+ * Generate a unique slug for a product using Supabase
  * @param name The product name
  * @param productId Optional product ID to exclude from uniqueness check
  * @returns A unique slug
@@ -31,15 +31,10 @@ export async function generateUniqueSlug(name: string, productId?: string): Prom
   let uniqueSlug = slug;
   
   while (!isUnique) {
-    // Check if slug exists in database
-    const existingProduct = await prisma.product.findFirst({
-      where: {
-        slug: uniqueSlug,
-        ...(productId ? { id: { not: productId } } : {})
-      }
-    });
+    // Check if slug exists in database using Supabase
+    const slugExists = await supabaseProductService.slugExists(uniqueSlug, productId);
     
-    if (!existingProduct) {
+    if (!slugExists) {
       isUnique = true;
     } else {
       // If slug exists, append a number and try again

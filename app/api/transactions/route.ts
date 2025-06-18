@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
+import { supabaseUserService, supabaseTransactionService } from '@/lib/supabase-db';
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env');
 
   /**
    * Handles GET requests to `/api/transactions`.
@@ -21,13 +23,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { userId: string, email: string, emailVerified?: boolean };
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const decoded = payload as { userId: string, email: string, emailVerified?: boolean };
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
+    // Get user from database using Supabase
+    const user = await supabaseUserService.findUserById(decoded.userId);
     
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -37,115 +37,19 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    // Get transactions for the user
-    const transactions = await prisma.$queryRaw`
-      SELECT * FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      ORDER BY "createdAt" DESC
-      LIMIT ${limit} OFFSET ${skip}
-    `;
+    // Get transactions for the user using Supabase
+    const transactions = await supabaseTransactionService.getTransactionsByUserId(user.id, {
+      limit,
+      offset
+    });
 
     // Get total count for pagination
-    const totalCountResult = await prisma.$queryRaw`
-      SELECT COUNT(*) as count FROM "Transaction"
-      WHERE "userId" = ${user.id}
-    `;
-    const totalCount = Number((totalCountResult as any)[0].count);
+    const totalCount = await supabaseTransactionService.countTransactionsByUserId(user.id);
 
-    // Calculate summary statistics
-    const totalIncomeResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'income'
-      AND status = 'completed'
-    `;
-    const totalIncome = Number((totalIncomeResult as any)[0].sum);
-
-    const totalPayoutsResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'payout'
-      AND status = 'completed'
-    `;
-    const totalPayouts = Number((totalPayoutsResult as any)[0].sum);
-
-    const totalFeesResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'fee'
-      AND status = 'completed'
-    `;
-    const totalFees = Number((totalFeesResult as any)[0].sum);
-
-    // Get purchase transactions (these are expenses for the user)
-    const totalPurchasesResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'purchase'
-      AND status = 'completed'
-    `;
-    const totalPurchases = Number((totalPurchasesResult as any)[0].sum);
-    
-    // Get payment transactions (these are income for the seller)
-    const totalPaymentsResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'payment'
-      AND status = 'completed'
-    `;
-    const totalPayments = Number((totalPaymentsResult as any)[0].sum);
-    
-    // Calculate current balance
-    // Include purchases and payments in the calculation
-    const currentBalance = totalIncome - totalPayouts - totalFees + totalPurchases + totalPayments;
-
-    const totalPendingIncomeResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'income'
-      AND status = 'pending'
-    `;
-    const totalPendingIncome = Number((totalPendingIncomeResult as any)[0].sum);
-
-    const totalPendingPayoutsResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'payout'
-      AND status = 'pending'
-    `;
-    const totalPendingPayouts = Number((totalPendingPayoutsResult as any)[0].sum);
-
-    const totalPendingFeesResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'fee'
-      AND status = 'pending'
-    `;
-    const totalPendingFees = Number((totalPendingFeesResult as any)[0].sum);
-    
-    // Get pending purchase transactions
-    const totalPendingPurchasesResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'purchase'
-      AND status = 'pending'
-    `;
-    const totalPendingPurchases = Number((totalPendingPurchasesResult as any)[0].sum);
-    
-    // Get pending payment transactions
-    const totalPendingPaymentsResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'payment'
-      AND status = 'pending'
-    `;
-    const totalPendingPayments = Number((totalPendingPaymentsResult as any)[0].sum);
-
-    const pendingBalance = totalPendingIncome - totalPendingPayouts - totalPendingFees + totalPendingPurchases + totalPendingPayments;
-
-    const availableBalance = currentBalance + pendingBalance;
+    // Get transaction summary using Supabase
+    const summary = await supabaseTransactionService.getTransactionSummary(user.id);
 
     return NextResponse.json({
       transactions,
@@ -155,21 +59,7 @@ export async function GET(request: NextRequest) {
         limit,
         totalPages: Math.ceil(totalCount / limit),
       },
-      summary: {
-        totalIncome,
-        totalPayouts,
-        totalFees,
-        totalPurchases,
-        totalPayments,
-        currentBalance,
-        totalPendingIncome,
-        totalPendingPayouts,
-        totalPendingFees,
-        totalPendingPurchases,
-        totalPendingPayments,
-        pendingBalance,
-        availableBalance
-      }
+      summary
     });
   } catch (error) {
     // More detailed error logging
@@ -180,10 +70,15 @@ export async function GET(request: NextRequest) {
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
       
-      // Handle specific database errors
-      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+      // Handle specific JWT errors
+      if (error.name === 'JWTInvalid' || error.name === 'JWTExpired') {
+        return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
+      }
+      
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
         return NextResponse.json(
-          { error: 'Database table does not exist. Please run migrations.' },
+          { error: 'Database error occurred. Please try again.' },
           { status: 500 }
         );
       }

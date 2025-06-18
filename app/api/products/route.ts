@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { prisma } from '@/lib/prisma';
-import { getCurrentUser, getAuthUserId } from '@/lib/auth-utils';
+import { getAuthUserId } from '@/lib/auth-utils';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
@@ -9,6 +8,7 @@ import { cwd } from 'process';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { generateUniqueSlug } from '@/lib/slug-utils';
 import { apiConfig, checkFileSizeLimit, formatFileSize } from '../config';
+import { supabaseProductService, supabaseVariationService } from '@/lib/supabase-db';
 
 // Function removed - using Cloudinary exclusively
 
@@ -199,456 +199,134 @@ export async function POST(request: NextRequest) {
         downloadSettings = JSON.parse(downloadSettingsData as string);
         
         // Validate download settings
-        if (type === 'digital_product') {
-          // Validate download limit
-          if (downloadSettings.downloadLimit !== undefined) {
-            const downloadLimit = parseInt(downloadSettings.downloadLimit.toString());
-            if (isNaN(downloadLimit) || downloadLimit < 1) {
-              return NextResponse.json({
-                error: 'Invalid download limit',
-                details: 'Download limit must be a positive number'
-              }, { status: 400 });
-            }
-          }
-          
-          // Validate link expiration
-          if (downloadSettings.linkExpiration !== undefined) {
-            const linkExpiration = parseInt(downloadSettings.linkExpiration.toString());
-            if (isNaN(linkExpiration) || linkExpiration < 1) {
-              return NextResponse.json({
-                error: 'Invalid link expiration',
-                details: 'Link expiration must be a positive number'
-              }, { status: 400 });
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error parsing download settings:', error);
-      // Use default values if parsing fails
-      // Continue with default values
-    }
-    
-    // Parse badges
-    let badges = {
-      bestSeller: false,
-      newRelease: false,
-      popular: false,
-      custom: []
-    };
-    
-    try {
-      const badgesData = formData.get('badges');
-      if (badgesData) {
-        badges = JSON.parse(badgesData as string);
-        
-        // Validate custom badges
-        if (badges.custom && Array.isArray(badges.custom)) {
-          for (const badge of badges.custom) {
-            if (typeof badge !== 'string') {
-              return NextResponse.json({
-                error: 'Invalid custom badge',
-                details: 'Custom badges must be strings'
-              }, { status: 400 });
-            }
-            
-            const badgeStr = badge as string;
-            if (!badgeStr.trim()) {
-              return NextResponse.json({
-                error: 'Invalid custom badge',
-                details: 'Custom badge cannot be empty'
-              }, { status: 400 });
-            }
-            
-            if (badgeStr.length > 50) {
-              return NextResponse.json({
-                error: 'Invalid custom badge',
-                details: 'Custom badge must be less than 50 characters'
-              }, { status: 400 });
-            }
-          }
-        }
-      }
-    } catch (parseError) {
-      console.error('Error parsing badges:', parseError);
-      // Continue with default values
-    }
-    
-    // Parse trust indicators
-    let trustIndicators = {
-      secureCheckout: true,
-      instantDownload: true,
-      refundPolicy: false,
-      custom: []
-    };
-    
-    try {
-      const trustIndicatorsData = formData.get('trustIndicators');
-      if (trustIndicatorsData) {
-        trustIndicators = JSON.parse(trustIndicatorsData as string);
-        
-        // Validate custom trust indicators
-        if (trustIndicators.custom && Array.isArray(trustIndicators.custom)) {
-          for (const indicator of trustIndicators.custom) {
-            if (typeof indicator !== 'string') {
-              return NextResponse.json({
-                error: 'Invalid custom trust indicator',
-                details: 'Custom trust indicators must be strings'
-              }, { status: 400 });
-            }
-            
-            const indicatorStr = indicator as string;
-            if (!indicatorStr.trim()) {
-              return NextResponse.json({
-                error: 'Invalid custom trust indicator',
-                details: 'Custom trust indicator cannot be empty'
-              }, { status: 400 });
-            }
-            
-            if (indicatorStr.length > 50) {
-              return NextResponse.json({
-                error: 'Invalid custom trust indicator',
-                details: 'Custom trust indicator must be less than 50 characters'
-              }, { status: 400 });
-            }
-          }
-        }
-      }
-    } catch (parseError) {
-      console.error('Error parsing trust indicators:', parseError);
-      // Continue with default values
-    }
-    
-    // Parse what's included
-    let whatsIncluded = [];
-    
-    try {
-      const whatsIncludedData = formData.get('whatsIncluded');
-      console.log('Create Product - Processing whatsIncluded:', whatsIncludedData);
-      if (whatsIncludedData) {
-        whatsIncluded = JSON.parse(whatsIncludedData as string);
-        console.log('Create Product - Parsed whatsIncluded:', whatsIncluded);
-        
-        // Validate what's included items
-        if (Array.isArray(whatsIncluded)) {
-          for (let i = 0; i < whatsIncluded.length; i++) {
-            const item = whatsIncluded[i];
-            
-            if (typeof item !== 'string') {
-              return NextResponse.json({
-                error: 'Invalid what\'s included item',
-                details: 'What\'s included items must be strings'
-              }, { status: 400 });
-            }
-            
-            const itemStr = item as string;
-            if (!itemStr.trim()) {
-              return NextResponse.json({
-                error: 'Invalid what\'s included item',
-                details: 'What\'s included item cannot be empty'
-              }, { status: 400 });
-            }
-            
-            if (itemStr.length > 100) {
-              return NextResponse.json({
-                error: 'Invalid what\'s included item',
-                details: 'What\'s included item must be less than 100 characters'
-              }, { status: 400 });
-            }
-          }
-        }
-      }
-    } catch (parseError) {
-      console.error('Error parsing what\'s included:', parseError);
-      // Continue with default values
-    }
-    
-    // Parse curriculum
-    let curriculum = [];
-    
-    try {
-      const curriculumData = formData.get('curriculum');
-      console.log('Create Product - Processing curriculum:', curriculumData);
-      if (curriculumData) {
-        curriculum = JSON.parse(curriculumData as string);
-        console.log('Create Product - Parsed curriculum:', curriculum);
-        
-        // Validate curriculum items
-        if (Array.isArray(curriculum)) {
-          for (let i = 0; i < curriculum.length; i++) {
-            const section = curriculum[i];
-            
-            // Check if section has the correct structure
-            if (!section || typeof section !== 'object') {
-              return NextResponse.json({
-                error: 'Invalid curriculum section',
-                details: 'Curriculum sections must be objects'
-              }, { status: 400 });
-            }
-            
-            // Check if section has title
-            if (!section.title || typeof section.title !== 'string') {
-              return NextResponse.json({
-                error: 'Invalid curriculum section',
-                details: 'Curriculum sections must have a title'
-              }, { status: 400 });
-            }
-            
-            // Check title length
-            if (section.title.length > 100) {
-              return NextResponse.json({
-                error: 'Invalid curriculum section',
-                details: 'Curriculum section title must be less than 100 characters'
-              }, { status: 400 });
-            }
-            
-            // Check if section has items array
-            if (!Array.isArray(section.items)) {
-              return NextResponse.json({
-                error: 'Invalid curriculum section',
-                details: 'Curriculum sections must have an items array'
-              }, { status: 400 });
-            }
-            
-            // Validate each item in the section
-            for (let j = 0; j < section.items.length; j++) {
-              const item = section.items[j];
-              
-              if (typeof item !== 'string') {
-                return NextResponse.json({
-                  error: 'Invalid curriculum item',
-                  details: 'Curriculum items must be strings'
-                }, { status: 400 });
-              }
-              
-              if (!item.trim()) {
-                return NextResponse.json({
-                  error: 'Invalid curriculum item',
-                  details: 'Curriculum item cannot be empty'
-                }, { status: 400 });
-              }
-              
-              if (item.length > 200) {
-                return NextResponse.json({
-                  error: 'Invalid curriculum item',
-                  details: 'Curriculum item must be less than 200 characters'
-                }, { status: 400 });
-              }
-            }
-          }
-        }
-      }
-    } catch (parseError) {
-      console.error('Error parsing curriculum:', parseError);
-      // Continue with default values
-    }
-    
-    // Parse inventory settings for physical products
-    let stockQuantity = null;
-    let allowPreOrders = false;
-    
-    try {
-      const stockQuantityData = formData.get('stockQuantity');
-      if (stockQuantityData && stockQuantityData !== 'null') {
-        stockQuantity = parseInt(stockQuantityData as string, 10);
-        
-        // Validate stock quantity for physical products
-        if (type === 'physical_product') {
-          if (isNaN(stockQuantity) || stockQuantity < 0) {
-            return NextResponse.json({
-              error: 'Invalid stock quantity',
-              details: 'Stock quantity must be a non-negative number'
-            }, { status: 400 });
-          }
-        }
-      }
-      
-      const allowPreOrdersData = formData.get('allowPreOrders');
-      if (allowPreOrdersData) {
-        allowPreOrders = allowPreOrdersData === 'true';
-      }
-      
-      // Validate pre-order settings
-      if (type === 'physical_product' && allowPreOrders && stockQuantity !== null && stockQuantity > 0) {
-        return NextResponse.json({
-          error: 'Invalid inventory configuration',
-          details: 'Pre-orders should only be enabled when stock is zero or not specified'
-        }, { status: 400 });
-      }
-    } catch (parseError) {
-      console.error('Error parsing inventory settings:', parseError);
-      // Continue with default values
-    }
-    
-    // Create a temporary product ID for file organization
-    const tempProductId = Date.now().toString();
-    
-    // Process uploaded files
-    const { coverImagePath, processedFiles } = await processFiles(formData, userId, tempProductId);
-    
-    // Parse content links if exist
-    let contentLinks: string[] = [];
-    try {
-      const contentLinksData = formData.get('contentLinks');
-      if (contentLinksData) {
-        contentLinks = JSON.parse(contentLinksData as string);
-        
-        // Validate content links for digital products
-        if (type === 'digital_product' && Array.isArray(contentLinks)) {
-          for (let i = 0; i < contentLinks.length; i++) {
-            const link = contentLinks[i];
-            
-            if (typeof link !== 'string') {
-              return NextResponse.json({
-                error: 'Invalid content link',
-                details: 'Content links must be strings'
-              }, { status: 400 });
-            }
-            
-            // Check if the link is a valid URL
-            try {
-              new URL(link);
-            } catch (e) {
-              return NextResponse.json({
-                error: 'Invalid content link',
-                details: `Link at position ${i + 1} is not a valid URL`
-              }, { status: 400 });
-            }
-          }
-        }
-        
-        // For digital products, validate that there are files or links
-        if (type === 'digital_product' && 
-            processedFiles.length === 0 && 
-            contentLinks.length === 0) {
+        if (downloadSettings.downloadLimit < 1 || downloadSettings.downloadLimit > 100) {
           return NextResponse.json({
-            error: 'Missing content',
-            details: 'Digital products require at least one content file or link'
+            error: 'Invalid download limit',
+            details: 'Download limit must be between 1 and 100'
+          }, { status: 400 });
+        }
+        
+        if (downloadSettings.linkExpiration < 1 || downloadSettings.linkExpiration > 365) {
+          return NextResponse.json({
+            error: 'Invalid link expiration',
+            details: 'Link expiration must be between 1 and 365 days'
           }, { status: 400 });
         }
       }
-    } catch (error) {
-      console.error('Error parsing content links:', error);
-      // Continue with empty array
+    } catch (parseError) {
+      console.error('Error parsing download settings:', parseError);
+      // Continue with default values
     }
-    
-    // Generate a unique slug if not provided
-    const productSlug = slug || await generateUniqueSlug(name);
-    
-    // Create product data object
-    console.log('Creating product data object with:', {
-      userId,
+
+    // Generate slug if not provided
+    let finalSlug = slug;
+    if (!slug) {
+      finalSlug = await generateUniqueSlug(name);
+    } else {
+      // Check if slug already exists
+      const slugExists = await supabaseProductService.slugExists(slug);
+      if (slugExists) {
+        return NextResponse.json({
+          error: 'Slug already exists',
+          details: 'Please choose a different slug'
+        }, { status: 409 });
+      }
+    }
+
+    // Generate unique id for the product
+    const crypto = await import('crypto');
+    const productId = crypto.randomUUID();
+
+    // Process cover image first
+    const { coverImagePath } = await processFiles(formData, userId, productId);
+
+    // Create product using Supabase
+    console.log('Creating product with Supabase...');
+    const product = await supabaseProductService.createProduct({
+      id: productId,
       name,
       type,
       price: parsedPrice,
-      hasDescription: !!description,
-      hasCoverImage: !!coverImagePath,
-      contentFiles: processedFiles.length,
-      contentLinks: contentLinks.length
-    });
-    
-    // Remove userId from productData since we'll add it explicitly in create
-    const productData: any = {
-      name,
-      type,
-      price: parsedPrice,
-      currency: currency, // Use the currency from form data
       description,
-      coverImagePath,
       userId,
-      
-      // Payment options
+      coverImagePath,
+      slug: finalSlug,
       allowPayWhatYouWant: paymentOptions.allowPayWhatYouWant,
       offerCoupons: paymentOptions.offerCoupons,
-      
-      // Download settings for digital products
       downloadLimit: downloadSettings.downloadLimit,
       linkExpiration: downloadSettings.linkExpiration,
-      
-      // Product badges
-      bestSeller: badges.bestSeller,
-      newRelease: badges.newRelease,
-      popular: badges.popular,
-      customBadges: JSON.stringify(badges.custom),
-      
-      // Trust indicators
-      secureCheckout: trustIndicators.secureCheckout,
-      instantDownload: trustIndicators.instantDownload,
-      refundPolicy: trustIndicators.refundPolicy,
-      customTrustIndicators: JSON.stringify(trustIndicators.custom),
-      
-      // Physical product fields
-      stockQuantity: stockQuantity,
-      allowPreOrders: allowPreOrders,
-      
-      // Additional fields - ensure we always have valid JSON arrays even if empty
-      whatsIncluded: JSON.stringify(whatsIncluded || []),
-      curriculum: JSON.stringify(curriculum || []),
-      contentLinks: JSON.stringify(contentLinks || []),
-    };
-    
-    // Add slug if provided
-    if (productSlug) {
-      productData.slug = productSlug;
-    }
-    
-    // Add visibility and status if provided
-    if (visibility) {
-      productData.isPublic = visibility === 'public';
-    }
-    
-    if (status) {
-      productData.status = status;
-    }
-    
-    // Create product with relations
-    console.log('Creating product with data:', {
-      ...productData,
-      userId,
-      variations: parsedVariations.length > 0 ? 'present' : 'none',
-      files: processedFiles.length + contentLinks.length
+      currency,
+      isPublic: visibility === 'public',
+      status: status || 'draft'
     });
-    console.log('Create Product - Final Data:', {
-      whatsIncluded: productData.whatsIncluded,
-      curriculum: productData.curriculum,
-      customBadges: productData.customBadges,
-      customTrustIndicators: productData.customTrustIndicators
-    });
-    
-    const product = await prisma.product.create({
-      data: {
-        ...productData,
-        userId, // Explicitly include userId here
-        variations: parsedVariations.length > 0 ? {
-          create: parsedVariations
-        } : undefined,
-        files: contentLinks.length > 0 ? {
-          create: [
-            ...contentLinks.map((link: string) => ({
-              filename: link.split('/').pop() || 'external-link',
-              path: link,
-              mimetype: 'text/url'
-            }))
-          ]
-        } : undefined
-      },
-      include: {
-        variations: true,
-        files: true
+
+    console.log('Product created successfully:', product.id);
+
+    // Create variations using Supabase
+    if (parsedVariations.length > 0) {
+      console.log(`Creating ${parsedVariations.length} variations...`);
+      
+      for (const variation of parsedVariations) {
+        await supabaseVariationService.createVariation({
+          name: variation.name,
+          options: variation.options,
+          productId: product.id
+        });
       }
-    });
+      
+      console.log('Variations created successfully');
+    }
+
+    return NextResponse.json({
+      success: true,
+      product: {
+        id: product.id,
+        name: product.name,
+        type: product.type,
+        price: product.price,
+        description: product.description,
+        coverImagePath: product.coverImagePath,
+        slug: product.slug,
+        allowPayWhatYouWant: product.allowPayWhatYouWant,
+        offerCoupons: product.offerCoupons,
+        currency: product.currency,
+        downloadLimit: product.downloadLimit,
+        linkExpiration: product.linkExpiration,
+        isPublic: product.isPublic,
+        status: product.status
+      }
+    }, { status: 201 });
+
+  } catch (error) {
+    console.error('Error creating product:', error);
+    
+    // More specific error handling
+    if (error instanceof Error) {
+      // Handle Supabase-specific errors
+      if (error.message.includes('Failed to create product')) {
+        return NextResponse.json({
+          error: 'Database error',
+          details: 'Could not create product in database'
+        }, { status: 500 });
+      }
+      
+      // Handle file upload errors
+      if (error.message.includes('upload')) {
+        return NextResponse.json({
+          error: 'File upload error',
+          details: 'Could not upload cover image'
+        }, { status: 500 });
+      }
+      
+      return NextResponse.json({
+        error: 'Product creation failed',
+        details: error.message
+      }, { status: 500 });
+    }
     
     return NextResponse.json({
-      message: 'Product created successfully',
-      product,
-      fileCount: processedFiles.length,
-      variationCount: parsedVariations.length
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Product creation error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to create product', 
-      details: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Internal server error',
+      details: 'An unexpected error occurred'
     }, { status: 500 });
   }
 }
@@ -658,34 +336,58 @@ export async function GET() {
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
     
-    // If no authenticated user, return error
     if (!userId) {
       return NextResponse.json({ 
         error: 'Authentication required',
-        details: 'You must be logged in to view your products'
+        details: 'You must be logged in to view products'
       }, { status: 401 });
     }
 
-    // Find products for the current user
-    const products = await prisma.product.findMany({
-      where: {
-        userId: userId
-      },
-      include: {
-        files: true,
-        variations: true
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
+    // Get products using Supabase
+    const products = await supabaseProductService.getProductsByUserId(userId, true);
+
+    console.log(`[PRODUCTS-API] Found ${products.length} products for user ${userId}`);
+
+    // Transform the data to match the expected format
+    const transformedProducts = products.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      type: product.type,
+      price: product.price,
+      description: product.description,
+      coverImagePath: product.coverImagePath,
+      digitalItemPath: product.digitalItemPath,
+      slug: product.slug,
+      currency: product.currency,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      status: product.status,
+      isPublic: product.isPublic,
+      allowPayWhatYouWant: product.allowPayWhatYouWant,
+      offerCoupons: product.offerCoupons,
+      downloadLimit: product.downloadLimit,
+      linkExpiration: product.linkExpiration,
+      files: product.files || [],
+      variations: product.variations || []
+    }));
+
+    return NextResponse.json({
+      products: transformedProducts
     });
-    
-    return NextResponse.json(products);
+
   } catch (error) {
-    console.error('Fetch products error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch products', 
-      details: error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error fetching products:', error);
+    
+    if (error instanceof Error) {
+      return NextResponse.json({
+        error: 'Failed to fetch products',
+        details: error.message
+      }, { status: 500 });
+    }
+    
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: 'An unexpected error occurred'
     }, { status: 500 });
   }
 }

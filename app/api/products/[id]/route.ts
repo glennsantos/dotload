@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 import { writeFile, unlink, mkdir, stat } from 'fs/promises';
 import { join } from 'path';
@@ -8,6 +7,7 @@ import * as fs from 'fs';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { apiConfig, checkFileSizeLimit, formatFileSize } from '../../config';
 import { isAllowedDigitalFile } from '@/lib/file-validation';
+import { supabaseProductService, supabaseFileService } from '@/lib/supabase-db';
 
 // Ensure uploads directory exists with proper structure
 async function ensureUploadsDir(userId: string, productId: string) {
@@ -58,7 +58,7 @@ async function ensureUploadsDir(userId: string, productId: string) {
   }
 }
 
-// Process uploaded files
+// Process uploaded files using Supabase
 async function processFiles(formData: FormData, userId: string, productId: string) {
   const productDir = await ensureUploadsDir(userId, productId);
   const coverImage = formData.get('coverImage') as File | null;
@@ -162,14 +162,12 @@ async function processFiles(formData: FormData, userId: string, productId: strin
         const relativePath = `uploads/users/${userId}/products/${productId}/${filename}`;
         console.log(`Database path: ${relativePath}`);
         
-        // Create file record in database
-        const fileRecord = await prisma.file.create({
-          data: {
-            filename: file.name,
-            path: relativePath,
-            mimetype: file.type,
-            productId: productId
-          }
+        // Create file record in database using Supabase
+        const fileRecord = await supabaseFileService.createFile({
+          filename: file.name,
+          path: relativePath,
+          mimetype: file.type,
+          productId: productId
         });
         
         console.log(`Created database record for file: ${file.name}, id: ${fileRecord.id}`);
@@ -199,27 +197,19 @@ export async function GET(
         details: 'Product ID is required'
       }, { status: 400 });
     }
+
     // Get the current authenticated user's ID
     const userId = await getAuthUserId();
     
-    // If no authenticated user, return error
     if (!userId) {
       return NextResponse.json({ 
         error: 'Authentication required',
-        details: 'You must be logged in to view product details'
+        details: 'You must be logged in to view this product'
       }, { status: 401 });
     }
 
-    // Find the product by ID
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
-      include: {
-        files: true,
-        variations: true
-      }
-    });
+    // Find the product using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     if (!product) {
       return NextResponse.json({ 
@@ -227,53 +217,53 @@ export async function GET(
         details: 'The requested product does not exist'
       }, { status: 404 });
     }
-    
-    // Process string fields that should be JSON objects
-    const processedProduct = {
-      ...product,
-      contentLinks: product.contentLinks ? JSON.parse(product.contentLinks) : [],
-      whatsIncluded: product.whatsIncluded ? JSON.parse(product.whatsIncluded) : [],
-      curriculum: product.curriculum ? JSON.parse(product.curriculum) : [],
-      badges: {
-        bestSeller: product.bestSeller || false,
-        newRelease: product.newRelease || false,
-        popular: product.popular || false,
-        custom: product.customBadges ? JSON.parse(product.customBadges) : []
-      },
-      trustIndicators: {
-        secureCheckout: product.secureCheckout || true,
-        instantDownload: product.instantDownload || true,
-        refundPolicy: product.refundPolicy || false,
-        custom: product.customTrustIndicators ? JSON.parse(product.customTrustIndicators) : []
-      },
-      downloadSettings: {
-        downloadLimit: product.downloadLimit || 5,
-        linkExpiration: product.linkExpiration || 30
-      },
-      paymentOptions: {
-        allowPayWhatYouWant: product.allowPayWhatYouWant || false,
-        offerCoupons: product.offerCoupons || false
-      },
-      inventorySettings: {
-        allowPreOrders: product.allowPreOrders || false
-      }
-    };
-    
-    // Check if user has permission to view this product
+
+    // Check if the user owns this product
     if (product.userId !== userId) {
       return NextResponse.json({ 
-        error: 'Unauthorized',
+        error: 'Access denied',
         details: 'You do not have permission to view this product'
       }, { status: 403 });
     }
-    
-    // Return the processed product with all data properly formatted
-    return NextResponse.json(processedProduct);
+
+    // Return the product data
+    return NextResponse.json({
+      product: {
+        id: product.id,
+        name: product.name,
+        type: product.type,
+        price: product.price,
+        description: product.description,
+        coverImagePath: product.coverImagePath,
+        digitalItemPath: product.digitalItemPath,
+        slug: product.slug,
+        currency: product.currency,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+        status: product.status,
+        isPublic: product.isPublic,
+        allowPayWhatYouWant: product.allowPayWhatYouWant,
+        offerCoupons: product.offerCoupons,
+        downloadLimit: product.downloadLimit,
+        linkExpiration: product.linkExpiration,
+        files: product.files || [],
+        variations: product.variations || []
+      }
+    });
+
   } catch (error) {
-    console.error('Fetch product error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch product', 
-      details: error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error fetching product:', error);
+    
+    if (error instanceof Error) {
+      return NextResponse.json({
+        error: 'Failed to fetch product',
+        details: error.message
+      }, { status: 500 });
+    }
+    
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: 'An unexpected error occurred'
     }, { status: 500 });
   }
 }
@@ -307,11 +297,7 @@ export async function PUT(
     }
     
     // Find the product by ID
-    const existingProduct = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      }
-    });
+    const existingProduct = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!existingProduct) {
@@ -621,14 +607,12 @@ export async function PUT(
       // Handle variations update if provided
       if (parsedVariations.length > 0) {
         // Delete existing variations and create new ones
-        await prisma.variation.deleteMany({
-          where: {
-            productId: productId
-          }
-        });
+        await supabaseProductService.deleteVariations(productId);
         
         // Create new variations
         await Promise.all(parsedVariations.map(variation => 
+          supabaseProductService.createVariation({
+            ...variation,
           prisma.variation.create({
             data: {
               ...variation,

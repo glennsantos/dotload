@@ -7,6 +7,9 @@
 
 is there something in vercel like @amplify.yml you see here. so that it can load the .env while building. cause the env values are present
 
+
+fix auto deployment in vercel
+
 ## Database Migration (PARTIALLY COMPLETED)
 
 7. **Migrate ALL Database Connections from Prisma to Supabase** 🔄

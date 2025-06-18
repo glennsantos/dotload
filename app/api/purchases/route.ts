@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { createPurchase } from '@/lib/purchase-utils';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
+import { supabasePurchaseService } from '@/lib/supabase-db';
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env');
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,60 +16,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { userId: string, email: string };
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const decoded = payload as { userId: string, email: string };
 
     // Get pagination parameters from query string
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
     const status = searchParams.get('status') || undefined;
     const includeFiles = searchParams.get('includeFiles') === 'true';
 
-    // Build the where clause
-    const where: any = {
-      email: decoded.email
+    // Build options for Supabase query
+    const options = {
+      limit,
+      offset,
+      status,
+      includeFiles
     };
 
-    // Add status filter if provided
-    if (status && status !== 'all') {
-      where.status = status;
-    }
-
     // Get total count for pagination
-    const totalCount = await prisma.purchase.count({ where });
+    const totalCount = await supabasePurchaseService.countPurchasesByEmail(decoded.email, status);
 
-    // Get user's purchases with pagination
-    const purchases = await prisma.purchase.findMany({
-      where,
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: {
-        product: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            price: true,
-            // Include files if requested
-            ...(includeFiles ? {
-              files: {
-                select: {
-                  id: true,
-                  filename: true,
-                  path: true,
-                  mimetype: true
-                }
-              }
-            } : {})
-          }
-        }
-      },
-      skip,
-      take: limit
-    });
+    // Get user's purchases with pagination using Supabase
+    const purchases = await supabasePurchaseService.getPurchasesByEmail(decoded.email, options);
     
     // Add debug logging
     console.log(`[PURCHASES-API] Fetched ${purchases.length} purchases with includeFiles=${includeFiles}`);
@@ -97,14 +69,14 @@ export async function GET(request: NextRequest) {
       console.error('Error stack:', error.stack);
       
       // Handle specific JWT errors
-      if (error.name === 'JsonWebTokenError') {
+      if (error.name === 'JWTInvalid' || error.name === 'JWTExpired') {
         return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
       }
       
-      // Handle specific database errors
-      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
         return NextResponse.json(
-          { error: 'Database table does not exist. Please run migrations.' },
+          { error: 'Database error occurred. Please try again.' },
           { status: 500 }
         );
       }
@@ -198,106 +170,102 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Find the product
-    logPurchaseStep('PRODUCT_LOOKUP_START', { productId });
-    let product;
-    try {
-      product = await prisma.product.findUnique({
-        where: { id: productId }
-      });
-      logPurchaseStep('PRODUCT_LOOKUP_SUCCESS', {
-        productFound: !!product,
-        productId: product?.id,
-        productName: product?.name,
-        productPrice: product?.price
-      });
-    } catch (dbError) {
-      logPurchaseStep('PRODUCT_LOOKUP_ERROR', { productId }, dbError);
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      logPurchaseStep('VALIDATION_FAILED_EMAIL_FORMAT');
       return NextResponse.json({ 
-        error: 'Database error while fetching product',
-        details: dbError instanceof Error ? dbError.message : 'Unknown database error'
-      }, { status: 500 });
+        error: 'Invalid email format',
+        details: 'Please provide a valid email address'
+      }, { status: 400 });
     }
     
-    if (!product) {
-      logPurchaseStep('PRODUCT_NOT_FOUND', { productId });
+    // Validate amount
+    if (typeof amount !== 'number' || amount <= 0) {
+      logPurchaseStep('VALIDATION_FAILED_AMOUNT_INVALID', { amount, type: typeof amount });
       return NextResponse.json({ 
-        error: 'Product not found',
-        details: 'The requested product does not exist'
-      }, { status: 404 });
+        error: 'Invalid amount',
+        details: 'Amount must be a positive number'
+      }, { status: 400 });
     }
     
-    // Create a purchase record using the utility function
-    logPurchaseStep('PURCHASE_CREATE_START', {
+    logPurchaseStep('VALIDATION_COMPLETED_CALLING_CREATE_PURCHASE');
+    
+    // Use the centralized purchase creation utility
+    // This handles product validation, access code generation, etc.
+    const result = await createPurchase({
       productId,
       email,
-      mobileNumber,
+      mobileNumber: mobileNumber || '',
       amount,
       currency,
       paymentMethod
     });
-
-    let purchase;
-    try {
-      purchase = await createPurchase({
-        productId,
-        email,
-        mobileNumber: mobileNumber || '', // Make mobileNumber optional
-        amount,
-        currency,
-        paymentMethod, // Use the payment method from the request
-      });
+    
+    logPurchaseStep('PURCHASE_CREATION_COMPLETED', {
+      resultKeys: Object.keys(result),
+      purchaseId: result.id,
+      hasAccessCode: !!result.accessCode
+    });
+    
+    return NextResponse.json({
+      purchase: result
+    }, { status: 201 });
+    
+  } catch (error) {
+    const errorInfo = {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      name: error instanceof Error ? error.name : 'UnknownError',
+      stack: error instanceof Error ? error.stack : undefined
+    };
+    
+    logPurchaseStep('PURCHASE_CREATION_ERROR', errorInfo, error);
+    
+    // Handle specific error types
+    if (error instanceof Error) {
+      // Product not found
+      if (error.message.includes('Product not found') || error.message.includes('Failed to find product')) {
+        return NextResponse.json({
+          error: 'Product not found',
+          details: 'The specified product does not exist'
+        }, { status: 404 });
+      }
       
-      logPurchaseStep('PURCHASE_CREATE_SUCCESS', {
-        purchaseId: purchase.id,
-        accessCode: purchase.accessCode,
-        status: purchase.status
-      });
-    } catch (createError) {
-      logPurchaseStep('PURCHASE_CREATE_ERROR', {
-        productId,
-        email,
-        amount,
-        currency
-      }, createError);
+      // Invalid product state
+      if (error.message.includes('not available') || error.message.includes('not active')) {
+        return NextResponse.json({
+          error: 'Product not available',
+          details: 'This product is currently not available for purchase'
+        }, { status: 400 });
+      }
       
-      return NextResponse.json({ 
-        error: 'Failed to create purchase', 
-        details: createError instanceof Error ? createError.message : 'Unknown error'
+      // Discount code errors
+      if (error.message.includes('discount') || error.message.includes('coupon')) {
+        return NextResponse.json({
+          error: 'Invalid discount code',
+          details: error.message
+        }, { status: 400 });
+      }
+      
+      // Database errors
+      if (error.message.includes('Failed to create purchase') || error.message.includes('Database')) {
+        return NextResponse.json({
+          error: 'Database error',
+          details: 'Could not create purchase. Please try again.'
+        }, { status: 500 });
+      }
+      
+      // Default error response
+      return NextResponse.json({
+        error: 'Purchase creation failed',
+        details: error.message
       }, { status: 500 });
     }
     
-    const responseData = {
-      id: purchase.id,
-      accessCode: purchase.accessCode,
-      status: purchase.status,
-      purchaseId: purchase.id // Add purchaseId for redirect
-    };
-    
-    logPurchaseStep('API_RESPONSE_SUCCESS', responseData);
-    
-    return NextResponse.json(responseData);
-  } catch (error) {
-    const logPurchaseStep = (step: string, data?: any, error?: any) => {
-      const timestamp = new Date().toISOString();
-      const logPrefix = `[PurchasesAPI][${timestamp}]`;
-      
-      if (error) {
-        console.error(`${logPrefix} ERROR in ${step}:`, error);
-        if (data) console.error(`${logPrefix} Context data:`, data);
-      } else {
-        console.log(`${logPrefix} ${step}`, data ? data : '');
-      }
-    };
-
-    logPurchaseStep('API_REQUEST_ERROR', {
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      errorStack: error instanceof Error ? error.stack : undefined
-    }, error);
-    
-    return NextResponse.json({ 
-      error: 'Failed to create purchase', 
-      details: error instanceof Error ? error.message : 'Unknown error'
+    // Fallback for unknown errors
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: 'An unexpected error occurred during purchase creation'
     }, { status: 500 });
   }
 }

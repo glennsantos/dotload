@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
-import { prisma } from '@/lib/prisma';
+import { jwtVerify } from 'jose';
+import { supabaseUserService } from '@/lib/supabase-db';
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env');
 
 // Enable debugging
 const DEBUG = true;
@@ -12,7 +14,7 @@ const debugLog = (message: string, ...args: any[]) => {
   }
 };
 
-// Get the current authenticated user's ID
+// Get the current authenticated user's ID using modern JWT verification
 async function getAuthUserId() {
   try {
     const cookieStore = await cookies();
@@ -22,12 +24,12 @@ async function getAuthUserId() {
       return null;
     }
     
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) {
+    if (!process.env.JWT_SECRET) {
       throw new Error('JWT_SECRET is not defined');
     }
     
-    const decoded = jwt.verify(token.value, JWT_SECRET) as { userId: string };
+    const { payload } = await jwtVerify(token.value, JWT_SECRET);
+    const decoded = payload as { userId: string };
     return decoded.userId;
   } catch (error) {
     console.error('Auth error:', error);
@@ -35,7 +37,7 @@ async function getAuthUserId() {
   }
 }
 
-// GET: Fetch user profile information
+// GET: Fetch user profile information using Supabase
 export async function GET(request: NextRequest) {
   try {
     // Get the current authenticated user's ID
@@ -48,17 +50,8 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
+    // Get user from database using Supabase
+    const user = await supabaseUserService.findUserById(userId);
     
     if (!user) {
       return NextResponse.json(
@@ -84,7 +77,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT: Update user profile information
+// PUT: Update user profile information using Supabase
 export async function PUT(request: NextRequest) {
   try {
     // Get the current authenticated user's ID
@@ -110,14 +103,9 @@ export async function PUT(request: NextRequest) {
     
     // Check if email is already in use (if email is being updated)
     if (email) {
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          email,
-          id: { not: userId }
-        }
-      });
+      const existingUser = await supabaseUserService.findUserByEmail(email);
       
-      if (existingUser) {
+      if (existingUser && existingUser.id !== userId) {
         return NextResponse.json(
           { message: 'Email is already in use by another account' },
           { status: 400 }
@@ -130,18 +118,8 @@ export async function PUT(request: NextRequest) {
     if (name) updateData.name = name;
     if (email) updateData.email = email;
     
-    // Update user in database
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
+    // Update user in database using Supabase
+    const updatedUser = await supabaseUserService.updateUser(userId, updateData);
     
     return NextResponse.json({
       message: 'Profile updated successfully',
