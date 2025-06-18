@@ -897,8 +897,8 @@ export class SupabasePurchaseService {
     return sortedPurchases.slice(0, limit);
   }
 
-  // Get unique customers who bought from this user's products
-  async getUniqueCustomers(userId: string) {
+  // Get unique customers count who bought from this user's products
+  async getUniqueCustomersCount(userId: string) {
     const supabase = await this.getAdminClient();
     
     // First get all products owned by this user
@@ -931,6 +931,77 @@ export class SupabasePurchaseService {
     // Get unique emails
     const uniqueEmails = [...new Set(data?.map(p => p.email).filter(Boolean))];
     return uniqueEmails.length;
+  }
+
+  // Get unique customers data who bought from this user's products
+  async getUniqueCustomers(userId: string) {
+    const supabase = await this.getAdminClient();
+    
+    // First get all products owned by this user
+    const { data: userProducts, error: productsError } = await supabase
+      .from('Product')
+      .select('id')
+      .eq('userId', userId);
+
+    if (productsError) {
+      throw new Error(`Failed to get user products: ${productsError.message}`);
+    }
+
+    if (!userProducts || userProducts.length === 0) {
+      return [];
+    }
+
+    const productIds = userProducts.map(p => p.id);
+
+    // Get all purchases for those products with aggregation
+    const { data, error } = await supabase
+      .from('Purchase')
+      .select('email, amount, status, createdAt')
+      .in('productId', productIds)
+      .not('email', 'is', null);
+
+    if (error) {
+      throw new Error(`Failed to get customers: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // Group by email to create customer records
+    const customerMap = new Map();
+    
+    data.forEach(purchase => {
+      if (!customerMap.has(purchase.email)) {
+        customerMap.set(purchase.email, {
+          email: purchase.email,
+          purchaseCount: 1,
+          totalSpent: purchase.amount || 0,
+          firstPurchase: purchase.createdAt,
+          lastPurchase: purchase.createdAt,
+          status: purchase.status === 'completed' ? 'active' : 'pending'
+        });
+      } else {
+        const customer = customerMap.get(purchase.email);
+        customer.purchaseCount += 1;
+        customer.totalSpent += purchase.amount || 0;
+        
+        // Update first/last purchase dates
+        if (new Date(purchase.createdAt) < new Date(customer.firstPurchase)) {
+          customer.firstPurchase = purchase.createdAt;
+        }
+        if (new Date(purchase.createdAt) > new Date(customer.lastPurchase)) {
+          customer.lastPurchase = purchase.createdAt;
+        }
+        
+        // Update status - if any purchase is completed, mark as active
+        if (purchase.status === 'completed') {
+          customer.status = 'active';
+        }
+      }
+    });
+
+    return Array.from(customerMap.values());
   }
 
   // Get purchases by user ID (where user owns the product)

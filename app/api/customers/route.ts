@@ -1,81 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { Purchase } from '@prisma/client';
+import { getAuthUserId } from '@/lib/auth-utils';
+import { supabaseUserService } from '@/lib/supabase-db';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const user = await getCurrentUser();
+    // Get the authenticated user's ID
+    const userId = await getAuthUserId();
     
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
     }
 
-    // Get all unique customers from purchases
-    const purchases = await prisma.purchase.findMany({
-      where: {
-        OR: [
-          { userId: user.id },
-          { product: { userId: user.id } }
-        ]
-      },
-      select: {
-        id: true,
-        email: true,
-        mobileNumber: true,
-        amount: true,
-        currency: true,
-        status: true,
-        createdAt: true,
-        product: {
-          select: {
-            name: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
+    // Get pagination parameters from query string
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = (page - 1) * limit;
+
+    // Get unique customers (those who have purchased this user's products) using Supabase
+    const customers = await supabaseUserService.getUniqueCustomers(userId);
+
+    // Apply pagination to the results
+    const paginatedCustomers = customers.slice(offset, offset + limit);
+
+    // Format the response to match expected structure
+    const formattedCustomers = paginatedCustomers.map(customer => ({
+      email: customer.email,
+      purchaseCount: customer.purchaseCount,
+      totalSpent: customer.totalSpent,
+      firstPurchase: customer.firstPurchase,
+      lastPurchase: customer.lastPurchase,
+      status: customer.status
+    }));
+
+    return NextResponse.json({
+      customers: formattedCustomers,
+      pagination: {
+        total: customers.length,
+        page,
+        limit,
+        totalPages: Math.ceil(customers.length / limit),
       }
     });
 
-    // Group purchases by email to get unique customers
-    const customerMap = new Map<string, any>();
-    
-    purchases.forEach((purchase: any) => {
-      if (!customerMap.has(purchase.email)) {
-        customerMap.set(purchase.email, {
-          id: purchase.id, // Using first purchase ID as customer ID
-          name: purchase.email.split('@')[0], // Using email prefix as name if no name provided
-          email: purchase.email,
-          phone: purchase.mobileNumber,
-          purchaseCount: 1,
-          totalSpend: purchase.amount,
-          lastPurchaseDate: purchase.createdAt.toISOString(),
-          createdAt: purchase.createdAt.toISOString()
-        });
-      } else {
-        const customer = customerMap.get(purchase.email);
-        customer.purchaseCount += 1;
-        customer.totalSpend += purchase.amount;
-        
-        // Update last purchase date if this purchase is more recent
-        const purchaseDate = new Date(purchase.createdAt);
-        const lastPurchaseDate = new Date(customer.lastPurchaseDate);
-        
-        if (purchaseDate > lastPurchaseDate) {
-          customer.lastPurchaseDate = purchase.createdAt.toISOString();
-        }
-      }
-    });
-
-    const customers = Array.from(customerMap.values());
-
-    return NextResponse.json(customers);
   } catch (error) {
     console.error('Error fetching customers:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch customers' },
+      { 
+        error: 'Failed to fetch customers',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

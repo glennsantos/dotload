@@ -6,7 +6,7 @@ import { StatsCard } from "@/components/ui/stats-card"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { supabaseProductService, supabasePurchaseService } from "@/lib/supabase-db"
+import { supabaseProductService, supabasePurchaseService, supabaseUserService } from "@/lib/supabase-db"
 import { formatCurrency } from "@/lib/utils"
 import { redirect } from "next/navigation"
 
@@ -41,7 +41,7 @@ async function getStats(userId: string) {
     const totalRevenue = purchases.reduce((sum: number, purchase: any) => sum + (purchase.amount || 0), 0);
     
     // Get customer count using Supabase
-    const customerCount = await supabasePurchaseService.getUniqueCustomers(userId);
+    const customerCount = await supabaseUserService.getUniqueCustomersCount(userId);
 
     // Get recent transactions using Supabase
     const recentTransactions = await supabasePurchaseService.getRecentTransactions(userId, 5);

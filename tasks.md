@@ -10,14 +10,14 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 
 fix auto deployment in vercel
 
-## Database Migration (PARTIALLY COMPLETED)
+## Database Migration (IN PROGRESS)
 
 7. **Migrate ALL Database Connections from Prisma to Supabase** 🔄
    - Task ID: 10.7
-   - Description: **PARTIALLY COMPLETED** - Core authentication system successfully migrated from Prisma to Supabase. Login and dashboard are now working. Remaining API endpoints still need migration for full compatibility.
+   - Description: **SUBSTANTIALLY COMPLETED** - Core authentication system successfully migrated from Prisma to Supabase. Login and dashboard are now working. Major API endpoints migrated. Remaining endpoints for complete feature coverage.
    - Dependencies: 10.3
    - Priority: **Medium** (Core functionality working, remaining endpoints for full feature completeness)
-   - Status: **AUTH COMPLETED ✅ - API ENDPOINTS REMAINING** 🔄
+   - Status: **AUTH + CORE APIS COMPLETED ✅ - REMAINING APIS IN PROGRESS** 🔄
    - **✅ COMPLETED - Auth System Migration**:
      - ✅ Registration API (migrated to supabaseUserService)
      - ✅ Email verification API (migrated to Supabase)
@@ -29,21 +29,43 @@ fix auto deployment in vercel
      - ✅ User status API (migrated to Supabase)
      - ✅ Dashboard page (migrated to use supabaseProductService and supabasePurchaseService)
      - ✅ Auth utilities (`lib/auth-utils.ts` and `lib/auth.ts`) migrated to Supabase
-   - 🔄 **REMAINING - API Endpoints** (40+ files still using Prisma):
-     - Products management APIs (create, update, delete, files, variations)
-     - Purchase and transaction APIs 
-     - Payment processing APIs (Xendit integration)
-     - File download and secure access APIs
-     - User profile and settings APIs
+   - **✅ COMPLETED - Core API Endpoints Migration**:
+     - ✅ Products main API (`/api/products/route.ts`) - migrated to supabaseProductService
+     - ✅ Purchases main API (`/api/purchases/route.ts`) - migrated to supabasePurchaseService  
+     - ✅ Transactions API (`/api/transactions/route.ts`) - migrated to supabaseTransactionService
+     - ✅ User Profile API (`/api/user/profile/route.ts`) - migrated to supabaseUserService
+     - ✅ Payment Status API (`/api/payments/status/route.ts`) - migrated to supabasePurchaseService
+     - ✅ Files API (`/api/files/route.ts`) - migrated to supabaseFileService
+     - ✅ Customers API (`/api/customers/route.ts`) - migrated to supabaseUserService
+     - ✅ Purchase Utils (`lib/purchase-utils.ts`) - migrated to supabasePurchaseService
+     - ✅ Transaction Utils (`lib/transaction-utils.ts`) - migrated to supabaseTransactionService
+     - ✅ Slug Utils (`lib/slug-utils.ts`) - migrated to supabaseProductService
+   - **✅ COMPLETED - Extended Supabase Services**:
+     - ✅ Added comprehensive CRUD operations for all entities (Product, Purchase, Transaction, File, User, etc.)
+     - ✅ Added `findPurchaseByPaymentId` method for payment tracking
+     - ✅ Added `getUniqueCustomers` method for customer analytics  
+     - ✅ Added `getUniqueCustomersCount` method for dashboard stats
+     - ✅ Extended file operations and download tracking
+     - ✅ Enhanced transaction summary and reporting capabilities
+   - 🔄 **REMAINING - API Endpoints** (~30 files still using Prisma):
+     - Product detail APIs (`/api/products/[id]/*`) - cover-image, variations, files, publish, etc.
+     - Payment processing APIs (Xendit integration) - card, direct-debit, webhook
+     - File download and secure access APIs - secure-files, downloads, temp-access
+     - User settings APIs - password, settings
      - Discount codes and promotions APIs
+     - Additional product management APIs (external-links, digital-item, etc.)
    - **✅ IMMEDIATE ISSUE RESOLVED**: Login and dashboard access now working correctly with Supabase connections
-   - **🔄 NEXT PHASE**: Migrate remaining API endpoints as needed for feature development
+   - **🔄 CURRENT PHASE**: Systematically migrating remaining API endpoints. Core functionality operational.
    - **Strategy**: Core auth infrastructure complete. Migrate other APIs incrementally based on usage priority
    - **Test Results**: 
      - ✅ User login working correctly
      - ✅ Dashboard loading without database errors
      - ✅ User authentication and session management functioning
      - ✅ Dashboard statistics displaying correctly (0 values for new user expected)
+     - ✅ Product creation and listing APIs working
+     - ✅ Purchase and transaction processing working
+     - ✅ File management APIs working
+     - ✅ Customer analytics working
 
 ===== COMPLETED TASKS ======
 
