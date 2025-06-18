@@ -43,7 +43,7 @@ export default function ProductsPage() {
         
         if (productsResponse.ok) {
           const data = await productsResponse.json()
-          setProducts(data)
+          setProducts(data.products || [])
         }
       } catch (error) {
         console.error('Authentication or fetch failed:', error)

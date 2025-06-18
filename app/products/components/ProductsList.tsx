@@ -93,7 +93,7 @@ const renderStatusBadge = (product: Product) => {
   if (product.isPublic) {
     return <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">Published</span>
   }
-  return <span className="text-xs bg-stone-100 text-stone-800 px-2 py-1 rounded-full">Draft</span>
+  return <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full">Draft</span>
 }
 
 export default function ProductsList({ products, onProductsChange }: ProductsListProps) {
@@ -119,8 +119,9 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
         
         if (response.ok) {
           const data = await response.json()
-          onProductsChange(data)
-          setLocalProducts(data)
+          const productsArray = data.products || []
+          onProductsChange(productsArray)
+          setLocalProducts(productsArray)
         } else {
           setError('Failed to fetch products')
         }
@@ -174,36 +175,42 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-        <p className="mt-2 text-gray-600">Loading your products...</p>
+      <div className="claude-card rounded-lg p-4 sm:p-6">
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-12 w-12 bg-stone-200 rounded-full mb-4"></div>
+            <div className="h-4 w-40 bg-stone-200 rounded mb-3"></div>
+            <div className="h-3 w-32 bg-stone-200 rounded"></div>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="border rounded-md p-8 text-center">
+      <div className="claude-card rounded-lg p-4 sm:p-6 text-center">
         <h2 className="text-xl font-medium mb-2 text-destructive">Error</h2>
-        <p className="text-gray-600 mb-6">{error}</p>
-        <button 
+        <p className="text-muted-foreground mb-6">{error}</p>
+        <Button 
           onClick={() => window.location.reload()} 
-          className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2"
+          variant="outline"
         >
           Try Again
-        </button>
+        </Button>
       </div>
     )
   }
 
-  const hasProducts = products.length > 0
+  const hasProducts = Array.isArray(products) && products.length > 0
 
   if (!hasProducts) {
     return (
-      <div className="border border-stone-200 rounded-lg shadow-sm p-8 text-center">
-        <h2 className="text-xl font-medium mb-2 text-stone-800">You don't have any products yet</h2>
-        <p className="text-stone-600 mb-6">Create your first product to start selling</p>
-        <Button asChild className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-light">
+      <div className="text-center py-8 claude-card rounded-lg p-4 sm:p-6">
+        <ShoppingCart className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-lg font-medium mb-2 text-foreground">You don't have any products yet</p>
+        <p className="text-sm text-muted-foreground mb-6">Create your first product to start selling</p>
+        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light">
           <Link href="/create-product">
             <Plus size={18} /> Create Product
           </Link>
@@ -241,56 +248,56 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
     <div className="space-y-8">
       {/* Products Header */}
       <div className="flex flex-col md:flex-row md:items-center mb-4 md:gap-4">
-        <h2 className="text-2xl font-light text-stone-800 mb-4 md:mb-0">Your Products</h2>
+        <h2 className="text-2xl font-light text-foreground mb-4 md:mb-0">Your Products</h2>
         
         {/* Mobile view tabs - visible only on mobile */}
-        <div className="flex md:hidden w-full rounded-xl overflow-hidden border border-stone-200 mb-2">
+        <div className="flex md:hidden w-full rounded-xl overflow-hidden border border-border mb-2">
           <button 
-            className={`m-1 flex-1 py-3 text-sm font-light rounded-xl ${activeFilter === 'active' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600'}`}
+            className={`m-1 flex-1 py-3 text-sm font-light rounded-xl ${activeFilter === 'active' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-background text-muted-foreground'}`}
             onClick={() => setActiveFilter('active')}
           >
-            Active ({products.filter(p => p.status !== 'archived').length})
+            Active ({Array.isArray(products) ? products.filter(p => p.status !== 'archived').length : 0})
           </button>
           <button 
-            className={`m-1 flex-1 py-3 text-sm font-light rounded-xl ${activeFilter === 'archived' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-white text-stone-600'}`}
+            className={`m-1 flex-1 py-3 text-sm font-light rounded-xl ${activeFilter === 'archived' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-background text-muted-foreground'}`}
             onClick={() => setActiveFilter('archived')}
           >
-            <span className="flex items-center justify-center"><Archive className="mr-2 h-4 w-4" /> Archived ({products.filter(p => p.status === 'archived').length})</span>
+            <span className="flex items-center justify-center"><Archive className="mr-2 h-4 w-4" /> Archived ({Array.isArray(products) ? products.filter(p => p.status === 'archived').length : 0})</span>
           </button>
         </div>
         
         {/* Desktop view tabs - hidden on mobile */}
-        <div className="hidden md:flex rounded-xl overflow-hidden border border-stone-200 shadow-none">
+        <div className="hidden md:flex rounded-xl overflow-hidden border border-border shadow-none">
           <button 
-            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'active' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
+            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'active' ? 'bg-primary/10 text-primary' : 'bg-background text-muted-foreground hover:bg-muted'}`}
             onClick={() => setActiveFilter('active')}
           >
-            Active ({products.filter(p => p.status !== 'archived').length})
+            Active ({Array.isArray(products) ? products.filter(p => p.status !== 'archived').length : 0})
           </button>
           <button 
-            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'archived' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
+            className={`m-1 rounded-lg px-4 py-2 text-sm font-light ${activeFilter === 'archived' ? 'bg-primary/10 text-primary' : 'bg-background text-muted-foreground hover:bg-muted'}`}
             onClick={() => setActiveFilter('archived')}
           >
-            <span className="flex items-center"><Archive className="mr-2 h-4 w-4" /> Archived ({products.filter(p => p.status === 'archived').length})</span>
+            <span className="flex items-center"><Archive className="mr-2 h-4 w-4" /> Archived ({Array.isArray(products) ? products.filter(p => p.status === 'archived').length : 0})</span>
           </button>
         </div>
       </div>
       
       {/* Desktop Table */}
-      <div className="hidden md:block border border-stone-100 rounded-lg shadow-sm overflow-hidden">
+      <div className="hidden md:block claude-card rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b bg-white">
-                <th className="text-left py-3 px-4 font-light text-sm text-stone-700" style={{ minWidth: '250px' }}>Product</th>
-                <th className="text-left py-3 px-4 font-light text-sm text-stone-700" style={{ minWidth: '80px' }}>Price</th>
-                <th className="text-left py-3 px-4 font-light text-sm text-stone-700" style={{ minWidth: '100px' }}>Status</th>
-                <th className="text-left py-3 px-4 font-light text-sm text-stone-700" style={{ minWidth: '60px' }}>Actions</th>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground" style={{ minWidth: '250px' }}>Product</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground" style={{ minWidth: '80px' }}>Price</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground" style={{ minWidth: '100px' }}>Status</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground" style={{ minWidth: '60px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredProducts.map((product) => (
-                <tr key={`desktop-${product.id}`} className="border-b hover:bg-stone-50">
+                <tr key={`desktop-${product.id}`} className="border-b border-border hover:bg-muted/50">
                   <td className="py-3 px-4">
                     <div 
                       onClick={() => router.push(`/edit-product/${product.id}`)} 
@@ -299,8 +306,8 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
                         {renderProductImage(product)}
                       </div>
                       <div>
-                        <div className="font-light text-stone-800">{product.name}</div>
-                        <div className="text-sm text-stone-500 line-clamp-1">
+                        <div className="font-medium text-foreground">{product.name}</div>
+                        <div className="text-sm text-muted-foreground line-clamp-1">
                           {stripHTML(product.description)}
                         </div>
                       </div>
@@ -329,7 +336,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
         {filteredProducts.map((product) => (
           <div 
             key={`mobile-${product.id}`} 
-            className="bg-stone-50 border border-stone-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow relative"
+            className="claude-card rounded-lg p-4 hover:shadow-md transition-shadow relative"
           >
             {/* Menu button at top right */}
             <div className="absolute top-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
@@ -349,8 +356,8 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
               
               {/* Product Details */}
               <div className="flex-1">
-                <h3 className="font-light text-stone-900 line-clamp-2 pr-6">{product.name}</h3>
-                <p className="text-sm text-stone-500 mt-1 line-clamp-2">
+                <h3 className="font-medium text-foreground line-clamp-2 pr-6">{product.name}</h3>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                   {stripHTML(product.description)}
                 </p>
               </div>
@@ -358,7 +365,7 @@ export default function ProductsList({ products, onProductsChange }: ProductsLis
             
             {/* Bottom row with price and status */}
             <div className="flex justify-between items-center mt-3 pt-3">
-              <span className="font-medium text-stone-900">₱{product.price.toFixed(2)}</span>
+              <span className="font-medium text-foreground">₱{product.price.toFixed(2)}</span>
               {renderStatusBadge(product)}
             </div>
           </div>

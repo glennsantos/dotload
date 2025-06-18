@@ -63,7 +63,12 @@ export async function middleware(request: NextRequest) {
   // Check if the route is public FIRST - don't process auth for public routes
   const isPublicRoute = PUBLIC_ROUTES.some(route => {
     if (route.endsWith('/*')) {
-      return pathname.startsWith(route.slice(0, -2));
+      const baseRoute = route.slice(0, -2);
+      // Make sure we match exactly for /p/* to avoid matching /products
+      if (baseRoute === '/p') {
+        return pathname === '/p' || pathname.startsWith('/p/');
+      }
+      return pathname.startsWith(baseRoute);
     }
     return pathname === route;
   });
@@ -74,8 +79,15 @@ export async function middleware(request: NextRequest) {
   debugLog(`- Checking each public route:`);
   PUBLIC_ROUTES.forEach(route => {
     if (route.endsWith('/*')) {
-      const matches = pathname.startsWith(route.slice(0, -2));
-      debugLog(`  - ${route}: ${matches} (wildcard check: ${pathname} starts with ${route.slice(0, -2)})`);
+      const baseRoute = route.slice(0, -2);
+      let matches;
+      if (baseRoute === '/p') {
+        matches = pathname === '/p' || pathname.startsWith('/p/');
+        debugLog(`  - ${route}: ${matches} (exact wildcard check: ${pathname} === '/p' || starts with '/p/')`);
+      } else {
+        matches = pathname.startsWith(baseRoute);
+        debugLog(`  - ${route}: ${matches} (wildcard check: ${pathname} starts with ${baseRoute})`);
+      }
     } else {
       const matches = pathname === route;
       debugLog(`  - ${route}: ${matches} (exact match)`);
