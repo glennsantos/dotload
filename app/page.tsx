@@ -22,7 +22,6 @@ export default function Home() {
           <Link href="/" className="group">
             <div className="flex items-center gap-3">
               <Image src="/logo.png" alt="Dotload Logo" width={40} height={40} className="group-hover:scale-105 transition-transform" />
-              <span className="text-xl font-semibold text-foreground">dotload</span>
             </div>
           </Link>
           <div className="flex items-center gap-3">
