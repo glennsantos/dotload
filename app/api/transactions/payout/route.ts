@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseUserService, supabaseTransactionService } from '@/lib/supabase-db';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { createTransaction } from '@/lib/transaction-utils';
@@ -74,61 +74,19 @@ export async function POST(request: NextRequest) {
       feeConfig: DEFAULT_PAYOUT_FEE_CONFIG
     });
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      include: { products: true },
-    });
+    // Get user from database using Supabase
+    const user = await supabaseUserService.findUserById(decoded.userId);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get transactions to calculate available balance
-    const totalIncomeResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'income'
-      AND (status = 'completed' OR status = 'pending')
-    `;
-    const totalIncome = Number((totalIncomeResult as any)[0].sum);
+    // Get transaction summary using Supabase for balance calculation
+    const transactionSummary = await supabaseTransactionService.getTransactionSummary(decoded.userId);
 
-    const totalPayoutsResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'payout'
-      AND (status = 'completed' OR status = 'pending')
-    `;
-    const totalPayouts = Number((totalPayoutsResult as any)[0].sum);
-
-    const totalFeesResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'fee'
-      AND (status = 'completed' OR status = 'pending')
-    `;
-    const totalFees = Number((totalFeesResult as any)[0].sum);
-    
-    // Get purchase transactions (these are expenses for the user)
-    const totalPurchasesResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'purchase'
-      AND (status = 'completed' OR status = 'pending')
-    `;
-    const totalPurchases = Number((totalPurchasesResult as any)[0].sum);
-    
-    // Get payment transactions (these are income for the seller)
-    const totalPaymentsResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'payment'
-      AND (status = 'completed' OR status = 'pending')
-    `;
-    const totalPayments = Number((totalPaymentsResult as any)[0].sum);
-
-    // Calculate available balance including all transaction types
-    const availableBalance = totalIncome - totalPayouts - totalFees + totalPurchases + totalPayments;
+    // Calculate available balance from transaction summary
+    const availableBalance = transactionSummary.totalIncome - transactionSummary.totalPayouts 
+      - transactionSummary.totalFees + transactionSummary.totalPurchases + transactionSummary.totalPayments;
 
     // Check if user has enough balance
     if (amount > availableBalance) {
@@ -140,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     // Create a payout request with Xendit using direct API call
     // Use the client-provided referenceId if available, otherwise generate one
-    const referenceId = clientReferenceId || `payout-${user.id}-${Date.now()}`;
+    const referenceId = clientReferenceId || `payout-${(user as any).id}-${Date.now()}`;
     
     // Map our bank code to Xendit channel code
     const channelCode = bankCodeMapping[bankCode];
@@ -161,9 +119,9 @@ export async function POST(request: NextRequest) {
       },
       amount: receivedAmount,
       currency: 'PHP',
-      description: `Payout for ${user.name || user.email}`,
+      description: `Payout for ${(user as any).name || (user as any).email}`,
       receipt_notification: {
-        email_to: [user.email],
+        email_to: [(user as any).email],
         email_cc: ['alacart@memokitchen.com']
       }
     };
@@ -171,7 +129,7 @@ export async function POST(request: NextRequest) {
     console.log('Xendit payout request:', payoutRequest);
     
     // Call Xendit API directly to create the payout
-    const idempotencyKey = `payout-idempotency-${user.id}-${Date.now()}`;
+    const idempotencyKey = `payout-idempotency-${(user as any).id}-${Date.now()}`;
     let disbursement;
     
     try {
@@ -207,7 +165,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payoutTransaction = await createTransaction({
-      userId: user.id,
+      userId: (user as any).id,
       amount: receivedAmount,
       currency: 'PHP',
       type: 'payout',
@@ -229,7 +187,7 @@ export async function POST(request: NextRequest) {
     // Create a fee transaction for the processing fee
     // This is a separate transaction to track the fee explicitly
     const feeTransaction = await createTransaction({
-      userId: user.id,
+      userId: (user as any).id,
       amount: processingFee,
       currency: 'PHP',
       type: 'fee',
@@ -265,6 +223,14 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error) {
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
+      
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
       
       // Handle specific database errors
       if (error.message.includes('relation') && error.message.includes('does not exist')) {

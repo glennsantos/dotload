@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from "@/lib/prisma"
+import { supabasePurchaseService, supabaseUserService } from '@/lib/supabase-db';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
@@ -35,15 +35,10 @@ export async function POST(req: NextRequest) {
 
     debugLog('Processing create user from purchase', { email, accessCode });
 
-    // Verify the purchase with the access code
-    const purchase = await prisma.purchase.findFirst({
-      where: {
-        accessCode,
-        email,
-      },
-    });
+    // Verify the purchase with the access code using Supabase
+    const purchase = await supabasePurchaseService.findPurchaseByAccessCode(accessCode);
 
-    if (!purchase) {
+    if (!purchase || (purchase as any).email !== email) {
       debugLog('No purchase found with the provided access code and email');
       return NextResponse.json(
         { message: 'Invalid access code or email' },
@@ -51,20 +46,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if user already exists
-    let user = await prisma.user.findUnique({
-      where: { email },
-    });
+    // Check if user already exists using Supabase
+    let user = await supabaseUserService.findUserByEmail(email);
 
     if (user) {
       debugLog('User already exists with email:', email);
       
       // If user exists but name is missing and provided, update it
-      if (!user.name && name) {
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: { name },
-        });
+      if (!(user as any).name && name) {
+        user = await supabaseUserService.updateUser((user as any).id, { name });
         debugLog('Updated existing user with name:', name);
       }
     } else {
@@ -73,18 +63,16 @@ export async function POST(req: NextRequest) {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
-      // Create new user
-      user = await prisma.user.create({
-        data: {
-          id: uuidv4(),
-          email,
-          name: name || null,
-          password: hashedPassword,
-          emailVerified: true, // Since they've made a purchase, we can consider their email verified
-        },
+      // Create new user using Supabase
+      user = await supabaseUserService.createUser({
+        id: uuidv4(),
+        email,
+        name: name || null,
+        password: hashedPassword,
+        emailVerified: true, // Since they've made a purchase, we can consider their email verified
       });
 
-      debugLog('Created new user from purchase', { userId: user.id, email });
+      debugLog('Created new user from purchase', { userId: (user as any).id, email });
       
       // TODO: In a real application, send an email with the random password
       // and instructions to change it
@@ -94,7 +82,7 @@ export async function POST(req: NextRequest) {
     // Generate JWT token
     const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env';
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: (user as any).id, email: (user as any).email },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -105,9 +93,9 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       message: 'User account created/updated successfully',
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        id: (user as any).id,
+        email: (user as any).email,
+        name: (user as any).name,
       },
     }, { status: 200 });
 
@@ -126,11 +114,20 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     debugLog('Error creating user from purchase:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { message: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { message: 'An error occurred while processing your request' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

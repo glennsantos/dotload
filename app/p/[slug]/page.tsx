@@ -1,7 +1,7 @@
 import { Metadata, ResolvingMetadata } from "next"
 import ClientProductPage from "./client-page"
 import { notFound } from "next/navigation"
-import { prisma } from "@/lib/prisma"
+import { supabaseProductService } from '@/lib/supabase-db';
 
 interface ProductPageProps {
   params: any
@@ -11,27 +11,17 @@ interface ProductPageProps {
 // Fetch product data for both metadata and page rendering
 async function getProduct(slug: string) {
   try {
-    const product = await prisma.product.findFirst({
-      where: { 
-        slug: slug,
-        isPublic: true,
-        status: "active"
-      },
-      include: {
-        user: {
-          select: {
-            storeName: true,
-            storeLogoPath: true
-          }
-        }
-      }
-    })
-    return product
+    const product = await supabaseProductService.findProductBySlug(slug);
+    
+    // Additional filtering for public and active products
+    if (!product || !(product as any).isPublic || (product as any).status !== 'active') {
+      return null;
+    }
+    
+    return product;
   } catch (error) {
     console.error('Error fetching product:', error)
     return null
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
@@ -55,14 +45,14 @@ export async function generateMetadata(
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://alacart.store'
   
   // Construct image URL - use product image or fallback
-  const imageUrl = product.coverImagePath 
-    ? product.coverImagePath.startsWith('http') 
-      ? product.coverImagePath 
-      : `${baseUrl}${product.coverImagePath}` 
+  const imageUrl = (product as any).coverImagePath 
+    ? (product as any).coverImagePath.startsWith('http') 
+      ? (product as any).coverImagePath 
+      : `${baseUrl}${(product as any).coverImagePath}` 
     : `${baseUrl}/images/default-product.jpg`
   
   // Extract plain text description if it's in rich text format
-  let description = product.description || 'A digital product on alacart'
+  let description = (product as any).description || 'A digital product on alacart'
   // If description contains HTML tags, extract plain text
   if (description && description.includes('<')) {
     description = description.replace(/<[^>]*>/g, '')
@@ -75,19 +65,19 @@ export async function generateMetadata(
   // Return metadata object
   return {
     // Basic meta tags
-    title: product.name,
+    title: (product as any).name,
     description: description,
     
     // Standard meta tags
     metadataBase: new URL(baseUrl),
     openGraph: {
-      title: product.name,
+      title: (product as any).name,
       description: description,
       images: [{
         url: imageUrl,
         width: 1200,
         height: 630,
-        alt: product.name
+        alt: (product as any).name
       }],
       type: 'website',
       siteName: 'alacart',
@@ -97,7 +87,7 @@ export async function generateMetadata(
     // Twitter meta tags
     twitter: {
       card: 'summary_large_image',
-      title: product.name,
+      title: (product as any).name,
       description: description,
       images: [imageUrl],
       creator: '@alacart'
@@ -110,10 +100,10 @@ export async function generateMetadata(
     
     // Explicit meta tags for social sharing
     other: {
-      'og:title': product.name,
+      'og:title': (product as any).name,
       'og:description': description,
       'og:image': imageUrl,
-      'twitter:title': product.name,
+      'twitter:title': (product as any).name,
       'twitter:description': description,
       'twitter:image': imageUrl
     }

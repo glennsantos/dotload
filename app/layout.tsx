@@ -1,7 +1,7 @@
 import type React from "react"
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
-import { prisma } from "@/lib/prisma"
+import { supabaseUserService } from '@/lib/supabase-db';
 import type { Metadata } from "next"
 import "./globals.css"
 
@@ -30,14 +30,18 @@ async function getCurrentUser() {
     const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
     const decoded = jwt.verify(tokenValue, JWT_SECRET) as { userId: string, email: string };
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, name: true, email: true }
-    });
+    const user = await supabaseUserService.findUserById(decoded.userId);
 
-    await prisma.$disconnect();
-    return user;
+    return user ? {
+      id: (user as any).id,
+      name: (user as any).name,
+      email: (user as any).email
+    } : null;
   } catch (error) {
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      console.error('Database error in layout:', error.message);
+    }
     return null;
   }
 }

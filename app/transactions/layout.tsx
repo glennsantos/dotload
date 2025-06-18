@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import { prisma } from "@/lib/prisma"
+import { supabaseUserService } from '@/lib/supabase-db';
 
 export const metadata: Metadata = {
   title: 'Transactions | alacart',
@@ -29,11 +29,8 @@ export default async function LedgerLayout({
     const jwtSecret = process.env.JWT_SECRET || 'your-jwt-secret-key';
     const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string; emailVerified?: boolean };
     
-    // Get the user from the database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, name: true, email: true },
-    });
+    // Get the user from the database using Supabase
+    const user = await supabaseUserService.findUserById(decoded.userId);
 
     // If user not found, redirect to login
     if (!user) {
@@ -50,6 +47,12 @@ export default async function LedgerLayout({
   } catch (error) {
     // If token is invalid, redirect to login
     console.error('Authentication error:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      console.error('Database error in layout:', error.message);
+    }
+    
     redirect('/login');
   }
 }

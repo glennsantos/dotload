@@ -49,13 +49,23 @@ is there something in vercel like @amplify.yml you see here. so that it can load
      - ✅ Added `getUniqueCustomersCount` method for dashboard stats
      - ✅ Extended file operations and download tracking
      - ✅ Enhanced transaction summary and reporting capabilities
-   - 🔄 **REMAINING - API Endpoints** (~30 files still using Prisma):
-     - Product detail APIs (`/api/products/[id]/*`) - cover-image, variations, files, publish, etc.
-     - Payment processing APIs (Xendit integration) - card, direct-debit, webhook
+   - **✅ COMPLETED - Additional API Endpoints Migration** (Current Session):
+     - ✅ Product Cover Image API (`/api/products/[id]/cover-image/route.ts`) - migrated to supabaseProductService
+     - ✅ Product External Links API (`/api/products/[id]/external-links/route.ts`) - migrated to supabaseProductService and supabaseFileService
+     - ✅ Product Digital Item API (`/api/products/[id]/digital-item/route.ts`) - migrated to supabaseProductService
+     - ✅ User Purchases API (`/api/purchases/user/route.ts`) - migrated to supabasePurchaseService
+     - ✅ Discount Codes API (`/api/discount-codes/[id]/route.ts`) - migrated to supabaseProductService
+     - ✅ Download File API (`/api/downloads/file/[id]/route.ts`) - migrated to supabaseFileService and supabasePurchaseService
+     - ✅ Transactions Payout API (`/api/transactions/payout/route.ts`) - migrated to supabaseUserService and supabaseTransactionService
+     - ✅ Auth Create from Purchase API (`/api/auth/create-from-purchase/route.ts`) - migrated to supabasePurchaseService and supabaseUserService
+     - ✅ Product Page (`/app/p/[slug]/page.tsx`) - migrated to supabaseProductService
+     - ✅ Transactions Layout (`/app/transactions/layout.tsx`) - migrated to supabaseUserService
+     - ✅ Main Layout (`/app/layout.tsx`) - migrated to supabaseUserService
+   - 🔄 **REMAINING - API Endpoints** (~15 files still using Prisma):
+     - ✅ Payment processing APIs (Xendit integration) - card, direct-debit, webhook (SOME ALREADY MIGRATED)
      - File download and secure access APIs - secure-files, downloads, temp-access
-     - User settings APIs - password, settings
-     - Discount codes and promotions APIs
-     - Additional product management APIs (external-links, digital-item, etc.)
+     - User settings APIs - password, settings  
+     - Additional specialized APIs (test endpoints, file variations, etc.)
    - **✅ IMMEDIATE ISSUE RESOLVED**: Login and dashboard access now working correctly with Supabase connections
    - **🔄 CURRENT PHASE**: Systematically migrating remaining API endpoints. Core functionality operational.
    - **Strategy**: Core auth infrastructure complete. Migrate other APIs incrementally based on usage priority
