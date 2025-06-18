@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { testSupabaseConnection, supabaseUserService } from '@/lib/supabase-db';
 
 export async function GET(req: NextRequest) {
   try {
-    console.log('Testing database connection...');
+    console.log('Testing Supabase database connection...');
     console.log('Available environment variables:');
-      console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
-  console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET');
+    console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+    console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET');
     console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
+    console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'NOT SET');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     
-    // If DATABASE_URL is not set, return early with detailed error
-    if (!process.env.DATABASE_URL) {
+    // Check if Supabase environment variables are set
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json({
         success: false,
-        error: 'DATABASE_URL environment variable is not set',
+        error: 'Supabase environment variables are not properly configured',
         debug: {
           availableEnvVars: Object.keys(process.env).filter(key => 
             key.includes('DATABASE') || 
@@ -28,55 +29,55 @@ export async function GET(req: NextRequest) {
       }, { status: 500 });
     }
     
-    // Test basic connection
-    await prisma.$connect();
-    console.log('Database connection successful');
+    // Test Supabase connection
+    const connectionTest = await testSupabaseConnection();
     
-    // Test a simple query
-    const userCount = await prisma.user.count();
-    console.log('User count query successful:', userCount);
-    
-    // Try to get database configuration (optional)
-    let databaseConfig = {
-      isSupabase: false,
-      hasUrl: !!process.env.DATABASE_URL,
-      hasDirectUrl: !!process.env.DATABASE_URL,
-      supabaseConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-    };
-    
-    try {
-      const { getDatabaseConfig, getSupabaseConfig } = await import('@/lib/database');
-      const dbConfig = getDatabaseConfig();
-      const supabaseConfig = getSupabaseConfig();
-      
-      databaseConfig = {
-        isSupabase: dbConfig.isSupabase,
-        hasUrl: !!dbConfig.url,
-        hasDirectUrl: !!dbConfig.directUrl,
-        supabaseConfigured: !!supabaseConfig,
-      };
-    } catch (configError) {
-      console.warn('Database configuration not available:', configError);
+    if (!connectionTest) {
+      throw new Error('Supabase connection test failed');
     }
+    
+    console.log('Supabase connection successful');
+    
+    // Test a simple query - get user count
+    let userCount = 0;
+    try {
+      // This would use a count query in the user service
+      const users = await supabaseUserService.getAllUsers();
+      userCount = users ? users.length : 0;
+      console.log('User count query successful:', userCount);
+    } catch (countError) {
+      console.warn('User count query failed:', countError);
+      userCount = -1; // Indicate query failed
+    }
+    
+    // Database configuration
+    const databaseConfig = {
+      isSupabase: true,
+      hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      supabaseConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY),
+    };
     
     return NextResponse.json({
       success: true,
-      message: 'Database connection successful',
+      message: 'Supabase database connection successful',
       userCount,
       databaseConfig,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Database test failed:', error);
+    console.error('Supabase database test failed:', error);
     
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
       databaseConfig: {
-        isSupabase: false,
-        hasUrl: !!process.env.DATABASE_URL,
-        hasDirectUrl: !!process.env.DATABASE_URL,
-        supabaseConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+        isSupabase: true,
+        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        supabaseConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY),
       },
       debug: {
         availableEnvVars: Object.keys(process.env).filter(key => 
@@ -90,11 +91,5 @@ export async function GET(req: NextRequest) {
       },
       timestamp: new Date().toISOString()
     }, { status: 500 });
-  } finally {
-    try {
-      await prisma.$disconnect();
-    } catch (disconnectError) {
-      console.warn('Error disconnecting from database:', disconnectError);
-    }
   }
 } 

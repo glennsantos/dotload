@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseFileService } from '@/lib/supabase-db';
 import { getPurchaseByAccessCode } from '@/lib/purchase-utils';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
@@ -25,7 +25,7 @@ export async function GET(
       }, { status: 400 });
     }
     
-    // Find purchase by access code using utility function
+    // Find purchase by access code using utility function (already migrated to Supabase)
     const purchase = await getPurchaseByAccessCode(accessCode);
     
     if (!purchase) {
@@ -43,10 +43,10 @@ export async function GET(
       }, { status: 403 });
     }
     
-    // Find the file by ID
-    const file = purchase.product.files.find((f: any) => f.id === fileId);
+    // Find the file by ID using Supabase
+    const file = await supabaseFileService.findFileById(fileId);
     
-    if (!file) {
+    if (!file || (file as any).productId !== purchase.productId) {
       return NextResponse.json({ 
         error: 'File not found',
         details: 'The requested file does not exist or is not part of this purchase'
@@ -54,7 +54,7 @@ export async function GET(
     }
     
     // Get the file path
-    const filePath = file.path;
+    const filePath = (file as any).path;
     
     // If the path is a URL (starts with http or https), redirect to it
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
@@ -71,12 +71,25 @@ export async function GET(
       // Read the file
       const fileBuffer = await readFile(fullFilePath);
       
+      // Create file download record using Supabase
+      try {
+        await supabaseFileService.createFileDownload({
+          fileId: fileId,
+          purchaseId: purchase.id,
+          downloadedAt: new Date().toISOString(),
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown'
+        });
+      } catch (downloadError) {
+        console.warn('Failed to record file download:', downloadError);
+        // Don't fail the download if we can't record it
+      }
+      
       // Create response with appropriate headers
       const response = new NextResponse(fileBuffer, {
         status: 200,
         headers: {
-          'Content-Type': file.mimetype || 'application/octet-stream',
-          'Content-Disposition': `attachment; filename="${file.filename}"`,
+          'Content-Type': (file as any).mimetype || 'application/octet-stream',
+          'Content-Disposition': `attachment; filename="${(file as any).filename}"`,
           'Content-Length': fileBuffer.length.toString(),
         },
       });
@@ -91,6 +104,15 @@ export async function GET(
     }
   } catch (error) {
     console.error('Download file error:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while processing download', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to download file', 
       details: error instanceof Error ? error.message : 'Unknown error'

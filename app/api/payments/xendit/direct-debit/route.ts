@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPurchaseById, updatePurchaseStatus } from '@/lib/purchase-utils';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
 import { createOneTimePayment } from '@/lib/xendit-client';
-import { prisma } from '@/lib/prisma';
+import { supabaseTransactionService, supabasePurchaseService } from '@/lib/supabase-db';
 
 // Xendit API base URL
 const XENDIT_API_URL = 'https://api.xendit.co';
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Find the purchase
+    // Find the purchase (this already uses Supabase via purchase-utils)
     console.log(`[Xendit Direct Debit] Fetching purchase with ID: ${purchaseId}`);
     const purchase = await getPurchaseById(purchaseId);
     
@@ -105,25 +105,23 @@ export async function POST(request: NextRequest) {
     
     // Process direct debit payment
     try {
-      // Create a transaction record
-      const transaction = await prisma.transaction.create({
-        data: {
-          amount,
-          currency: currency,
-          type: 'payment',
-          status: 'pending',
-          description: `${channelCode} direct debit payment for purchase ${purchase.id}`,
-          reference: purchase.id,
-          referenceType: 'Purchase',
-          metadata: JSON.stringify({
-            paymentMethod: 'direct_debit',
-            channelCode: channelCode,
-            flowType: 'one-time',
-            mobileNumber: mobileNumber,
-            purchaseId: purchase.id
-          }),
-          userId: purchase.product.userId // Use the product's userId since purchase.userId might be null for guest purchases
-        }
+      // Create a transaction record using Supabase
+      const transaction = await supabaseTransactionService.createTransaction({
+        amount,
+        currency: currency,
+        type: 'payment',
+        status: 'pending',
+        description: `${channelCode} direct debit payment for purchase ${purchase.id}`,
+        reference: purchase.id,
+        referenceType: 'Purchase',
+        metadata: JSON.stringify({
+          paymentMethod: 'direct_debit',
+          channelCode: channelCode,
+          flowType: 'one-time',
+          mobileNumber: mobileNumber,
+          purchaseId: purchase.id
+        }),
+        userId: purchase.product.userId // Use the product's userId since purchase.userId might be null for guest purchases
       });
       
       console.log(`[Xendit Direct Debit] Transaction created with ID: ${transaction.id}`);
@@ -187,23 +185,20 @@ export async function POST(request: NextRequest) {
           throw new Error('No redirect URL found in payment response');
         }
         
-        // Update the transaction with payment request details
-        await prisma.transaction.update({
-          where: { id: transaction.id },
-          data: {
-            reference: paymentData.id,
-            metadata: JSON.stringify({
-              paymentMethod: 'direct_debit',
-              channelCode: channelCode,
-              paymentId: paymentData.id,
-              referenceId: referenceId,
-              flowType: 'one-time',
-              mobileNumber: mobileNumber,
-            })
-          }
+        // Update the transaction with payment request details using Supabase
+        await supabaseTransactionService.updateTransaction((transaction as any).id, {
+          reference: paymentData.id,
+          metadata: JSON.stringify({
+            paymentMethod: 'direct_debit',
+            channelCode: channelCode,
+            paymentId: paymentData.id,
+            referenceId: referenceId,
+            flowType: 'one-time',
+            mobileNumber: mobileNumber,
+          })
         });
         
-        // Update purchase status to pending
+        // Update purchase status to pending (this already uses Supabase via purchase-utils)
         await updatePurchaseStatus(purchase.id, 'pending', paymentData.id);
         
         // Send pending payment email notification
@@ -235,26 +230,20 @@ export async function POST(request: NextRequest) {
       } catch (paymentError) {
         console.error('[Xendit Direct Debit] One-time payment creation error:', paymentError);
         
-        // Update transaction to failed status
-        await prisma.transaction.update({
-          where: { id: transaction.id },
-          data: {
-            status: 'FAILED',
-            metadata: JSON.stringify({
-              paymentMethod: 'direct_debit',
-              channelCode: channelCode,
-              flowType: 'one-time',
-              error: paymentError instanceof Error ? paymentError.message : 'Unknown error'
-            })
-          }
+        // Update transaction to failed status using Supabase
+        await supabaseTransactionService.updateTransaction((transaction as any).id, {
+          status: 'FAILED',
+          metadata: JSON.stringify({
+            paymentMethod: 'direct_debit',
+            channelCode: channelCode,
+            flowType: 'one-time',
+            error: paymentError instanceof Error ? paymentError.message : 'Unknown error'
+          })
         });
         
-        // Update purchase status to failed
-        await prisma.purchase.update({
-          where: { id: purchase.id },
-          data: {
-            status: 'failed'
-          }
+        // Update purchase status to failed using Supabase
+        await supabasePurchaseService.updatePurchase(purchase.id, {
+          status: 'failed'
         });
         
         return NextResponse.json({ 
@@ -268,6 +257,15 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('[Xendit Direct Debit] Payment creation error:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while processing payment', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to create payment', 
       details: error instanceof Error ? error.message : 'Unknown error'

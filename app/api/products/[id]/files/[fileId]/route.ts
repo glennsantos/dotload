@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService, supabaseFileService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function DELETE(
@@ -31,10 +31,8 @@ export async function DELETE(
       }, { status: 401 });
     }
     
-    // Check if product exists and belongs to the current user
-    const product = await prisma.product.findUnique({
-      where: { id: productId }
-    });
+    // Check if product exists and belongs to the current user using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     if (!product) {
       return NextResponse.json({ 
@@ -43,37 +41,39 @@ export async function DELETE(
     }
     
     // Verify that the product belongs to the current user
-    if (product.userId !== userId) {
+    if ((product as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to modify this product'
       }, { status: 403 });
     }
     
-    // Check if file exists and belongs to the product
-    const file = await prisma.file.findUnique({
-      where: { 
-        id: fileId,
-        productId
-      }
-    });
+    // Check if file exists and belongs to the product using Supabase
+    const file = await supabaseFileService.findFileById(fileId);
     
-    if (!file) {
+    if (!file || (file as any).productId !== productId) {
       return NextResponse.json({ 
         error: 'File not found or does not belong to this product' 
       }, { status: 404 });
     }
     
-    // Delete the file record
-    await prisma.file.delete({
-      where: { id: fileId }
-    });
+    // Delete the file record using Supabase
+    await supabaseFileService.deleteFile(fileId);
     
     return NextResponse.json({
       message: 'File deleted successfully'
     }, { status: 200 });
   } catch (error) {
     console.error('File deletion error:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while deleting file', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to delete file', 
       details: error instanceof Error ? error.message : 'Unknown error'

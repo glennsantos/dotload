@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseFileService, supabasePurchaseService } from '@/lib/supabase-db';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
 import { cwd } from 'process';
@@ -129,35 +129,34 @@ export async function POST(request: NextRequest) {
     
     debugLog(`Looking up file with ID: ${fileId}`);
     
-    // Find the file
-    const file = await prisma.file.findUnique({
-      where: { id: fileId },
-      include: { product: true }
-    });
+    // Find the file using Supabase
+    const file = await supabaseFileService.findFileById(fileId);
     
     if (!file) {
       debugLog(`File not found with ID: ${fileId}`);
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
     
+    // Get product information for file access verification
+    const productId = (file as any).productId;
+    if (!productId) {
+      debugLog(`File ${fileId} has no associated product`);
+      return NextResponse.json({ error: 'File access error' }, { status: 403 });
+    }
+    
     // Verify the user has access to the file
     const userId = decoded.userId;
-    const isCreator = file.product?.userId === userId;
+    const isCreator = (file as any).product?.userId === userId;
     const isAdmin = decoded.role === 'ADMIN';
     
     // If user is not the creator or admin, check if they've purchased the product
     let hasPurchased = false;
     
-    if (!isCreator && !isAdmin && file.productId) {
-      const purchase = await prisma.purchase.findFirst({
-        where: {
-          userId: userId,
-          productId: file.productId,
-          status: 'COMPLETED'
-        }
-      });
-      
-      hasPurchased = !!purchase;
+    if (!isCreator && !isAdmin && productId) {
+      const purchases = await supabasePurchaseService.findPurchasesByUserId(userId);
+      hasPurchased = purchases.some((purchase: any) => 
+        purchase.productId === productId && purchase.status === 'COMPLETED'
+      );
     }
     
     if (!isCreator && !isAdmin && !hasPurchased) {
@@ -175,6 +174,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: downloadUrl });
   } catch (error) {
     console.error('Error generating secure download URL:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while generating download URL', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to generate download URL', 
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -211,33 +219,28 @@ export async function GET(request: NextRequest) {
     
     debugLog(`Looking up file with ID: ${fileId}`);
     
-    // Find the file
-    const file = await prisma.file.findUnique({
-      where: { id: fileId },
-      include: { product: true }
-    });
+    // Find the file using Supabase
+    const file = await supabaseFileService.findFileById(fileId);
     
     if (!file) {
       debugLog(`File not found with ID: ${fileId}`);
       
-      // Try to find similar files (for debugging)
+      // Try to find similar files (for debugging) - simplified for Supabase
       try {
-        const similarFiles = await prisma.file.findMany({
-          where: {
-            id: {
-              startsWith: fileId.substring(0, 10)
-            }
-          },
-          take: 5,
-          select: {
-            id: true,
-            filename: true,
-            path: true
-          }
+        const allFiles = await supabaseFileService.getFiles({ 
+          limit: 5 
         });
         
+        const similarFiles = allFiles.filter((f: any) => 
+          f.id.startsWith(fileId.substring(0, 10))
+        );
+        
         if (similarFiles.length > 0) {
-          debugLog(`Found ${similarFiles.length} similar files:`, similarFiles);
+          debugLog(`Found ${similarFiles.length} similar files:`, similarFiles.map((f: any) => ({
+            id: f.id,
+            filename: f.filename,
+            path: f.path
+          })));
         }
       } catch (err) {
         // Ignore errors in debug search
@@ -258,7 +261,7 @@ export async function GET(request: NextRequest) {
     debugLog('Token validated successfully');
     
     // Get the file path
-    const filePath = file.path;
+    const filePath = (file as any).path;
     debugLog(`File path from database: ${filePath}`);
     
     // If the path is a URL, redirect to it
@@ -280,7 +283,7 @@ export async function GET(request: NextRequest) {
       debugLog(`Successfully read file, size: ${fileBuffer.length} bytes`);
       
       // Get the filename
-      const fileName = file.filename || absoluteFilePath.split('/').pop() || 'download';
+      const fileName = (file as any).filename || absoluteFilePath.split('/').pop() || 'download';
       
       // Determine content type
       const extension = fileName.split('.').pop()?.toLowerCase();
@@ -320,8 +323,8 @@ export async function GET(request: NextRequest) {
       try {
         // Check if file exists in uploads directory
         const uploadsDir = join(cwd(), 'uploads');
-        const userDir = file.product?.userId ? join(uploadsDir, 'users', file.product.userId) : null;
-        const productDir = userDir && file.productId ? join(userDir, 'products', file.productId) : null;
+        const userDir = (file as any).product?.userId ? join(uploadsDir, 'users', (file as any).product.userId) : null;
+        const productDir = userDir && (file as any).productId ? join(userDir, 'products', (file as any).productId) : null;
         
         if (productDir) {
           debugLog(`Checking alternative path in: ${productDir}`);
@@ -331,7 +334,7 @@ export async function GET(request: NextRequest) {
           debugLog(`Found ${files.length} files in product directory`);
           
           // Look for a file with a similar name
-          const fileName = file.filename || absoluteFilePath.split('/').pop() || '';
+          const fileName = (file as any).filename || absoluteFilePath.split('/').pop() || '';
           const similarFile = files.find(f => f.includes(fileName) || fileName.includes(f));
           
           if (similarFile) {
@@ -363,6 +366,15 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error('Download error:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while processing download', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to download content', 
       details: error instanceof Error ? error.message : 'Unknown error'

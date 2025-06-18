@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService, supabaseVariationService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function GET(
@@ -31,12 +31,8 @@ export async function GET(
       }, { status: 401 });
     }
 
-    // Find the product by ID
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      }
-    });
+    // Find the product by ID using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!product) {
@@ -46,21 +42,17 @@ export async function GET(
       }, { status: 404 });
     }
     
-    if (product.userId !== userId) {
+    if ((product as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to view this product'
       }, { status: 403 });
     }
     
-    // Find the variation
-    const variation = await prisma.variation.findUnique({
-      where: {
-        id: variationId
-      }
-    });
+    // Find the variation using Supabase
+    const variation = await supabaseVariationService.findVariationById(variationId);
     
-    if (!variation || variation.productId !== productId) {
+    if (!variation || (variation as any).productId !== productId) {
       return NextResponse.json({ 
         error: 'Variation not found',
         details: 'The requested variation does not exist'
@@ -70,6 +62,15 @@ export async function GET(
     return NextResponse.json(variation);
   } catch (error) {
     console.error('Fetch variation error:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while fetching variation', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to fetch variation', 
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -106,12 +107,8 @@ export async function PUT(
       }, { status: 401 });
     }
 
-    // Find the product by ID
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      }
-    });
+    // Find the product by ID using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!product) {
@@ -121,21 +118,17 @@ export async function PUT(
       }, { status: 404 });
     }
     
-    if (product.userId !== userId) {
+    if ((product as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to modify this product'
       }, { status: 403 });
     }
     
-    // Find the variation
-    const variation = await prisma.variation.findUnique({
-      where: {
-        id: variationId
-      }
-    });
+    // Find the variation using Supabase
+    const variation = await supabaseVariationService.findVariationById(variationId);
     
-    if (!variation || variation.productId !== productId) {
+    if (!variation || (variation as any).productId !== productId) {
       return NextResponse.json({ 
         error: 'Variation not found',
         details: 'The requested variation does not exist'
@@ -153,20 +146,24 @@ export async function PUT(
       }, { status: 400 });
     }
 
-    // Update the variation
-    const updatedVariation = await prisma.variation.update({
-      where: {
-        id: variationId
-      },
-      data: {
-        name,
-        options
-      }
+    // Update the variation using Supabase
+    const updatedVariation = await supabaseVariationService.updateVariation(variationId, {
+      name,
+      options
     });
     
     return NextResponse.json(updatedVariation);
   } catch (error) {
     console.error('Update variation error:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while updating variation', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to update variation', 
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -203,12 +200,8 @@ export async function DELETE(
       }, { status: 401 });
     }
 
-    // Find the product by ID
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      }
-    });
+    // Find the product by ID using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!product) {
@@ -218,39 +211,40 @@ export async function DELETE(
       }, { status: 404 });
     }
     
-    if (product.userId !== userId) {
+    if ((product as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to modify this product'
       }, { status: 403 });
     }
     
-    // Find the variation
-    const variation = await prisma.variation.findUnique({
-      where: {
-        id: variationId
-      }
-    });
+    // Find the variation using Supabase
+    const variation = await supabaseVariationService.findVariationById(variationId);
     
-    if (!variation || variation.productId !== productId) {
+    if (!variation || (variation as any).productId !== productId) {
       return NextResponse.json({ 
         error: 'Variation not found',
         details: 'The requested variation does not exist'
       }, { status: 404 });
     }
 
-    // Delete the variation
-    await prisma.variation.delete({
-      where: {
-        id: variationId
-      }
-    });
+    // Delete the variation using Supabase
+    await supabaseVariationService.deleteVariation(variationId);
     
     return NextResponse.json({
       message: 'Variation deleted successfully'
     });
   } catch (error) {
     console.error('Delete variation error:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while deleting variation', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to delete variation', 
       details: error instanceof Error ? error.message : 'Unknown error'

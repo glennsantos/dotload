@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseFileService, supabasePurchaseService } from '@/lib/supabase-db';
 import { getAuthToken } from '@/lib/auth-utils';
 import { verify } from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -75,35 +75,34 @@ export async function POST(request: NextRequest) {
     
     debugLog(`Looking up file with ID: ${fileId}`);
     
-    // Find the file
-    const file = await prisma.file.findUnique({
-      where: { id: fileId },
-      include: { product: true }
-    });
+    // Find the file using Supabase
+    const file = await supabaseFileService.findFileById(fileId);
     
     if (!file) {
       debugLog(`File not found with ID: ${fileId}`);
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
     
+    // Get product information for file access verification
+    const productId = (file as any).productId;
+    if (!productId) {
+      debugLog(`File ${fileId} has no associated product`);
+      return NextResponse.json({ error: 'File access error' }, { status: 403 });
+    }
+    
     // Verify the user has access to the file
     const userId = decoded.userId;
-    const isCreator = file.product?.userId === userId;
+    const isCreator = (file as any).product?.userId === userId;
     const isAdmin = decoded.role === 'ADMIN';
     
     // If user is not the creator or admin, check if they've purchased the product
     let hasPurchased = false;
     
-    if (!isCreator && !isAdmin && file.productId) {
-      const purchase = await prisma.purchase.findFirst({
-        where: {
-          userId: userId,
-          productId: file.productId,
-          status: 'COMPLETED'
-        }
-      });
-      
-      hasPurchased = !!purchase;
+    if (!isCreator && !isAdmin && productId) {
+      const purchases = await supabasePurchaseService.findPurchasesByUserId(userId);
+      hasPurchased = purchases.some((purchase: any) => 
+        purchase.productId === productId && purchase.status === 'COMPLETED'
+      );
     }
     
     if (!isCreator && !isAdmin && !hasPurchased) {
@@ -115,12 +114,21 @@ export async function POST(request: NextRequest) {
     const token = generateDownloadToken(fileId, userId);
     
     // Create a secure download URL with the original filename in the URL
-    const downloadUrl = `/api/downloads/secure/${fileId}?token=${encodeURIComponent(token)}&userId=${userId}&filename=${encodeURIComponent(fileName || file.filename)}`;
+    const downloadUrl = `/api/downloads/secure/${fileId}?token=${encodeURIComponent(token)}&userId=${userId}&filename=${encodeURIComponent(fileName || (file as any).filename)}`;
     
     debugLog(`Generated download URL: ${downloadUrl}`);
     return NextResponse.json({ url: downloadUrl });
   } catch (error) {
     console.error('Error generating secure download URL:', error);
+    
+    // Handle specific Supabase errors
+    if (error instanceof Error && error.message.includes('Failed to')) {
+      return NextResponse.json(
+        { error: 'Database error occurred while generating download URL', details: error.message },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to generate download URL', 
       details: error instanceof Error ? error.message : 'Unknown error'

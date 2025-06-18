@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { prisma } from "@/lib/prisma"
+import { supabaseProductService } from '@/lib/supabase-db';
 import UploadDigitalItem from "../upload-digital-item"
 
 import { use } from "react"
@@ -7,6 +7,17 @@ import { use } from "react"
 interface UploadDigitalItemPageProps {
   params: any
   searchParams?: any
+}
+
+// Fetch product data for verification
+async function getProduct(productId: string) {
+  try {
+    const product = await supabaseProductService.findProductById(productId);
+    return product;
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return null;
+  }
 }
 
 export default function UploadDigitalItemPage({ params, searchParams }: UploadDigitalItemPageProps) {
@@ -17,10 +28,8 @@ export default function UploadDigitalItemPage({ params, searchParams }: UploadDi
   const productId = unwrappedParams.id
 
   // Fetch the product to verify it exists and unwrap the Promise using use()
-  const productPromise = prisma.product.findUnique({
-    where: { id: productId },
-  })
-  const product = use(productPromise)
+  const productPromise = getProduct(productId);
+  const product = use(productPromise);
 
   if (!product) {
     notFound()
