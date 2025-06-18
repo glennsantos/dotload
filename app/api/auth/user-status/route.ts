@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from "@/lib/prisma";
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
+import { supabaseUserService } from '@/lib/supabase-db';
 
 // Enable more verbose logging
 const DEBUG = true;
@@ -12,60 +12,41 @@ const debugLog = (message: string, ...args: any[]) => {
   }
 };
 
+const JWT_SECRET = process.env.JWT_SECRET!;
+
 export async function GET(req: NextRequest) {
   try {
-    debugLog('User status check starting');
-    
-    // Get token from cookie
-    const token = req.cookies.get('token')?.value;
+    // Get token from cookie or header
+    const token = req.cookies.get('token')?.value || req.headers.get('authorization')?.replace('Bearer ', '');
     
     if (!token) {
-      debugLog('No authentication token found');
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ authenticated: false }, { status: 200 });
     }
+
+    // Verify JWT token
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    const userId = payload.userId as string;
+
+    // Get user from Supabase
+    const user = await supabaseUserService.findUserById(userId);
     
-    // Verify token
-    const JWT_SECRET = process.env.JWT_SECRET!.trim();
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string, email: string };
-    debugLog('Token verified for user', { userId: decoded.userId, email: decoded.email });
-    
-    // Get user's product count
-    const productCount = await prisma.product.count({
-      where: { userId: decoded.userId }
-    });
-    debugLog('User product count', { userId: decoded.userId, productCount });
-    
-    // Get user's purchase count
-    const purchaseCount = await prisma.purchase.count({
-      where: { userId: decoded.userId }
-    });
-    debugLog('User purchase count', { userId: decoded.userId, purchaseCount });
-    
-    // Determine recommended redirect
-    let recommendedRedirect = '/dashboard';
-    
-    // If user has no products, redirect them to create a product
-    if (productCount === 0) {
-      debugLog('User has no products, recommending product creation page');
-      recommendedRedirect = '/create-product';
+    if (!user) {
+      return NextResponse.json({ authenticated: false }, { status: 200 });
     }
-    // If user has purchases but no products, they're primarily a buyer
-    else if (purchaseCount > 0 && productCount === 0) {
-      debugLog('User identified as primarily a buyer, recommending purchases page');
-      recommendedRedirect = '/dashboard/purchases';
-    }
-    
+
     return NextResponse.json({
-      userId: decoded.userId,
-      email: decoded.email,
-      productCount,
-      purchaseCount,
-      recommendedRedirect
+      authenticated: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        emailVerified: user.emailVerified
+      }
     });
-    
+
   } catch (error) {
-    debugLog('Error checking user status', error);
-    console.error('Error checking user status:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('User status error:', error);
+    return NextResponse.json({ authenticated: false }, { status: 200 });
   }
 }

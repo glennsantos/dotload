@@ -5,6 +5,7 @@
 - get a xendit account
 - clean up front end console.logs for prod
 - enable RLS and use the service key for security
+- 🔄 URGENT: Migrate ALL database connections from Prisma to Supabase (LOGIN FAILING)
 
 is there something in vercel like @amplify.yml you see here. so that it can load the .env while building. cause the env values are present
 
@@ -123,6 +124,35 @@ is there something in vercel like @amplify.yml you see here. so that it can load
      - ✅ Email configuration with Resend API working properly
      - ✅ All verification APIs now use consistent Supabase service
 
+## Database Migration (URGENT)
+
+7. **Migrate ALL Database Connections from Prisma to Supabase** 🔄
+   - Task ID: 10.7
+   - Description: **IN PROGRESS** - Migrating all remaining API endpoints from Prisma direct connections to Supabase client to fix database connection issues and ensure consistent architecture
+   - Dependencies: 10.3
+   - Priority: **CRITICAL** (LOGIN IS CURRENTLY FAILING)
+   - Status: **IN PROGRESS** 🔄
+   - **Progress**:
+     - ✅ Registration API (already migrated to Supabase)
+     - ✅ Email verification API (already using Supabase)
+     - ✅ Login API (migrated to use supabaseUserService)
+     - ✅ Auth me API (migrated to Supabase)
+     - ✅ Forgot password API (migrated to Supabase)
+     - ✅ Reset password API (migrated to Supabase + added findUserByResetToken method)
+     - ✅ Change password API (migrated to Supabase)
+     - ✅ User status API (migrated to Supabase)
+     - 🔄 **Remaining Auth Endpoints**:
+       - `app/api/auth/create-from-purchase/route.ts`
+       - `app/api/auth/logout/route.ts` (if using Prisma)
+       - `app/api/auth/check-session/route.ts` (if using Prisma)
+     - 🔄 **User Management APIs** (40+ files still using Prisma):
+       - All user profile/settings endpoints
+       - All product management endpoints
+       - All payment/transaction endpoints
+       - All file/download endpoints
+   - **Current Issue**: Login was failing with PostgreSQL connection errors because it was still using direct Prisma connections
+   - **Strategy**: Extend Supabase service with additional methods for products, purchases, transactions, etc.
+   - **Test Strategy**: Verify login works correctly and all auth flows function with Supabase connections
 
 ===== COMPLETED TASKS ======
 

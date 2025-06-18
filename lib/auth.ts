@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
-import { verify, JwtPayload } from 'jsonwebtoken';
-import { prisma } from './prisma';
+import { jwtVerify } from 'jose';
+import { supabaseUserService } from './supabase-db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env';
 
@@ -20,19 +20,23 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       return null;
     }
     
-    // Verify and decode the token
-    const decoded = verify(token, JWT_SECRET) as JwtPayload & { 
-      userId: string; 
-      email: string;
+    // Verify and decode the token using jose
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    const userId = payload.userId as string;
+    
+    // Get user from Supabase to ensure they still exist
+    const user = await supabaseUserService.findUserById(userId);
+    
+    if (!user) {
+      return null;
+    }
+    
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name
     };
-    
-    // Get user from database to ensure they still exist
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, name: true }
-    });
-    
-    return user;
   } catch (error) {
     console.error('Error getting current user:', error);
     return null;
@@ -49,12 +53,11 @@ export async function getAuthUserId(): Promise<string | null> {
       return null;
     }
     
-    // Verify and decode the token
-    const decoded = verify(token, JWT_SECRET) as JwtPayload & { 
-      userId: string; 
-    };
+    // Verify and decode the token using jose
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
     
-    return decoded.userId;
+    return payload.userId as string;
   } catch (error) {
     console.error('Error getting user ID from token:', error);
     return null;

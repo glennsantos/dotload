@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
-import { prisma } from "@/lib/prisma"
+import { supabaseUserService } from '@/lib/supabase-db';
 
 // Enable more verbose logging
 const DEBUG = process.env.NODE_ENV === 'production' ? true : true; // Keep debugging enabled in all environments
@@ -32,17 +32,6 @@ export async function POST(req: NextRequest) {
     debugLog(`Request URL: ${req.url}`);
     debugLog(`Timestamp: ${new Date().toISOString()}`);
     
-    // Log database connection status
-    try {
-      debugLog('🔍 Attempting to connect to PostgreSQL database');
-      await prisma.$connect();
-      debugLog('✅ PostgreSQL database connection successful');
-    } catch (connectionError) {
-      debugLog('❌ PostgreSQL database connection failed', connectionError);
-      console.error('[Prisma] Database connection failed:', connectionError);
-      return NextResponse.json({ error: 'Database connection error' }, { status: 500 });
-    }
-
     const { email, password } = await req.json();
 
     // Validate input
@@ -53,16 +42,15 @@ export async function POST(req: NextRequest) {
 
     debugLog(`🔍 Login attempt for email: ${email}`);
 
-    // Find user by email
+    // Find user by email using Supabase client
     let user;
     try {
-      user = await prisma.user.findUnique({
-        where: { email },
-      });
+      debugLog('🔍 Attempting to find user with Supabase client');
+      user = await supabaseUserService.findUserByEmail(email);
       
-      // Log Prisma query results
+      // Log Supabase query results
       if (user) {
-        debugLog('✅ User found in PostgreSQL database', { 
+        debugLog('✅ User found in Supabase database', { 
           id: user.id,
           email: user.email,
           name: user.name,
@@ -78,7 +66,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
       }
     } catch (userLookupError) {
-      debugLog('❌ Error looking up user', userLookupError);
+      debugLog('❌ Error looking up user with Supabase', userLookupError);
       return NextResponse.json({ error: 'Error looking up user' }, { status: 500 });
     }
 
@@ -231,21 +219,11 @@ export async function POST(req: NextRequest) {
       });
     }
     
-    // Ensure Prisma connection is closed
-    try {
-      debugLog('🔍 Attempting to disconnect from database after error');
-      await prisma.$disconnect();
-      debugLog('✅ Database disconnected successfully after error');
-    } catch (disconnectError) {
-      debugLog('❌ Error disconnecting from database', disconnectError);
-    }
-    
     debugLog('=== LOGIN REQUEST END (UNEXPECTED ERROR) ===');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
-    // Ensure Prisma connection is always closed
-    debugLog('🔍 Ensuring database connection is closed in finally block');
-    await prisma.$disconnect();
+    // No need to disconnect from Supabase client - it handles its own connections
+    debugLog('🔍 Ensuring clean completion in finally block');
     debugLog('✅ Login request processing completed');
   }
 }

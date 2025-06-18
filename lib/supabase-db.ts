@@ -111,6 +111,23 @@ export class SupabaseUserService {
     return data;
   }
 
+  // Find user by reset token
+  async findUserByResetToken(token: string) {
+    const supabase = await this.getAdminClient();
+    
+    const { data, error } = await supabase
+      .from('User')
+      .select('id, email, resetToken, resetTokenExpiry')
+      .eq('resetToken', token)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`Failed to find user: ${error.message}`);
+    }
+
+    return data;
+  }
+
   // Update user
   async updateUser(id: string, updates: any) {
     const supabase = await this.getAdminClient();

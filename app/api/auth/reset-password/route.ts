@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from "@/lib/prisma"
-import bcrypt from 'bcryptjs';
-
+import { supabaseUserService } from '@/lib/supabase-db';
+import * as bcrypt from 'bcryptjs';
 
 // Enable debugging
 const DEBUG = true;
@@ -14,74 +13,42 @@ const debugLog = (message: string, ...args: any[]) => {
 
 export async function POST(req: NextRequest) {
   try {
-    const { token, newPassword } = await req.json();
+    const { token, password } = await req.json();
 
-    // Validate input
-    if (!token || !newPassword) {
-      return NextResponse.json(
-        { message: 'Token and new password are required' },
-        { status: 400 }
-      );
+    if (!token || !password) {
+      return NextResponse.json({ error: 'Token and password are required' }, { status: 400 });
     }
 
-    if (newPassword.length < 8) {
-      return NextResponse.json(
-        { message: 'Password must be at least 8 characters long' },
-        { status: 400 }
-      );
+    if (password.length < 8) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters long' }, { status: 400 });
     }
 
-    debugLog('Processing password reset request with token');
+    // Check if user has valid reset token
+    const user = await supabaseUserService.findUserByResetToken(token);
 
-    // Find password reset record by token
-    const passwordReset = await prisma.passwordReset.findFirst({
-      where: {
-        token,
-        expiresAt: {
-          gt: new Date()
-        }
-      },
-      include: {
-        user: true
-      }
-    });
-
-    if (!passwordReset) {
-      debugLog('Invalid or expired reset token');
-      return NextResponse.json(
-        { message: 'Invalid or expired reset token' },
-        { status: 400 }
-      );
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid or expired reset token' }, { status: 400 });
     }
 
-    // Hash the new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    // Check if token has expired
+    if (user.resetTokenExpiry && new Date() > new Date(user.resetTokenExpiry)) {
+      return NextResponse.json({ error: 'Reset token has expired' }, { status: 400 });
+    }
 
-    // Update user's password
-    await prisma.user.update({
-      where: { id: passwordReset.userId },
-      data: { password: hashedPassword }
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update user password and clear reset token
+    await supabaseUserService.updateUser(user.id, {
+      password: hashedPassword,
+      resetToken: null,
+      resetTokenExpiry: null,
     });
 
-    // Delete the password reset record
-    await prisma.passwordReset.delete({
-      where: { id: passwordReset.id }
-    });
+    return NextResponse.json({ message: 'Password has been reset successfully' });
 
-    debugLog('Password reset successful for user:', passwordReset.userId);
-
-    return NextResponse.json(
-      { message: 'Password has been reset successfully' },
-      { status: 200 }
-    );
   } catch (error) {
-    debugLog('Error processing password reset:', error);
-    return NextResponse.json(
-      { message: 'An error occurred while resetting your password' },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
+    console.error('Reset password error:', error);
+    return NextResponse.json({ error: 'Failed to reset password' }, { status: 500 });
   }
 }
