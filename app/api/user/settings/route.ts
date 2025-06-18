@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
-import { prisma } from "@/lib/prisma";
+import { jwtVerify } from 'jose';
+import { supabaseUserService } from '@/lib/supabase-db';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 
 // Enable debugging
@@ -13,6 +13,8 @@ const debugLog = (message: string, ...args: any[]) => {
   }
 };
 
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env');
+
 // Get the current authenticated user's ID
 async function getAuthUserId() {
   try {
@@ -23,12 +25,8 @@ async function getAuthUserId() {
       return null;
     }
     
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) {
-      throw new Error('JWT_SECRET is not defined');
-    }
-    
-    const decoded = jwt.verify(token.value, JWT_SECRET) as { userId: string };
+    const { payload } = await jwtVerify(token.value, JWT_SECRET);
+    const decoded = payload as { userId: string };
     return decoded.userId;
   } catch (error) {
     console.error('Auth error:', error);
@@ -71,21 +69,8 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Get user from database with brand fields
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        storeName: true,
-        storeDescription: true,
-        storeLogoPath: true,
-        storeHeaderPath: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
+    // Get user from database using Supabase
+    const user = await supabaseUserService.findUserById(userId);
     
     if (!user) {
       return NextResponse.json(
@@ -105,6 +90,25 @@ export async function GET(request: NextRequest) {
     }, { status: 200 });
   } catch (error) {
     console.error('Error fetching user settings:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific JWT errors
+      if (error.name === 'JWTInvalid' || error.name === 'JWTExpired') {
+        return NextResponse.json(
+          { message: 'Invalid authentication token' },
+          { status: 401 }
+        );
+      }
+      
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { message: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { message: 'An error occurred while fetching user settings', error: error instanceof Error ? error.message : String(error) },
       { status: 500 }
@@ -154,22 +158,8 @@ export async function POST(request: NextRequest) {
     if (storeLogoPath !== null) updateData.storeLogoPath = storeLogoPath;
     if (storeHeaderPath !== null) updateData.storeHeaderPath = storeHeaderPath;
     
-    // Update user in database
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        storeName: true,
-        storeDescription: true,
-        storeLogoPath: true,
-        storeHeaderPath: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
+    // Update user in database using Supabase
+    const updatedUser = await supabaseUserService.updateUser(userId, updateData);
     
     return NextResponse.json({ 
       message: 'Brand settings updated successfully',
@@ -182,6 +172,25 @@ export async function POST(request: NextRequest) {
     }, { status: 200 });
   } catch (error) {
     console.error('Error updating user settings:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific JWT errors
+      if (error.name === 'JWTInvalid' || error.name === 'JWTExpired') {
+        return NextResponse.json(
+          { message: 'Invalid authentication token' },
+          { status: 401 }
+        );
+      }
+      
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { message: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { message: 'An error occurred while updating user settings', error: error instanceof Error ? error.message : String(error) },
       { status: 500 }

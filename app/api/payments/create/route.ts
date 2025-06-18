@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService, supabasePurchaseService } from '@/lib/supabase-db';
 import { createPurchase, updatePurchaseStatus } from '@/lib/purchase-utils';
 import { createInvoice, createQRCodePayment, createEWalletPayment } from '@/lib/xendit-client';
 import xenditClient from '@/lib/xendit';
@@ -22,11 +22,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Find the product
+    // Find the product using Supabase
     console.log(`[Payment Creation] Fetching product with ID: ${productId}`);
-    const product = await prisma.product.findUnique({
-      where: { id: productId }
-    });
+    const product = await supabaseProductService.findProductById(productId);
     
     if (!product) {
       console.log(`[Payment Creation] Product not found with ID: ${productId}`);
@@ -113,10 +111,9 @@ export async function POST(request: NextRequest) {
             failureRedirectUrl: failureUrl
           });
           
-          // Update purchase with payment ID
-          await prisma.purchase.update({
-            where: { id: purchase.id },
-            data: { paymentId: paymentResponse.id }
+          // Update purchase with payment ID using Supabase
+          await supabasePurchaseService.updatePurchase(purchase.id, {
+            paymentId: paymentResponse.id
           });
           
           // Get redirect URL from response
@@ -171,10 +168,9 @@ export async function POST(request: NextRequest) {
             currency
           });
           
-          // Update purchase with payment ID
-          await prisma.purchase.update({
-            where: { id: purchase.id },
-            data: { paymentId: paymentResponse.id }
+          // Update purchase with payment ID using Supabase
+          await supabasePurchaseService.updatePurchase(purchase.id, {
+            paymentId: paymentResponse.id
           });
           
           // Get invoice URL

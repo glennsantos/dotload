@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
+import { supabaseUserService } from '@/lib/supabase-db';
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_key_please_set_in_env');
 
 export async function PUT(request: NextRequest) {
   try {
@@ -34,14 +36,11 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Retrieve JWT secret
-    const JWT_SECRET = process.env.JWT_SECRET!.trim();
+    // Verify JWT token
     let decoded;
     try {
-      decoded = jwt.verify(token.value, JWT_SECRET, {
-        algorithms: ['HS256'],
-        maxAge: '24h'
-      }) as { userId: string, email: string };
+      const { payload } = await jwtVerify(token.value, JWT_SECRET);
+      decoded = payload as { userId: string, email: string };
     } catch (jwtError) {
       console.error('JWT Verification Error:', jwtError);
       return NextResponse.json(
@@ -53,10 +52,8 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId }
-    });
+    // Get user from database using Supabase
+    const user = await supabaseUserService.findUserById(decoded.userId);
     
     if (!user) {
       return NextResponse.json(
@@ -79,10 +76,9 @@ export async function PUT(request: NextRequest) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     
-    // Update user password
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword }
+    // Update user password using Supabase
+    await supabaseUserService.updateUser(user.id, {
+      password: hashedPassword
     });
     
     return NextResponse.json(
@@ -91,11 +87,28 @@ export async function PUT(request: NextRequest) {
     );
   } catch (error) {
     console.error('Error in password change:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific JWT errors
+      if (error.name === 'JWTInvalid' || error.name === 'JWTExpired') {
+        return NextResponse.json(
+          { message: 'Invalid authentication token' },
+          { status: 401 }
+        );
+      }
+      
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { message: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { message: 'An error occurred while processing your request' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

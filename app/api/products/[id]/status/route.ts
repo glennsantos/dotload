@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function PUT(
@@ -30,12 +30,8 @@ export async function PUT(
       }, { status: 401 });
     }
     
-    // Find the product by ID
-    const existingProduct = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      }
-    });
+    // Find the product by ID using Supabase
+    const existingProduct = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!existingProduct) {
@@ -75,17 +71,8 @@ export async function PUT(
       updateData.isPublic = false;
     }
     
-    // Update the product
-    const updatedProduct = await prisma.product.update({
-      where: {
-        id: productId
-      },
-      data: updateData,
-      include: {
-        variations: true,
-        files: true
-      }
-    });
+    // Update the product using Supabase
+    const updatedProduct = await supabaseProductService.updateProduct(productId, updateData);
     
     return NextResponse.json({ 
       message: 'Product status updated successfully',
@@ -93,6 +80,17 @@ export async function PUT(
     });
   } catch (error) {
     console.error('Product update error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to update product', 
       details: error instanceof Error ? error.message : 'Unknown error'

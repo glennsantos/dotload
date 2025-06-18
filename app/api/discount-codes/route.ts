@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService } from '@/lib/supabase-db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,21 +11,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all products with discount codes
-    const products = await prisma.product.findMany({
-      where: {
-        userId: user.id,
-        discountCodes: {
-          not: null
-        }
-      },
-      select: {
-        id: true,
-        name: true,
-        discountCodes: true,
-        createdAt: true
-      }
-    });
+    // Get all products with discount codes using Supabase
+    const products = await supabaseProductService.getProductsWithDiscountCodes(user.id);
     
     // Parse discount codes from products
     const allDiscountCodes: any[] = [];
@@ -54,6 +41,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(allDiscountCodes);
   } catch (error) {
     console.error('Error fetching discount codes:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch discount codes' },
       { status: 500 }
@@ -96,19 +94,9 @@ export async function POST(request: NextRequest) {
     
     // If product-specific, add to that product's discount codes
     if (body.productId && body.productId !== 'all') {
-      const product = await prisma.product.findUnique({
-        where: {
-          id: body.productId,
-          userId: user.id // Ensure the user owns this product
-        },
-        select: {
-          id: true,
-          name: true,
-          discountCodes: true
-        }
-      });
+      const product = await supabaseProductService.findProductById(body.productId);
       
-      if (!product) {
+      if (!product || (product as any).userId !== user.id) {
         return NextResponse.json(
           { error: 'Product not found or you do not have permission' },
           { status: 404 }
@@ -118,64 +106,64 @@ export async function POST(request: NextRequest) {
       // Parse existing discount codes or create new array
       let existingCodes = [];
       try {
-        if (product.discountCodes) {
-          existingCodes = JSON.parse(product.discountCodes);
+        if ((product as any).discountCodes) {
+          existingCodes = JSON.parse((product as any).discountCodes);
         }
       } catch (error) {
-        console.error(`Error parsing discount codes for product ${product.id}:`, error);
+        console.error(`Error parsing discount codes for product ${(product as any).id}:`, error);
       }
       
       // Add the new code
       existingCodes.push(newDiscountCode);
       
-      // Update the product with the new codes
-      await prisma.product.update({
-        where: { id: product.id },
-        data: {
-          discountCodes: JSON.stringify(existingCodes)
-        }
-      });
+      // Update the product with the new codes using Supabase
+      await supabaseProductService.updateProductDiscountCodes(
+        (product as any).id, 
+        JSON.stringify(existingCodes)
+      );
       
       // Add product info to the response
-      newDiscountCode.productId = product.id;
-      newDiscountCode.productName = product.name;
+      newDiscountCode.productId = (product as any).id;
+      newDiscountCode.productName = (product as any).name;
     } else {
       // For global discount codes, we'll add them to all products owned by the user
       // This is a simplified approach - in a real system, you might want a separate table for global codes
-      const products = await prisma.product.findMany({
-        where: { userId: user.id },
-        select: {
-          id: true,
-          name: true,
-          discountCodes: true
-        }
-      });
+      const products = await supabaseProductService.getProductsByUserId(user.id);
       
       // Update each product with the new global code
       for (const product of products) {
         let existingCodes = [];
         try {
-          if (product.discountCodes) {
-            existingCodes = JSON.parse(product.discountCodes);
+          if ((product as any).discountCodes) {
+            existingCodes = JSON.parse((product as any).discountCodes);
           }
         } catch (error) {
-          console.error(`Error parsing discount codes for product ${product.id}:`, error);
+          console.error(`Error parsing discount codes for product ${(product as any).id}:`, error);
         }
         
         existingCodes.push(newDiscountCode);
         
-        await prisma.product.update({
-          where: { id: product.id },
-          data: {
-            discountCodes: JSON.stringify(existingCodes)
-          }
-        });
+        await supabaseProductService.updateProductDiscountCodes(
+          (product as any).id,
+          JSON.stringify(existingCodes)
+        );
       }
     }
 
     return NextResponse.json(newDiscountCode, { status: 201 });
   } catch (error) {
     console.error('Error creating discount code:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to create discount code' },
       { status: 500 }

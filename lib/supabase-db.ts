@@ -370,6 +370,44 @@ export class SupabaseProductService {
 
     return data || [];
   }
+
+  // Get products with discount codes
+  async getProductsWithDiscountCodes(userId: string) {
+    const supabase = await this.getAdminClient();
+    
+    const { data, error } = await supabase
+      .from('Product')
+      .select('id, name, discountCodes, createdAt')
+      .eq('userId', userId)
+      .not('discountCodes', 'is', null);
+    
+    if (error) {
+      throw new Error(`Failed to get products with discount codes: ${error.message}`);
+    }
+    
+    return data || [];
+  }
+
+  // Update product discount codes
+  async updateProductDiscountCodes(productId: string, discountCodes: string) {
+    const supabase = await this.getAdminClient();
+    
+    const { data, error } = await supabase
+      .from('Product')
+      .update({ 
+        discountCodes,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', productId)
+      .select()
+      .single();
+    
+    if (error) {
+      throw new Error(`Failed to update product discount codes: ${error.message}`);
+    }
+    
+    return data;
+  }
 }
 
 // File operations using Supabase

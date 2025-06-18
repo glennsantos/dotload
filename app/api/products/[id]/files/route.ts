@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService, supabaseFileService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 import fs from 'fs';
 import path from 'path';
@@ -34,13 +34,8 @@ export async function POST(
       }, { status: 401 });
     }
     
-    // Check if product exists and belongs to the current user
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-      include: {
-        files: true
-      }
-    });
+    // Check if product exists and belongs to the current user using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     if (!product) {
       return NextResponse.json({ 
@@ -133,14 +128,12 @@ export async function POST(
       const relativeFilePath = path.join(relativePath, secureFilename);
       const fileUrl = `/api/secure-files/${encodeURIComponent(relativeFilePath)}`;
       
-      // Create a file record in the database
-      const fileRecord = await prisma.file.create({
-        data: {
-          filename: file.name,
-          path: relativeFilePath,
-          mimetype: file.type || 'application/octet-stream',
-          productId
-        }
+      // Create a file record in the database using Supabase
+      const fileRecord = await supabaseFileService.createFile({
+        filename: file.name,
+        path: relativeFilePath,
+        mimetype: file.type || 'application/octet-stream',
+        productId
       });
       
       // Add URL to the response (but not stored in DB)
@@ -156,6 +149,17 @@ export async function POST(
     }, { status: 200 });
   } catch (error) {
     console.error('File upload error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to upload files', 
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -198,10 +202,8 @@ export async function DELETE(
       }, { status: 401 });
     }
     
-    // Check if product exists and belongs to the current user
-    const product = await prisma.product.findUnique({
-      where: { id: productId }
-    });
+    // Check if product exists and belongs to the current user using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     if (!product) {
       return NextResponse.json({ 
@@ -217,16 +219,25 @@ export async function DELETE(
       }, { status: 403 });
     }
     
-    // Delete the file record
-    await prisma.file.delete({
-      where: { id: fileId }
-    });
+    // Delete the file record using Supabase
+    await supabaseFileService.deleteFile(fileId);
     
     return NextResponse.json({
       message: 'File deleted successfully'
     }, { status: 200 });
   } catch (error) {
     console.error('File deletion error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to delete file', 
       details: error instanceof Error ? error.message : 'Unknown error'
