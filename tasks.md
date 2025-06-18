@@ -1,6 +1,32 @@
 # Tasks for Frontend Redesign
 
-reference repo: /home/aryeh/dev/alacart.store
+- change the scheme to match the colors, styles and fonts of Claude: /home/aryeh/dev/dotload/data/Screenshot from 2025-06-14 09-05-16.png
+- remove the physical product option in product creation
+- change the homepage entirely: copy, design, overall message
+- get a xendit account
+
+## Deployment Tasks
+
+1. **Fix Vercel Deployment Configuration** ✅
+   - Task ID: 7.1
+   - Description: Fixed deployment issues by creating vercel.json configuration, simplifying next.config.js, removing conflicting config files, and optimizing for Vercel deployment.
+   - Dependencies: None
+   - Priority: High
+   - Test Strategy: Verify successful deployment to Vercel without build errors.
+
+2. **Create Vercel Deployment Guide** ✅
+   - Task ID: 7.2
+   - Description: Created comprehensive deployment guide with environment variables, configuration settings, and troubleshooting steps.
+   - Dependencies: 7.1
+   - Priority: High
+   - Test Strategy: Follow deployment guide to ensure all steps work correctly.
+
+3. **Optimize Middleware for Production** ✅
+   - Task ID: 7.3
+   - Description: Disabled debug logging in production to reduce deployment noise and improve performance.
+   - Dependencies: None
+   - Priority: Medium
+   - Test Strategy: Verify middleware works correctly in production without excessive logging.
 
 ## Create Product Page Redesign
 

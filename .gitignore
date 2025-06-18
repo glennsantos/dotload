@@ -79,3 +79,4 @@ certificates
 ecosystem.config.js
 tests/reports/
 coverage/
+data/

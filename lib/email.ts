@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 
-// Create a Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create a Resend client only if API key is available
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Email sender address
 const fromEmail = process.env.EMAIL_FROM || 'alacart <noreply@alacart.store>';
@@ -31,6 +31,10 @@ export async function sendVerificationEmail(
   `;
 
   try {
+    if (!resend) {
+      throw new Error('Email service not configured. Please set RESEND_API_KEY environment variable.');
+    }
+
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: [to],
@@ -76,6 +80,10 @@ export async function sendPasswordResetEmail(
   `;
 
   try {
+    if (!resend) {
+      throw new Error('Email service not configured. Please set RESEND_API_KEY environment variable.');
+    }
+
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: [to],
@@ -157,6 +165,10 @@ export async function sendPurchaseConfirmationEmail(
   }
 
   try {
+    if (!resend) {
+      throw new Error('Email service not configured. Please set RESEND_API_KEY environment variable.');
+    }
+
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: [to],

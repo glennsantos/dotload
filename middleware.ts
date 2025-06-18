@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify, type JWTPayload } from 'jose';
 
-// Enable more verbose logging
-const DEBUG = true;
+// Enable more verbose logging only in development
+const DEBUG = process.env.NODE_ENV === 'development';
 const debugLog = (message: string, ...args: any[]) => {
   if (DEBUG) {
     console.log(`[MIDDLEWARE] ${message}`, ...args);
