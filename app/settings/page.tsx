@@ -125,24 +125,24 @@ export default function AccountSettingsPage() {
 
   return (
     <div>
-      <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-6 mb-8">
+      <div className="claude-card p-6 mb-8">
         {message.text && (
-          <div className={`p-4 mb-4 rounded-md ${message.type === "error" ? "bg-destructive/10 text-destructive border border-destructive/20" : "bg-primary/10 text-primary border border-primary/20"}`}>
+          <div className={`p-4 mb-4 rounded-lg border ${message.type === "error" ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-primary/10 text-primary border-primary/20"}`}>
             {message.text}
           </div>
         )}
         
         <div className="flex items-center mb-6">
-          <div className="bg-emerald-100 p-2 rounded-2xl mr-3">
-            <UserIcon className="h-5 w-5 text-emerald-600" />
+          <div className="bg-primary/10 p-2 rounded-2xl mr-3">
+            <UserIcon className="h-5 w-5 text-primary" />
           </div>
-          <h2 className="text-xl font-light">Account Settings</h2>
+          <h2 className="text-xl font-light text-foreground">Account Settings</h2>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="full-name" className="block text-sm font-light text-stone-700 mb-1">
+              <label htmlFor="full-name" className="block text-sm font-light text-foreground mb-2">
                 Full Name
               </label>
               <Input
@@ -156,7 +156,7 @@ export default function AccountSettingsPage() {
             </div>
             
             <div>
-              <label htmlFor="email-address" className="block text-sm font-light text-stone-700 mb-1">
+              <label htmlFor="email-address" className="block text-sm font-light text-foreground mb-2">
                 Email Address
               </label>
               <Input
@@ -170,17 +170,17 @@ export default function AccountSettingsPage() {
             </div>
           </div>
           
-          <div className="pt-4 border-t border-stone-200">
-            <h3 className="text-xl font-light text-stone-700 mb-4 flex items-center">
-              <div className="bg-emerald-100 p-2 rounded-2xl mr-3">
-              <KeyIcon className="h-5 w-5 text-emerald-600" />
+          <div className="pt-6 border-t border-border">
+            <h3 className="text-xl font-light text-foreground mb-6 flex items-center">
+              <div className="bg-primary/10 p-2 rounded-2xl mr-3">
+                <KeyIcon className="h-5 w-5 text-primary" />
               </div>
               Change Password
             </h3>
           </div>
           
           <div>
-            <label htmlFor="current-password" className="block text-sm font-light text-stone-700 mb-1">
+            <label htmlFor="current-password" className="block text-sm font-light text-foreground mb-2">
               Current Password
             </label>
             <div className="relative">
@@ -189,11 +189,12 @@ export default function AccountSettingsPage() {
                 type={showCurrentPassword ? "text" : "password"}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
+                placeholder="Enter current password"
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-500"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
               >
                 {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -203,7 +204,7 @@ export default function AccountSettingsPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="new-password" className="block text-sm font-light text-stone-700 mb-1">
+              <label htmlFor="new-password" className="block text-sm font-light text-foreground mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -212,12 +213,12 @@ export default function AccountSettingsPage() {
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
-                  minLength={8}
+                  className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
+                  placeholder="Enter new password"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-500"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                 >
                   {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -226,8 +227,8 @@ export default function AccountSettingsPage() {
             </div>
             
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-light text-stone-700 mb-1">
-                Confirm Password
+              <label htmlFor="confirm-password" className="block text-sm font-light text-foreground mb-2">
+                Confirm New Password
               </label>
               <div className="relative">
                 <input
@@ -235,11 +236,12 @@ export default function AccountSettingsPage() {
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
+                  placeholder="Confirm new password"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-500"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -248,13 +250,13 @@ export default function AccountSettingsPage() {
             </div>
           </div>
           
-          <div>
+          <div className="pt-4">
             <button
               type="submit"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 font-light"
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-2xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 font-light transition-colors"
               disabled={isLoading}
             >
-              Update Account
+              {isLoading ? "Updating..." : "Update Settings"}
             </button>
           </div>
         </form>

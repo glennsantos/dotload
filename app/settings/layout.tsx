@@ -27,9 +27,9 @@ export default function SettingsLayout({
   return (
     <>
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-sm border-b border-stone-200 py-2">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border py-2">
         {/* Back to Dashboard Link */}
-        <Link href="/dashboard" className="text-sm text-gray-600 hover:text-black flex items-center w-full border-b border-stone-100 rounded-lg p-2">
+        <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground flex items-center w-full border-b border-border rounded-lg p-2 transition-colors">
           <ChevronLeft size={16} className="mr-1" />
           Back to Dashboard
         </Link>
@@ -46,8 +46,8 @@ export default function SettingsLayout({
               />
             </Link>
             <div>
-              <h1 className="text-xl sm:text-2xl font-light text-stone-800">Settings</h1>
-              <p className="hidden sm:block text-xs sm:text-sm text-stone-500 font-light">Manage your account and brand preferences</p>
+              <h1 className="text-xl sm:text-2xl font-light text-foreground">Settings</h1>
+              <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground font-light">Manage your account and brand preferences</p>
             </div>
           </div>
         </div>
@@ -56,12 +56,12 @@ export default function SettingsLayout({
       <div className="max-w-7xl mx-auto p-6 mt-32">
 
       {/* Settings Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden mb-8">
+      <div className="claude-card overflow-hidden mb-8">
         {/* Mobile Dropdown */}
         <div className="md:hidden relative w-full">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full flex items-center justify-between bg-white px-4 py-2 text-sm font-light rounded-lg"
+            className="w-full flex items-center justify-between bg-background px-4 py-3 text-sm font-light rounded-lg border border-border hover:bg-muted transition-colors"
           >
             <div className="flex items-center gap-2">
               {activeTab.icon}
@@ -71,7 +71,7 @@ export default function SettingsLayout({
           </button>
           
           {isOpen && (
-            <div className="mt-1 mx-6 py-1 bg-white rounded-xl border border-stone-200 fixed inset-x-0 mx-2 z-50 px-2 py-2">
+            <div className="mt-1 mx-6 py-1 bg-background rounded-xl border border-border fixed inset-x-0 mx-2 z-50 px-2 py-2 shadow-lg">
               {tabs.map((tab) => {
                 const isActive = pathname === tab.path
                 
@@ -81,10 +81,10 @@ export default function SettingsLayout({
                     href={tab.path}
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "flex items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors w-full",
+                      "flex items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors w-full rounded-lg",
                       isActive 
-                        ? "bg-emerald-100 text-emerald-700 rounded-lg" 
-                        : "text-stone-600 hover:text-stone-900 hover:bg-stone-200"
+                        ? "bg-primary/10 text-primary" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
                     {tab.icon}
@@ -106,10 +106,10 @@ export default function SettingsLayout({
                 key={tab.name}
                 href={tab.path}
                 className={cn(
-                  "flex flex-1 justify-center items-center gap-2 px-4 py-2 text-sm font-light whitespace-nowrap transition-colors rounded-lg",
+                  "flex flex-1 justify-center items-center gap-2 px-4 py-3 text-sm font-light whitespace-nowrap transition-colors rounded-lg",
                   isActive 
-                    ? "bg-emerald-100 text-emerald-700" 
-                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 {tab.icon}

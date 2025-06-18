@@ -137,17 +137,23 @@ export default function BrandSettingsPage() {
   
   return (
     <div>
-     
-      <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-6">
+      <div className="claude-card p-6">
         {message.text && (
-          <div className={`p-4 mb-4 rounded-md ${message.type === "error" ? "bg-destructive/10 text-destructive border border-destructive/20" : "bg-primary/10 text-primary border border-primary/20"}`}>
+          <div className={`p-4 mb-6 rounded-lg border ${message.type === "error" ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-primary/10 text-primary border-primary/20"}`}>
             {message.text}
           </div>
         )}
         
+        <div className="flex items-center mb-6">
+          <div className="bg-primary/10 p-2 rounded-2xl mr-3">
+            <StoreIcon className="h-5 w-5 text-primary" />
+          </div>
+          <h2 className="text-xl font-light text-foreground">Brand Settings</h2>
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="brand-name" className="block text-sm font-light text-stone-700 mb-1">
+            <label htmlFor="brand-name" className="block text-sm font-light text-foreground mb-2">
               Brand Name
             </label>
             <input
@@ -155,41 +161,41 @@ export default function BrandSettingsPage() {
               type="text"
               value={brandName}
               onChange={(e) => setBrandName(e.target.value)}
-              className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
               placeholder="Enter your brand name"
             />
           </div>
           
           <div>
-            <label htmlFor="brand-description" className="block text-sm font-light text-stone-700 mb-1">
+            <label htmlFor="brand-description" className="block text-sm font-light text-foreground mb-2">
               Brand Description
             </label>
             <textarea
               id="brand-description"
               value={brandDescription}
               onChange={(e) => setBrandDescription(e.target.value)}
-              className="w-full p-2 border border-stone-300 rounded-2xl focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground resize-none"
               rows={5}
               placeholder="Describe your brand..."
               maxLength={500}
             ></textarea>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-2">
               {brandDescription.length}/500 characters
             </p>
           </div>
           
           <div>
-            <h3 className="text-sm font-light text-stone-700 mb-4 flex items-center">
-              <span className="h-2 w-2 bg-emerald-500 rounded-full mr-2"></span>
+            <h3 className="text-sm font-light text-foreground mb-4 flex items-center">
+              <span className="h-2 w-2 bg-primary rounded-full mr-2"></span>
               Brand Images
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <label htmlFor="brand-logo" className="block text-sm font-light text-stone-700 mb-2">
+                <label htmlFor="brand-logo" className="block text-sm font-light text-foreground mb-2">
                   Brand Logo
                 </label>
-                <div className="border-2 border-dashed border-stone-300 rounded-lg p-4 flex flex-col items-center justify-center h-48">
+                <div className="border-2 border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center h-48 bg-muted/20 hover:bg-muted/30 transition-colors">
                   {logoPreview ? (
                     <div 
                       className="relative w-full h-full flex items-center justify-center cursor-pointer"
@@ -200,53 +206,41 @@ export default function BrandSettingsPage() {
                       <img
                         src={logoPreview}
                         alt="Logo preview"
-                        className="max-h-full max-w-full object-contain"
-                        title="Click to change logo"
+                        className="max-w-full max-h-full object-contain rounded-lg"
                       />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (logoInputRef.current) logoInputRef.current.click()
-                        }}
-                        className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow-md hover:bg-stone-100"
-                      >
-                        <Upload size={16} className="text-stone-600" />
-                      </button>
+                      <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                        <Upload className="h-8 w-8 text-white" />
+                      </div>
                     </div>
                   ) : (
-                    <button
-                      type="button"
+                    <div 
+                      className="cursor-pointer flex flex-col items-center justify-center w-full h-full"
                       onClick={() => {
                         if (logoInputRef.current) logoInputRef.current.click()
                       }}
-                      className="flex flex-col items-center justify-center text-stone-500 hover:text-stone-700"
                     >
-                      <Upload size={24} className="mb-2" />
-                      <span className="text-sm font-medium">Upload Logo</span>
-                    </button>
+                      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
+                        <Upload size={20} className="text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-light text-foreground mb-1">Upload Logo</p>
+                      <p className="text-xs text-muted-foreground">JPG, PNG, WebP up to 2MB</p>
+                    </div>
                   )}
                   <input
-                    type="file"
-                    id="brand-logo"
-                    name="logoFile"
                     ref={logoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
                     onChange={handleLogoChange}
-                    accept="image/jpeg, image/png, image/webp"
                     className="hidden"
                   />
                 </div>
-                <p className="text-xs text-stone-500 mt-1">
-                  JPG, PNG, WebP (max 2MB)<br />
-                  Recommended: 400x400px
-                </p>
               </div>
               
               <div>
-                <label htmlFor="header-image" className="block text-sm font-light text-stone-700 mb-2">
+                <label htmlFor="brand-header" className="block text-sm font-light text-foreground mb-2">
                   Header Image
                 </label>
-                <div className="border-2 border-dashed border-stone-300 rounded-lg p-4 flex flex-col items-center justify-center h-48">
+                <div className="border-2 border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center h-48 bg-muted/20 hover:bg-muted/30 transition-colors">
                   {headerPreview ? (
                     <div 
                       className="relative w-full h-full flex items-center justify-center cursor-pointer"
@@ -256,58 +250,46 @@ export default function BrandSettingsPage() {
                     >
                       <img
                         src={headerPreview}
-                        alt="Header image preview"
-                        className="max-h-full max-w-full object-contain"
-                        title="Click to change header image"
+                        alt="Header preview"
+                        className="max-w-full max-h-full object-contain rounded-lg"
                       />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (headerInputRef.current) headerInputRef.current.click()
-                        }}
-                        className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow-md hover:bg-stone-100"
-                      >
-                        <Upload size={16} className="text-stone-600" />
-                      </button>
+                      <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                        <Upload className="h-8 w-8 text-white" />
+                      </div>
                     </div>
                   ) : (
-                    <button
-                      type="button"
+                    <div 
+                      className="cursor-pointer flex flex-col items-center justify-center w-full h-full"
                       onClick={() => {
                         if (headerInputRef.current) headerInputRef.current.click()
                       }}
-                      className="flex flex-col items-center justify-center text-stone-500 hover:text-stone-700"
                     >
-                      <Upload size={24} className="mb-2" />
-                      <span className="text-sm font-medium">Upload Header</span>
-                    </button>
+                      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-3">
+                        <Upload size={20} className="text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-light text-foreground mb-1">Upload Header</p>
+                      <p className="text-xs text-muted-foreground">JPG, PNG, WebP up to 2MB</p>
+                    </div>
                   )}
                   <input
-                    type="file"
-                    id="header-image"
-                    name="headerFile"
                     ref={headerInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
                     onChange={handleHeaderChange}
-                    accept="image/jpeg, image/png, image/webp"
                     className="hidden"
                   />
                 </div>
-                <p className="text-xs text-stone-500 mt-1">
-                  JPG, PNG, WebP (max 2MB)<br />
-                  Recommended: 1200x400px
-                </p>
               </div>
             </div>
           </div>
           
-          <div>
+          <div className="pt-4">
             <button
               type="submit"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-2xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 font-light transition-colors"
               disabled={isLoading}
             >
-              Update Brand Settings
+              {isLoading ? "Updating..." : "Update Brand Settings"}
             </button>
           </div>
         </form>

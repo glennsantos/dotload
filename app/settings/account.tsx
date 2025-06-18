@@ -121,23 +121,11 @@ export default function AccountSettings() {
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="flex items-center">
-          <div className="bg-primary/10 p-2 rounded-full mr-3">
-            <svg className="h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-          <h2 className="text-xl font-medium">Account Settings</h2>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-sm border border-border p-6 mb-8">
+      <div className="claude-card p-6 mb-8">
         <form onSubmit={handleUpdateAccount} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="full-name" className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="full-name" className="block text-sm font-light text-foreground mb-2">
                 Full Name
               </label>
               <input
@@ -145,13 +133,13 @@ export default function AccountSettings() {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full p-2 border rounded-lg"
+                className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
                 required
               />
             </div>
             
             <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="email-address" className="block text-sm font-light text-foreground mb-2">
                 Email Address
               </label>
               <input
@@ -159,7 +147,7 @@ export default function AccountSettings() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded-lg"
+                className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
                 required
               />
             </div>
@@ -168,7 +156,7 @@ export default function AccountSettings() {
           <div>
             <button
               type="submit"
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-2xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 font-light transition-colors"
               disabled={isLoading}
             >
               Update Account
@@ -177,28 +165,16 @@ export default function AccountSettings() {
         </form>
       </div>
       
-      <div className="mb-8">
-        <div className="flex items-center">
-          <div className="bg-primary/10 p-2 rounded-full mr-3">
-            <svg className="h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-          </div>
-          <h2 className="text-xl font-medium">Change Password</h2>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-sm border border-border p-6">
+      <div className="claude-card p-6">
         {message.text && (
-          <div className={`p-4 mb-4 rounded-md ${message.type === "error" ? "bg-destructive/10 text-destructive border border-destructive/20" : "bg-primary/10 text-primary border border-primary/20"}`}>
+          <div className={`p-4 mb-6 rounded-lg border ${message.type === "error" ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-primary/10 text-primary border-primary/20"}`}>
             {message.text}
           </div>
         )}
         
         <form onSubmit={handleChangePassword} className="space-y-6">
           <div>
-            <label htmlFor="current-password" className="block text-sm font-medium text-foreground mb-1">
+            <label htmlFor="current-password" className="block text-sm font-light text-foreground mb-2">
               Current Password
             </label>
             <div className="relative">
@@ -207,12 +183,12 @@ export default function AccountSettings() {
                 type={showCurrentPassword ? "text" : "password"}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full p-2 border border-border rounded-md focus:ring-primary focus:border-primary"
+                className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
                 required
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
               >
                 {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -222,7 +198,7 @@ export default function AccountSettings() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="new-password" className="block text-sm font-light text-foreground mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -231,13 +207,12 @@ export default function AccountSettings() {
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full p-2 border border-border rounded-md focus:ring-primary focus:border-primary"
+                  className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
                   required
-                  minLength={8}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                 >
                   {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -246,7 +221,7 @@ export default function AccountSettings() {
             </div>
             
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="confirm-password" className="block text-sm font-light text-foreground mb-2">
                 Confirm Password
               </label>
               <div className="relative">
@@ -255,12 +230,12 @@ export default function AccountSettings() {
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-2 border border-border rounded-md focus:ring-primary focus:border-primary"
+                  className="w-full p-3 border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground"
                   required
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -272,7 +247,7 @@ export default function AccountSettings() {
           <div>
             <button
               type="submit"
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-2xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 font-light transition-colors"
               disabled={isLoading}
             >
               Change Password
