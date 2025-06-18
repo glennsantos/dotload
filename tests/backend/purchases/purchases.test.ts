@@ -139,8 +139,8 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with URL parameters
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
-        nextUrl: new URL('http://localhost:3000/api/purchases')
+        url: 'http://localhost:2222/api/purchases',
+        nextUrl: new URL('http://localhost:2222/api/purchases')
       };
 
       const response = await GET(mockRequest as any);
@@ -165,8 +165,8 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with pagination parameters
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases?page=2&limit=10',
-        nextUrl: new URL('http://localhost:3000/api/purchases?page=2&limit=10')
+        url: 'http://localhost:2222/api/purchases?page=2&limit=10',
+        nextUrl: new URL('http://localhost:2222/api/purchases?page=2&limit=10')
       };
 
       const response = await GET(mockRequest as any);
@@ -191,8 +191,8 @@ describe('Purchase Management API Tests', () => {
       const { GET } = await import('@/app/api/purchases/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
-        nextUrl: new URL('http://localhost:3000/api/purchases')
+        url: 'http://localhost:2222/api/purchases',
+        nextUrl: new URL('http://localhost:2222/api/purchases')
       };
 
       const response = await GET(mockRequest as any);
@@ -219,7 +219,7 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with text() method that returns JSON string
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
+        url: 'http://localhost:2222/api/purchases',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         text: jest.fn().mockResolvedValue(JSON.stringify({
@@ -244,7 +244,7 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with missing fields
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
+        url: 'http://localhost:2222/api/purchases',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         text: jest.fn().mockResolvedValue(JSON.stringify({
@@ -268,7 +268,7 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with valid data
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
+        url: 'http://localhost:2222/api/purchases',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         text: jest.fn().mockResolvedValue(JSON.stringify({
@@ -293,7 +293,7 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with valid data
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
+        url: 'http://localhost:2222/api/purchases',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         text: jest.fn().mockResolvedValue(JSON.stringify({
@@ -326,7 +326,7 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with invalid email
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
+        url: 'http://localhost:2222/api/purchases',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         text: jest.fn().mockResolvedValue(JSON.stringify({
@@ -357,7 +357,7 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with negative amount
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
+        url: 'http://localhost:2222/api/purchases',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         text: jest.fn().mockResolvedValue(JSON.stringify({
@@ -389,7 +389,7 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request with discount
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
+        url: 'http://localhost:2222/api/purchases',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         text: jest.fn().mockResolvedValue(JSON.stringify({
@@ -416,7 +416,7 @@ describe('Purchase Management API Tests', () => {
 
       // Mock request that returns invalid JSON
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
+        url: 'http://localhost:2222/api/purchases',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         text: jest.fn().mockResolvedValue('invalid json')
@@ -435,8 +435,8 @@ describe('Purchase Management API Tests', () => {
       const { GET } = await import('@/app/api/purchases/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
-        nextUrl: new URL('http://localhost:3000/api/purchases')
+        url: 'http://localhost:2222/api/purchases',
+        nextUrl: new URL('http://localhost:2222/api/purchases')
       };
 
       const response = await GET(mockRequest as any);
@@ -460,8 +460,8 @@ describe('Purchase Management API Tests', () => {
       const { GET } = await import('@/app/api/purchases/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/purchases',
-        nextUrl: new URL('http://localhost:3000/api/purchases')
+        url: 'http://localhost:2222/api/purchases',
+        nextUrl: new URL('http://localhost:2222/api/purchases')
       };
 
       const response = await GET(mockRequest as any);

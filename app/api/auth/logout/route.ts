@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 // Get domain from environment variables
-const DOMAIN = process.env.DOMAIN || 'localhost:3000';
+const DOMAIN = process.env.DOMAIN || 'localhost:2222';
 const BASE_URL = DOMAIN.startsWith('http') ? DOMAIN : `http://${DOMAIN}`;
 
 // Only handle POST requests for intentional logout

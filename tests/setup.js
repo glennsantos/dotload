@@ -309,7 +309,7 @@ global.localStorage = localStorageMock;
 global.window = {
   ...global.window,
   location: {
-    href: 'http://localhost:3000',
+    href: 'http://localhost:2222',
     pathname: '/',
     search: '',
     hash: '',

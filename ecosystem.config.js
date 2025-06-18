@@ -6,7 +6,7 @@ module.exports = {
       args: 'dev',
       env: {
         NODE_ENV: 'development',
-        PORT: 3000
+        PORT: 2222
       },
       watch: true,
       ignore_watch: [

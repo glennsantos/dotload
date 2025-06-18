@@ -115,7 +115,7 @@ describe('Authentication API Tests', () => {
 
       const { POST } = await import('@/app/api/auth/login/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+      const request = createMockNextRequest('http://localhost:2222/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           email: 'test@example.com',
@@ -151,7 +151,7 @@ describe('Authentication API Tests', () => {
 
       const { POST } = await import('@/app/api/auth/login/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+      const request = createMockNextRequest('http://localhost:2222/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           email: 'test@example.com',
@@ -174,7 +174,7 @@ describe('Authentication API Tests', () => {
 
       const { POST } = await import('@/app/api/auth/login/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+      const request = createMockNextRequest('http://localhost:2222/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           email: 'nonexistent@example.com',
@@ -203,7 +203,7 @@ describe('Authentication API Tests', () => {
 
       const { POST } = await import('@/app/api/auth/login/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+      const request = createMockNextRequest('http://localhost:2222/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           email: 'test@example.com',
@@ -226,7 +226,7 @@ describe('Authentication API Tests', () => {
     it('should handle missing credentials', async () => {
       const { POST } = await import('@/app/api/auth/login/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+      const request = createMockNextRequest('http://localhost:2222/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           email: '',
@@ -249,7 +249,7 @@ describe('Authentication API Tests', () => {
 
       const { POST } = await import('@/app/api/auth/login/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+      const request = createMockNextRequest('http://localhost:2222/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           email: 'test@example.com',
@@ -272,7 +272,7 @@ describe('Authentication API Tests', () => {
     it('should return 405 for GET requests', async () => {
       const { GET } = await import('@/app/api/auth/login/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/auth/login', {
+      const request = createMockNextRequest('http://localhost:2222/api/auth/login', {
         method: 'GET',
       });
 

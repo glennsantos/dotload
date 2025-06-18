@@ -194,8 +194,8 @@ describe('Payout Management API Tests', () => {
       const { GET } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: new URL('http://localhost:3000/api/payouts')
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: new URL('http://localhost:2222/api/payouts')
       };
 
       const response = await GET(mockRequest as any);
@@ -214,8 +214,8 @@ describe('Payout Management API Tests', () => {
       const { GET } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: new URL('http://localhost:3000/api/payouts')
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: new URL('http://localhost:2222/api/payouts')
       };
 
       const response = await GET(mockRequest as any);
@@ -234,8 +234,8 @@ describe('Payout Management API Tests', () => {
       const { GET } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: new URL('http://localhost:3000/api/payouts')
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: new URL('http://localhost:2222/api/payouts')
       };
 
       const response = await GET(mockRequest as any);
@@ -268,8 +268,8 @@ describe('Payout Management API Tests', () => {
 
       // Mock request with json() method
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: { origin: 'http://localhost:3000' },
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: { origin: 'http://localhost:2222' },
         headers: new Map([['content-type', 'application/json'], ['cookie', 'token=mock_jwt_token']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -288,7 +288,7 @@ describe('Payout Management API Tests', () => {
       
       // Verify internal API was called
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:3000/api/transactions/payout',
+        'http://localhost:2222/api/transactions/payout',
         expect.objectContaining({
           method: 'POST',
           headers: {
@@ -305,7 +305,7 @@ describe('Payout Management API Tests', () => {
       const { POST } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
+        url: 'http://localhost:2222/api/payouts',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -327,7 +327,7 @@ describe('Payout Management API Tests', () => {
       const { POST } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
+        url: 'http://localhost:2222/api/payouts',
         headers: new Map([['content-type', 'application/json']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -356,8 +356,8 @@ describe('Payout Management API Tests', () => {
       const { POST } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: { origin: 'http://localhost:3000' },
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: { origin: 'http://localhost:2222' },
         headers: new Map([['content-type', 'application/json'], ['cookie', 'token=mock_jwt_token']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -388,8 +388,8 @@ describe('Payout Management API Tests', () => {
       const { POST } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: { origin: 'http://localhost:3000' },
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: { origin: 'http://localhost:2222' },
         headers: new Map([['content-type', 'application/json'], ['cookie', 'token=mock_jwt_token']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -422,8 +422,8 @@ describe('Payout Management API Tests', () => {
       const { POST } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: { origin: 'http://localhost:3000' },
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: { origin: 'http://localhost:2222' },
         headers: new Map([['content-type', 'application/json'], ['cookie', 'token=mock_jwt_token']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -461,8 +461,8 @@ describe('Payout Management API Tests', () => {
       const { POST } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: { origin: 'http://localhost:3000' },
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: { origin: 'http://localhost:2222' },
         headers: new Map([['content-type', 'application/json'], ['cookie', 'token=mock_jwt_token']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -479,7 +479,7 @@ describe('Payout Management API Tests', () => {
       
       // Verify internal API was called with correct data
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:3000/api/transactions/payout',
+        'http://localhost:2222/api/transactions/payout',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
@@ -512,8 +512,8 @@ describe('Payout Management API Tests', () => {
         const { POST } = await import('@/app/api/payouts/route');
 
         const mockRequest = {
-          url: 'http://localhost:3000/api/payouts',
-          nextUrl: { origin: 'http://localhost:3000' },
+          url: 'http://localhost:2222/api/payouts',
+          nextUrl: { origin: 'http://localhost:2222' },
           headers: new Map([['content-type', 'application/json'], ['cookie', 'token=mock_jwt_token']]),
           // @ts-ignore
           json: jest.fn().mockResolvedValue({
@@ -540,8 +540,8 @@ describe('Payout Management API Tests', () => {
       const { POST } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: { origin: 'http://localhost:3000' },
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: { origin: 'http://localhost:2222' },
         headers: new Map([['content-type', 'application/json'], ['cookie', 'token=mock_jwt_token']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -572,8 +572,8 @@ describe('Payout Management API Tests', () => {
       const { POST } = await import('@/app/api/payouts/route');
 
       const mockRequest = {
-        url: 'http://localhost:3000/api/payouts',
-        nextUrl: { origin: 'http://localhost:3000' },
+        url: 'http://localhost:2222/api/payouts',
+        nextUrl: { origin: 'http://localhost:2222' },
         headers: new Map([['content-type', 'application/json'], ['cookie', 'token=mock_jwt_token']]),
         // @ts-ignore
         json: jest.fn().mockResolvedValue({
@@ -596,7 +596,7 @@ describe('Payout Management API Tests', () => {
     it('should return current fee configuration', async () => {
       const { GET } = await import('@/app/api/fee-config/route');
 
-      const request = createMockNextRequest('http://localhost:3000/api/fee-config');
+      const request = createMockNextRequest('http://localhost:2222/api/fee-config');
       const response = await GET();
       const data = await response.json();
 

@@ -1,12 +1,15 @@
 # Tasks for Frontend Redesign
 
-- update all documentation with how we've deployed so far.
 - change all button colors to conform with the new color scheme
+- make the rounded elements less rounded. apply to all elements 
 - get a xendit account
+- clean up front end console.logs for prod
 
 
 ===== COMPLETED TASKS ======
 
+- ✅ change port to 2222
+- ✅ update all documentation with how we've deployed so far.
 - ✅ change the scheme to match the colors, styles and fonts of Claude: /home/aryeh/dev/dotload/data/Screenshot from 2025-06-14 09-05-16.png
 - ✅ Replace all instances of "alacarte/alacart" with "dotload" (branding rebrand completed)
 
