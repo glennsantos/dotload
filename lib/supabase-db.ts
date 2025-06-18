@@ -212,11 +212,194 @@ export class SupabaseProductService {
 
     return data;
   }
+
+  // Get product count by user ID
+  async getProductCount(userId: string) {
+    const supabase = await this.getAdminClient();
+    
+    const { count, error } = await supabase
+      .from('Product')
+      .select('*', { count: 'exact', head: true })
+      .eq('userId', userId);
+
+    if (error) {
+      throw new Error(`Failed to get product count: ${error.message}`);
+    }
+
+    return count || 0;
+  }
+}
+
+// Purchase operations using Supabase
+export class SupabasePurchaseService {
+  private async getAdminClient() {
+    const client = await getSupabaseAdminClient();
+    if (!client) {
+      throw new Error('Supabase admin client not available');
+    }
+    return client;
+  }
+
+  // Get purchases including direct user purchases and product owner purchases
+  async getAllUserRelatedPurchases(userId: string) {
+    const supabase = await this.getAdminClient();
+    
+    // Get direct purchases by user
+    const { data: userPurchases, error: userError } = await supabase
+      .from('Purchase')
+      .select(`
+        *,
+        product:Product(*)
+      `)
+      .eq('userId', userId);
+
+    if (userError) {
+      throw new Error(`Failed to get user purchases: ${userError.message}`);
+    }
+
+    // Get products owned by this user
+    const { data: userProducts, error: productsError } = await supabase
+      .from('Product')
+      .select('id')
+      .eq('userId', userId);
+
+    if (productsError) {
+      throw new Error(`Failed to get user products: ${productsError.message}`);
+    }
+
+    let productOwnerPurchases: any[] = [];
+    if (userProducts && userProducts.length > 0) {
+      const productIds = userProducts.map(p => p.id);
+      
+      // Get purchases for products owned by this user
+      const { data: ownerPurchases, error: ownerError } = await supabase
+        .from('Purchase')
+        .select(`
+          *,
+          product:Product(*)
+        `)
+        .in('productId', productIds);
+
+      if (ownerError) {
+        throw new Error(`Failed to get product owner purchases: ${ownerError.message}`);
+      }
+
+      productOwnerPurchases = ownerPurchases || [];
+    }
+
+    // Combine and deduplicate
+    const allPurchases = [...(userPurchases || []), ...productOwnerPurchases];
+    const uniquePurchases = allPurchases.filter((purchase, index, self) => 
+      index === self.findIndex(p => p.id === purchase.id)
+    );
+
+    return uniquePurchases;
+  }
+
+  // Get recent transactions for a user
+  async getRecentTransactions(userId: string, limit: number = 5) {
+    const supabase = await this.getAdminClient();
+    
+    // Get direct purchases by user
+    const { data: userPurchases, error: userError } = await supabase
+      .from('Purchase')
+      .select(`
+        *,
+        product:Product(*)
+      `)
+      .eq('userId', userId)
+      .order('createdAt', { ascending: false });
+
+    if (userError) {
+      throw new Error(`Failed to get user purchases: ${userError.message}`);
+    }
+
+    // Get products owned by this user
+    const { data: userProducts, error: productsError } = await supabase
+      .from('Product')
+      .select('id')
+      .eq('userId', userId);
+
+    if (productsError) {
+      throw new Error(`Failed to get user products: ${productsError.message}`);
+    }
+
+    let productOwnerPurchases: any[] = [];
+    if (userProducts && userProducts.length > 0) {
+      const productIds = userProducts.map(p => p.id);
+      
+      // Get purchases for products owned by this user
+      const { data: ownerPurchases, error: ownerError } = await supabase
+        .from('Purchase')
+        .select(`
+          *,
+          product:Product(*)
+        `)
+        .in('productId', productIds)
+        .order('createdAt', { ascending: false });
+
+      if (ownerError) {
+        throw new Error(`Failed to get product owner purchases: ${ownerError.message}`);
+      }
+
+      productOwnerPurchases = ownerPurchases || [];
+    }
+
+    // Combine and deduplicate
+    const allPurchases = [...(userPurchases || []), ...productOwnerPurchases];
+    const uniquePurchases = allPurchases.filter((purchase, index, self) => 
+      index === self.findIndex(p => p.id === purchase.id)
+    );
+
+    // Sort by creation date and limit
+    const sortedPurchases = uniquePurchases.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return sortedPurchases.slice(0, limit);
+  }
+
+  // Get unique customers who bought from this user's products
+  async getUniqueCustomers(userId: string) {
+    const supabase = await this.getAdminClient();
+    
+    // First get all products owned by this user
+    const { data: userProducts, error: productsError } = await supabase
+      .from('Product')
+      .select('id')
+      .eq('userId', userId);
+
+    if (productsError) {
+      throw new Error(`Failed to get user products: ${productsError.message}`);
+    }
+
+    if (!userProducts || userProducts.length === 0) {
+      return 0;
+    }
+
+    const productIds = userProducts.map(p => p.id);
+
+    // Then get purchases for those products
+    const { data, error } = await supabase
+      .from('Purchase')
+      .select('email')
+      .in('productId', productIds)
+      .not('email', 'is', null);
+
+    if (error) {
+      throw new Error(`Failed to get customers: ${error.message}`);
+    }
+
+    // Get unique emails
+    const uniqueEmails = [...new Set(data?.map(p => p.email).filter(Boolean))];
+    return uniqueEmails.length;
+  }
 }
 
 // Service instances
 export const supabaseUserService = new SupabaseUserService();
 export const supabaseProductService = new SupabaseProductService();
+export const supabasePurchaseService = new SupabasePurchaseService();
 
 // Test database connection using Supabase
 export async function testSupabaseDatabase() {

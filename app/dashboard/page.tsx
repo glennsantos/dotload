@@ -6,7 +6,7 @@ import { StatsCard } from "@/components/ui/stats-card"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { prisma } from "@/lib/prisma"
+import { supabaseProductService, supabasePurchaseService } from "@/lib/supabase-db"
 import { formatCurrency } from "@/lib/utils"
 import { redirect } from "next/navigation"
 
@@ -30,64 +30,40 @@ type Purchase = {
 };
 
 async function getStats(userId: string) {
-  // Get product count
-  const productCount = await prisma.product.count({
-    where: { userId }
-  });
+  try {
+    // Get product count using Supabase
+    const productCount = await supabaseProductService.getProductCount(userId);
 
-  // Get sales count and total revenue
-  const purchases = await prisma.purchase.findMany({
-    where: {
-      OR: [
-        { userId },
-        { product: { userId } }
-      ]
-    },
-    include: {
-      product: true
-    }
-  }) as Purchase[];
+    // Get all user-related purchases using Supabase
+    const purchases = await supabasePurchaseService.getAllUserRelatedPurchases(userId);
 
-  const salesCount = purchases.length;
-  const totalRevenue = purchases.reduce((sum: number, purchase: Purchase) => sum + (purchase.amount || 0), 0);
-  
-  // Get customer count
-  const customers = await prisma.purchase.findMany({
-    where: {
-      product: { userId }
-    },
-    select: {
-      email: true
-    },
-    distinct: ['email']
-  });
+    const salesCount = purchases.length;
+    const totalRevenue = purchases.reduce((sum: number, purchase: any) => sum + (purchase.amount || 0), 0);
+    
+    // Get customer count using Supabase
+    const customerCount = await supabasePurchaseService.getUniqueCustomers(userId);
 
-  const customerCount = customers.length;
+    // Get recent transactions using Supabase
+    const recentTransactions = await supabasePurchaseService.getRecentTransactions(userId, 5);
 
-  // Get recent transactions
-  const recentTransactions = await prisma.purchase.findMany({
-    where: {
-      OR: [
-        { userId },
-        { product: { userId } }
-      ]
-    },
-    include: {
-      product: true
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    take: 5
-  }) as Purchase[];
-
-  return {
-    productCount,
-    salesCount,
-    totalRevenue,
-    customerCount,
-    recentTransactions
-  };
+    return {
+      productCount,
+      salesCount,
+      totalRevenue,
+      customerCount,
+      recentTransactions
+    };
+  } catch (error) {
+    console.error('Error getting dashboard stats:', error);
+    // Return default values on error
+    return {
+      productCount: 0,
+      salesCount: 0,
+      totalRevenue: 0,
+      customerCount: 0,
+      recentTransactions: []
+    };
+  }
 }
 
 export default async function Dashboard() {

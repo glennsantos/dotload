@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { jwtVerify, type JWTPayload } from 'jose';
-import { prisma } from './prisma';
+import { supabaseUserService } from './supabase-db';
 import { headers } from 'next/headers';
 import { NextRequest } from 'next/server';
 
@@ -104,13 +104,19 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       email: string;
     };
     
-    // Get user from database to ensure they still exist
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, storeLogoPath: true }
-    });
+    // Get user from Supabase to ensure they still exist
+    const user = await supabaseUserService.findUserById(decoded.userId);
     
-    return user;
+    if (!user) {
+      return null;
+    }
+    
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      storeLogoPath: user.storeLogoPath
+    };
   } catch (error) {
     console.error('Error getting current user:', error);
     return null;
