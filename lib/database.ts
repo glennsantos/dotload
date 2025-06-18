@@ -7,7 +7,6 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Database URLs
 const DATABASE_URL = process.env.DATABASE_URL;
-const DIRECT_URL = process.env.DIRECT_URL;
 const LOCAL_DATABASE_URL = process.env.LOCAL_DATABASE_URL || 'postgresql://postgres:password@localhost:5432/alacart';
 
 // Check if Supabase is configured
@@ -26,8 +25,8 @@ export const getDatabaseUrl = () => {
 
 // Get the appropriate direct URL for Prisma
 export const getDirectUrl = () => {
-  if (isSupabaseConfigured() && DIRECT_URL) {
-    return DIRECT_URL;
+  if (isSupabaseConfigured() && DATABASE_URL) {
+    return DATABASE_URL;
   } else {
     return LOCAL_DATABASE_URL;
   }

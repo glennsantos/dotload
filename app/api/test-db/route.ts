@@ -5,9 +5,8 @@ export async function GET(req: NextRequest) {
   try {
     console.log('Testing database connection...');
     console.log('Available environment variables:');
-    console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
-    console.log('DIRECT_URL:', process.env.DIRECT_URL ? 'SET' : 'NOT SET');
-    console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET');
+      console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+  console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET');
     console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     
@@ -41,7 +40,7 @@ export async function GET(req: NextRequest) {
     let databaseConfig = {
       isSupabase: false,
       hasUrl: !!process.env.DATABASE_URL,
-      hasDirectUrl: !!process.env.DIRECT_URL,
+      hasDirectUrl: !!process.env.DATABASE_URL,
       supabaseConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
     };
     
@@ -76,7 +75,7 @@ export async function GET(req: NextRequest) {
       databaseConfig: {
         isSupabase: false,
         hasUrl: !!process.env.DATABASE_URL,
-        hasDirectUrl: !!process.env.DIRECT_URL,
+        hasDirectUrl: !!process.env.DATABASE_URL,
         supabaseConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
       },
       debug: {
