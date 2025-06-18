@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService, supabaseVariationService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function GET(
@@ -30,15 +30,8 @@ export async function GET(
       }, { status: 401 });
     }
 
-    // Find the product by ID
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
-      include: {
-        variations: true
-      }
-    });
+    // Find the product by ID using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!product) {
@@ -48,16 +41,30 @@ export async function GET(
       }, { status: 404 });
     }
     
-    if (product.userId !== userId) {
+    if ((product as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to view this product'
       }, { status: 403 });
     }
     
-    return NextResponse.json(product.variations);
+    // Get variations for this product using Supabase
+    const variations = await supabaseVariationService.getVariationsByProductId(productId);
+    
+    return NextResponse.json(variations);
   } catch (error) {
     console.error('Fetch variations error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to fetch variations', 
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -93,12 +100,8 @@ export async function POST(
       }, { status: 401 });
     }
 
-    // Find the product by ID
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      }
-    });
+    // Find the product by ID using Supabase
+    const product = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!product) {
@@ -108,7 +111,7 @@ export async function POST(
       }, { status: 404 });
     }
     
-    if (product.userId !== userId) {
+    if ((product as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to modify this product'
@@ -126,18 +129,27 @@ export async function POST(
       }, { status: 400 });
     }
 
-    // Create the new variation
-    const newVariation = await prisma.variation.create({
-      data: {
-        name,
-        options,
-        productId
-      }
+    // Create the new variation using Supabase
+    const newVariation = await supabaseVariationService.createVariation({
+      name,
+      options,
+      productId
     });
     
     return NextResponse.json(newVariation);
   } catch (error) {
     console.error('Create variation error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to create variation', 
       details: error instanceof Error ? error.message : 'Unknown error'

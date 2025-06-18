@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getPurchaseByAccessCode } from '@/lib/purchase-utils';
 
 export async function GET(request: NextRequest) {
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Find purchase by access code using utility function
+    // Find purchase by access code using utility function (now uses Supabase)
     const purchase = await getPurchaseByAccessCode(accessCode);
     
     if (!purchase) {
@@ -29,6 +28,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(purchase);
   } catch (error) {
     console.error('Fetch purchase error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to fetch purchase', 
       details: error instanceof Error ? error.message : 'Unknown error'

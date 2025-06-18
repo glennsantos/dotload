@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseTransactionService } from '@/lib/supabase-db';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateProcessingFee } from '@/lib/fee-utils';
-import { Transaction } from '@prisma/client';
 
 // Define types for metadata
 type PayoutMetadata = {
@@ -32,61 +31,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // Get transactions to calculate balances
-    const totalIncomeResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'income'
-      AND status = 'completed'
-    `;
-    const totalIncome = Number((totalIncomeResult as any)[0].sum);
-
-    const totalPayoutsResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'payout'
-      AND (status = 'completed' OR status = 'pending')
-    `;
-    const totalPayouts = Number((totalPayoutsResult as any)[0].sum);
-
-    const totalFeesResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'fee'
-      AND status = 'completed'
-    `;
-    const totalFees = Number((totalFeesResult as any)[0].sum);
+    // Get transaction summary from Supabase
+    const transactionSummary = await supabaseTransactionService.getTransactionSummary(user.id);
+    
+    // Calculate balances from the summary
+    const totalIncome = transactionSummary.totalIncome;
+    const totalPayouts = transactionSummary.totalPayouts;
+    const totalFees = transactionSummary.totalFees;
+    const pendingPayouts = transactionSummary.pendingPayouts;
     
     // Calculate balances
     const totalBalance = totalIncome - totalPayouts - totalFees;
-    
-    // For available balance, we need to consider pending transactions
-    // and any minimum balance requirements
-    const pendingPayoutsResult = await prisma.$queryRaw`
-      SELECT COALESCE(SUM(amount), 0) as sum FROM "Transaction"
-      WHERE "userId" = ${user.id}
-      AND type = 'payout'
-      AND status = 'pending'
-    `;
-    const pendingPayouts = Number((pendingPayoutsResult as any)[0].sum);
-    
-    // Available balance is total balance minus pending payouts
     const availableBalance = totalBalance - pendingPayouts;
     
-    // Get payout history
-    const payouts = await prisma.transaction.findMany({
-      where: {
-        userId: user.id,
-        type: 'payout',
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 20,
+    // Get payout history using Supabase
+    const payouts = await supabaseTransactionService.getTransactionsByUserId(user.id, {
+      type: 'payout',
+      limit: 20,
+      orderBy: 'createdAt',
+      sortOrder: 'desc'
     });
     
     // Format the payouts for the frontend
-    const formattedPayouts: FormattedPayout[] = payouts.map((payout: Transaction) => {
+    const formattedPayouts: FormattedPayout[] = payouts.map((payout: any) => {
       // Extract metadata if available
       const metadata = payout.metadata ? 
         (typeof payout.metadata === 'string' ? JSON.parse(payout.metadata) : payout.metadata) : 
@@ -113,6 +80,17 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching payout data:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch payout data' },
       { status: 500 }
@@ -169,6 +147,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(payoutResult);
   } catch (error) {
     console.error('Error processing payout:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to process payout request' },
       { status: 500 }

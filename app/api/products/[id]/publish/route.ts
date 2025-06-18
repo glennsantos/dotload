@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService } from '@/lib/supabase-db';
 import { getAuthUserId } from '@/lib/auth-utils';
 
 export async function PUT(
@@ -30,12 +30,8 @@ export async function PUT(
       }, { status: 401 });
     }
     
-    // Find the product by ID
-    const existingProduct = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      }
-    });
+    // Find the product by ID using Supabase
+    const existingProduct = await supabaseProductService.findProductById(productId);
     
     // Check if product exists and belongs to the user
     if (!existingProduct) {
@@ -45,7 +41,7 @@ export async function PUT(
       }, { status: 404 });
     }
     
-    if (existingProduct.userId !== userId) {
+    if ((existingProduct as any).userId !== userId) {
       return NextResponse.json({ 
         error: 'Unauthorized',
         details: 'You do not have permission to update this product'
@@ -56,19 +52,10 @@ export async function PUT(
     const formData = await request.formData();
     const isPublic = formData.get('isPublic') === 'true';
     
-    // Update the product's publish status
-    const updatedProduct = await prisma.product.update({
-      where: {
-        id: productId
-      },
-      data: {
-        isPublic: isPublic,
-        status: isPublic ? 'active' : 'draft'
-      },
-      include: {
-        variations: true,
-        files: true
-      }
+    // Update the product's publish status using Supabase
+    const updatedProduct = await supabaseProductService.updateProduct(productId, {
+      isPublic: isPublic,
+      status: isPublic ? 'active' : 'draft'
     });
     
     return NextResponse.json({ 
@@ -77,6 +64,17 @@ export async function PUT(
     });
   } catch (error) {
     console.error('Product update error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to update product', 
       details: error instanceof Error ? error.message : 'Unknown error'

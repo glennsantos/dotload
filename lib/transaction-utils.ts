@@ -35,6 +35,48 @@ export const createTransaction = async (params: CreateTransactionParams) => {
   }
 };
 
+// Create a purchase transaction (wrapper for backwards compatibility)
+export const createPurchaseTransaction = async (
+  userId: string,
+  recipientUserId: string,
+  purchaseId: string,
+  amount: number,
+  currency: string,
+  productName: string
+) => {
+  try {
+    console.log('[Transaction Utils] Creating purchase transaction:', {
+      userId,
+      recipientUserId,
+      purchaseId,
+      amount,
+      currency,
+      productName
+    });
+    
+    // Determine transaction type based on user context
+    const isIncome = userId !== recipientUserId; // Income if receiving payment from different user
+    
+    const transactionData: CreateTransactionParams = {
+      userId: isIncome ? recipientUserId : userId,
+      type: isIncome ? 'income' : 'purchase',
+      amount,
+      description: `${isIncome ? 'Sale' : 'Purchase'} of ${productName}`,
+      status: 'completed',
+      referenceId: purchaseId,
+      currency,
+    };
+    
+    const transaction = await createTransaction(transactionData);
+    
+    console.log('[Transaction Utils] Purchase transaction created successfully:', transaction.id);
+    return transaction;
+  } catch (error) {
+    console.error('[Transaction Utils] Error creating purchase transaction:', error);
+    throw error;
+  }
+};
+
 // Update transaction status using Supabase
 export const updateTransactionStatus = async (
   transactionId: string,
@@ -43,9 +85,9 @@ export const updateTransactionStatus = async (
   try {
     console.log(`[Transaction Utils] Updating transaction ${transactionId} status to:`, status);
     
-    const updatedTransaction = await supabaseTransactionService.updateTransactionStatus(
+    const updatedTransaction = await supabaseTransactionService.updateTransaction(
       transactionId,
-      status
+      { status }
     );
     
     console.log('[Transaction Utils] Transaction status updated successfully');

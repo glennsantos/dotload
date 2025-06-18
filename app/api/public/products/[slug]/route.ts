@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseProductService } from '@/lib/supabase-db';
 
 export async function GET(
   request: NextRequest
@@ -17,19 +17,13 @@ export async function GET(
       }, { status: 400 });
     }
     
-    // Find the product by ID or slug
-    const product = await prisma.product.findFirst({
-      where: {
-        OR: [
-          { id: slug },
-          { slug: slug }
-        ]
-      },
-      include: {
-        variations: true,
-        files: true
-      }
-    });
+    // Find the product by slug using Supabase
+    let product = await supabaseProductService.findProductBySlug(slug);
+    
+    // If not found by slug, try by ID
+    if (!product) {
+      product = await supabaseProductService.findProductById(slug);
+    }
     
     // Check if product exists
     if (!product) {
@@ -41,28 +35,39 @@ export async function GET(
     
     // Return the product details (without sensitive information)
     return NextResponse.json({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      type: product.type,
-      price: product.price,
-      currency: product.currency,
-      description: product.description,
-      coverImagePath: product.coverImagePath,
-      allowPayWhatYouWant: product.allowPayWhatYouWant,
-      offerCoupons: product.offerCoupons,
+      id: (product as any).id,
+      name: (product as any).name,
+      slug: (product as any).slug,
+      type: (product as any).type,
+      price: (product as any).price,
+      currency: (product as any).currency,
+      description: (product as any).description,
+      coverImagePath: (product as any).coverImagePath,
+      allowPayWhatYouWant: (product as any).allowPayWhatYouWant,
+      offerCoupons: (product as any).offerCoupons,
       // Handle discountCodes safely with type checking
-      discountCodes: 'discountCodes' in product ? product.discountCodes : null,
-      variations: product.variations.map((variation: { id: string; name: string; options: string }) => ({
+      discountCodes: (product as any).discountCodes || null,
+      variations: (product as any).variations?.map((variation: any) => ({
         id: variation.id,
         name: variation.name,
         options: variation.options
-      })),
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt
+      })) || [],
+      createdAt: (product as any).createdAt,
+      updatedAt: (product as any).updatedAt
     });
   } catch (error) {
     console.error('Fetch public product error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to fetch product', 
       details: error instanceof Error ? error.message : 'Unknown error'

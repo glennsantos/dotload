@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { supabaseFileService } from '@/lib/supabase-db';
 import { getPurchaseByAccessCode } from '@/lib/purchase-utils';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Find purchase by access code using utility function
+    // Find purchase by access code using utility function (now uses Supabase)
     const purchase = await getPurchaseByAccessCode(accessCode);
     
     console.log(`Purchase found: ${!!purchase}, status: ${purchase?.status}`);
@@ -75,12 +75,8 @@ export async function GET(request: NextRequest) {
     
     console.log('Purchase status check passed');
     
-    // Find the specific file by ID
-    const file = await prisma.file.findUnique({
-      where: {
-        id: fileId
-      }
-    });
+    // Find the specific file by ID using Supabase
+    const file = await supabaseFileService.findFileById(fileId);
     
     console.log(`File found: ${!!file}, filename: ${file?.filename}, path: ${file?.path}`);
     
@@ -240,6 +236,17 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error('Download error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to download content', 
       details: error instanceof Error ? error.message : 'Unknown error'

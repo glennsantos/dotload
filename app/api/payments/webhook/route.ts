@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { updatePurchaseStatus, getPurchaseById } from '@/lib/purchase-utils';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
 import { createPurchaseTransaction } from '@/lib/transaction-utils';
@@ -73,6 +72,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Webhook processing error:', error);
+    
+    if (error instanceof Error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('Failed to')) {
+        return NextResponse.json(
+          { error: 'Database error occurred. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to process webhook', 
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -94,13 +104,13 @@ async function handleInvoicePaid(data: any) {
     // Extract purchase ID from external ID
     const purchaseId = externalId.replace('purchase_', '');
     
-    // Update purchase status to completed
+    // Update purchase status to completed (uses Supabase via purchase-utils)
     await updatePurchaseStatus(purchaseId, 'completed', data.id);
     
-    // Get purchase details to create transaction
+    // Get purchase details to create transaction (uses Supabase via purchase-utils)
     const purchase = await getPurchaseById(purchaseId);
     if (purchase && purchase.product && purchase.product.user) {
-      // Create transaction entries for both buyer and seller
+      // Create transaction entries for both buyer and seller (uses Supabase via transaction-utils)
       await createPurchaseTransaction(
         purchase.userId || 'guest',      // Use 'guest' if no user ID (guest purchase)
         purchase.product.user.id,
