@@ -12,6 +12,8 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 
 ✅ **User Registration ID Generation Fix**: Fixed user registration failing with "null value in column 'id' violates not-null constraint" error. Root cause was missing ID generation in Supabase create methods. Added crypto.randomUUID() generation for User, Product, File, FileDownload, Variation, Purchase, and PasswordReset tables. Also added automatic verification token generation (crypto.randomBytes) with 24-hour expiry for user email verification during registration.
 
+✅ **Email Button Colors Update**: Updated all email template button colors from emerald green (#10b981) to Claude's signature orange (#ff6b35) to match the design system. Also updated button border-radius from 9999px to 16px for consistency with the less-rounded design preference. Affects verification email, password reset email, and purchase confirmation email templates.
+
 ✅ **Build Success**: App successfully builds with zero errors after complete Supabase migration (fixed email import issue)
 
 ✅ **Sales Page Design Update**: Updated sales page design to match consistent design language across the app - using claude-card styling, emerald/stone color scheme, proper typography (font-light), and consistent spacing/layout patterns

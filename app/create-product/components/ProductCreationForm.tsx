@@ -591,29 +591,6 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
             {/* Left side - Form */}
             <div className="md:col-span-7">
                 <div className="claude-card p-6">
-              {/* Tab Navigation */}
-                  <div className="w-full flex bg-background border border-border rounded-2xl overflow-hidden mb-8">
-                <button
-                  onClick={() => handleTabChange('setup')}
-                      className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-2xl transition-colors ${
-                    activeTab === 'setup'
-                      ? 'bg-primary/10 text-primary'
-                          : 'text-muted-foreground hover:text-primary hover:bg-muted/50'
-                  }`}
-                >
-                  Product Setup
-                </button>
-                <button
-                  onClick={() => handleTabChange('advanced')}
-                      className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-2xl transition-colors ${
-                    activeTab === 'advanced'
-                      ? 'bg-primary/10 text-primary'
-                          : 'text-muted-foreground hover:text-primary hover:bg-muted/50'
-                  }`}
-                >
-                  Advanced Options
-                </button>
-              </div>
 
               {activeTab === 'setup' && (
                 <div className="space-y-8">
