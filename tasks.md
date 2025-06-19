@@ -16,6 +16,8 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 
 ✅ **Product Type Selection Removal**: Removed product type selection from /create-product and /edit-product pages. Products now default to 'digital_product' type automatically. Removed ProductTypeSelection component, updated ProductCreationForm to always show digital product fields, removed conditional rendering from ProductAdvancedOptions, and updated form validation to always apply digital product rules. This streamlines the product creation process by focusing only on digital products.
 
+✅ **Rich Text Editor Fix**: Fixed broken description field and restored "kitchen sink" functionality by replacing unreliable HugerTE with modern Tiptap rich text editor. New editor includes comprehensive formatting toolbar with bold, italic, strikethrough, headings (H1-H3), bullet/numbered lists, blockquotes, and undo/redo. Provides better user experience with modern UI, proper focus handling, and reliable content synchronization.
+
 ✅ **Build Success**: App successfully builds with zero errors after complete Supabase migration (fixed email import issue)
 
 ✅ **Sales Page Design Update**: Updated sales page design to match consistent design language across the app - using claude-card styling, emerald/stone color scheme, proper typography (font-light), and consistent spacing/layout patterns
