@@ -2,6 +2,8 @@
 // This replaces direct PostgreSQL/Prisma connections with Supabase's JavaScript client
 
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
+import crypto from 'crypto';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -77,10 +79,17 @@ export class SupabaseUserService {
   async createUser(userData: any) {
     const supabase = await this.getAdminClient();
     
+    // Generate verification token and expiry
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    
     const { data, error } = await supabase
       .from('User')
       .insert({
+        id: crypto.randomUUID(),
         ...userData,
+        verificationToken,
+        verificationTokenExpiry: verificationTokenExpiry.toISOString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       })
@@ -173,6 +182,7 @@ export class SupabaseProductService {
     const { data, error } = await supabase
       .from('Product')
       .insert({
+        id: crypto.randomUUID(),
         ...productData,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -426,7 +436,10 @@ export class SupabaseFileService {
     
     const { data, error } = await supabase
       .from('File')
-      .insert(fileData)
+      .insert({
+        id: crypto.randomUUID(),
+        ...fileData
+      })
       .select()
       .single();
 
@@ -509,6 +522,7 @@ export class SupabaseFileService {
     const { data, error } = await supabase
       .from('FileDownload')
       .insert({
+        id: crypto.randomUUID(),
         ...downloadData,
         downloadedAt: new Date().toISOString()
       })
@@ -687,7 +701,10 @@ export class SupabaseVariationService {
     
     const { data, error } = await supabase
       .from('Variation')
-      .insert(variationData)
+      .insert({
+        id: crypto.randomUUID(),
+        ...variationData
+      })
       .select()
       .single();
 
@@ -805,6 +822,7 @@ export class SupabasePurchaseService {
     const { data, error } = await supabase
       .from('Purchase')
       .insert({
+        id: crypto.randomUUID(),
         ...purchaseData,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -1620,6 +1638,7 @@ export class SupabasePasswordResetService {
     const { data, error } = await supabase
       .from('PasswordReset')
       .insert({
+        id: crypto.randomUUID(),
         userId,
         token,
         expiresAt: expiresAt.toISOString(),

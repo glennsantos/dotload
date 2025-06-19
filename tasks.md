@@ -10,6 +10,8 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 
 ===== COMPLETED TASKS ======
 
+✅ **User Registration ID Generation Fix**: Fixed user registration failing with "null value in column 'id' violates not-null constraint" error. Root cause was missing ID generation in Supabase create methods. Added crypto.randomUUID() generation for User, Product, File, FileDownload, Variation, Purchase, and PasswordReset tables. Also added automatic verification token generation (crypto.randomBytes) with 24-hour expiry for user email verification during registration.
+
 ✅ **Build Success**: App successfully builds with zero errors after complete Supabase migration (fixed email import issue)
 
 ✅ **Sales Page Design Update**: Updated sales page design to match consistent design language across the app - using claude-card styling, emerald/stone color scheme, proper typography (font-light), and consistent spacing/layout patterns
