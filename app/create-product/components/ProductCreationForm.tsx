@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Plus, AlertCircle, X } from 'lucide-react'
 import ErrorModal from '@/app/components/ErrorModal'
 import SuccessModal from '@/app/components/SuccessModal'
 import { validateProductForm } from '@/lib/form-validation'
-import ProductTypeSelection from './ProductTypeSelection'
+
 import ProductInformation from './ProductInformation'
 import ProductFiles from './ProductFiles'
 import ProductPreview from './ProductPreview'
@@ -93,7 +93,7 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
   // Initialize product data with default values
   const [productData, setProductData] = useState<Product>({
     name: '',
-    type: '',
+    type: 'digital_product',
     price: 0,
     description: '',
     slug: '',
@@ -387,31 +387,13 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
         formData.append('coverImage', productData.coverImage)
       }
       
-      // Add physical product details if applicable
-      if (productData.type === 'physical_product') {
-        formData.append('stockQuantity', productData.stockQuantity?.toString() || '')
-        
-        // Add variants if any
-        if (productData.variants && productData.variants.length > 0) {
-          formData.append('variants', JSON.stringify(productData.variants))
-        }
-        
-        // Add inventory settings
-        if (productData.inventorySettings) {
-          formData.append('inventorySettings', JSON.stringify(productData.inventorySettings))
-        }
+      // Add content links if any
+      if (productData.contentLinks.length > 0) {
+        formData.append('contentLinks', JSON.stringify(productData.contentLinks))
       }
       
-      // Add digital product details if applicable
-      if (productData.type === 'digital_product') {
-        // Add content links if any
-        if (productData.contentLinks.length > 0) {
-          formData.append('contentLinks', JSON.stringify(productData.contentLinks))
-        }
-        
-        // Add download settings
-        formData.append('downloadSettings', JSON.stringify(productData.downloadSettings))
-      }
+      // Add download settings
+      formData.append('downloadSettings', JSON.stringify(productData.downloadSettings))
       
       // Add payment options
       formData.append('paymentOptions', JSON.stringify(productData.paymentOptions))
@@ -594,11 +576,6 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
 
               {activeTab === 'setup' && (
                 <div className="space-y-8">
-                  <ProductTypeSelection 
-                    productData={productData} 
-                    setProductData={setProductData} 
-                  />
-                  
                   <ProductInformation 
                     productData={productData} 
                     setProductData={setProductData} 
@@ -608,14 +585,10 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
                     setProductData={setProductData}
                   />
                   
-                  {/* Physical product components moved to ProductAdvancedOptions */}
-                  
-                  {productData.type === 'digital_product' && (
-                    <ProductFiles 
-                      productData={productData} 
-                      setProductData={setProductData} 
-                    />
-                  )}
+                  <ProductFiles 
+                    productData={productData} 
+                    setProductData={setProductData} 
+                  />
                 </div>
               )}
               

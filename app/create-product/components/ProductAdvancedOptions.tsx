@@ -171,74 +171,49 @@ export default function ProductAdvancedOptions({
 
   return (
     <div className="space-y-8">
-      {/* Download Settings - Only for digital products */}
-      {productData.type === 'digital_product' && (
-        <div className="mt-5 mb-8 border rounded-md p-4">
-          <div className="flex items-center mb-4">
-            <h3 className="text-xl font-light text-stone-900">Download Settings</h3>
+      {/* Download Settings */}
+      <div className="mt-5 mb-8 border rounded-md p-4">
+        <div className="flex items-center mb-4">
+          <h3 className="text-xl font-light text-stone-900">Download Settings</h3>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">Control how customers access your digital content</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm mb-1">Download Limit</label>
+            <input
+              type="text"
+              value={productData.downloadSettings.downloadLimit}
+              onChange={(e) => setProductData({
+                ...productData,
+                downloadSettings: {
+                  ...productData.downloadSettings,
+                  downloadLimit: parseInt(e.target.value) || 2
+                }
+              })}
+              className="w-full p-2 border rounded-md"
+            />
+            <p className="text-xs text-gray-500 mt-1">Maximum downloads per purchase</p>
           </div>
-          <p className="text-sm text-gray-500 mb-4">Control how customers access your digital content</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm mb-1">Download Limit</label>
-              <input
-                type="text"
-                value={productData.downloadSettings.downloadLimit}
-                onChange={(e) => setProductData({
-                  ...productData,
-                  downloadSettings: {
-                    ...productData.downloadSettings,
-                    downloadLimit: parseInt(e.target.value) || 2
-                  }
-                })}
-                className="w-full p-2 border rounded-md"
-              />
-              <p className="text-xs text-gray-500 mt-1">Maximum downloads per purchase</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm mb-1">Link Expiration (days)</label>
-              <input
-                type="text"
-                value={productData.downloadSettings.linkExpiration}
-                onChange={(e) => setProductData({
-                  ...productData,
-                  downloadSettings: {
-                    ...productData.downloadSettings,
-                    linkExpiration: parseInt(e.target.value) || 30
-                  }
-                })}
-                className="w-full p-2 border rounded-md"
-              />
-              <p className="text-xs text-gray-500 mt-1">How long download links remain active</p>
-            </div>
+          <div>
+            <label className="block text-sm mb-1">Link Expiration (days)</label>
+            <input
+              type="text"
+              value={productData.downloadSettings.linkExpiration}
+              onChange={(e) => setProductData({
+                ...productData,
+                downloadSettings: {
+                  ...productData.downloadSettings,
+                  linkExpiration: parseInt(e.target.value) || 30
+                }
+              })}
+              className="w-full p-2 border rounded-md"
+            />
+            <p className="text-xs text-gray-500 mt-1">How long download links remain active</p>
           </div>
         </div>
-      )}
-
-      {/* Physical Product Advanced Options */}
-      {productData.type === 'physical_product' && (
-        <>
-          {/* Product Variants */}
-          <ProductVariants
-            productData={productData}
-            setProductData={setProductData}
-          />
-          
-          {/* Advanced Inventory */}
-          <AdvancedInventory
-            productData={productData}
-            setProductData={setProductData}
-          />
-          
-          {/* Shipping & Fulfillment */}
-          <ShippingFulfillment
-            productData={productData}
-            setProductData={setProductData}
-          />
-        </>
-      )}
+      </div>
       
       {/* What's Included Section */}
       <div className="mb-8 border rounded-md p-4">
@@ -289,11 +264,10 @@ export default function ProductAdvancedOptions({
         </div>
       </div>
       
-      {/* Course Curriculum - Only for digital products */}
-      {productData.type === 'digital_product' && (
-        <div className="mb-8 border rounded-md p-4">
-          <h3 className="text-xl font-light mb-2">Course Curriculum</h3>
-          <p className="text-sm text-gray-500 mb-4">Add modules, lessons, and resources</p>
+      {/* Course Curriculum */}
+      <div className="mb-8 border rounded-md p-4">
+        <h3 className="text-xl font-light mb-2">Course Curriculum</h3>
+        <p className="text-sm text-gray-500 mb-4">Add modules, lessons, and resources</p>
           
           {productData.curriculum.length > 0 ? (
             <div className="mb-4">
@@ -378,7 +352,6 @@ export default function ProductAdvancedOptions({
             </div>
           </div>
         </div>
-      )}
       
       {/* Product Badges */}
       <div className="mb-8 border rounded-md p-4">
@@ -519,30 +492,28 @@ export default function ProductAdvancedOptions({
           </div>
         </div>
         
-        {productData.type === 'digital_product' && (
-          <div className="flex items-center justify-between p-2 border rounded-md mb-2">
-            <div>
-              <h4 className="text-sm font-light">Instant Download</h4>
-              <p className="text-xs text-gray-500 font-light">Show that your product is available immediately</p>
-            </div>
-            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-              <input 
-                type="checkbox" 
-                id="trust-download" 
-                checked={productData.trustIndicators.instantDownload}
-                onChange={(e) => setProductData({
-                  ...productData,
-                  trustIndicators: {...productData.trustIndicators, instantDownload: e.target.checked}
-                })}
-                className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-              />
-              <label 
-                htmlFor="trust-download" 
-                className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.instantDownload ? 'bg-primary' : 'bg-muted'}`}
-              ></label>
-            </div>
+        <div className="flex items-center justify-between p-2 border rounded-md mb-2">
+          <div>
+            <h4 className="text-sm font-light">Instant Download</h4>
+            <p className="text-xs text-gray-500 font-light">Show that your product is available immediately</p>
           </div>
-        )}
+          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input 
+              type="checkbox" 
+              id="trust-download" 
+              checked={productData.trustIndicators.instantDownload}
+              onChange={(e) => setProductData({
+                ...productData,
+                trustIndicators: {...productData.trustIndicators, instantDownload: e.target.checked}
+              })}
+              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+            />
+            <label 
+              htmlFor="trust-download" 
+              className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${productData.trustIndicators.instantDownload ? 'bg-primary' : 'bg-muted'}`}
+            ></label>
+          </div>
+        </div>
         
         <div className="flex items-center justify-between p-2 border rounded-md mb-2">
           <div>

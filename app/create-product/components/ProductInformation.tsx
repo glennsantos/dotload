@@ -138,7 +138,6 @@ export default function ProductInformation({
 
       <div className="mb-6">
         <h3 className="tracking-tight text-xl font-light text-foreground">Product Information</h3>
-        <p className="text-sm text-muted-foreground mb-4">Essential details about your product</p>
       </div>
       
       <div className="space-y-6">

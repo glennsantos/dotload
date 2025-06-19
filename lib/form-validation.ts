@@ -91,9 +91,7 @@ export const validateProductForm = (formData: any) => {
     errors.name = 'Product name must be less than 100 characters';
   }
   
-  if (!formData.type) {
-    errors.type = 'Product type is required';
-  }
+
   
   // Validate price using the new price validation function
   const priceValidation = validatePrice(formData.price);
@@ -114,38 +112,28 @@ export const validateProductForm = (formData: any) => {
     }
   }
   
-  // Validate download settings for digital products
-  if (formData.type === 'digital_product') {
-    if (formData.downloadSettings?.downloadLimit !== undefined) {
-      const downloadLimit = parseInt(formData.downloadSettings.downloadLimit);
-      if (isNaN(downloadLimit) || downloadLimit < 1) {
-        errors['downloadSettings.downloadLimit'] = 'Download limit must be a positive number';
-      }
-    }
-    
-    if (formData.downloadSettings?.linkExpiration !== undefined) {
-      const linkExpiration = parseInt(formData.downloadSettings.linkExpiration);
-      if (isNaN(linkExpiration) || linkExpiration < 1) {
-        errors['downloadSettings.linkExpiration'] = 'Link expiration must be a positive number';
-      }
-    }
-    
-    // Validate content files or links for digital products
-    if (
-      (!formData.contentFiles || formData.contentFiles.length === 0) && 
-      (!formData.contentLinks || formData.contentLinks.length === 0) &&
-      (!formData.existingFiles || formData.existingFiles.length === 0)
-    ) {
-      errors.contentFiles = 'Digital products require at least one content file or link';
+  // Validate download settings
+  if (formData.downloadSettings?.downloadLimit !== undefined) {
+    const downloadLimit = parseInt(formData.downloadSettings.downloadLimit);
+    if (isNaN(downloadLimit) || downloadLimit < 1) {
+      errors['downloadSettings.downloadLimit'] = 'Download limit must be a positive number';
     }
   }
   
-  // Validate physical product fields
-  if (formData.type === 'physical_product' && formData.stockQuantity !== null) {
-    const stockQuantity = parseInt(formData.stockQuantity);
-    if (isNaN(stockQuantity) || stockQuantity < 0) {
-      errors.stockQuantity = 'Stock quantity must be a non-negative number';
+  if (formData.downloadSettings?.linkExpiration !== undefined) {
+    const linkExpiration = parseInt(formData.downloadSettings.linkExpiration);
+    if (isNaN(linkExpiration) || linkExpiration < 1) {
+      errors['downloadSettings.linkExpiration'] = 'Link expiration must be a positive number';
     }
+  }
+  
+  // Validate content files or links
+  if (
+    (!formData.contentFiles || formData.contentFiles.length === 0) && 
+    (!formData.contentLinks || formData.contentLinks.length === 0) &&
+    (!formData.existingFiles || formData.existingFiles.length === 0)
+  ) {
+    errors.contentFiles = 'Digital products require at least one content file or link';
   }
   
   // Validate custom badges

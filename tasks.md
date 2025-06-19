@@ -14,6 +14,8 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 
 ✅ **Email Button Colors Update**: Updated all email template button colors from emerald green (#10b981) to Claude's signature orange (#ff6b35) to match the design system. Also updated button border-radius from 9999px to 16px for consistency with the less-rounded design preference. Affects verification email, password reset email, and purchase confirmation email templates.
 
+✅ **Product Type Selection Removal**: Removed product type selection from /create-product and /edit-product pages. Products now default to 'digital_product' type automatically. Removed ProductTypeSelection component, updated ProductCreationForm to always show digital product fields, removed conditional rendering from ProductAdvancedOptions, and updated form validation to always apply digital product rules. This streamlines the product creation process by focusing only on digital products.
+
 ✅ **Build Success**: App successfully builds with zero errors after complete Supabase migration (fixed email import issue)
 
 ✅ **Sales Page Design Update**: Updated sales page design to match consistent design language across the app - using claude-card styling, emerald/stone color scheme, proper typography (font-light), and consistent spacing/layout patterns
