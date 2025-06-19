@@ -92,10 +92,10 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-          <p className="mt-2 text-gray-600">Loading purchase details...</p>
+          <p className="mt-2 text-muted-foreground">Loading purchase details...</p>
         </div>
       </div>
     )
@@ -103,11 +103,11 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
 
   if (error || !purchase) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="border rounded-md p-8 text-center max-w-md mx-auto">
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="bg-card border border-border rounded-2xl p-8 text-center max-w-md mx-auto">
           <h2 className="text-xl font-light mb-2 text-destructive">Error</h2>
-          <p className="text-gray-600 mb-6">{error || 'Purchase not found'}</p>
-          <Link href={`/p/${unwrappedParams.slug}`} className="px-4 py-2 bg-black text-white rounded-md inline-flex items-center gap-2">
+          <p className="text-muted-foreground mb-6">{error || 'Purchase not found'}</p>
+          <Link href={`/p/${unwrappedParams.slug}`} className="px-4 py-2 bg-primary text-primary-foreground rounded-2xl inline-flex items-center gap-2 font-medium hover:bg-primary/90 transition-colors">
             <ArrowLeft size={18} /> Back to Product
           </Link>
         </div>
@@ -117,7 +117,7 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-white shadow-sm">
+      <header className="bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Image 
             src="/logo.png" 
@@ -131,65 +131,67 @@ export default function SuccessPage({ params, searchParams }: SuccessPageProps) 
       </header>
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-white shadow-sm rounded-lg p-8 text-center">
+        <div className="bg-card shadow-sm rounded-2xl p-8 text-center border border-border">
           <div className="mb-6">
             <CheckCircle size={64} className="mx-auto text-primary" />
           </div>
           
-          <h1 className="text-3xl font-light text-gray-900 mb-4">Thank You for Your Purchase!</h1>
+          <h1 className="text-3xl font-light text-foreground mb-4">Thank You for Your Purchase!</h1>
           
-          <p className="text-lg text-gray-600 mb-8">
+          <p className="text-lg text-muted-foreground mb-8">
             Your payment was successful and your order has been processed.
           </p>
           
-                      <div className="bg-muted rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-light text-gray-900 mb-4">Order Details</h2>
-            
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-light text-gray-600">Product:</span>
-              <span className="font-light">{purchase.product.name}</span>
-            </div>
-            
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-light text-gray-600">Amount:</span>
-              <span className="font-light">{purchase.currency} {purchase.amount.toFixed(2)}</span>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="font-light text-gray-600">Date:</span>
-              <span className="font-light">{new Date(purchase.createdAt).toLocaleDateString()}</span>
+          <div className="bg-muted/30 rounded-2xl p-6 mb-8 border border-border">
+            <div className="space-y-4">
+              <div className="flex items-start justify-between text-left">
+                <span className="font-medium text-muted-foreground">Product:</span>
+                <span className="font-light text-foreground text-right max-w-xs">
+                  🧙‍♂️ {purchase.product.name}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-muted-foreground">Amount:</span>
+                <span className="font-light text-foreground">{purchase.currency} {purchase.amount.toFixed(2)}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-muted-foreground">Date:</span>
+                <span className="font-light text-foreground">{new Date(purchase.createdAt).toLocaleDateString()}</span>
+              </div>
             </div>
           </div>
           
           <div className="mb-8">
-            <h2 className="text-xl font-light text-gray-900 mb-4">Access Your Content</h2>
+            <h2 className="text-xl font-light text-foreground mb-4">Access Your Content</h2>
             
-            <p className="font-light text-gray-600 mb-4">
+            <p className="font-light text-muted-foreground mb-6">
               You can access your purchased content using the link below:
             </p>
             
             <Link 
               href={`/temp-downloads?code=${accessCode}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-light hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl font-medium hover:bg-primary/90 transition-colors"
             >
               <Download size={20} />
               Access Content
             </Link>
           </div>
           
-          <div className="border-t pt-6">
-            <p className="text-sm text-gray-500 mb-4">
+          <div className="border-t border-border pt-6">
+            <p className="text-sm text-muted-foreground mb-6">
               {purchase.status === 'completed' 
-                ? `A confirmation email has been sent to ${purchase.email} with your purchase details.`
+                ? `Your payment is being processed. You will receive an email at ${purchase.email} once the payment is confirmed.`
                 : purchase.status === 'pending'
                   ? `Your payment is being processed. You will receive an email at ${purchase.email} once the payment is confirmed.`
-                  : `A confirmation email has been sent to ${purchase.email} with your purchase details.`
+                  : `Your payment is being processed. You will receive an email at ${purchase.email} once the payment is confirmed.`
               }
             </p>
             
             <Link 
               href={`/p/${purchase?.product?.slug || unwrappedParams.slug}`}
-              className="inline-flex items-center justify-center px-6 py-3 rounded-full font-light text-primary bg-background hover:bg-primary/5 border border-primary"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-2xl font-light text-foreground bg-muted hover:bg-muted/80 border border-border transition-colors"
             >
               Return to Product Page
             </Link>

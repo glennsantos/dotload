@@ -8,6 +8,12 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 - get a xendit account
 - clean up front end console.logs for prod
 
+ADMIN PANEL
+For admin of the entire system
+- manage stuck orders
+- manage payments
+- manage product posts
+
 ===== COMPLETED TASKS ======
 
 ✅ **User Registration ID Generation Fix**: Fixed user registration failing with "null value in column 'id' violates not-null constraint" error. Root cause was missing ID generation in Supabase create methods. Added crypto.randomUUID() generation for User, Product, File, FileDownload, Variation, Purchase, and PasswordReset tables. Also added automatic verification token generation (crypto.randomBytes) with 24-hour expiry for user email verification during registration.
@@ -39,6 +45,8 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 ✅ **Fix checkout page styling to match design system**: Updated checkout page styling to match the design system, improved form styling, and better visual hierarchy.
 
 ✅ **Fix purchase creation error - API response mismatch**: Fixed "Failed to create purchase record or missing purchase ID" error in checkout. Root cause was API response structure mismatch - backend returns `{purchase: {...}}` but frontend expected purchase object directly. Fixed frontend createPurchase function to extract the purchase from the response wrapper.
+
+✅ **Fix success page styling**: Updated success page styling to match the design system - replaced hardcoded colors with semantic tokens (bg-card, text-foreground, text-muted-foreground, border-border), improved order details section with better layout and spacing, updated button styling to use rounded-2xl with proper hover states, added wizard emoji to product name, and fixed loading/error states to use consistent design system colors.
 
 ## Notes
 - All Supabase create methods now properly generate UUIDs for required ID fields
