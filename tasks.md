@@ -34,10 +34,13 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 
 ✅ **Rich Text Editor Optimization**: Optimized rich text editor toolbar to be compact with only essential formatting options.
 
+✅ **Fix product menu dropdown positioning and styling issues**: Improved product menu dropdown positioning and styling to match the design system.
+
 ## Notes
 - All Supabase create methods now properly generate UUIDs for required ID fields
 - Registration working successfully - confirmed via logs
 - Email templates updated with new orange branding
 - Product creation now defaults to digital products only
 - Rich text editor now uses Quill.js with excellent copy-paste handling and compact toolbar
+- Product actions dropdown now uses portal rendering with improved positioning, z-index, and design system colors
 

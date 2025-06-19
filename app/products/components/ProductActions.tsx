@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { createPortal } from "react-dom"
 import { 
   Ellipsis, 
   Eye, 
@@ -43,9 +44,9 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
     
     const buttonRect = buttonRef.current.getBoundingClientRect()
     const menuWidth = 192 // w-48 = 12rem = 192px
-    const menuHeight = 200 // Approximate height of menu
+    const menuHeight = 240 // More accurate height for menu with 5 items
     
-    let top = buttonRect.bottom + 4 // 4px gap below button
+    let top = buttonRect.bottom + 8 // 8px gap below button
     let left = buttonRect.right - menuWidth // Align right edge with button
     
     // Adjust if menu would go off-screen
@@ -53,13 +54,22 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
     const viewportHeight = window.innerHeight
     
     // Adjust horizontal position if menu goes off right edge
-    if (left < 8) {
-      left = 8 // 8px margin from left edge
+    if (left < 16) {
+      left = 16 // 16px margin from left edge
+    }
+    
+    // Adjust horizontal position if menu goes off left edge (for very small screens)
+    if (left + menuWidth > viewportWidth - 16) {
+      left = viewportWidth - menuWidth - 16
     }
     
     // Adjust vertical position if menu goes off bottom edge
-    if (top + menuHeight > viewportHeight - 8) {
-      top = buttonRect.top - menuHeight - 4 // Position above button instead
+    if (top + menuHeight > viewportHeight - 16) {
+      top = buttonRect.top - menuHeight - 8 // Position above button instead
+      // If still doesn't fit above, position at top of viewport
+      if (top < 16) {
+        top = 16
+      }
     }
     
     return { top, left }
@@ -223,17 +233,17 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
       <button
         ref={buttonRef}
         onClick={handleMenuToggle}
-        className={`${variant === 'icon' ? 'p-2.5' : 'p-2'} rounded-xl hover:bg-stone-100 border border-stone-200`}
+        className={`${variant === 'icon' ? 'p-2.5' : 'p-2'} rounded-xl hover:bg-muted border border-border transition-colors`}
         aria-label="Product actions"
       >
-        <Ellipsis size={variant === 'icon' ? 20 : 18} />
+        <Ellipsis size={variant === 'icon' ? 20 : 18} className="text-muted-foreground" />
       </button>
       
-      {/* Actions menu - now using fixed positioning */}
-      {isMenuOpen && (
+      {/* Actions menu - using portal for proper rendering */}
+      {isMenuOpen && typeof window !== 'undefined' && createPortal(
         <div 
           ref={menuRef} 
-          className="fixed w-48 bg-white border border-stone-200 rounded-lg shadow-lg z-50"
+          className="fixed w-48 bg-background border border-border rounded-lg shadow-xl z-[9999]"
           style={{
             top: `${menuPosition.top}px`,
             left: `${menuPosition.left}px`
@@ -242,33 +252,33 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
           <div className="p-1">
             <button
               onClick={handlePreview}
-              className="flex items-center w-full px-3 py-2 text-sm hover:bg-stone-100 rounded-md"
+              className="flex items-center w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
             >
-              <Eye size={16} className="mr-2" />
+              <Eye size={16} className="mr-2 text-muted-foreground" />
               Preview
             </button>
             
             <button
               onClick={handleEdit}
-              className="flex items-center w-full px-3 py-2 text-sm hover:bg-stone-100 rounded-md"
+              className="flex items-center w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
             >
-              <Edit size={16} className="mr-2" />
+              <Edit size={16} className="mr-2 text-muted-foreground" />
               Edit
             </button>
             
             <button
               onClick={handlePublishToggle}
-              className="flex items-center w-full px-3 py-2 text-sm hover:bg-stone-100 rounded-md"
+              className="flex items-center w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors disabled:opacity-50"
               disabled={isLoading}
             >
               {product.isPublic ? (
                 <>
-                  <FileText size={16} className="mr-2" />
+                  <FileText size={16} className="mr-2 text-muted-foreground" />
                   Set as Draft
                 </>
               ) : (
                 <>
-                  <Globe size={16} className="mr-2" />
+                  <Globe size={16} className="mr-2 text-muted-foreground" />
                   Publish
                 </>
               )}
@@ -276,17 +286,17 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
             
             <button
               onClick={handleArchiveToggle}
-              className="flex items-center w-full px-3 py-2 text-sm hover:bg-stone-100 rounded-md"
+              className="flex items-center w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors disabled:opacity-50"
               disabled={isLoading}
             >
               {product.isArchived ? (
                 <>
-                  <RotateCcw size={16} className="mr-2" />
+                  <RotateCcw size={16} className="mr-2 text-muted-foreground" />
                   Restore
                 </>
               ) : (
                 <>
-                  <Archive size={16} className="mr-2" />
+                  <Archive size={16} className="mr-2 text-muted-foreground" />
                   Archive
                 </>
               )}
@@ -294,28 +304,31 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
             
             <button
               onClick={handleDeleteClick}
-              className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"
+              className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md transition-colors disabled:opacity-50"
               disabled={isLoading}
             >
               <Trash2 size={16} className="mr-2" />
               Delete
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       
       {/* Preview modal */}
-      {isPreviewOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div ref={modalRef} className="py-10 bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-auto">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-medium">Product Preview</h3>
-              <button 
+      {isPreviewOpen && typeof window !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+          <div ref={modalRef} className="py-10 bg-background border border-border rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-center p-4 border-b border-border">
+              <h3 className="text-lg font-medium text-foreground">Product Preview</h3>
+              <Button
                 onClick={() => setIsPreviewOpen(false)}
-                className="p-1 rounded-full hover:bg-stone-100"
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
               >
                 <X size={20} />
-              </button>
+              </Button>
             </div>
             
             <div className="p-4">
@@ -341,35 +354,37 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
               <div className="mt-6 flex justify-end">
                 <Button
                   onClick={() => setIsPreviewOpen(false)}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="w-full"
                 >
                   Close Preview
                 </Button>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       
       {/* Delete confirmation modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-medium mb-4">Delete Product</h3>
-            <p className="mb-6">Are you sure you want to delete <strong>{product.name}</strong>? This action cannot be undone.</p>
+      {showDeleteModal && typeof window !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-background border border-border rounded-lg p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-xl font-medium mb-4 text-foreground">Delete Product</h3>
+            <p className="mb-6 text-muted-foreground">Are you sure you want to delete <strong className="text-foreground">{product.name}</strong>? This action cannot be undone.</p>
             
             <div className="flex justify-end gap-3">
-              <button 
+              <Button 
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 border rounded-md"
+                variant="outline"
                 disabled={isDeleting}
               >
                 Cancel
-              </button>
-              <button 
+              </Button>
+              <Button 
                 onClick={handleDeleteProduct}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                variant="destructive"
                 disabled={isDeleting}
+                className="flex items-center gap-2"
               >
                 {isDeleting ? (
                   <>
@@ -379,10 +394,11 @@ export default function ProductActions({ product, onProductUpdate, onProductDele
                 ) : (
                   'Delete Product'
                 )}
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       
       {/* Error message - also using fixed positioning */}
