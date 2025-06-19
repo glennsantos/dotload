@@ -56,7 +56,8 @@ export async function createPurchase(purchaseData: any) {
     throw new Error(data.error || "Failed to create purchase");
   }
   
-  return data;
+  // Extract the purchase from the response wrapper
+  return data.purchase;
 }
 
 /**

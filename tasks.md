@@ -38,6 +38,8 @@ is there something in vercel like @amplify.yml you see here. so that it can load
 
 ✅ **Fix checkout page styling to match design system**: Updated checkout page styling to match the design system, improved form styling, and better visual hierarchy.
 
+✅ **Fix purchase creation error - API response mismatch**: Fixed "Failed to create purchase record or missing purchase ID" error in checkout. Root cause was API response structure mismatch - backend returns `{purchase: {...}}` but frontend expected purchase object directly. Fixed frontend createPurchase function to extract the purchase from the response wrapper.
+
 ## Notes
 - All Supabase create methods now properly generate UUIDs for required ID fields
 - Registration working successfully - confirmed via logs
