@@ -1,22 +1,8 @@
 "use client"
 
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import { useState, useEffect } from 'react'
-import { 
-  Bold, 
-  Italic, 
-  Strikethrough, 
-  Heading1, 
-  Heading2, 
-  Heading3,
-  List, 
-  ListOrdered, 
-  Quote,
-  Undo,
-  Redo,
-  Link
-} from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import Quill from 'quill'
+import 'quill/dist/quill.snow.css'
 
 interface RichTextEditorProps {
   value: string
@@ -26,43 +12,75 @@ interface RichTextEditorProps {
 
 const RichTextEditor = ({ value, onChange, placeholder = 'Write something...' }: RichTextEditorProps) => {
   const [isMounted, setIsMounted] = useState(false)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const quillRef = useRef<Quill | null>(null)
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bulletList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-        orderedList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-      }),
-    ],
-    content: value,
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML()
-      onChange(html)
-    },
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] p-4',
-      },
-    },
-  })
-
-  // Handle client-side rendering
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  // Update editor content when value prop changes
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value)
+    if (!isMounted || !editorRef.current) return
+
+    // Initialize Quill
+    if (!quillRef.current) {
+      quillRef.current = new Quill(editorRef.current, {
+        theme: 'snow',
+        placeholder: placeholder,
+        modules: {
+          toolbar: [
+            // Compact toolbar with only essential formatting
+            [{ 'header': [2, 3, false] }], // Only H2, H3, and normal
+            ['bold', 'italic'], // Core text formatting
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }], // Lists
+            ['link'], // Links
+            ['clean'] // Remove formatting
+          ],
+          clipboard: {
+            // Enhanced clipboard handling for copy-paste from Word, browsers, etc.
+            matchVisual: false, // Preserves formatting but cleans unnecessary styles
+          }
+        },
+        formats: [
+          'header', 'bold', 'italic', 'list', 'bullet', 'link'
+        ]
+      })
+
+      // Set initial content
+      if (value) {
+        quillRef.current.root.innerHTML = value
+      }
+
+      // Listen for text changes
+      quillRef.current.on('text-change', () => {
+        if (quillRef.current) {
+          const html = quillRef.current.root.innerHTML
+          // Only call onChange if content actually changed
+          if (html !== value) {
+            onChange(html === '<p><br></p>' ? '' : html)
+          }
+        }
+      })
     }
-  }, [value, editor])
+
+    // Clean up on unmount
+    return () => {
+      if (quillRef.current) {
+        quillRef.current = null
+      }
+    }
+  }, [isMounted, placeholder])
+
+  // Update content when value prop changes
+  useEffect(() => {
+    if (quillRef.current && value !== quillRef.current.root.innerHTML) {
+      const selection = quillRef.current.getSelection()
+      quillRef.current.root.innerHTML = value || ''
+      if (selection) {
+        quillRef.current.setSelection(selection)
+      }
+    }
+  }, [value])
 
   // Don't render on server
   if (!isMounted) {
@@ -73,144 +91,133 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write something...' }:
     )
   }
 
-  if (!editor) {
-    return (
-      <div className="border border-border rounded-lg p-3 min-h-[200px] bg-background text-muted-foreground">
-        Loading editor...
-      </div>
-    )
-  }
-
-  const MenuBar = () => {
-    return (
-      <div className="border-b border-border p-2 flex flex-wrap gap-1 bg-muted/30">
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('bold') ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <Bold className="w-4 h-4" />
-        </button>
-        
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          disabled={!editor.can().chain().focus().toggleItalic().run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('italic') ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <Italic className="w-4 h-4" />
-        </button>
-        
-        <button
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          disabled={!editor.can().chain().focus().toggleStrike().run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('strike') ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <Strikethrough className="w-4 h-4" />
-        </button>
-
-        <div className="w-px h-8 bg-border mx-1" />
-
-        <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('heading', { level: 1 }) ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <Heading1 className="w-4 h-4" />
-        </button>
-        
-        <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('heading', { level: 2 }) ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <Heading2 className="w-4 h-4" />
-        </button>
-        
-        <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('heading', { level: 3 }) ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <Heading3 className="w-4 h-4" />
-        </button>
-
-        <div className="w-px h-8 bg-border mx-1" />
-
-        <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('bulletList') ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <List className="w-4 h-4" />
-        </button>
-        
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('orderedList') ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <ListOrdered className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`p-2 rounded hover:bg-muted transition-colors ${
-            editor.isActive('blockquote') ? 'bg-muted text-primary' : 'text-muted-foreground'
-          }`}
-          type="button"
-        >
-          <Quote className="w-4 h-4" />
-        </button>
-
-        <div className="w-px h-8 bg-border mx-1" />
-
-        <button
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().chain().focus().undo().run()}
-          className="p-2 rounded hover:bg-muted transition-colors text-muted-foreground disabled:opacity-50"
-          type="button"
-        >
-          <Undo className="w-4 h-4" />
-        </button>
-        
-        <button
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().chain().focus().redo().run()}
-          className="p-2 rounded hover:bg-muted transition-colors text-muted-foreground disabled:opacity-50"
-          type="button"
-        >
-          <Redo className="w-4 h-4" />
-        </button>
-      </div>
-    )
-  }
-
   return (
-    <div className="rounded-lg overflow-hidden border border-border bg-background">
-      <MenuBar />
-      <EditorContent 
-        editor={editor} 
-        className="min-h-[200px] [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[200px] [&_.ProseMirror]:p-4"
-      />
+    <div className="quill-editor-wrapper">
+      <style jsx global>{`
+        .quill-editor-wrapper .ql-toolbar {
+          border: 1px solid hsl(var(--border));
+          border-bottom: none;
+          border-radius: 8px 8px 0 0;
+          background: hsl(var(--muted) / 0.3);
+          padding: 4px 8px; /* Reduced padding */
+          min-height: auto; /* Remove fixed height */
+        }
+        
+        .quill-editor-wrapper .ql-toolbar .ql-formats {
+          margin-right: 8px; /* Reduced spacing between groups */
+        }
+        
+        .quill-editor-wrapper .ql-toolbar .ql-formats:last-child {
+          margin-right: 0;
+        }
+        
+        .quill-editor-wrapper .ql-container {
+          border: 1px solid hsl(var(--border));
+          border-top: none;
+          border-radius: 0 0 8px 8px;
+          background: hsl(var(--background));
+          min-height: 150px; /* Reduced height */
+          font-family: inherit;
+        }
+        
+        .quill-editor-wrapper .ql-editor {
+          min-height: 150px; /* Reduced height */
+          padding: 12px; /* Reduced padding */
+          color: hsl(var(--foreground));
+          font-size: 14px;
+          line-height: 1.6;
+        }
+        
+        .quill-editor-wrapper .ql-editor.ql-blank::before {
+          color: hsl(var(--muted-foreground));
+          font-style: normal;
+          left: 12px; /* Adjusted for reduced padding */
+        }
+        
+        /* Smaller toolbar buttons */
+        .quill-editor-wrapper .ql-toolbar button {
+          width: 28px !important;
+          height: 28px !important;
+          padding: 4px !important;
+        }
+        
+        .quill-editor-wrapper .ql-toolbar .ql-picker {
+          height: 28px !important;
+        }
+        
+        .quill-editor-wrapper .ql-toolbar .ql-picker-label {
+          padding: 4px 8px !important;
+          font-size: 13px !important;
+          line-height: 20px !important;
+        }
+        
+        .quill-editor-wrapper .ql-snow .ql-tooltip {
+          background: hsl(var(--background));
+          border: 1px solid hsl(var(--border));
+          color: hsl(var(--foreground));
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .quill-editor-wrapper .ql-snow .ql-tooltip input[type=text] {
+          background: hsl(var(--background));
+          border: 1px solid hsl(var(--border));
+          color: hsl(var(--foreground));
+          padding: 6px;
+          border-radius: 4px;
+          font-size: 13px;
+        }
+        
+        .quill-editor-wrapper .ql-snow .ql-tooltip a.ql-action::after,
+        .quill-editor-wrapper .ql-snow .ql-tooltip a.ql-remove::after {
+          color: hsl(var(--primary));
+        }
+        
+        .quill-editor-wrapper .ql-snow .ql-picker-options {
+          background: hsl(var(--background));
+          border: 1px solid hsl(var(--border));
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .quill-editor-wrapper .ql-snow .ql-picker-item {
+          padding: 6px 12px;
+          font-size: 13px;
+        }
+        
+        .quill-editor-wrapper .ql-snow .ql-picker-item:hover {
+          background: hsl(var(--muted));
+        }
+        
+        .quill-editor-wrapper .ql-snow .ql-stroke {
+          stroke: hsl(var(--muted-foreground));
+        }
+        
+        .quill-editor-wrapper .ql-snow .ql-fill {
+          fill: hsl(var(--muted-foreground));
+        }
+        
+        .quill-editor-wrapper .ql-snow.ql-toolbar button:hover,
+        .quill-editor-wrapper .ql-snow .ql-toolbar button:hover,
+        .quill-editor-wrapper .ql-snow.ql-toolbar button.ql-active,
+        .quill-editor-wrapper .ql-snow .ql-toolbar button.ql-active {
+          background: hsl(var(--muted));
+          border-radius: 3px;
+        }
+        
+        .quill-editor-wrapper .ql-snow.ql-toolbar button:hover .ql-stroke,
+        .quill-editor-wrapper .ql-snow .ql-toolbar button:hover .ql-stroke,
+        .quill-editor-wrapper .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+        .quill-editor-wrapper .ql-snow .ql-toolbar button.ql-active .ql-stroke {
+          stroke: hsl(var(--primary));
+        }
+        
+        .quill-editor-wrapper .ql-snow.ql-toolbar button:hover .ql-fill,
+        .quill-editor-wrapper .ql-snow .ql-toolbar button:hover .ql-fill,
+        .quill-editor-wrapper .ql-snow.ql-toolbar button.ql-active .ql-fill,
+        .quill-editor-wrapper .ql-snow .ql-toolbar button.ql-active .ql-fill {
+          fill: hsl(var(--primary));
+        }
+      `}</style>
+      <div ref={editorRef} />
     </div>
   )
 }
