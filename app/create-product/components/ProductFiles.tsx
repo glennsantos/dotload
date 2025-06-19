@@ -210,8 +210,8 @@ export default function ProductFiles({
       />
 
       <div className="mb-6">
-        <h3 className="tracking-tight text-xl font-light text-foreground">Digital Files</h3>
-        <p className="text-sm text-muted-foreground mb-4">Upload files customers will download after purchase</p>
+              <h3 className="tracking-tight text-xl font-light text-foreground">Digital Files</h3>
+      <p className="text-sm text-muted-foreground mb-4">Upload files customers will download after purchase</p>
       </div>
 
       {/* File upload area */}

@@ -253,12 +253,12 @@ export default function SalesPage() {
               <Wallet className="h-5 w-5 text-primary" />
             </div>
           </div>
-          <Button 
-            onClick={() => router.push('/payout')}
+            <Button 
+              onClick={() => router.push('/payout')}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light"
-          >
-            Request Payout
-          </Button>
+            >
+              Request Payout
+            </Button>
         </div>
       </div>
 
@@ -266,18 +266,18 @@ export default function SalesPage() {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-light text-foreground">Sales Transactions</h2>
-          <Select value={filter} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Transactions</SelectItem>
-              <SelectItem value="income">Income Only</SelectItem>
-              <SelectItem value="payout">Payouts Only</SelectItem>
-              <SelectItem value="fee">Fees Only</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+                <Select value={filter} onValueChange={handleFilterChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Transactions</SelectItem>
+                    <SelectItem value="income">Income Only</SelectItem>
+                    <SelectItem value="payout">Payouts Only</SelectItem>
+                    <SelectItem value="fee">Fees Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
         
         {isLoading ? (
           <div className="claude-card rounded-lg p-4 sm:p-6">
@@ -300,65 +300,65 @@ export default function SalesPage() {
             <p className="text-lg font-medium mb-2 text-foreground">No sales yet</p>
             <p className="text-sm text-muted-foreground mb-6">Start selling to see transactions here!</p>
             <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light">
-              <Link href="/create-product">+ Create A Product</Link>
-            </Button>
-          </div>
-        ) : (
+                    <Link href="/create-product">+ Create A Product</Link>
+                  </Button>
+                </div>
+              ) : (
           <div className="claude-card rounded-lg overflow-hidden">
             <div className="p-4 border-b border-border">
               <p className="text-sm text-muted-foreground">
                 Showing {filteredTransactions.length} of {pagination.total} transactions
               </p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">Description</th>
                     <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">Date</th>
                     <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">Type</th>
                     <th className="text-left py-3 px-4 font-medium text-sm text-muted-foreground">Status</th>
                     <th className="text-right py-3 px-4 font-medium text-sm text-muted-foreground">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTransactions.map((transaction) => (
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredTransactions.map((transaction) => (
                     <tr key={transaction.id} className="border-b border-border hover:bg-muted/50">
-                      <td className="py-3 px-4">
-                        <div>
+                            <td className="py-3 px-4">
+                              <div>
                           <div className="font-medium text-foreground">{transaction.description}</div>
-                          {transaction.reference && (
+                                {transaction.reference && (
                             <div className="text-xs text-muted-foreground mt-1">
-                              Reference: {transaction.reference} ({transaction.referenceType})
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
+                                    Reference: {transaction.reference} ({transaction.referenceType})
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
                         <div className="text-sm text-muted-foreground">
-                          {formatDate(transaction.createdAt)}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge className={getTypeBadgeColor(transaction.type)}>
-                          {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge className={getStatusBadgeColor(transaction.status)}>
-                          {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className={`font-medium whitespace-nowrap ${getAmountColor(transaction.type)}`}>
-                          {getAmountPrefix(transaction.type)}{formatCurrency(transaction.amount, transaction.currency)}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                                {formatDate(transaction.createdAt)}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <Badge className={getTypeBadgeColor(transaction.type)}>
+                                {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4">
+                              <Badge className={getStatusBadgeColor(transaction.status)}>
+                                {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className={`font-medium whitespace-nowrap ${getAmountColor(transaction.type)}`}>
+                                {getAmountPrefix(transaction.type)}{formatCurrency(transaction.amount, transaction.currency)}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
             {pagination.totalPages > 1 && (
               <div className="flex justify-between items-center p-4 border-t border-border">
                 <Button

@@ -588,93 +588,93 @@ const ProductCreationForm = ({ isEditing = false, productId = '' }: ProductCreat
           
           <div className="p-6 max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-              {/* Left side - Form */}
-              <div className="md:col-span-7">
+            {/* Left side - Form */}
+            <div className="md:col-span-7">
                 <div className="claude-card p-6">
-                  {/* Tab Navigation */}
+              {/* Tab Navigation */}
                   <div className="w-full flex bg-background border border-border rounded-2xl overflow-hidden mb-8">
-                    <button
-                      onClick={() => handleTabChange('setup')}
+                <button
+                  onClick={() => handleTabChange('setup')}
                       className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-2xl transition-colors ${
-                        activeTab === 'setup'
-                          ? 'bg-primary/10 text-primary'
+                    activeTab === 'setup'
+                      ? 'bg-primary/10 text-primary'
                           : 'text-muted-foreground hover:text-primary hover:bg-muted/50'
-                      }`}
-                    >
-                      Product Setup
-                    </button>
-                    <button
-                      onClick={() => handleTabChange('advanced')}
+                  }`}
+                >
+                  Product Setup
+                </button>
+                <button
+                  onClick={() => handleTabChange('advanced')}
                       className={`w-1/2 m-1 py-3 px-6 text-sm font-light rounded-2xl transition-colors ${
-                        activeTab === 'advanced'
-                          ? 'bg-primary/10 text-primary'
+                    activeTab === 'advanced'
+                      ? 'bg-primary/10 text-primary'
                           : 'text-muted-foreground hover:text-primary hover:bg-muted/50'
-                      }`}
-                    >
-                      Advanced Options
-                    </button>
-                  </div>
+                  }`}
+                >
+                  Advanced Options
+                </button>
+              </div>
 
-                  {activeTab === 'setup' && (
-                    <div className="space-y-8">
-                      <ProductTypeSelection 
-                        productData={productData} 
-                        setProductData={setProductData} 
-                      />
-                      
-                      <ProductInformation 
-                        productData={productData} 
-                        setProductData={setProductData} 
-                      />
-                      <ProductStockPricing
-                        productData={productData}
-                        setProductData={setProductData}
-                      />
-                      
-                      {/* Physical product components moved to ProductAdvancedOptions */}
-                      
-                      {productData.type === 'digital_product' && (
-                        <ProductFiles 
-                          productData={productData} 
-                          setProductData={setProductData} 
-                        />
-                      )}
-                    </div>
-                  )}
+              {activeTab === 'setup' && (
+                <div className="space-y-8">
+                  <ProductTypeSelection 
+                    productData={productData} 
+                    setProductData={setProductData} 
+                  />
                   
-                  {activeTab === 'advanced' && (
-                    <ProductAdvancedOptions 
+                  <ProductInformation 
+                    productData={productData} 
+                    setProductData={setProductData} 
+                  />
+                  <ProductStockPricing
+                    productData={productData}
+                    setProductData={setProductData}
+                  />
+                  
+                  {/* Physical product components moved to ProductAdvancedOptions */}
+                  
+                  {productData.type === 'digital_product' && (
+                    <ProductFiles 
                       productData={productData} 
                       setProductData={setProductData} 
                     />
                   )}
-                  
-                  {/* Form Actions */}
+                </div>
+              )}
+              
+              {activeTab === 'advanced' && (
+                <ProductAdvancedOptions 
+                  productData={productData} 
+                  setProductData={setProductData} 
+                />
+              )}
+              
+              {/* Form Actions */}
                   <div className="flex justify-between mt-8 pt-6 border-t border-border">
                     <Button 
-                      onClick={() => router.push('/products')} 
+                  onClick={() => router.push('/products')} 
                       variant="outline"
                       className="hidden sm:flex rounded-2xl font-light"
-                    >
-                      Cancel
+                >
+                  Cancel
                     </Button>
                     <Button 
-                      onClick={handleSubmit} 
+                  onClick={handleSubmit} 
                       className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-light"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting 
-                        ? isEditing ? 'Updating Product...' : 'Creating Product...' 
-                        : isEditing ? 'Update Product' : 'Create Product'
-                      }
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting 
+                    ? isEditing ? 'Updating Product...' : 'Creating Product...' 
+                    : isEditing ? 'Update Product' : 'Create Product'
+                  }
                     </Button>
                   </div>
-                </div>
               </div>
-              
-              {/* Right side - Product Preview */}
-              <div className="md:col-span-5">
-                <ProductPreview productData={productData} />
+            </div>
+            
+            {/* Right side - Product Preview */}
+            <div className="md:col-span-5">
+              <ProductPreview productData={productData} />
               </div>
             </div>
           </div>

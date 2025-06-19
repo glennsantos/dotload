@@ -224,37 +224,38 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
               </button>
               
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-background text-foreground rounded-lg shadow-lg z-50 border border-border">
+                <div className="absolute right-0 mt-2 w-52 bg-background text-foreground rounded-2xl shadow-xl z-50 border border-border claude-card p-2">
                   <Link 
                     href="/dashboard" 
                     onClick={() => setUserMenuOpen(false)}
-                    className="block px-4 py-2 hover:bg-muted flex items-center"
+                    className="flex items-center px-3 py-3 rounded-xl hover:bg-emerald-50 text-foreground transition-colors group"
                   >
-                    <BarChart3 className="mr-2 h-4 w-4" />
-                    Dashboard
+                    <BarChart3 className="mr-3 h-4 w-4 text-muted-foreground group-hover:text-emerald-600" />
+                    <span className="font-light">Dashboard</span>
                   </Link>
                   <Link 
                     href="/settings" 
                     onClick={() => setUserMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:bg-muted flex items-center"
+                    className="flex items-center px-3 py-3 rounded-xl hover:bg-emerald-50 text-foreground transition-colors group"
                   >
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    <Settings className="mr-3 h-4 w-4 text-muted-foreground group-hover:text-emerald-600" />
+                    <span className="font-light">Settings</span>
                   </Link>
                   <Link 
                     href="/products" 
                     onClick={() => setUserMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-muted-foreground hover:bg-muted flex items-center"
+                    className="flex items-center px-3 py-3 rounded-xl hover:bg-emerald-50 text-foreground transition-colors group"
                   >
-                    <Package className="mr-2 h-4 w-4" />
-                    Products
+                    <Package className="mr-3 h-4 w-4 text-muted-foreground group-hover:text-emerald-600" />
+                    <span className="font-light">Products</span>
                   </Link>
+                  <div className="border-t border-border my-2"></div>
                   <button
-                    className="block w-full text-left px-4 py-2 text-sm text-destructive hover:bg-muted flex items-center"
+                    className="flex items-center w-full px-3 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors group"
                     onClick={handleLogout}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
+                    <LogOut className="mr-3 h-4 w-4" />
+                    <span className="font-light">Sign Out</span>
                   </button>
                 </div>
               )}
@@ -269,52 +270,46 @@ export default function TopNavigation({ user: initialUser }: TopNavigationProps)
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <nav className="px-4 pt-2 pb-4 space-y-2 md:hidden">
-          <Link href="/products" className="block py-2 hover:text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
+        <nav className="px-4 pt-2 pb-4 space-y-1 md:hidden bg-background/95 backdrop-blur-sm border-t border-border">
+          <Link href="/products" className="flex items-center px-3 py-3 rounded-xl hover:bg-emerald-50 text-foreground transition-colors font-light" onClick={() => setMobileMenuOpen(false)}>
+            <Package size={18} className="mr-3 text-muted-foreground" />
             Products
           </Link>
           
           {user && hasPurchases && (
-            <Link href="/purchases" className="block py-2 hover:text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
-              <span className="flex items-center">
-                <ShoppingBag size={18} className="mr-2" />
-                Purchases
-              </span>
+            <Link href="/purchases" className="flex items-center px-3 py-3 rounded-xl hover:bg-emerald-50 text-foreground transition-colors font-light" onClick={() => setMobileMenuOpen(false)}>
+              <ShoppingBag size={18} className="mr-3 text-muted-foreground" />
+              Purchases
             </Link>
           )}
           
           {user ? (
             <>
-              <Link href="/settings" className="block py-2 hover:text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
-                <span className="flex items-center">
-                  <Settings size={18} className="mr-2" />
-                  Settings
-                </span>
+              <Link href="/settings" className="flex items-center px-3 py-3 rounded-xl hover:bg-emerald-50 text-foreground transition-colors font-light" onClick={() => setMobileMenuOpen(false)}>
+                <Settings size={18} className="mr-3 text-muted-foreground" />
+                Settings
               </Link>
-              <Link href="/transactions" className="block py-2 hover:text-muted-foreground" onClick={() => {
+              <Link href="/transactions" className="flex items-center px-3 py-3 rounded-xl hover:bg-emerald-50 text-foreground transition-colors font-light" onClick={() => {
                 console.log('Mobile Transactions menu item clicked');
                 setMobileMenuOpen(false);
               }}>
-                <span className="flex items-center">
-                  <BookOpen size={18} className="mr-2" />
-                  Transactions
-                </span>
+                <BookOpen size={18} className="mr-3 text-muted-foreground" />
+                Transactions
               </Link>
+              <div className="border-t border-border my-2"></div>
               <button 
-                className="flex items-center w-full py-2 text-destructive hover:text-destructive/80"
+                className="flex items-center w-full px-3 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors font-light"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
               >
-                <LogOut size={18} className="mr-2" />
-                {isLoggingOut ? 'Logging out...' : 'Logout'}
+                <LogOut size={18} className="mr-3" />
+                {isLoggingOut ? 'Signing out...' : 'Sign Out'}
               </button>
             </>
           ) : (
-            <Link href="/login" className="block py-2 hover:text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
-              <span className="flex items-center">
-                <User size={18} className="mr-2" />
-                Login
-              </span>
+            <Link href="/login" className="flex items-center px-3 py-3 rounded-xl hover:bg-emerald-50 text-foreground transition-colors font-light" onClick={() => setMobileMenuOpen(false)}>
+              <User size={18} className="mr-3 text-muted-foreground" />
+              Login
             </Link>
           )}
         </nav>

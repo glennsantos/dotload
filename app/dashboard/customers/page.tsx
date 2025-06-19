@@ -203,10 +203,10 @@ export default function CustomersPage() {
           </div>
         ) : error ? (
           <div className="claude-card">
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
           </div>
         ) : (
           <div className="claude-card">

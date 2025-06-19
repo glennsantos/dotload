@@ -52,14 +52,14 @@ export default function ProductStockPricing({
 
   return (
     <div className="mt-8 mb-6 border border-border rounded-lg p-6 bg-background">
-      <h3 className="tracking-tight text-xl font-light text-foreground mb-2">Stock & Pricing</h3>
+          <h3 className="tracking-tight text-xl font-light text-foreground mb-2">Stock & Pricing</h3>
       <p className="text-sm text-muted-foreground mb-6 font-light">Manage inventory and availability</p>
       
       {/* Unlimited Quantity Toggle */}
       <div className="flex items-center justify-between p-4 border border-border rounded-lg mb-4 bg-muted/20">
         <div>
-          <h4 className="text-sm font-light text-foreground">Unlimited Quantity</h4>
-          <p className="text-xs text-muted-foreground font-light">No stock limitations</p>
+                  <h4 className="text-sm font-light text-foreground">Unlimited Quantity</h4>
+        <p className="text-xs text-muted-foreground font-light">No stock limitations</p>
         </div>
         <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
           <input 
