@@ -463,8 +463,8 @@ export default function CreditCardForm({
   
   return (
     <div className="w-full">
-      <h3 className="text-lg font-light mb-1">Credit Card Payment</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+      <h3 className="text-lg font-medium mb-2">Credit Card Payment</h3>
+      <p className="text-sm text-muted-foreground mb-6">
         Enter your card details to complete the purchase
       </p>
       
@@ -547,7 +547,7 @@ export default function CreditCardForm({
             
             <Button 
               type="submit" 
-              className="w-full font-light text-md" 
+              className="w-full font-medium py-4" 
               disabled={isLoading || isTokenizing}
             >
               {isLoading || isTokenizing ? (

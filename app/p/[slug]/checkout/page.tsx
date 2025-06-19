@@ -296,12 +296,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-background">
+      <header className="bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center">
-            <Link href={`/p/${slug}`} className="text-gray-500 hover:text-gray-700 flex items-center">
-              <ArrowLeft className="h-4 w-4 mr-1" />
+            <Link href={`/p/${slug}`} className="text-muted-foreground hover:text-foreground flex items-center transition-colors">
+              <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Product
             </Link>
           </div>
@@ -311,7 +311,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-7">
-            <h1 className="text-3xl font-light text-gray-900 mb-6">Checkout</h1>
+            <h1 className="text-3xl font-light text-foreground mb-8">Checkout</h1>
             
             <CheckoutForm
               product={product}

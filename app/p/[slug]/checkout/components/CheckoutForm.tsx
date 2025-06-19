@@ -87,14 +87,14 @@ export default function CheckoutForm({
     <FormWrapper {...formProps}>
       {/* Email field */}
       <div className="mb-6">
-        <label htmlFor="email" className="block text-md font-light text-gray-700 mb-1">Email</label>
+        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email</label>
         <input
           type="email"
           id="email"
           name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground placeholder:text-muted-foreground transition-colors"
           placeholder="your@email.com"
           required
         />
@@ -102,14 +102,14 @@ export default function CheckoutForm({
       
       {/* Mobile number field */}
       <div className="mb-6">
-        <label htmlFor="mobileNumber" className="block text-md font-light text-gray-700 mb-1">Mobile Number</label>
+        <label htmlFor="mobileNumber" className="block text-sm font-medium text-foreground mb-2">Mobile Number</label>
         <input
           type="tel"
           id="mobileNumber"
           name="mobileNumber"
           value={mobileNumber}
           onChange={(e) => setMobileNumber(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground placeholder:text-muted-foreground transition-colors"
           placeholder="e.g. 09123456789"
           required
         />
@@ -118,13 +118,13 @@ export default function CheckoutForm({
       {/* Product Variations */}
       {product?.variations && product.variations.length > 0 && (
         <div className="mb-6">
-          <label htmlFor="variation" className="block text-md font-light text-gray-700 mb-1">Select Variation</label>
+          <label htmlFor="variation" className="block text-sm font-medium text-foreground mb-2">Select Variation</label>
           <select
             id="variation"
             name="variation"
             value={selectedVariation}
             onChange={(e) => setSelectedVariation(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground transition-colors"
             required
           >
             <option value="">Select a variation</option>
@@ -145,7 +145,7 @@ export default function CheckoutForm({
       {/* Discount Code field */}
       {hasDiscountCodes(product) && (
         <div className="mb-6">
-          <label htmlFor="discountCode" className="block text-md font-light text-gray-700 mb-1">Discount Code</label>
+          <label htmlFor="discountCode" className="block text-sm font-medium text-foreground mb-2">Discount Code</label>
           <div className="flex">
             <input
               type="text"
@@ -153,20 +153,20 @@ export default function CheckoutForm({
               name="discountCode"
               value={discountCode}
               onChange={(e) => setDiscountCode(e.target.value)}
-              className="flex-1 p-3 border border-gray-300 rounded-l-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 p-3 border border-border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground placeholder:text-muted-foreground transition-colors"
               placeholder="Enter discount code"
             />
             <button
               type="button"
               onClick={() => handleValidateDiscountCode()}
-              className="bg-muted hover:bg-muted/80 text-muted-foreground px-4 rounded-r-2xl flex items-center"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground px-4 rounded-r-lg flex items-center border border-l-0 border-border transition-colors"
             >
               <Tag className="h-4 w-4 mr-1" />
               Apply
             </button>
           </div>
           {appliedDiscount && (
-                          <div className="mt-2 text-sm text-primary">
+            <div className="mt-2 text-sm text-primary">
               Discount applied: {appliedDiscount.type === 'percentage' ? 
                 `${appliedDiscount.value || appliedDiscount.amount}%` : 
                 `${product.currency} ${appliedDiscount.value || appliedDiscount.amount}`} off
@@ -183,7 +183,7 @@ export default function CheckoutForm({
       
       {/* Use the new CreditCardForm when card payment is selected */}
       {paymentMethod === "card" && (
-        <div className="mb-6 p-4 bg-white rounded-md border border-gray-300">
+        <div className="mb-6 p-6 bg-card rounded-lg border border-border">
           <CreditCardForm
             purchaseId={product.id}
             amount={calculateFinalPrice(product, appliedDiscount)}
@@ -220,7 +220,7 @@ export default function CheckoutForm({
       
       {/* Payment error message */}
       {paymentError && (
-        <div className="mb-6 p-4 bg-destructive/10 rounded-md text-destructive">
+        <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
           {paymentError}
         </div>
       )}
@@ -229,7 +229,7 @@ export default function CheckoutForm({
       {paymentMethod !== "card" && (
         <button
           type="submit"
-          className="w-full bg-primary rounded-full text-primary-foreground px-6 py-3 font-light hover:bg-primary/90 transition-colors"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={processingPayment}
         >
           {processingPayment ? (
