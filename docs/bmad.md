@@ -26,7 +26,9 @@ Local BMAD configuration assigns:
 - `_bmad-output/implementation-artifacts/` to implementation outputs.
 - `_bmad-output/test-artifacts/` to test artifacts.
 
-No artifact files were found in `_bmad-output` during inspection. Root background documents do not prove that BMAD planning is complete.
+The installed `bmad-spec` workflow separately defaults to `_bmad-output/specs/spec-{slug}/`. Its `SPEC.md` and listed companions form the implementation contract; `.memlog.md` is the canonical decision record used to derive it.
+
+The [maintainability and scalability spec](../_bmad-output/specs/spec-maintainability-and-scalability/SPEC.md) contains the proposed improvement plan, implementation order, and acceptance checks. Implementation and execution evidence remain pending. Root background documents do not prove that BMAD planning is complete.
 
 ## Maintain the documentation
 

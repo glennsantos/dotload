@@ -13,6 +13,10 @@ Checked against the working tree based on commit `ef07d41` on 2026-10-04. Read t
 | Check a build or prepare a deployment | [Deployment and verification](operations.md) |
 | Start BMAD work | [BMAD documentation workflow](bmad.md) |
 
+## Proposed improvement plan
+
+The [BMAD maintainability and scalability spec](../_bmad-output/specs/spec-maintainability-and-scalability/SPEC.md) records proposed work, priorities, dependencies, acceptance checks, and evidence. It describes future changes; it does not establish that the application implements them or that verification has passed.
+
 ## Existing documents
 
 The root [architecture document](../ARCHITECTURE.md), [data flows](../DATA_FLOWS.md), and [process flows](../PROCESS_FLOWS.md) provide background. Use the current code when those documents disagree with the implementation. The root [PRD](../PRD.md) is a frontend redesign task list, and the [launch checklist](../LAUNCH_CHECKLIST.md) is a planning artifact, not deployment evidence.
