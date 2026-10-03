@@ -80,3 +80,5 @@ ecosystem.config.js
 tests/reports/
 coverage/
 data/
+_bmad/
+.agents/
